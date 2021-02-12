@@ -156,7 +156,9 @@ namespace GravityHelper
 
         private void levelOnUpdate(On.Celeste.Level.orig_Update orig, Level self)
         {
-            if (Settings.ToggleInvertGravity.Pressed)
+            if (!Settings.Enabled)
+                Gravity = GravityTypes.Normal;
+            else if (Settings.ToggleInvertGravity.Pressed)
             {
                 Settings.ToggleInvertGravity.ConsumePress();
                 Gravity = Gravity == GravityTypes.Normal ? GravityTypes.Inverted : GravityTypes.Normal;

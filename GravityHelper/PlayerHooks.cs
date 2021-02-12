@@ -413,7 +413,7 @@ namespace GravityHelper
                         self.RefillStamina();
                         self.RefillDash();
                     }
-                    if (self.Ducking && canUnDuck && Input.MoveY != 1)
+                    if (self.Ducking && canUnDuck && Input.MoveY.Value != 1)
                     {
                         self.Ducking = false;
                         self.Position.Y += 5f;

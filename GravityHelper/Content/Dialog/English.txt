@@ -19,5 +19,6 @@
 # {anchor} controls the visual position of the textbox in-game
 
 # Gravity Module Options
-	MODOPTIONS_GRAVITYMODULE_TITLE= 	GravityMod
-	MODOPTIONS_GRAVITYMODULE_ENABLED= 	Enabled
+MODOPTIONS_GRAVITYHELPER_TITLE=GravityHelper
+MODOPTIONS_GRAVITYHELPER_ENABLED=Enabled
+MODOPTIONS_GRAVITYHELPER_TOGGLEINVERTGRAVITY=Toggle Invert Gravity
