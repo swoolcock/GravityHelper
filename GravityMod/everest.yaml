@@ -1,6 +1,0 @@
-﻿- Name: GravityMod
-  Version: 1.0.0
-  DLL: GravityMod.dll
-  Dependencies:
-    - Name: Everest
-      Version: 1.0.0
