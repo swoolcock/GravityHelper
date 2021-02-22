@@ -6,12 +6,9 @@ using Monocle;
 
 namespace GravityHelper
 {
-    public class GravityModule : EverestModule
+    public class GravityHelperModule : EverestModule
     {
-        private const string ghCurrentGravityCounterKey = "ghGravity";
-        private const string ghSetInvertedGravityEvent = "ghSetInvertedGravity";
-        private const string ghSetNormalGravityEvent = "ghSetNormalGravity";
-        private const string ghToggleGravityEvent = "ghToggleGravity";
+
 
         [Command("gravity", "[Gravity Helper] Sets the gravity:\n 0 -> Normal\n 1 -> Inverted")]
         public static void CmdSetGravity(int type)
@@ -23,9 +20,9 @@ namespace GravityHelper
             }
         }
 
-        public static GravityModule Instance;
+        public static GravityHelperModule Instance;
 
-        public GravityModule()
+        public GravityHelperModule()
         {
             Instance = this;
         }
@@ -33,13 +30,13 @@ namespace GravityHelper
         // no save data needed
         public override Type SaveDataType => null;
 
-        public override Type SettingsType => typeof(GravityModuleSettings);
+        public override Type SettingsType => typeof(GravityHelperModuleSettings);
 
-        public static GravityModuleSettings Settings => (GravityModuleSettings)Instance._Settings;
+        public static GravityHelperModuleSettings Settings => (GravityHelperModuleSettings)Instance._Settings;
 
         public GravityTypes Gravity
         {
-            get => Engine.Scene is Level level ? (GravityTypes)level.Session.GetCounter(ghCurrentGravityCounterKey) : GravityTypes.Normal;
+            get => Engine.Scene is Level level ? (GravityTypes)level.Session.GetCounter(Constants.CurrentGravityCounterKey) : GravityTypes.Normal;
             set
             {
                 if (!(Engine.Scene is Level level))
@@ -48,7 +45,7 @@ namespace GravityHelper
                 if (value == Gravity)
                     return;
 
-                level.Session.SetCounter(ghCurrentGravityCounterKey, (int)value);
+                level.Session.SetCounter(Constants.CurrentGravityCounterKey, (int)value);
 
                 if (value == GravityTypes.FakeInverted)
                     return;
@@ -119,33 +116,32 @@ namespace GravityHelper
         {
             switch (self.Event)
             {
-                case ghSetInvertedGravityEvent:
+                case Constants.SetInvertedGravityEvent:
                     Gravity = GravityTypes.Inverted;
                     break;
 
-                case ghSetNormalGravityEvent:
+                case Constants.SetNormalGravityEvent:
                     Gravity = GravityTypes.Normal;
                     break;
 
-                case ghToggleGravityEvent:
+                case Constants.ToggleGravityEvent:
                     Gravity = Gravity == GravityTypes.Normal ? GravityTypes.Inverted : GravityTypes.Normal;
                     break;
 
-                case "jtpRefreshBoosters":
+                case Constants.RefreshBoostersEvent:
                     try
                     {
                         foreach (Booster b in self.Scene.Entities.FindAll<Booster>())
                         {
-                            if (true)
-                            {
-                                b.Respawn();
-                                ReflectionCache.Booster_respawnTimer.SetValue(b, 0f);
-                            }
+                            b.Respawn();
+                            ReflectionCache.Booster_respawnTimer.SetValue(b, 0f);
                         }
-                    } catch (Exception e)
-                    {
-                        Logger.LogDetailed(e, "asda");
                     }
+                    catch
+                    {
+                        // ignored
+                    }
+
                     break;
 
                 default:

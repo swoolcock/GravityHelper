@@ -12,10 +12,10 @@ namespace GravityHelper
 {
     public static class InteractionHooks
     {
-        private static GravityModule.GravityTypes Gravity
+        private static GravityHelperModule.GravityTypes Gravity
         {
-            get => GravityModule.Instance.Gravity;
-            set => GravityModule.Instance.Gravity = value;
+            get => GravityHelperModule.Instance.Gravity;
+            set => GravityHelperModule.Instance.Gravity = value;
         }
 
         public static void Load()
@@ -45,7 +45,7 @@ namespace GravityHelper
             Vector2 getFeatherAim()
             {
                 Vector2 aim = Input.Aim;
-                if (Gravity == GravityModule.GravityTypes.Inverted)
+                if (Gravity == GravityHelperModule.GravityTypes.Inverted)
                 {
                     aim.Y = -aim.Y;
                 }
@@ -92,7 +92,7 @@ namespace GravityHelper
         private static void Player_SuperBounce(On.Celeste.Player.orig_SuperBounce orig, Player self, float fromY)
         {
             orig(self, fromY);
-            if (Gravity != GravityModule.GravityTypes.Inverted) return;
+            if (Gravity != GravityHelperModule.GravityTypes.Inverted) return;
 
             self.Speed.Y = 185f;
 
@@ -114,13 +114,13 @@ namespace GravityHelper
                         MethodInfo BounceAnimate = self.GetType().GetMethod("BounceAnimate", BindingFlags.NonPublic | BindingFlags.Instance);
                         BounceAnimate?.Invoke(self, null);
                         player.SuperBounce(self.Bottom);
-                        Gravity = GravityModule.GravityTypes.Inverted;
+                        Gravity = GravityHelperModule.GravityTypes.Inverted;
                     }
                 }
                 // Normal spring, but changes gravity
                 else if (self.Orientation == (Spring.Orientations)4)
                 {
-                    Gravity = GravityModule.GravityTypes.Normal;
+                    Gravity = GravityHelperModule.GravityTypes.Normal;
                     MethodInfo BounceAnimate = self.GetType().GetMethod("BounceAnimate", BindingFlags.NonPublic | BindingFlags.Instance);
                     BounceAnimate?.Invoke(self, null);
                     player.SuperBounce(self.Top);

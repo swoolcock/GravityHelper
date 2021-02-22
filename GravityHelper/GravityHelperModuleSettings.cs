@@ -2,7 +2,7 @@
 using Microsoft.Xna.Framework.Input;
 
 namespace GravityHelper {
-    public class GravityModuleSettings : EverestModuleSettings
+    public class GravityHelperModuleSettings : EverestModuleSettings
     {
         public bool Enabled { get; set; } = true;
 

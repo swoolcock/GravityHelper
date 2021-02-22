@@ -5,7 +5,7 @@ using MonoMod.Cil;
 using MonoMod.Utils;
 using System;
 using MonoMod.RuntimeDetour;
-using static GravityHelper.GravityModule;
+using static GravityHelper.GravityHelperModule;
 using System.Reflection;
 using System.Collections.Generic;
 
@@ -15,14 +15,14 @@ namespace GravityHelper
     {
         private static GravityTypes Gravity
         {
-            get => GravityModule.Instance.Gravity;
-            set => GravityModule.Instance.Gravity = value;
+            get => GravityHelperModule.Instance.Gravity;
+            set => GravityHelperModule.Instance.Gravity = value;
         }
 
         internal static GravityTypes lastGrav
         {
-            get => Engine.Scene is Level level ? (GravityTypes)level.Session.GetCounter("jtpLastGravity") : GravityTypes.Normal;
-            set => (Engine.Scene as Level)?.Session.SetCounter("jtpLastGravity", (int)value);
+            get => Engine.Scene is Level level ? (GravityTypes)level.Session.GetCounter(Constants.LastGravityCounterKey) : GravityTypes.Normal;
+            set => (Engine.Scene as Level)?.Session.SetCounter(Constants.LastGravityCounterKey, (int)value);
         }
 
         private static float fakeInvTimer;
