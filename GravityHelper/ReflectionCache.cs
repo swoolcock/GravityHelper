@@ -1,8 +1,7 @@
-﻿using Celeste;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using System.Reflection;
 
-namespace GravityHelper
+namespace Celeste.Mod.GravityHelper
 {
     internal static class ReflectionCache
     {

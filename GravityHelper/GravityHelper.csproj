@@ -4,7 +4,7 @@
         <AssemblyTitle>GravityHelper</AssemblyTitle>
         <OutputType>Library</OutputType>
         <PlatformTarget>AnyCPU</PlatformTarget>
-        <RootNamespace>GravityHelper</RootNamespace>
+        <RootNamespace>Celeste.Mod.GravityHelper</RootNamespace>
     </PropertyGroup>
     
     <ItemGroup Label="Assembly References">

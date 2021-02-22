@@ -1,27 +1,25 @@
-﻿using Celeste;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Monocle;
 using MonoMod.Cil;
 using MonoMod.Utils;
 using System;
 using MonoMod.RuntimeDetour;
-using static GravityHelper.GravityHelperModule;
 using System.Reflection;
 using System.Collections.Generic;
 
-namespace GravityHelper
+namespace Celeste.Mod.GravityHelper
 {
     public static class PlayerHooks
     {
-        private static GravityTypes Gravity
+        private static GravityHelperModule.GravityTypes Gravity
         {
             get => GravityHelperModule.Instance.Gravity;
             set => GravityHelperModule.Instance.Gravity = value;
         }
 
-        internal static GravityTypes lastGrav
+        internal static GravityHelperModule.GravityTypes lastGrav
         {
-            get => Engine.Scene is Level level ? (GravityTypes)level.Session.GetCounter(Constants.LastGravityCounterKey) : GravityTypes.Normal;
+            get => Engine.Scene is Level level ? (GravityHelperModule.GravityTypes)level.Session.GetCounter(Constants.LastGravityCounterKey) : GravityHelperModule.GravityTypes.Normal;
             set => (Engine.Scene as Level)?.Session.SetCounter(Constants.LastGravityCounterKey, (int)value);
         }
 
@@ -60,12 +58,12 @@ namespace GravityHelper
         private static void Player_UpdateSprite(ILContext il)
         {
             ILCursor cursor = new ILCursor(il);
-            string getAnimFrameEdge() => Gravity == GravityTypes.Inverted ? "idle" : "edge";
-            string getAnimFrameEdgeBack() => Gravity == GravityTypes.Inverted ? "idle" : "edgeBack";
+            string getAnimFrameEdge() => Gravity == GravityHelperModule.GravityTypes.Inverted ? "idle" : "edge";
+            string getAnimFrameEdgeBack() => Gravity == GravityHelperModule.GravityTypes.Inverted ? "idle" : "edgeBack";
             EasierILHook.ReplaceStrings(cursor, new Dictionary<string, Func<string>> { { "edge", getAnimFrameEdge }, { "edgeBack", getAnimFrameEdgeBack } });
         }
 
-        private static float getGravityYReverse() => Gravity == GravityTypes.Inverted ? -1f : 1f;
+        private static float getGravityYReverse() => Gravity == GravityHelperModule.GravityTypes.Inverted ? -1f : 1f;
 
         private static void Player_ctor(On.Celeste.Player.orig_ctor orig, Player self, Vector2 position, PlayerSpriteMode spriteMode)
         {
@@ -77,7 +75,7 @@ namespace GravityHelper
                 if (self.StateMachine.State == Player.StRedDash)
                     self.Speed.Y = -self.Speed.Y;
 
-                if (val == GravityTypes.Inverted)
+                if (val == GravityHelperModule.GravityTypes.Inverted)
                 {
                     self.Sprite.OnFrameChange = s =>
                     {
@@ -118,14 +116,14 @@ namespace GravityHelper
 
         private static bool Player_LaunchedBoostCheck(On.Celeste.Player.orig_LaunchedBoostCheck orig, Player self)
         {
-            GravityTypes grav = Gravity;
-            if (grav == GravityTypes.Inverted)
+            GravityHelperModule.GravityTypes grav = Gravity;
+            if (grav == GravityHelperModule.GravityTypes.Inverted)
             {
                 self.Speed.Y = -self.Speed.Y;
                 //self.LiftSpeed = -self.LiftSpeed;
             }
             bool val = orig(self);
-            if (grav == GravityTypes.Inverted)
+            if (grav == GravityHelperModule.GravityTypes.Inverted)
             {
                 self.Speed.Y = -self.Speed.Y;
                 //self.LiftSpeed = -self.LiftSpeed;
@@ -134,7 +132,7 @@ namespace GravityHelper
         }
 
         private static bool Actor_IsRiding_Solid(On.Celeste.Actor.orig_IsRiding_Solid orig, Actor self, Solid solid) =>
-            self is Player && Gravity == GravityTypes.Inverted ? self.CollideCheck(solid, self.Position - Vector2.UnitY) : orig(self, solid);
+            self is Player && Gravity == GravityHelperModule.GravityTypes.Inverted ? self.CollideCheck(solid, self.Position - Vector2.UnitY) : orig(self, solid);
 
         private static PlayerDeadBody Player_Die(On.Celeste.Player.orig_Die orig, Player self, Vector2 direction, bool evenIfInvincible, bool registerDeathInStats)
         {
@@ -146,7 +144,7 @@ namespace GravityHelper
         {
             lastGrav = Gravity;
 
-            if (Gravity != GravityTypes.Inverted)
+            if (Gravity != GravityHelperModule.GravityTypes.Inverted)
                 return orig(self, target, direction);
 
             self.MoveTowardsX(target.X, 60f * Engine.DeltaTime, null);
@@ -157,7 +155,7 @@ namespace GravityHelper
             bool result;
             if (flag)
             {
-                Gravity = GravityTypes.FakeInverted;
+                Gravity = GravityHelperModule.GravityTypes.FakeInverted;
 
                 self.ZeroRemainderX();
                 self.ZeroRemainderY();
@@ -176,7 +174,7 @@ namespace GravityHelper
 
         private static void Player_BeforeUpTransition(On.Celeste.Player.orig_BeforeUpTransition orig, Player self)
         {
-            if (Gravity == GravityTypes.Inverted)
+            if (Gravity == GravityHelperModule.GravityTypes.Inverted)
                 fakeInvTimer = 40 * Engine.DeltaTime;
 
             orig(self);
@@ -187,7 +185,7 @@ namespace GravityHelper
             Vector2 vector2 = orig(defaultFacing);
             Player player = Engine.Scene.Tracker.GetEntity<Player>();
 
-            if (Gravity == GravityTypes.Inverted)
+            if (Gravity == GravityHelperModule.GravityTypes.Inverted)
                 vector2.Y = -vector2.Y;
 
             return vector2;
@@ -195,7 +193,7 @@ namespace GravityHelper
 
         private static void PlayerHair_AfterUpdate(On.Celeste.PlayerHair.orig_AfterUpdate orig, PlayerHair self)
         {
-            if (Gravity == GravityTypes.Inverted || Gravity == GravityTypes.FakeInverted)
+            if (Gravity == GravityHelperModule.GravityTypes.Inverted || Gravity == GravityHelperModule.GravityTypes.FakeInverted)
             {
                 Player player = self.Scene?.Tracker.GetEntity<Player>();
                 if (player == null) return;
@@ -245,7 +243,7 @@ namespace GravityHelper
 
         private static void PlayerHair_Render(On.Celeste.PlayerHair.orig_Render orig, PlayerHair self)
         {
-            if (Gravity == GravityTypes.Inverted || Gravity == GravityTypes.FakeInverted)
+            if (Gravity == GravityHelperModule.GravityTypes.Inverted || Gravity == GravityHelperModule.GravityTypes.FakeInverted)
             {
                 PlayerSprite sprite = self.Sprite;
                 if (!sprite.HasHair)
@@ -300,7 +298,7 @@ namespace GravityHelper
 
         private static int Player_NormalUpdate(On.Celeste.Player.orig_NormalUpdate orig, Player self)
         {
-            if (Gravity == GravityTypes.Inverted)
+            if (Gravity == GravityHelperModule.GravityTypes.Inverted)
                 CheckInvGround(self, false);
 
             return orig(self);
@@ -308,7 +306,7 @@ namespace GravityHelper
 
         private static void Player_Jump(On.Celeste.Player.orig_Jump orig, Player self, bool particles, bool playSfx)
         {
-            if (Gravity == GravityTypes.Inverted)
+            if (Gravity == GravityHelperModule.GravityTypes.Inverted)
             {
                 if (!onInvGround) return;
 
@@ -321,7 +319,7 @@ namespace GravityHelper
 
         private static bool Actor_OnGround_int(On.Celeste.Actor.orig_OnGround_int orig, Actor self, int downCheck)
         {
-            if (self is Player && Gravity == GravityTypes.Inverted)
+            if (self is Player && Gravity == GravityHelperModule.GravityTypes.Inverted)
                 downCheck = -downCheck;
 
             return orig(self, downCheck);
@@ -333,7 +331,7 @@ namespace GravityHelper
 
             if (player != null)
             {
-                if (Gravity == GravityTypes.Inverted)
+                if (Gravity == GravityHelperModule.GravityTypes.Inverted)
                     player.Speed.Y = -player.Speed.Y;
             }
 
@@ -341,7 +339,7 @@ namespace GravityHelper
 
             if (player != null)
             {
-                if (Gravity == GravityTypes.Inverted)
+                if (Gravity == GravityHelperModule.GravityTypes.Inverted)
                     player.Speed.Y = -player.Speed.Y;
             }
         }
@@ -356,7 +354,7 @@ namespace GravityHelper
             }
             if (self.Speed.Y >= 0f)
             {
-                Celeste.Platform platform = self.CollideFirst<Solid>(self.Position - Vector2.UnitY);
+                Platform platform = self.CollideFirst<Solid>(self.Position - Vector2.UnitY);
                 bool flag13 = platform == null;
                 if (flag13)
                 {
@@ -406,7 +404,7 @@ namespace GravityHelper
 
             int lastDashes = self.Dashes;
             bool lastDucking = self.Ducking;
-            if (Gravity == GravityTypes.Inverted)
+            if (Gravity == GravityHelperModule.GravityTypes.Inverted)
             {
                 self.Speed.Y = -self.Speed.Y;
                 // fixes bugs where hitting a "ceiling" while upside-down would recover your dash
@@ -416,7 +414,7 @@ namespace GravityHelper
 
             orig(self);
 
-            if (Gravity == GravityTypes.Inverted)
+            if (Gravity == GravityHelperModule.GravityTypes.Inverted)
             {
                 // Handle un-ducking
                 CheckInvGround(self, self.Dashes == lastDashes, true);
@@ -441,25 +439,25 @@ namespace GravityHelper
 
         private static void Player_Render(On.Celeste.Player.orig_Render orig, Player self)
         {
-            if (Gravity == GravityTypes.Inverted || Gravity == GravityTypes.FakeInverted)
+            if (Gravity == GravityHelperModule.GravityTypes.Inverted || Gravity == GravityHelperModule.GravityTypes.FakeInverted)
             {
                 FlipScale(self);
                 self.Sprite.Y -= self.Ducking ? 6f : 11f;
 
-                if (self.StateMachine.State == Player.StNormal && Gravity == GravityTypes.FakeInverted)
+                if (self.StateMachine.State == Player.StNormal && Gravity == GravityHelperModule.GravityTypes.FakeInverted)
                 {
                     fakeInvTimer -= Engine.DeltaTime;
                     if (fakeInvTimer <= 0f)
                     {
                         self.Speed.Y = Math.Abs(self.Speed.Y);
-                        Gravity = GravityTypes.Inverted;
+                        Gravity = GravityHelperModule.GravityTypes.Inverted;
                     }
                 }
             }
 
             orig(self);
 
-            if (Gravity == GravityTypes.Inverted || Gravity == GravityTypes.FakeInverted)
+            if (Gravity == GravityHelperModule.GravityTypes.Inverted || Gravity == GravityHelperModule.GravityTypes.FakeInverted)
             {
                 FlipScale(self);
                 self.Sprite.Y += self.Ducking ? 6f : 11f;

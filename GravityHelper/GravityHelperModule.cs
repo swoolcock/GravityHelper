@@ -1,15 +1,11 @@
 ﻿using System;
-using Celeste;
-using Celeste.Mod;
 using Microsoft.Xna.Framework;
 using Monocle;
 
-namespace GravityHelper
+namespace Celeste.Mod.GravityHelper
 {
     public class GravityHelperModule : EverestModule
     {
-
-
         [Command("gravity", "[Gravity Helper] Sets the gravity:\n 0 -> Normal\n 1 -> Inverted")]
         public static void CmdSetGravity(int type)
         {

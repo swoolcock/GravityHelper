@@ -1,6 +1,4 @@
-﻿using Celeste;
-using Celeste.Mod;
-using Mono.Cecil;
+﻿using Mono.Cecil;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
@@ -10,7 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-namespace GravityHelper
+namespace Celeste.Mod.GravityHelper
 {
     public static class EasierILHook
     {
@@ -51,9 +49,9 @@ namespace GravityHelper
         }
 
         /// <summary>
-        /// 
+        ///
         /// The following method is written by max480. Thanks max!
-        /// 
+        ///
         /// Utility method to patch "coroutine" kinds of methods with IL.
         /// Those methods' code reside in a compiler-generated method, and IL.Celeste.* do not allow manipulating them directly.
         /// </summary>

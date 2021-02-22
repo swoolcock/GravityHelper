@@ -1,4 +1,4 @@
-namespace GravityHelper
+namespace Celeste.Mod.GravityHelper
 {
     public static class Constants
     {

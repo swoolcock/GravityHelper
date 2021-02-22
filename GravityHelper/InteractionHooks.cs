@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Reflection;
-using Celeste;
-using Celeste.Mod;
 using Microsoft.Xna.Framework;
 using Mono.Cecil.Cil;
 using Monocle;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
 
-namespace GravityHelper
+namespace Celeste.Mod.GravityHelper
 {
     public static class InteractionHooks
     {
@@ -100,7 +98,7 @@ namespace GravityHelper
             varJumpSpeed?.SetValue(self, 185f);
         }
 
-        private static void Spring_OnCollide(On.Celeste.Spring.orig_OnCollide orig, Celeste.Spring self, Player player)
+        private static void Spring_OnCollide(On.Celeste.Spring.orig_OnCollide orig, Spring self, Player player)
         {
             if (player.StateMachine.State != Player.StDreamDash)
             {
