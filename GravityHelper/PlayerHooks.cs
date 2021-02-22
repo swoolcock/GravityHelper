@@ -1,7 +1,5 @@
 ﻿using Celeste;
-using Celeste.Mod;
 using Microsoft.Xna.Framework;
-using Mono.Cecil.Cil;
 using Monocle;
 using MonoMod.Cil;
 using MonoMod.Utils;
@@ -9,28 +7,24 @@ using System;
 using MonoMod.RuntimeDetour;
 using static GravityHelper.GravityModule;
 using System.Reflection;
-using System.Linq;
 using System.Collections.Generic;
 
 namespace GravityHelper
 {
     public static class PlayerHooks
     {
-        private static GravityTypes Gravity { get { return GravityModule.Instance.Gravity; } set { GravityModule.Instance.Gravity = value; } }
+        private static GravityTypes Gravity
+        {
+            get => GravityModule.Instance.Gravity;
+            set => GravityModule.Instance.Gravity = value;
+        }
+
         internal static GravityTypes lastGrav
         {
-            get
-            {
-                if ((Engine.Scene as Level) != null)
-                    return (GravityTypes)(Engine.Scene as Level).Session.GetCounter("jtpLastGravity");
-                return GravityTypes.Normal;
-            }
-            set
-            {
-                (Engine.Scene as Level).Session.SetCounter("jtpLastGravity", (int)value);
-            }
-
+            get => Engine.Scene is Level level ? (GravityTypes)level.Session.GetCounter("jtpLastGravity") : GravityTypes.Normal;
+            set => (Engine.Scene as Level)?.Session.SetCounter("jtpLastGravity", (int)value);
         }
+
         private static float fakeInvTimer;
 
         public static void Load()
@@ -62,52 +56,38 @@ namespace GravityHelper
         }
 
         private static ILHook playerUpdateSprite;
+
         private static void Player_UpdateSprite(ILContext il)
         {
-
             ILCursor cursor = new ILCursor(il);
-            string getAnimFrameEdge()
-            {
-                return Gravity == GravityTypes.Inverted ? "idle" : "edge";
-            }
-            string getAnimFrameEdgeBack()
-            {
-                return Gravity == GravityTypes.Inverted ? "idle" : "edgeBack";
-            }
-            EasierILHook.ReplaceStrings(cursor, new Dictionary<string, Func<string>>() { { "edge", getAnimFrameEdge }, { "edgeBack", getAnimFrameEdgeBack } });
+            string getAnimFrameEdge() => Gravity == GravityTypes.Inverted ? "idle" : "edge";
+            string getAnimFrameEdgeBack() => Gravity == GravityTypes.Inverted ? "idle" : "edgeBack";
+            EasierILHook.ReplaceStrings(cursor, new Dictionary<string, Func<string>> { { "edge", getAnimFrameEdge }, { "edgeBack", getAnimFrameEdgeBack } });
         }
 
-
-
-        private static float getGravityYReverse()
-        {
-            return Gravity == GravityTypes.Inverted ? -1f : 1f;
-        }
+        private static float getGravityYReverse() => Gravity == GravityTypes.Inverted ? -1f : 1f;
 
         private static void Player_ctor(On.Celeste.Player.orig_ctor orig, Player self, Vector2 position, PlayerSpriteMode spriteMode)
         {
             orig(self, position, spriteMode);
             var onSpriteFrameChange = self.Sprite.OnFrameChange;
-            self.Add(new GravityListener((GravityTypes val) =>
+            self.Add(new GravityListener(val =>
             {
                 // Handle changing gravity inside of red boosters
                 if (self.StateMachine.State == Player.StRedDash)
-                {
                     self.Speed.Y = -self.Speed.Y;
-                }
+
                 if (val == GravityTypes.Inverted)
                 {
-                    self.Sprite.OnFrameChange = (string s) =>
+                    self.Sprite.OnFrameChange = s =>
                     {
                         ReflectionCache.Vector2_unitYVector.SetValue(null, -Vector2.UnitY);
                         onSpriteFrameChange(s);
                         ReflectionCache.Vector2_unitYVector.SetValue(null, -Vector2.UnitY);
                     };
-                } else
-                {
-                    self.Sprite.OnFrameChange = onSpriteFrameChange;
                 }
-
+                else
+                    self.Sprite.OnFrameChange = onSpriteFrameChange;
             }));
         }
 
@@ -153,16 +133,8 @@ namespace GravityHelper
             return val;
         }
 
-        private static bool Actor_IsRiding_Solid(On.Celeste.Actor.orig_IsRiding_Solid orig, Actor self, Solid solid)
-        {
-            if (self is Player && Gravity == GravityTypes.Inverted)
-            {
-                return self.CollideCheck(solid, self.Position - Vector2.UnitY);
-            } else
-            {
-                return orig(self, solid);
-            }
-        }
+        private static bool Actor_IsRiding_Solid(On.Celeste.Actor.orig_IsRiding_Solid orig, Actor self, Solid solid) =>
+            self is Player && Gravity == GravityTypes.Inverted ? self.CollideCheck(solid, self.Position - Vector2.UnitY) : orig(self, solid);
 
         private static PlayerDeadBody Player_Die(On.Celeste.Player.orig_Die orig, Player self, Vector2 direction, bool evenIfInvincible, bool registerDeathInStats)
         {
@@ -173,52 +145,51 @@ namespace GravityHelper
         private static bool Player_TransitionTo(On.Celeste.Player.orig_TransitionTo orig, Player self, Vector2 target, Vector2 direction)
         {
             lastGrav = Gravity;
-            if (Gravity == GravityTypes.Inverted)
-            {
-                self.MoveTowardsX(target.X, 60f * Engine.DeltaTime, null);
-                self.MoveTowardsY(target.Y, 60f * Engine.DeltaTime, null);
-                self.UpdateHair(false);
-                self.UpdateCarry();
-                bool flag = self.Position == target;
-                bool result;
-                if (flag)
-                {
-                    Gravity = GravityTypes.FakeInverted;
 
-                    self.ZeroRemainderX();
-                    self.ZeroRemainderY();
-                    self.Speed.X = (float)((int)Math.Round((double)self.Speed.X));
-                    self.Speed.Y = -(float)((int)Math.Round((double)self.Speed.Y));
-                    result = true;
-                }
-                else
-                {
-                    self.Speed.Y = -60;
-                    result = false;
-                }
-                return result;
+            if (Gravity != GravityTypes.Inverted)
+                return orig(self, target, direction);
+
+            self.MoveTowardsX(target.X, 60f * Engine.DeltaTime, null);
+            self.MoveTowardsY(target.Y, 60f * Engine.DeltaTime, null);
+            self.UpdateHair(false);
+            self.UpdateCarry();
+            bool flag = self.Position == target;
+            bool result;
+            if (flag)
+            {
+                Gravity = GravityTypes.FakeInverted;
+
+                self.ZeroRemainderX();
+                self.ZeroRemainderY();
+                self.Speed.X = (float)((int)Math.Round((double)self.Speed.X));
+                self.Speed.Y = -(float)((int)Math.Round((double)self.Speed.Y));
+                result = true;
             }
-            return orig(self, target, direction);
+            else
+            {
+                self.Speed.Y = -60;
+                result = false;
+            }
+
+            return result;
         }
 
         private static void Player_BeforeUpTransition(On.Celeste.Player.orig_BeforeUpTransition orig, Player self)
         {
             if (Gravity == GravityTypes.Inverted)
-            {
                 fakeInvTimer = 40 * Engine.DeltaTime;
-            }
-            orig(self);
 
+            orig(self);
         }
 
         private static Vector2 Input_GetAimVector(On.Celeste.Input.orig_GetAimVector orig, Facings defaultFacing)
         {
             Vector2 vector2 = orig(defaultFacing);
             Player player = Engine.Scene.Tracker.GetEntity<Player>();
+
             if (Gravity == GravityTypes.Inverted)
-            {
                 vector2.Y = -vector2.Y;
-            }
+
             return vector2;
         }
 
@@ -226,15 +197,9 @@ namespace GravityHelper
         {
             if (Gravity == GravityTypes.Inverted || Gravity == GravityTypes.FakeInverted)
             {
-                if (self.Scene == null)
-                {
-                    return;
-                }
-                Player player = self.Scene.Tracker.GetEntity<Player>();
-                if (player == null)
-                {
-                    return;
-                }
+                Player player = self.Scene?.Tracker.GetEntity<Player>();
+                if (player == null) return;
+
                 DynData<PlayerHair> data = new DynData<PlayerHair>(self);
 
                 float wave = data.Get<float>("wave");
@@ -336,9 +301,8 @@ namespace GravityHelper
         private static int Player_NormalUpdate(On.Celeste.Player.orig_NormalUpdate orig, Player self)
         {
             if (Gravity == GravityTypes.Inverted)
-            {
                 CheckInvGround(self, false);
-            }
+
             return orig(self);
         }
 
@@ -346,42 +310,39 @@ namespace GravityHelper
         {
             if (Gravity == GravityTypes.Inverted)
             {
-                if (onInvGround)
-                {
-                    orig(self, particles, playSfx);
-                    self.Speed.Y = 105f;
-                }
+                if (!onInvGround) return;
+
+                orig(self, particles, playSfx);
+                self.Speed.Y = 105f;
             }
             else
-            {
                 orig(self, particles, playSfx);
-            }
-
         }
 
         private static bool Actor_OnGround_int(On.Celeste.Actor.orig_OnGround_int orig, Actor self, int downCheck)
         {
-            bool condition = (self is Player && Gravity == GravityTypes.Inverted);
-            if (condition)
-            {
+            if (self is Player && Gravity == GravityTypes.Inverted)
                 downCheck = -downCheck;
-            }
-            bool ret = orig(self, downCheck);
-            return ret;
+
+            return orig(self, downCheck);
         }
 
         private static void Entity_Update(On.Monocle.Entity.orig_Update orig, Entity self)
         {
-            if (self is Player)
+            var player = self as Player;
+
+            if (player != null)
             {
                 if (Gravity == GravityTypes.Inverted)
-                    ((Player)self).Speed.Y = -((Player)self).Speed.Y;
+                    player.Speed.Y = -player.Speed.Y;
             }
+
             orig(self);
-            if (self is Player)
+
+            if (player != null)
             {
                 if (Gravity == GravityTypes.Inverted)
-                    ((Player)self).Speed.Y = -((Player)self).Speed.Y;
+                    player.Speed.Y = -player.Speed.Y;
             }
         }
 
@@ -483,38 +444,25 @@ namespace GravityHelper
             if (Gravity == GravityTypes.Inverted || Gravity == GravityTypes.FakeInverted)
             {
                 FlipScale(self);
-                if (self.Ducking)
-                {
-                    self.Sprite.Y -= 6f;
-                }
-                else
-                {
-                    self.Sprite.Y -= 11f;
-                }
+                self.Sprite.Y -= self.Ducking ? 6f : 11f;
+
                 if (self.StateMachine.State == Player.StNormal && Gravity == GravityTypes.FakeInverted)
                 {
                     fakeInvTimer -= Engine.DeltaTime;
                     if (fakeInvTimer <= 0f)
                     {
-                        if (self.Speed.Y < 0)
-                            self.Speed.Y = -self.Speed.Y;
+                        self.Speed.Y = Math.Abs(self.Speed.Y);
                         Gravity = GravityTypes.Inverted;
                     }
                 }
             }
 
             orig(self);
+
             if (Gravity == GravityTypes.Inverted || Gravity == GravityTypes.FakeInverted)
             {
                 FlipScale(self);
-                if (self.Ducking)
-                {
-                    self.Sprite.Y += 6f;
-                }
-                else
-                {
-                    self.Sprite.Y += 11f;
-                }
+                self.Sprite.Y += self.Ducking ? 6f : 11f;
             }
         }
 

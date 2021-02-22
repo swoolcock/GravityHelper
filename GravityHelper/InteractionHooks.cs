@@ -10,9 +10,13 @@ using MonoMod.RuntimeDetour;
 
 namespace GravityHelper
 {
-    class InteractionHooks
+    public static class InteractionHooks
     {
-        private static GravityModule.GravityTypes Gravity { get { return GravityModule.Instance.Gravity; } set { GravityModule.Instance.Gravity = value; } }
+        private static GravityModule.GravityTypes Gravity
+        {
+            get => GravityModule.Instance.Gravity;
+            set => GravityModule.Instance.Gravity = value;
+        }
 
         public static void Load()
         {
@@ -57,8 +61,7 @@ namespace GravityHelper
             Everest.Events.Level.OnLoadEntity -= Level_OnLoadEntity;
             // Feathers
             IL.Celeste.Player.StarFlyUpdate -= StarFlyPatchAim;
-            if (starFlyCoroutineHook != null)
-                starFlyCoroutineHook.Dispose();
+            starFlyCoroutineHook?.Dispose();
         }
 
         private static bool Level_OnLoadEntity(Level level, LevelData levelData, Vector2 offset, EntityData entityData)
@@ -68,9 +71,11 @@ namespace GravityHelper
                 case "falls/springDown":
                     level.Add(new Spring(entityData, offset, (Spring.Orientations)3));
                     return true;
+
                 case "falls/SpringUp":
                     level.Add(new Spring(entityData, offset, (Spring.Orientations)4));
                     return true;
+
                 case "falls/watchtower":
                     Lookout watchtower = new Lookout(entityData, offset);
                     Sprite spr = watchtower.Get<Sprite>();
@@ -78,23 +83,21 @@ namespace GravityHelper
                     spr.Position -= Vector2.UnitY * 16f;
                     level.Add(watchtower);
                     return true;
+
                 default:
                     return false;
-
             }
         }
 
         private static void Player_SuperBounce(On.Celeste.Player.orig_SuperBounce orig, Player self, float fromY)
         {
             orig(self, fromY);
-            if (Gravity == GravityModule.GravityTypes.Inverted)
-            {
-                self.Speed.Y = 185f;
+            if (Gravity != GravityModule.GravityTypes.Inverted) return;
 
-                FieldInfo varJumpSpeed = typeof(Player).GetField("varJumpSpeed", BindingFlags.NonPublic | BindingFlags.Instance);
-                varJumpSpeed.SetValue(self, 185f);
-            }
+            self.Speed.Y = 185f;
 
+            FieldInfo varJumpSpeed = typeof(Player).GetField("varJumpSpeed", BindingFlags.NonPublic | BindingFlags.Instance);
+            varJumpSpeed?.SetValue(self, 185f);
         }
 
         private static void Spring_OnCollide(On.Celeste.Spring.orig_OnCollide orig, Celeste.Spring self, Player player)
@@ -109,7 +112,7 @@ namespace GravityHelper
                         // REEEEEEEE
                         //self.BounceAnimate();
                         MethodInfo BounceAnimate = self.GetType().GetMethod("BounceAnimate", BindingFlags.NonPublic | BindingFlags.Instance);
-                        BounceAnimate.Invoke(self, null);
+                        BounceAnimate?.Invoke(self, null);
                         player.SuperBounce(self.Bottom);
                         Gravity = GravityModule.GravityTypes.Inverted;
                     }
@@ -119,7 +122,7 @@ namespace GravityHelper
                 {
                     Gravity = GravityModule.GravityTypes.Normal;
                     MethodInfo BounceAnimate = self.GetType().GetMethod("BounceAnimate", BindingFlags.NonPublic | BindingFlags.Instance);
-                    BounceAnimate.Invoke(self, null);
+                    BounceAnimate?.Invoke(self, null);
                     player.SuperBounce(self.Top);
                 }
                 else
@@ -165,7 +168,6 @@ namespace GravityHelper
                 spr.Color = Color.Silver;
                 self.Add(new SpringParticles(Color.Blue));
             }
-
         }
     }
 }

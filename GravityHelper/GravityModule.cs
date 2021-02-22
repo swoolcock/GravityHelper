@@ -29,6 +29,7 @@ namespace GravityHelper
         {
             Instance = this;
         }
+
         // no save data needed
         public override Type SaveDataType => null;
 

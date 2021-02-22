@@ -7,6 +7,7 @@ namespace GravityHelper
     class PortalParticles : Entity
     {
         Color Color;
+
         public PortalParticles(Vector2 pos, Color color) : base(pos)
         {
             Color = color;
@@ -22,6 +23,7 @@ namespace GravityHelper
     class SpringParticles : Component
     {
         Color Color;
+
         public SpringParticles(Color color) : base(true, true)
         {
             Color = color;
