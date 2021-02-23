@@ -57,10 +57,11 @@ namespace Celeste.Mod.GravityHelper
 
         private static void Player_UpdateSprite(ILContext il)
         {
-            ILCursor cursor = new ILCursor(il);
             string getAnimFrameEdge() => Gravity == GravityHelperModule.GravityTypes.Inverted ? "idle" : "edge";
             string getAnimFrameEdgeBack() => Gravity == GravityHelperModule.GravityTypes.Inverted ? "idle" : "edgeBack";
-            EasierILHook.ReplaceStrings(cursor, new Dictionary<string, Func<string>> { { "edge", getAnimFrameEdge }, { "edgeBack", getAnimFrameEdgeBack } });
+
+            var cursor = new ILCursor(il);
+            cursor.ReplaceStrings(new Dictionary<string, Func<string>> { { "edge", getAnimFrameEdge }, { "edgeBack", getAnimFrameEdgeBack } });
         }
 
         private static float getGravityYReverse() => Gravity == GravityHelperModule.GravityTypes.Inverted ? -1f : 1f;

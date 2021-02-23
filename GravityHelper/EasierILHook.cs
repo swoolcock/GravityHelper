@@ -1,18 +1,18 @@
-﻿using Mono.Cecil;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using Mono.Cecil;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
 using MonoMod.Utils;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 
 namespace Celeste.Mod.GravityHelper
 {
-    public static class EasierILHook
+    internal static class EasierILHook
     {
-        public static void ReplaceStrings(ILCursor cursor, Dictionary<string, string> toReplace)
+        public static void ReplaceStrings(this ILCursor cursor, Dictionary<string, string> toReplace)
         {
             int lastIndex = cursor.Index;
             cursor.Index = 0;
@@ -25,7 +25,7 @@ namespace Celeste.Mod.GravityHelper
             cursor.Index = lastIndex;
         }
 
-        public static void ReplaceStrings(ILCursor cursor, Dictionary<string, Func<string>> toReplace)
+        public static void ReplaceStrings(this ILCursor cursor, Dictionary<string, Func<string>> toReplace)
         {
             int lastIndex = cursor.Index;
             cursor.Index = 0;
@@ -38,7 +38,7 @@ namespace Celeste.Mod.GravityHelper
             cursor.Index = lastIndex;
         }
 
-        static bool MatchStringInDict(Instruction instr, List<string> keys)
+        private static bool MatchStringInDict(Instruction instr, List<string> keys)
         {
             foreach (string val in keys)
             {
@@ -49,9 +49,7 @@ namespace Celeste.Mod.GravityHelper
         }
 
         /// <summary>
-        ///
         /// The following method is written by max480. Thanks max!
-        ///
         /// Utility method to patch "coroutine" kinds of methods with IL.
         /// Those methods' code reside in a compiler-generated method, and IL.Celeste.* do not allow manipulating them directly.
         /// </summary>

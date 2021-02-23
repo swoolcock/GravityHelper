@@ -1,5 +1,5 @@
-﻿using Microsoft.Xna.Framework;
-using System.Reflection;
+﻿using System.Reflection;
+using Microsoft.Xna.Framework;
 
 namespace Celeste.Mod.GravityHelper
 {
