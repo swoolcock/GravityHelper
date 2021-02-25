@@ -34,6 +34,7 @@ namespace Celeste.Mod.GravityHelper
             //On.Celeste.Actor.OnGround_Vector2_int += Actor_OnGround_Vector2_int;
             On.Celeste.Player.Jump += Player_Jump;
             On.Celeste.Player.NormalUpdate += Player_NormalUpdate;
+            On.Celeste.Player.ClimbUpdate += Player_ClimbUpdate;
 
             On.Celeste.Player.ctor += Player_ctor;
             On.Celeste.PlayerHair.Render += PlayerHair_Render;
@@ -51,6 +52,18 @@ namespace Celeste.Mod.GravityHelper
 
             // Various collision checks
             playerUpdateSprite = new ILHook(typeof(Player).GetMethod("orig_UpdateSprite", BindingFlags.Instance | BindingFlags.NonPublic), Player_UpdateSprite);
+        }
+
+        private static int Player_ClimbUpdate(On.Celeste.Player.orig_ClimbUpdate orig, Player self)
+        {
+            if (!GravityHelperModule.Settings.Enabled || Gravity == GravityHelperModule.GravityTypes.Normal)
+                return orig(self);
+
+            Input.MoveY.Value *= -1;
+            var rv = orig(self);
+            Input.MoveY.Value *= -1;
+
+            return rv;
         }
 
         private static ILHook playerUpdateSprite;
@@ -299,23 +312,26 @@ namespace Celeste.Mod.GravityHelper
 
         private static int Player_NormalUpdate(On.Celeste.Player.orig_NormalUpdate orig, Player self)
         {
-            if (Gravity == GravityHelperModule.GravityTypes.Inverted)
-                CheckInvGround(self, false);
+            if (!GravityHelperModule.Settings.Enabled || Gravity == GravityHelperModule.GravityTypes.Normal)
+                return orig(self);
 
-            return orig(self);
+            CheckInvGround(self, false);
+            var rv = orig(self);
+            return rv;
         }
 
         private static void Player_Jump(On.Celeste.Player.orig_Jump orig, Player self, bool particles, bool playSfx)
         {
-            if (Gravity == GravityHelperModule.GravityTypes.Inverted)
+            if (!GravityHelperModule.Settings.Enabled || Gravity == GravityHelperModule.GravityTypes.Normal)
             {
-                if (!onInvGround) return;
-
                 orig(self, particles, playSfx);
-                self.Speed.Y = 105f;
+                return;
             }
-            else
-                orig(self, particles, playSfx);
+
+            if (!onInvGround) return;
+
+            orig(self, particles, playSfx);
+            self.Speed.Y = 105f;
         }
 
         private static bool Actor_OnGround_int(On.Celeste.Actor.orig_OnGround_int orig, Actor self, int downCheck)
