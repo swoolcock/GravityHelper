@@ -7,19 +7,19 @@ using MonoMod.RuntimeDetour;
 using System.Reflection;
 using System.Collections.Generic;
 using Celeste;
-using Platform = MonoMod.Utils.Platform;
+using Platform = Celeste.Platform;
 
 namespace GravityHelper
 {
     public static class PlayerHooks
     {
-        private static GravityHelperModule.GravityTypes Gravity
+        private static GravityHelperModule.GravityTypes gravity
         {
             get => GravityHelperModule.Instance.Gravity;
             set => GravityHelperModule.Instance.Gravity = value;
         }
 
-        internal static GravityHelperModule.GravityTypes lastGrav
+        internal static GravityHelperModule.GravityTypes LastGrav
         {
             get => Engine.Scene is Level level ? (GravityHelperModule.GravityTypes)level.Session.GetCounter(Constants.LastGravityCounterKey) : GravityHelperModule.GravityTypes.Normal;
             set => (Engine.Scene as Level)?.Session.SetCounter(Constants.LastGravityCounterKey, (int)value);
@@ -33,7 +33,6 @@ namespace GravityHelper
             On.Celeste.Player.Update += Player_Update;
             On.Monocle.Entity.Update += Entity_Update;
             On.Celeste.Actor.OnGround_int += Actor_OnGround_int;
-            //On.Celeste.Actor.OnGround_Vector2_int += Actor_OnGround_Vector2_int;
             On.Celeste.Player.Jump += Player_Jump;
             On.Celeste.Player.NormalUpdate += Player_NormalUpdate;
             On.Celeste.Player.ClimbUpdate += Player_ClimbUpdate;
@@ -58,7 +57,7 @@ namespace GravityHelper
 
         private static int Player_ClimbUpdate(On.Celeste.Player.orig_ClimbUpdate orig, Player self)
         {
-            if (!GravityHelperModule.Settings.Enabled || Gravity == GravityHelperModule.GravityTypes.Normal)
+            if (!GravityHelperModule.Settings.Enabled || gravity == GravityHelperModule.GravityTypes.Normal)
                 return orig(self);
 
             Input.MoveY.Value *= -1;
@@ -72,14 +71,12 @@ namespace GravityHelper
 
         private static void Player_UpdateSprite(ILContext il)
         {
-            string getAnimFrameEdge() => Gravity == GravityHelperModule.GravityTypes.Inverted ? "idle" : "edge";
-            string getAnimFrameEdgeBack() => Gravity == GravityHelperModule.GravityTypes.Inverted ? "idle" : "edgeBack";
+            string getAnimFrameEdge() => gravity == GravityHelperModule.GravityTypes.Inverted ? "idle" : "edge";
+            string getAnimFrameEdgeBack() => gravity == GravityHelperModule.GravityTypes.Inverted ? "idle" : "edgeBack";
 
             var cursor = new ILCursor(il);
             cursor.ReplaceStrings(new Dictionary<string, Func<string>> { { "edge", getAnimFrameEdge }, { "edgeBack", getAnimFrameEdgeBack } });
         }
-
-        private static float getGravityYReverse() => Gravity == GravityHelperModule.GravityTypes.Inverted ? -1f : 1f;
 
         private static void Player_ctor(On.Celeste.Player.orig_ctor orig, Player self, Vector2 position, PlayerSpriteMode spriteMode)
         {
@@ -111,7 +108,6 @@ namespace GravityHelper
             On.Celeste.Player.Update -= Player_Update;
             On.Monocle.Entity.Update -= Entity_Update;
             On.Celeste.Actor.OnGround_int -= Actor_OnGround_int;
-            //On.Celeste.Actor.OnGround_Vector2_int -= Actor_OnGround_Vector2_int;
             On.Celeste.Player.Jump -= Player_Jump;
             On.Celeste.Player.NormalUpdate -= Player_NormalUpdate;
             On.Celeste.PlayerHair.Render -= PlayerHair_Render;
@@ -132,51 +128,56 @@ namespace GravityHelper
 
         private static bool Player_LaunchedBoostCheck(On.Celeste.Player.orig_LaunchedBoostCheck orig, Player self)
         {
-            GravityHelperModule.GravityTypes grav = Gravity;
+            GravityHelperModule.GravityTypes grav = gravity;
+
             if (grav == GravityHelperModule.GravityTypes.Inverted)
             {
                 self.Speed.Y = -self.Speed.Y;
                 //self.LiftSpeed = -self.LiftSpeed;
             }
+
             bool val = orig(self);
+
             if (grav == GravityHelperModule.GravityTypes.Inverted)
             {
                 self.Speed.Y = -self.Speed.Y;
                 //self.LiftSpeed = -self.LiftSpeed;
             }
+
             return val;
         }
 
         private static bool Actor_IsRiding_Solid(On.Celeste.Actor.orig_IsRiding_Solid orig, Actor self, Solid solid) =>
-            self is Player && Gravity == GravityHelperModule.GravityTypes.Inverted ? self.CollideCheck(solid, self.Position - Vector2.UnitY) : orig(self, solid);
+            self is Player && gravity == GravityHelperModule.GravityTypes.Inverted ? self.CollideCheck(solid, self.Position - Vector2.UnitY) : orig(self, solid);
 
         private static PlayerDeadBody Player_Die(On.Celeste.Player.orig_Die orig, Player self, Vector2 direction, bool evenIfInvincible, bool registerDeathInStats)
         {
-            Gravity = lastGrav;
+            gravity = LastGrav;
             return orig(self, direction, evenIfInvincible, registerDeathInStats);
         }
 
         private static bool Player_TransitionTo(On.Celeste.Player.orig_TransitionTo orig, Player self, Vector2 target, Vector2 direction)
         {
-            lastGrav = Gravity;
+            LastGrav = gravity;
 
-            if (Gravity != GravityHelperModule.GravityTypes.Inverted)
+            if (gravity != GravityHelperModule.GravityTypes.Inverted)
                 return orig(self, target, direction);
 
-            self.MoveTowardsX(target.X, 60f * Engine.DeltaTime, null);
-            self.MoveTowardsY(target.Y, 60f * Engine.DeltaTime, null);
+            self.MoveTowardsX(target.X, 60f * Engine.DeltaTime);
+            self.MoveTowardsY(target.Y, 60f * Engine.DeltaTime);
             self.UpdateHair(false);
             self.UpdateCarry();
             bool flag = self.Position == target;
             bool result;
+
             if (flag)
             {
-                Gravity = GravityHelperModule.GravityTypes.FakeInverted;
+                gravity = GravityHelperModule.GravityTypes.FakeInverted;
 
                 self.ZeroRemainderX();
                 self.ZeroRemainderY();
-                self.Speed.X = (float)((int)Math.Round((double)self.Speed.X));
-                self.Speed.Y = -(float)((int)Math.Round((double)self.Speed.Y));
+                self.Speed.X = (int)Math.Round(self.Speed.X);
+                self.Speed.Y = -(float)(int)Math.Round(self.Speed.Y);
                 result = true;
             }
             else
@@ -190,7 +191,7 @@ namespace GravityHelper
 
         private static void Player_BeforeUpTransition(On.Celeste.Player.orig_BeforeUpTransition orig, Player self)
         {
-            if (Gravity == GravityHelperModule.GravityTypes.Inverted)
+            if (gravity == GravityHelperModule.GravityTypes.Inverted)
                 fakeInvTimer = 40 * Engine.DeltaTime;
 
             orig(self);
@@ -199,9 +200,7 @@ namespace GravityHelper
         private static Vector2 Input_GetAimVector(On.Celeste.Input.orig_GetAimVector orig, Facings defaultFacing)
         {
             Vector2 vector2 = orig(defaultFacing);
-            Player player = Engine.Scene.Tracker.GetEntity<Player>();
-
-            if (Gravity == GravityHelperModule.GravityTypes.Inverted)
+            if (gravity == GravityHelperModule.GravityTypes.Inverted)
                 vector2.Y = -vector2.Y;
 
             return vector2;
@@ -209,7 +208,7 @@ namespace GravityHelper
 
         private static void PlayerHair_AfterUpdate(On.Celeste.PlayerHair.orig_AfterUpdate orig, PlayerHair self)
         {
-            if (Gravity == GravityHelperModule.GravityTypes.Inverted || Gravity == GravityHelperModule.GravityTypes.FakeInverted)
+            if (gravity == GravityHelperModule.GravityTypes.Inverted || gravity == GravityHelperModule.GravityTypes.FakeInverted)
             {
                 Player player = self.Scene?.Tracker.GetEntity<Player>();
                 if (player == null) return;
@@ -222,52 +221,46 @@ namespace GravityHelper
                     Vector2 value = self.Sprite.HairOffset * new Vector2((float)self.Facing, -1f);
 
                     float offset = player.Ducking ? 18f : 12f;
-                    self.Nodes[0] = self.Sprite.RenderPosition + new Vector2(0f, (-9f * self.Sprite.Scale.Y) + offset) + value;
-                    Vector2 target = self.Nodes[0] + new Vector2((float)((float)self.Facing) * self.StepInFacingPerSegment * 2f, (float)Math.Sin((double)wave) * self.StepYSinePerSegment) + self.StepPerSegment;
+                    self.Nodes[0] = self.Sprite.RenderPosition + new Vector2(0f, -9f * self.Sprite.Scale.Y + offset) + value;
+                    Vector2 target = self.Nodes[0] + new Vector2((float)self.Facing * self.StepInFacingPerSegment * 2f, (float)Math.Sin(wave) * self.StepYSinePerSegment) + self.StepPerSegment;
                     Vector2 vector = self.Nodes[0];
-                    float num = 3f;
+
+                    const float num = 3f;
+
                     for (int i = 1; i < self.Sprite.HairCount; i++)
                     {
-                        bool flag = i >= self.Nodes.Count;
-                        if (flag)
-                        {
+                        if (i >= self.Nodes.Count)
                             self.Nodes.Add(self.Nodes[i - 1]);
-                        }
-                        bool simulateMotion = self.SimulateMotion;
-                        if (simulateMotion)
+
+                        if (self.SimulateMotion)
                         {
-                            float num2 = (1f - (float)i / (float)self.Sprite.HairCount * 0.5f) * -self.StepApproach;
+                            float num2 = (1f - i / (float)self.Sprite.HairCount * 0.5f) * -self.StepApproach;
                             self.Nodes[i] = Calc.Approach(self.Nodes[i], target, num2 * Engine.DeltaTime);
                         }
-                        bool flag2 = (self.Nodes[i] - vector).Length() > num;
-                        if (flag2)
-                        {
+
+                        if ((self.Nodes[i] - vector).Length() > num)
                             self.Nodes[i] = vector + (self.Nodes[i] - vector).SafeNormalize() * num;
-                        }
-                        target = self.Nodes[i] + new Vector2((float)(-(float)self.Facing) * self.StepInFacingPerSegment, (float)Math.Sin((double)(wave + (float)i * 0.8f)) * self.StepYSinePerSegment) + self.StepPerSegment;
+
+                        target = self.Nodes[i] + new Vector2(-(float)self.Facing * self.StepInFacingPerSegment, (float)Math.Sin(wave + i * 0.8f) * self.StepYSinePerSegment) + self.StepPerSegment;
                         vector = self.Nodes[i];
                     }
                 }
             }
             else
-            {
                 orig(self);
-            }
-
-
         }
 
         private static void PlayerHair_Render(On.Celeste.PlayerHair.orig_Render orig, PlayerHair self)
         {
-            if (Gravity == GravityHelperModule.GravityTypes.Inverted || Gravity == GravityHelperModule.GravityTypes.FakeInverted)
+            if (gravity == GravityHelperModule.GravityTypes.Inverted || gravity == GravityHelperModule.GravityTypes.FakeInverted)
             {
                 PlayerSprite sprite = self.Sprite;
                 if (!sprite.HasHair)
-                {
                     return;
-                }
+
                 Vector2 origin = new Vector2(5f, -1f);
                 Color color = self.Border * self.Alpha;
+
                 if (self.DrawPlayerSpriteOutline)
                 {
                     Color color2 = sprite.Color;
@@ -284,7 +277,9 @@ namespace GravityHelper
                     sprite.Color = color2;
                     sprite.Position = position;
                 }
+
                 self.Nodes[0] = self.Nodes[0].Floor();
+
                 if (color.A > 0)
                 {
                     for (int i = 0; i < sprite.HairCount; i++)
@@ -298,6 +293,7 @@ namespace GravityHelper
                         hairTexture.Draw(self.Nodes[i] + new Vector2(0f, 1f), origin, color, hairScale);
                     }
                 }
+
                 for (int j = sprite.HairCount - 1; j >= 0; j--)
                 {
                     Vector2 hairScale = self.GetHairScale(j);
@@ -314,23 +310,23 @@ namespace GravityHelper
 
         private static int Player_NormalUpdate(On.Celeste.Player.orig_NormalUpdate orig, Player self)
         {
-            if (!GravityHelperModule.Settings.Enabled || Gravity == GravityHelperModule.GravityTypes.Normal)
+            if (!GravityHelperModule.Settings.Enabled || gravity == GravityHelperModule.GravityTypes.Normal)
                 return orig(self);
 
-            CheckInvGround(self, false);
+            CheckInvGround(self);
             var rv = orig(self);
             return rv;
         }
 
         private static void Player_Jump(On.Celeste.Player.orig_Jump orig, Player self, bool particles, bool playSfx)
         {
-            if (!GravityHelperModule.Settings.Enabled || Gravity == GravityHelperModule.GravityTypes.Normal)
+            if (!GravityHelperModule.Settings.Enabled || gravity == GravityHelperModule.GravityTypes.Normal)
             {
                 orig(self, particles, playSfx);
                 return;
             }
 
-            if (!onInvGround) return;
+            if (!OnInvGround) return;
 
             orig(self, particles, playSfx);
             self.Speed.Y = 105f;
@@ -338,7 +334,7 @@ namespace GravityHelper
 
         private static bool Actor_OnGround_int(On.Celeste.Actor.orig_OnGround_int orig, Actor self, int downCheck)
         {
-            if (self is Player && Gravity == GravityHelperModule.GravityTypes.Inverted)
+            if (self is Player && gravity == GravityHelperModule.GravityTypes.Inverted)
                 downCheck = -downCheck;
 
             return orig(self, downCheck);
@@ -350,7 +346,7 @@ namespace GravityHelper
 
             if (player != null)
             {
-                if (Gravity == GravityHelperModule.GravityTypes.Inverted)
+                if (gravity == GravityHelperModule.GravityTypes.Inverted)
                     player.Speed.Y = -player.Speed.Y;
             }
 
@@ -358,7 +354,7 @@ namespace GravityHelper
 
             if (player != null)
             {
-                if (Gravity == GravityHelperModule.GravityTypes.Inverted)
+                if (gravity == GravityHelperModule.GravityTypes.Inverted)
                     player.Speed.Y = -player.Speed.Y;
             }
         }
@@ -367,35 +363,33 @@ namespace GravityHelper
         {
             DynData<Player> data = new DynData<Player>(self);
             float dashRefillCooldownTimer = (float)data["dashRefillCooldownTimer"];
+
             if (recoverDash && dashRefillCooldownTimer > 0f && SaveData.Instance.Assists.DashMode == Assists.DashModes.Infinite && !self.SceneAs<Level>().InCutscene)
-            {
                 self.RefillDash();
-            }
+
             if (self.Speed.Y >= 0f)
             {
-                Celeste.Platform platform = self.CollideFirst<Solid>(self.Position - Vector2.UnitY);
-                bool flag13 = platform == null;
-                if (flag13)
-                {
-                    platform = self.CollideFirstOutside<JumpThru>(self.Position - Vector2.UnitY);
-                }
-                bool flag14 = platform != null;
+                Platform platform = self.CollideFirst<Solid>(self.Position - Vector2.UnitY)
+                                    ?? (Platform)self.CollideFirstOutside<JumpThru>(self.Position - Vector2.UnitY);
 
-                if (flag14)
+                if (platform != null)
                 {
                     data.Set("jumpGraceTimer", 0.1f);
                     data.Set("onGround", true);
-                    onInvGround = true;
+                    OnInvGround = true;
+
                     if (recoverDash && dashRefillCooldownTimer > 0f)
                     {
                         self.RefillStamina();
                         self.RefillDash();
                     }
+
                     if (self.Ducking && canUnDuck && Input.MoveY.Value != 1)
                     {
                         self.Ducking = false;
                         self.Position.Y += 5f;
                     }
+
                     self.LiftSpeed = Vector2.Zero;
                     ReflectionCache.Player_OnSafeGround.SetValue(self, true);
                 }
@@ -403,27 +397,30 @@ namespace GravityHelper
                 {
                     data.Set("jumpGraceTimer", 0f);
                     data.Set("onGround", false);
-                    onInvGround = false;
+                    OnInvGround = false;
                     ReflectionCache.Player_OnSafeGround.SetValue(self, false);
                 }
             }
             else
             {
                 data.Set("onGround", false);
-                onInvGround = false;
+                OnInvGround = false;
             }
         }
 
-        public static bool onInvGround;
+        public static bool OnInvGround;
+
         //static bool playerUpdate;
         //static bool lastNoRefills;
+
         private static void Player_Update(On.Celeste.Player.orig_Update orig, Player self)
         {
             DynData<Player> data = new DynData<Player>(self);
 
             int lastDashes = self.Dashes;
             bool lastDucking = self.Ducking;
-            if (Gravity == GravityHelperModule.GravityTypes.Inverted)
+
+            if (gravity == GravityHelperModule.GravityTypes.Inverted)
             {
                 self.Speed.Y = -self.Speed.Y;
                 // fixes bugs where hitting a "ceiling" while upside-down would recover your dash
@@ -433,50 +430,48 @@ namespace GravityHelper
 
             orig(self);
 
-            if (Gravity == GravityHelperModule.GravityTypes.Inverted)
+            if (gravity == GravityHelperModule.GravityTypes.Inverted)
             {
                 // Handle un-ducking
                 CheckInvGround(self, self.Dashes == lastDashes, true);
-                if (lastDucking == false && self.Ducking == true)
+
+                if (lastDucking == false && self.Ducking)
                 {
                     self.Position.Y -= 5f;
                     while (self.CollideFirst<Solid>(self.Position) != null)
-                    {
                         self.Position.Y += 1f;
-                    }
                 }
 
                 self.Speed.Y = -self.Speed.Y;
                 self.LiftSpeed = -self.LiftSpeed;
-                if (self.Position.Y < self.SceneAs<Level>().Bounds.Top)
-                {
-                    self.Die(Vector2.Zero);
-                }
-            }
 
+                if (self.Position.Y < self.SceneAs<Level>().Bounds.Top)
+                    self.Die(Vector2.Zero);
+            }
         }
 
         private static void Player_Render(On.Celeste.Player.orig_Render orig, Player self)
         {
-            if (Gravity == GravityHelperModule.GravityTypes.Inverted || Gravity == GravityHelperModule.GravityTypes.FakeInverted)
+            if (gravity == GravityHelperModule.GravityTypes.Inverted || gravity == GravityHelperModule.GravityTypes.FakeInverted)
             {
                 FlipScale(self);
                 self.Sprite.Y -= self.Ducking ? 6f : 11f;
 
-                if (self.StateMachine.State == Player.StNormal && Gravity == GravityHelperModule.GravityTypes.FakeInverted)
+                if (self.StateMachine.State == Player.StNormal && gravity == GravityHelperModule.GravityTypes.FakeInverted)
                 {
                     fakeInvTimer -= Engine.DeltaTime;
+
                     if (fakeInvTimer <= 0f)
                     {
                         self.Speed.Y = Math.Abs(self.Speed.Y);
-                        Gravity = GravityHelperModule.GravityTypes.Inverted;
+                        gravity = GravityHelperModule.GravityTypes.Inverted;
                     }
                 }
             }
 
             orig(self);
 
-            if (Gravity == GravityHelperModule.GravityTypes.Inverted || Gravity == GravityHelperModule.GravityTypes.FakeInverted)
+            if (gravity == GravityHelperModule.GravityTypes.Inverted || gravity == GravityHelperModule.GravityTypes.FakeInverted)
             {
                 FlipScale(self);
                 self.Sprite.Y += self.Ducking ? 6f : 11f;

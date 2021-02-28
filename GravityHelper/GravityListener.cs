@@ -3,10 +3,11 @@ using Monocle;
 
 namespace GravityHelper
 {
-    [Tracked(false)]
-    class GravityListener : Component
+    [Tracked]
+    public class GravityListener : Component
     {
-        public GravityListener(Action<GravityHelperModule.GravityTypes> onChangeGravity = null) : base(true, false)
+        public GravityListener(Action<GravityHelperModule.GravityTypes> onChangeGravity = null)
+            : base(true, false)
         {
             OnChangeGravity = onChangeGravity;
         }

@@ -14,7 +14,7 @@ namespace GravityHelper
             if (Engine.Scene is Level && type < 2)
             {
                 Instance.Gravity = (GravityTypes)type;
-                PlayerHooks.lastGrav = (GravityTypes)type;
+                PlayerHooks.LastGrav = (GravityTypes)type;
             }
         }
 

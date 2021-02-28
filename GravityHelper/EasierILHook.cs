@@ -18,12 +18,14 @@ namespace GravityHelper
         {
             int lastIndex = cursor.Index;
             cursor.Index = 0;
-            while (cursor.TryGotoNext(MoveType.After, instr => MatchStringInDict(instr, toReplace.Keys.ToList())))
+
+            while (cursor.TryGotoNext(MoveType.After, instr => matchStringInDict(instr, toReplace.Keys.ToList())))
             {
                 string old = (string)cursor.Prev.Operand;
                 cursor.Emit(OpCodes.Pop);
                 cursor.Emit(OpCodes.Ldstr, toReplace[old]);
             }
+
             cursor.Index = lastIndex;
         }
 
@@ -31,22 +33,25 @@ namespace GravityHelper
         {
             int lastIndex = cursor.Index;
             cursor.Index = 0;
-            while (cursor.TryGotoNext(MoveType.After, instr => MatchStringInDict(instr, toReplace.Keys.ToList())))
+
+            while (cursor.TryGotoNext(MoveType.After, instr => matchStringInDict(instr, toReplace.Keys.ToList())))
             {
                 string old = (string)cursor.Prev.Operand;
                 cursor.Emit(OpCodes.Pop);
                 cursor.EmitDelegate(toReplace[old]);
             }
+
             cursor.Index = lastIndex;
         }
 
-        private static bool MatchStringInDict(Instruction instr, List<string> keys)
+        private static bool matchStringInDict(Instruction instr, List<string> keys)
         {
             foreach (string val in keys)
             {
                 if (instr.MatchLdstr(val))
                     return true;
             }
+
             return false;
         }
 
@@ -55,7 +60,6 @@ namespace GravityHelper
         /// Utility method to patch "coroutine" kinds of methods with IL.
         /// Those methods' code reside in a compiler-generated method, and IL.Celeste.* do not allow manipulating them directly.
         /// </summary>
-        /// <param name="manipulator">Method taking care of the patching</param>
         /// <returns>The IL hook if the actual code was found, null otherwise</returns>
         public static ILHook HookCoroutine(string typeName, string methodName, ILContext.Manipulator manipulator)
         {
@@ -71,7 +75,7 @@ namespace GravityHelper
             // what we see in ILSpy and what we want to hook is actually the MoveNext() method in this nested type.
             foreach (TypeDefinition nest in type.NestedTypes)
             {
-                if (nest.Name.StartsWith("<" + methodName + ">d__"))
+                if (nest.Name.StartsWith("<" + methodName + ">d__", StringComparison.Ordinal))
                 {
                     // check that this nested type contains a MoveNext() method
                     MethodDefinition method = nest.FindMethod("System.Boolean MoveNext()");

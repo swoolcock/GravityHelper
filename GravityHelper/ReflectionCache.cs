@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework;
 
 namespace GravityHelper
 {
+    // ReSharper disable InconsistentNaming
     internal static class ReflectionCache
     {
         public static readonly PropertyInfo Player_OnSafeGround = typeof(Player).GetProperty("OnSafeGround");

@@ -4,11 +4,12 @@ using Monocle;
 
 namespace GravityHelper
 {
-    class PortalParticles : Entity
+    internal class PortalParticles : Entity
     {
-        Color Color;
+        public readonly Color Color;
 
-        public PortalParticles(Vector2 pos, Color color) : base(pos)
+        public PortalParticles(Vector2 pos, Color color)
+            : base(pos)
         {
             Color = color;
         }
@@ -20,11 +21,12 @@ namespace GravityHelper
         }
     }
 
-    class SpringParticles : Component
+    internal class SpringParticles : Component
     {
-        Color Color;
+        public readonly Color Color;
 
-        public SpringParticles(Color color) : base(true, true)
+        public SpringParticles(Color color)
+            : base(true, true)
         {
             Color = color;
         }

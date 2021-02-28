@@ -12,7 +12,7 @@ namespace GravityHelper
 {
     public static class InteractionHooks
     {
-        private static GravityHelperModule.GravityTypes Gravity
+        private static GravityHelperModule.GravityTypes gravity
         {
             get => GravityHelperModule.Instance.Gravity;
             set => GravityHelperModule.Instance.Gravity = value;
@@ -26,14 +26,16 @@ namespace GravityHelper
             Everest.Events.Level.OnLoadEntity += Level_OnLoadEntity;
 
             // Feathers
-            IL.Celeste.Player.StarFlyUpdate += StarFlyPatchAim;
-            starFlyCoroutineHook = EasierILHook.HookCoroutine("Celeste.Player", "StarFlyCoroutine", StarFlyPatchAim);
+            IL.Celeste.Player.StarFlyUpdate += starFlyPatchAim;
+            starFlyCoroutineHook = EasierILHook.HookCoroutine("Celeste.Player", "StarFlyCoroutine", starFlyPatchAim);
         }
 
-        static ILHook starFlyCoroutineHook;
-        private static void StarFlyPatchAim(ILContext il)
+        private static ILHook starFlyCoroutineHook;
+
+        private static void starFlyPatchAim(ILContext il)
         {
             ILCursor cursor = new ILCursor(il);
+
             while (cursor.TryGotoNext(MoveType.After, instr => instr.OpCode == OpCodes.Ldsfld))
             {
                 cursor.Emit(OpCodes.Pop);
@@ -45,10 +47,10 @@ namespace GravityHelper
             Vector2 getFeatherAim()
             {
                 Vector2 aim = Input.Aim;
-                if (Gravity == GravityHelperModule.GravityTypes.Inverted)
-                {
+
+                if (gravity == GravityHelperModule.GravityTypes.Inverted)
                     aim.Y = -aim.Y;
-                }
+
                 return aim;
             }
         }
@@ -60,7 +62,7 @@ namespace GravityHelper
             On.Celeste.Spring.OnCollide -= Spring_OnCollide;
             Everest.Events.Level.OnLoadEntity -= Level_OnLoadEntity;
             // Feathers
-            IL.Celeste.Player.StarFlyUpdate -= StarFlyPatchAim;
+            IL.Celeste.Player.StarFlyUpdate -= starFlyPatchAim;
             starFlyCoroutineHook?.Dispose();
         }
 
@@ -79,6 +81,7 @@ namespace GravityHelper
                 case "falls/watchtower":
                     Lookout watchtower = new Lookout(entityData, offset);
                     Sprite spr = watchtower.Get<Sprite>();
+                    // ReSharper disable once InvokeAsExtensionMethod
                     spr.Rotation = Calc.ToRad(180f);
                     spr.Position -= Vector2.UnitY * 16f;
                     level.Add(watchtower);
@@ -92,7 +95,7 @@ namespace GravityHelper
         private static void Player_SuperBounce(On.Celeste.Player.orig_SuperBounce orig, Player self, float fromY)
         {
             orig(self, fromY);
-            if (Gravity != GravityHelperModule.GravityTypes.Inverted) return;
+            if (gravity != GravityHelperModule.GravityTypes.Inverted) return;
 
             self.Speed.Y = 185f;
 
@@ -107,22 +110,23 @@ namespace GravityHelper
                 if (self.Orientation == (Spring.Orientations)3)
                 {
                     bool flag3 = player.Speed.Y <= 0f;
+
                     if (flag3)
                     {
                         // REEEEEEEE
                         //self.BounceAnimate();
-                        MethodInfo BounceAnimate = self.GetType().GetMethod("BounceAnimate", BindingFlags.NonPublic | BindingFlags.Instance);
-                        BounceAnimate?.Invoke(self, null);
+                        MethodInfo bounceAnimate = self.GetType().GetMethod("BounceAnimate", BindingFlags.NonPublic | BindingFlags.Instance);
+                        bounceAnimate?.Invoke(self, null);
                         player.SuperBounce(self.Bottom);
-                        Gravity = GravityHelperModule.GravityTypes.Inverted;
+                        gravity = GravityHelperModule.GravityTypes.Inverted;
                     }
                 }
                 // Normal spring, but changes gravity
                 else if (self.Orientation == (Spring.Orientations)4)
                 {
-                    Gravity = GravityHelperModule.GravityTypes.Normal;
-                    MethodInfo BounceAnimate = self.GetType().GetMethod("BounceAnimate", BindingFlags.NonPublic | BindingFlags.Instance);
-                    BounceAnimate?.Invoke(self, null);
+                    gravity = GravityHelperModule.GravityTypes.Normal;
+                    MethodInfo bounceAnimate = self.GetType().GetMethod("BounceAnimate", BindingFlags.NonPublic | BindingFlags.Instance);
+                    bounceAnimate?.Invoke(self, null);
                     player.SuperBounce(self.Top);
                 }
                 else
@@ -136,36 +140,48 @@ namespace GravityHelper
         {
             bool bottom = false;
             bool topSetGrav = false;
+
             if (orientation == (Spring.Orientations)3)
             {
                 orientation = 0;
                 bottom = true;
-            } else if (orientation == (Spring.Orientations)4)
+            }
+            else if (orientation == (Spring.Orientations)4)
             {
                 orientation = 0;
                 topSetGrav = true;
             }
+
             orig(self, position, orientation, playerCanUse);
+
             if (bottom)
             {
-                orientation = (Spring.Orientations)3;
-                StaticMover staticMover = (StaticMover)typeof(Spring).GetField("staticMover", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(self);
-                staticMover.SolidChecker = ((Solid s) => self.CollideCheck(s, self.Position + Vector2.UnitY));
-                staticMover.JumpThruChecker = ((JumpThru jt) => self.CollideCheck(jt, self.Position + Vector2.UnitY));
-                self.Add(staticMover);
-                //staticMover.OnEnable = new Action(this.OnEnable);
-                //staticMover.OnDisable = new Action(self.OnDisable);
+                if (typeof(Spring).GetField("staticMover", BindingFlags.NonPublic | BindingFlags.Instance)?.GetValue(self) is StaticMover staticMover)
+                {
+                    staticMover.SolidChecker = s => self.CollideCheck(s, self.Position + Vector2.UnitY);
+                    staticMover.JumpThruChecker = jt => self.CollideCheck(jt, self.Position + Vector2.UnitY);
+                    //staticMover.OnEnable = new Action(this.OnEnable);
+                    //staticMover.OnDisable = new Action(self.OnDisable);
+                    self.Add(staticMover);
+                }
+
                 self.Orientation = (Spring.Orientations)3;
-                self.Collider = new Hitbox(16f, 6f, -8f, 0f);
-                Sprite spr = (Sprite)typeof(Spring).GetField("sprite", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(self);
-                spr.Rotation = 180f.ToRad();
-                spr.Color = Color.Silver;
+                self.Collider = new Hitbox(16f, 6f, -8f);
+
+                if (typeof(Spring).GetField("sprite", BindingFlags.NonPublic | BindingFlags.Instance)?.GetValue(self) is Sprite sprite)
+                {
+                    sprite.Rotation = 180f.ToRad();
+                    sprite.Color = Color.Silver;
+                }
+
                 self.Add(new SpringParticles(Color.Yellow));
-            } else if (topSetGrav)
+            }
+            else if (topSetGrav)
             {
                 self.Orientation = (Spring.Orientations)4;
-                Sprite spr = (Sprite)typeof(Spring).GetField("sprite", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(self);
-                spr.Color = Color.Silver;
+                if (typeof(Spring).GetField("sprite", BindingFlags.NonPublic | BindingFlags.Instance)?.GetValue(self) is Sprite sprite)
+                    sprite.Color = Color.Silver;
+
                 self.Add(new SpringParticles(Color.Blue));
             }
         }
