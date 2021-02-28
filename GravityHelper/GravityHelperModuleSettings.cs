@@ -1,6 +1,7 @@
-﻿using Microsoft.Xna.Framework.Input;
+﻿using Celeste.Mod;
+using Microsoft.Xna.Framework.Input;
 
-namespace Celeste.Mod.GravityHelper
+namespace GravityHelper
 {
     public class GravityHelperModuleSettings : EverestModuleSettings
     {

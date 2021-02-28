@@ -1,7 +1,8 @@
-﻿using Microsoft.Xna.Framework;
+﻿using Celeste;
+using Microsoft.Xna.Framework;
 using Monocle;
 
-namespace Celeste.Mod.GravityHelper
+namespace GravityHelper
 {
     class PortalParticles : Entity
     {

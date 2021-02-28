@@ -1,8 +1,10 @@
 ﻿using System;
+using Celeste;
+using Celeste.Mod;
 using Microsoft.Xna.Framework;
 using Monocle;
 
-namespace Celeste.Mod.GravityHelper
+namespace GravityHelper
 {
     public class GravityHelperModule : EverestModule
     {

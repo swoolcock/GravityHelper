@@ -6,8 +6,10 @@ using System;
 using MonoMod.RuntimeDetour;
 using System.Reflection;
 using System.Collections.Generic;
+using Celeste;
+using Platform = MonoMod.Utils.Platform;
 
-namespace Celeste.Mod.GravityHelper
+namespace GravityHelper
 {
     public static class PlayerHooks
     {
@@ -371,7 +373,7 @@ namespace Celeste.Mod.GravityHelper
             }
             if (self.Speed.Y >= 0f)
             {
-                Platform platform = self.CollideFirst<Solid>(self.Position - Vector2.UnitY);
+                Celeste.Platform platform = self.CollideFirst<Solid>(self.Position - Vector2.UnitY);
                 bool flag13 = platform == null;
                 if (flag13)
                 {

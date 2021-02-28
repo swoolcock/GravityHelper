@@ -1,7 +1,7 @@
 ﻿using System;
 using Monocle;
 
-namespace Celeste.Mod.GravityHelper
+namespace GravityHelper
 {
     [Tracked(false)]
     class GravityListener : Component
