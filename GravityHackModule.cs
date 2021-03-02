@@ -8,13 +8,17 @@ using System;
 using System.Collections;
 using System.Reflection;
 
-namespace Celeste.Mod.GravityHack {
-    public class GravityHackModule : EverestModule {
-
-        private static MethodInfo m_VirtualJoystick_set_Value = typeof(VirtualJoystick).GetProperty("Value").GetSetMethod(true);
+namespace Celeste.Mod.GravityHack
+{
+    // ReSharper disable InconsistentNaming
+    public class GravityHackModule : EverestModule
+    {
+        private static readonly MethodInfo m_VirtualJoystick_set_Value = typeof(VirtualJoystick).GetProperty("Value")?.GetSetMethod(true);
 
         private static IDetour hook_Player_orig_Update;
-        public override void Load() {
+
+        public override void Load()
+        {
             IL.Celeste.Player.ctor += Player_ctor;
             //On.Celeste.Player.ctor += Player_ctor;
 
@@ -37,7 +41,8 @@ namespace Celeste.Mod.GravityHack {
             On.Celeste.Solid.MoveVExact += Solid_MoveVExact;
         }
 
-        public override void Unload() {
+        public override void Unload()
+        {
             IL.Celeste.Player.ctor -= Player_ctor;
             //On.Celeste.Player.ctor -= Player_ctor;
 
@@ -60,45 +65,43 @@ namespace Celeste.Mod.GravityHack {
             On.Celeste.Solid.MoveVExact -= Solid_MoveVExact;
         }
 
-        private void Player_ctor(On.Celeste.Player.orig_ctor orig, Player self, Vector2 position, PlayerSpriteMode spriteMode) {
+        private static void Player_ctor(On.Celeste.Player.orig_ctor orig, Player self, Vector2 position, PlayerSpriteMode spriteMode)
+        {
             orig(self, position, spriteMode);
-            self.Add(new TransitionListener() {
-                OnOutBegin = () => {
-                    Transitioning = true;
-                },
-                OnInEnd = () => {
-                    Transitioning = false;
-                }
+
+            self.Add(new TransitionListener
+            {
+                OnOutBegin = () => transitioning = true,
+                OnInEnd = () => transitioning = false
             });
         }
 
-        private void Player_ctor(ILContext il) {
-            ILCursor cursor = new ILCursor(il);
-            while (cursor.TryGotoNext(MoveType.After, instr => instr.MatchNewobj<Hitbox>())) {
-                cursor.EmitDelegate<Func<Hitbox, Hitbox>>(box => {
-                    return new Hitbox(box.Width, box.Height, box.Position.X, -(box.Position.Y + box.Height));
-                });
-            }
+        private static void Player_ctor(ILContext il)
+        {
+            var cursor = new ILCursor(il);
+
+            while (cursor.TryGotoNext(MoveType.After, instr => instr.MatchNewobj<Hitbox>()))
+                cursor.EmitDelegate<Func<Hitbox, Hitbox>>(box =>
+                    new Hitbox(box.Width, box.Height, box.Position.X, -(box.Position.Y + box.Height)));
         }
 
-        private bool Actor_OnGround_int(On.Celeste.Actor.orig_OnGround_int orig, Actor self, int downCheck) {
-            if (self is Player)
-                downCheck = -downCheck;
-            return orig(self, downCheck);
-        }
+        private static bool Actor_OnGround_int(On.Celeste.Actor.orig_OnGround_int orig, Actor self, int downCheck) =>
+            orig(self, self is Player ? -downCheck : downCheck);
 
-        private void Actor_MoveVExact(ILContext il) {
-            ILCursor cursor = new ILCursor(il);
+        private static void Actor_MoveVExact(ILContext il)
+        {
+            var cursor = new ILCursor(il);
             cursor.Emit(OpCodes.Ldarg_0);
-            cursor.EmitDelegate<Func<Actor, bool>>(a => a is Player && !SolidMoving && !Transitioning);
+            cursor.EmitDelegate<Func<Actor, bool>>(a => a is Player && !solidMoving && !transitioning);
             cursor.Emit(OpCodes.Brfalse_S, cursor.Next);
             cursor.Emit(OpCodes.Ldarg_1);
             cursor.Emit(OpCodes.Neg);
             cursor.Emit(OpCodes.Starg, 1);
         }
 
-        private void Actor_IsRiding(ILContext il) {
-            ILCursor cursor = new ILCursor(il);
+        private static void Actor_IsRiding(ILContext il)
+        {
+            var cursor = new ILCursor(il);
             cursor.GotoNext(instr => instr.MatchCall<Vector2>("op_Addition"));
             cursor.Emit(OpCodes.Ldarg_0);
             cursor.Emit(OpCodes.Isinst, typeof(Player));
@@ -107,18 +110,20 @@ namespace Celeste.Mod.GravityHack {
             cursor.Emit(OpCodes.Br_S, cursor.Next.Next);
         }
 
-        private void Player_Update(On.Celeste.Player.orig_Update orig, Player self) {
-            float AimY = Input.Aim.Value.Y;
-            int MoveY = Input.MoveY.Value;
-            Input.MoveY.Value = -MoveY;
-            m_VirtualJoystick_set_Value.Invoke(Input.Aim, new object[] { new Vector2(Input.Aim.Value.X, -AimY) });
+        private static void Player_Update(On.Celeste.Player.orig_Update orig, Player self)
+        {
+            float aimY = Input.Aim.Value.Y;
+            int moveY = Input.MoveY.Value;
+            Input.MoveY.Value = -moveY;
+            m_VirtualJoystick_set_Value.Invoke(Input.Aim, new object[] { new Vector2(Input.Aim.Value.X, -aimY) });
             orig(self);
-            Input.MoveY.Value = MoveY;
-            m_VirtualJoystick_set_Value.Invoke(Input.Aim, new object[] { new Vector2(Input.Aim.Value.X, AimY) });
+            Input.MoveY.Value = moveY;
+            m_VirtualJoystick_set_Value.Invoke(Input.Aim, new object[] { new Vector2(Input.Aim.Value.X, aimY) });
         }
 
-        private void Player_orig_Update(ILContext il) {
-            ILCursor cursor = new ILCursor(il);
+        private static void Player_orig_Update(ILContext il)
+        {
+            var cursor = new ILCursor(il);
             // (Speed.Y >= 0f) -> (Speed.Y <= 0f)
             cursor.GotoNext(instr => instr.Match(OpCodes.Blt_Un_S));
             cursor.Next.OpCode = OpCodes.Bgt_Un_S;
@@ -133,7 +138,8 @@ namespace Celeste.Mod.GravityHack {
 
             // Math.Min(base.Y, highestAirY) -> Math.Max(base.Y, highestAirY)
             cursor.GotoNext(instr => instr.MatchCall("System.Math", "Min"));
-            (cursor.Next.Operand as MethodReference).Name = "Max";
+            if (cursor.Next.Operand is MethodReference methodReference)
+                methodReference.Name = "Max";
 
             // (Position + Vector2.UnitY) -> (Position - Vector2.UnitY)
             cursor.GotoNext(instr => instr.MatchCall<Vector2>("op_Addition"));
@@ -144,18 +150,20 @@ namespace Celeste.Mod.GravityHack {
             cursor.Emit(OpCodes.Br_S, cursor.Next.Next);
         }
 
-        private void Player_ClimbUpdate(ILContext il) {
-            ILCursor cursor = new ILCursor(il);
-            cursor.GotoNext(MoveType.After, instr => instr.MatchCall<Vector2>("get_UnitY") && 
-                instr.Next.MatchCall<Vector2>("op_Subtraction"));
+        private static void Player_ClimbUpdate(ILContext il)
+        {
+            var cursor = new ILCursor(il);
+            cursor.GotoNext(MoveType.After, instr =>
+                instr.MatchCall<Vector2>("get_UnitY") && instr.Next.MatchCall<Vector2>("op_Subtraction"));
             cursor.Emit(OpCodes.Ldc_I4_1);
             cursor.Emit(OpCodes.Brfalse_S, cursor.Next);
             cursor.Emit(OpCodes.Call, typeof(Vector2).GetMethod("op_Addition"));
             cursor.Emit(OpCodes.Br_S, cursor.Next.Next);
         }
 
-        private void Player_ClimbHopBlockedCheck(ILContext il) {
-            ILCursor cursor = new ILCursor(il);
+        private static void Player_ClimbHopBlockedCheck(ILContext il)
+        {
+            var cursor = new ILCursor(il);
             cursor.GotoNext(instr => instr.MatchCall<Vector2>("op_Subtraction"));
             cursor.Emit(OpCodes.Ldc_I4_1);
             cursor.Emit(OpCodes.Brfalse_S, cursor.Next);
@@ -163,36 +171,43 @@ namespace Celeste.Mod.GravityHack {
             cursor.Emit(OpCodes.Br_S, cursor.Next.Next);
         }
 
-        private static bool Transitioning = false;
-        private IEnumerator Level_TransitionRoutine(On.Celeste.Level.orig_TransitionRoutine orig, Level self, LevelData next, Vector2 direction) {
-            Transitioning = true;
+        private static bool transitioning;
+
+        private static IEnumerator Level_TransitionRoutine(On.Celeste.Level.orig_TransitionRoutine orig, Level self, LevelData next, Vector2 direction)
+        {
+            transitioning = true;
             IEnumerator origEnum = orig(self, next, direction);
             while (origEnum.MoveNext())
                 yield return origEnum.Current;
-            Transitioning = false;
+            transitioning = false;
         }
 
-        private bool Player_TransitionTo(On.Celeste.Player.orig_TransitionTo orig, Player self, Vector2 target, Vector2 direction) {
-            Transitioning = true;
+        private static bool Player_TransitionTo(On.Celeste.Player.orig_TransitionTo orig, Player self, Vector2 target, Vector2 direction)
+        {
+            transitioning = true;
             bool val = orig(self, target, direction);
-            Transitioning = false;
+            transitioning = false;
             return val;
         }
 
-        private void Player_BeforeDownTransition(ILContext il) {
-            ILCursor cursor = new ILCursor(il);
+        private static void Player_BeforeDownTransition(ILContext il)
+        {
+            var cursor = new ILCursor(il);
             cursor.GotoNext(instr => instr.MatchCall("System.Math", "Max"));
-            (cursor.Next.Operand as MethodReference).Name = "Min";
+            if (cursor.Next.Operand is MethodReference methodReference)
+                methodReference.Name = "Min";
         }
 
-        private void Player_BeforeUpTransition(ILContext il) {
-            ILCursor cursor = new ILCursor(il);
+        private static void Player_BeforeUpTransition(ILContext il)
+        {
+            var cursor = new ILCursor(il);
             cursor.GotoNext(MoveType.After, instr => instr.MatchLdcR4(-105f));
             cursor.Emit(OpCodes.Neg);
         }
 
-        private void Solid_GetPlayerOnTop(ILContext il) {
-            ILCursor cursor = new ILCursor(il);
+        private static void Solid_GetPlayerOnTop(ILContext il)
+        {
+            var cursor = new ILCursor(il);
             cursor.GotoNext(instr => instr.MatchCall<Vector2>("op_Subtraction"));
             cursor.Emit(OpCodes.Ldc_I4_1);
             cursor.Emit(OpCodes.Brfalse_S, cursor.Next);
@@ -200,12 +215,13 @@ namespace Celeste.Mod.GravityHack {
             cursor.Emit(OpCodes.Br_S, cursor.Next.Next);
         }
 
-        private static bool SolidMoving = false;
-        private void Solid_MoveVExact(On.Celeste.Solid.orig_MoveVExact orig, Solid self, int move) {
-            SolidMoving = true;
-            orig(self, move);
-            SolidMoving = false;
-        }
+        private static bool solidMoving;
 
+        private static void Solid_MoveVExact(On.Celeste.Solid.orig_MoveVExact orig, Solid self, int move)
+        {
+            solidMoving = true;
+            orig(self, move);
+            solidMoving = false;
+        }
     }
 }
