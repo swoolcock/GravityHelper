@@ -129,12 +129,8 @@ namespace Celeste.Mod.GravityHack
             cursor.Next.OpCode = OpCodes.Bgt_Un_S;
 
             // (Position + Vector2.UnitY) -> (Position - Vector2.UnitY)
-            cursor.GotoNext(instr => instr.MatchCall<Vector2>("op_Addition"));
-            cursor.Emit(OpCodes.Call, typeof(Vector2).GetMethod("op_Subtraction"));
-            cursor.Emit(OpCodes.Br_S, cursor.Next.Next);
-            cursor.GotoNext(instr => instr.MatchCall<Vector2>("op_Addition"));
-            cursor.Emit(OpCodes.Call, typeof(Vector2).GetMethod("op_Subtraction"));
-            cursor.Emit(OpCodes.Br_S, cursor.Next.Next);
+            replaceAdditionWithSubtraction(cursor);
+            replaceAdditionWithSubtraction(cursor);
 
             // Math.Min(base.Y, highestAirY) -> Math.Max(base.Y, highestAirY)
             cursor.GotoNext(instr => instr.MatchCall("System.Math", "Min"));
@@ -142,12 +138,8 @@ namespace Celeste.Mod.GravityHack
                 methodReference.Name = "Max";
 
             // (Position + Vector2.UnitY) -> (Position - Vector2.UnitY)
-            cursor.GotoNext(instr => instr.MatchCall<Vector2>("op_Addition"));
-            cursor.Emit(OpCodes.Call, typeof(Vector2).GetMethod("op_Subtraction"));
-            cursor.Emit(OpCodes.Br_S, cursor.Next.Next);
-            cursor.GotoNext(instr => instr.MatchCall<Vector2>("op_Addition"));
-            cursor.Emit(OpCodes.Call, typeof(Vector2).GetMethod("op_Subtraction"));
-            cursor.Emit(OpCodes.Br_S, cursor.Next.Next);
+            replaceAdditionWithSubtraction(cursor);
+            replaceAdditionWithSubtraction(cursor);
         }
 
         private static void Player_ClimbUpdate(ILContext il)
@@ -222,6 +214,13 @@ namespace Celeste.Mod.GravityHack
             solidMoving = true;
             orig(self, move);
             solidMoving = false;
+        }
+
+        private static void replaceAdditionWithSubtraction(ILCursor cursor)
+        {
+            cursor.GotoNext(instr => instr.MatchCall<Vector2>("op_Addition"));
+            cursor.Instrs[cursor.Index].MatchCall(out var method1);
+            method1.Name = "op_Subtraction";
         }
     }
 }
