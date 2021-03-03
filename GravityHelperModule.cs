@@ -68,7 +68,7 @@ namespace GravityHelper
             On.Celeste.Actor.OnGround_int += Actor_OnGround_int;
 
             On.Celeste.Player.Update += Player_Update;
-            hook_Player_orig_Update = new ILHook(typeof(Player).GetMethod("orig_Update"), Player_orig_Update);
+            hook_Player_orig_Update = new ILHook(typeof(Player).GetMethod(nameof(Player.orig_Update)), Player_orig_Update);
             IL.Celeste.Player.ClimbUpdate += Player_ClimbUpdate;
             IL.Celeste.Player.ClimbHopBlockedCheck += Player_ClimbHopBlockedCheck;
 
@@ -82,12 +82,14 @@ namespace GravityHelper
 
             On.Celeste.Level.Update += LevelOnUpdate;
 
-            GravityChanged += type =>
+            On.Celeste.Player.Render += Player_Render;
+            IL.Celeste.PlayerHair.AfterUpdate += PlayerHair_AfterUpdate;
+            On.Celeste.PlayerHair.GetHairScale += PlayerHair_GetHairScale;
+
+            GravityChanged += _ =>
             {
                 var player = Engine.Scene.Entities.FindFirst<Player>();
-                if (player == null)
-                    return;
-
+                if (player == null) return;
                 updateHitboxes(player);
             };
         }
@@ -115,6 +117,9 @@ namespace GravityHelper
             On.Celeste.Solid.MoveVExact -= Solid_MoveVExact;
 
             On.Celeste.Level.Update -= LevelOnUpdate;
+
+            On.Celeste.Player.Render -= Player_Render;
+            IL.Celeste.PlayerHair.AfterUpdate -= PlayerHair_AfterUpdate;
         }
 
         private static void updateHitboxes(Player player)
@@ -213,18 +218,28 @@ namespace GravityHelper
             return val;
         }
 
+        private void Player_Render(On.Celeste.Player.orig_Render orig, Player self)
+        {
+            if (Gravity == GravityType.Inverted)
+                self.Sprite.Scale.Y *= -1;
+
+            orig(self);
+
+            if (Gravity == GravityType.Inverted)
+                self.Sprite.Scale.Y *= -1;
+        }
+
+        private Vector2 PlayerHair_GetHairScale(On.Celeste.PlayerHair.orig_GetHairScale orig, PlayerHair self, int index)
+        {
+            var scale = orig(self, index);
+            if (Gravity == GravityType.Inverted)
+                scale.Y *= -1;
+            return scale;
+        }
+
         #endregion
 
         #region IL Hooks
-
-        // private static void Player_ctor(ILContext il)
-        // {
-        //     var cursor = new ILCursor(il);
-        //
-        //     while (cursor.TryGotoNext(MoveType.After, instr => instr.MatchNewobj<Hitbox>()))
-        //         cursor.EmitDelegate<Func<Hitbox, Hitbox>>(box =>
-        //             new Hitbox(box.Width, box.Height, box.Position.X, -(box.Position.Y + box.Height)));
-        // }
 
         private static void Actor_MoveVExact(ILContext il)
         {
@@ -238,17 +253,7 @@ namespace GravityHelper
             cursor.Emit(OpCodes.Starg, 1);
         }
 
-        private static void Actor_IsRiding(ILContext il)
-        {
-            replaceAdditionWithDelegate(new ILCursor(il));
-            // var cursor = new ILCursor(il);
-            // cursor.GotoNext(instr => instr.MatchCall<Vector2>("op_Addition"));
-            // cursor.Emit(OpCodes.Ldarg_0);
-            // cursor.Emit(OpCodes.Isinst, typeof(Player));
-            // cursor.Emit(OpCodes.Brfalse_S, cursor.Next);
-            // cursor.Emit(OpCodes.Call, typeof(Vector2).GetMethod("op_Subtraction"));
-            // cursor.Emit(OpCodes.Br_S, cursor.Next.Next);
-        }
+        private static void Actor_IsRiding(ILContext il) => replaceAdditionWithDelegate(new ILCursor(il));
 
         private static void Player_orig_Update(ILContext il)
         {
@@ -258,18 +263,13 @@ namespace GravityHelper
             cursor.Next.OpCode = OpCodes.Bgt_Un_S;
 
             // (Position + Vector2.UnitY) -> (Position - Vector2.UnitY)
-            replaceAdditionWithDelegate(cursor);
-            replaceAdditionWithDelegate(cursor);
+            replaceAdditionWithDelegate(cursor, 2);
 
             // Math.Min(base.Y, highestAirY) -> Math.Max(base.Y, highestAirY)
-            // cursor.GotoNext(instr => instr.MatchCall("System.Math", "Min"));
-            // if (cursor.Next.Operand is MethodReference methodReference)
-            //     methodReference.Name = "Max";
             replaceMaxWithDelegate(cursor);
 
             // (Position + Vector2.UnitY) -> (Position - Vector2.UnitY)
-            replaceAdditionWithDelegate(cursor);
-            replaceAdditionWithDelegate(cursor);
+            replaceAdditionWithDelegate(cursor, 2);
         }
 
         private static void Player_ClimbUpdate(ILContext il)
@@ -281,15 +281,10 @@ namespace GravityHelper
             cursor.Emit(OpCodes.Brfalse_S, cursor.Next);
             cursor.Emit(OpCodes.Call, typeof(Vector2).GetMethod("op_Addition"));
             cursor.Emit(OpCodes.Br_S, cursor.Next.Next);
-            // cursor.GotoNext();
-            // cursor.Remove();
-            // cursor.Emit(OpCodes.Call, typeof(GravityHelperModule).GetMethod(nameof(subtractToAdd)));
         }
 
         private static void Player_ClimbHopBlockedCheck(ILContext il)
         {
-            // if (!inverted) return;
-
             var cursor = new ILCursor(il);
             cursor.GotoNext(instr => instr.MatchCall<Vector2>("op_Subtraction"));
             cursor.Emit(OpCodes.Ldc_I4_1);
@@ -304,15 +299,19 @@ namespace GravityHelper
         {
             var cursor = new ILCursor(il);
             cursor.GotoNext(instr => instr.MatchLdcR4(-105f));
-            // cursor.Remove();
             cursor.EmitDelegate<Func<float>>(() => Gravity == GravityType.Normal ? -105f : 105f);
             cursor.Emit(OpCodes.Br_S, cursor.Next.Next);
-
-            // cursor.GotoNext(MoveType.After, instr => instr.MatchLdcR4(-105f));
-            // cursor.Emit(OpCodes.Neg);
         }
 
         private static void Solid_GetPlayerOnTop(ILContext il) => replaceSubtractionWithDelegate(new ILCursor(il));
+
+        private void PlayerHair_AfterUpdate(ILContext il)
+        {
+            var cursor = new ILCursor(il);
+            replaceAdditionWithDelegate(cursor, -1);
+            cursor.Goto(0);
+            replaceSubtractionWithDelegate(cursor, -1);
+        }
 
         #endregion
 
@@ -322,31 +321,37 @@ namespace GravityHelper
 
         private delegate float FloatMathMinMax(float a, float b);
 
-        private static void replaceAdditionWithDelegate(ILCursor cursor)
+        private static void replaceAdditionWithDelegate(ILCursor cursor, int count = 1)
         {
-            cursor.GotoNext(instr => instr.MatchCall<Vector2>("op_Addition"));
-            cursor.Remove();
-            cursor.EmitDelegate<VectorBinaryOperation>((lhs, rhs) =>
-                Gravity == GravityType.Inverted ? lhs - rhs : lhs + rhs);
-            // cursor.Emit(OpCodes.Br_S, cursor.Next.Next);
+            while (count != 0 && cursor.TryGotoNext(instr => instr.MatchCall<Vector2>("op_Addition")))
+            {
+                if (count > 0) count--;
+                cursor.Remove();
+                cursor.EmitDelegate<VectorBinaryOperation>((lhs, rhs) =>
+                    lhs + (Gravity == GravityType.Inverted ? new Vector2(rhs.X, -rhs.Y) : rhs));
+            }
         }
 
-        private static void replaceSubtractionWithDelegate(ILCursor cursor)
+        private static void replaceSubtractionWithDelegate(ILCursor cursor, int count = 1)
         {
-            cursor.GotoNext(instr => instr.MatchCall<Vector2>("op_Subtraction"));
-            cursor.Remove();
-            cursor.EmitDelegate<VectorBinaryOperation>((lhs, rhs) =>
-                Gravity == GravityType.Inverted ? lhs + rhs : lhs - rhs);
-            // cursor.Emit(OpCodes.Br_S, cursor.Next.Next);
+            while (count != 0 && cursor.TryGotoNext(instr => instr.MatchCall<Vector2>("op_Subtraction")))
+            {
+                if (count > 0) count--;
+                cursor.Remove();
+                cursor.EmitDelegate<VectorBinaryOperation>((lhs, rhs) =>
+                    lhs - (Gravity == GravityType.Inverted ? new Vector2(rhs.X, -rhs.Y) : rhs));
+            }
         }
 
-        private static void replaceMaxWithDelegate(ILCursor cursor)
+        private static void replaceMaxWithDelegate(ILCursor cursor, int count = 1)
         {
-            cursor.GotoNext(instr => instr.MatchCall("System.Math", "Max"));
-            cursor.Remove();
-            cursor.EmitDelegate<FloatMathMinMax>((a, b) =>
-                Gravity == GravityType.Inverted ? Math.Min(a, b) : Math.Max(a, b));
-            // cursor.Emit(OpCodes.Br_S, cursor.Next.Next);
+            while (count != 0 && cursor.TryGotoNext(instr => instr.MatchCall("System.Math", "Max")))
+            {
+                if (count > 0) count--;
+                cursor.Remove();
+                cursor.EmitDelegate<FloatMathMinMax>((a, b) =>
+                    Gravity == GravityType.Inverted ? Math.Min(a, b) : Math.Max(a, b));
+            }
         }
 
         #endregion
