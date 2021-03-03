@@ -9,6 +9,7 @@ using System;
 using System.Collections;
 using System.Linq;
 using System.Reflection;
+// using EventTrigger = On.Celeste.EventTrigger;
 
 namespace GravityHelper
 {
@@ -38,19 +39,30 @@ namespace GravityHelper
         private static bool transitioning;
         private static bool solidMoving;
 
-        private static GravityType gravity;
-
         public static GravityType Gravity
         {
-            get => gravity;
+            get => Engine.Scene is Level level ? (GravityType)level.Session.GetCounter(Constants.CurrentGravityCounterKey) : GravityType.Normal;
             set
             {
-                if (gravity == value)
-                    return;
+                if (!(Engine.Scene is Level level)) return;
 
-                gravity = value;
-                GravityChanged?.Invoke(value);
+                var currentGravity = Gravity;
+                if (value == currentGravity) return;
+
+                var newValue = value == GravityType.Toggle ? currentGravity.Opposite() : value;
+
+                level.Session.SetCounter(Constants.CurrentGravityCounterKey, (int)newValue);
+                updateHitboxes();
+
+                GravityChanged?.Invoke(newValue);
             }
+        }
+
+        [Command("gravity", "[Gravity Helper] Sets the gravity:\n 0 -> Normal\n 1 -> Inverted\n 2 -> Toggle")]
+        public static void CmdSetGravity(int type)
+        {
+            if (Engine.Scene is Level && type < 3)
+                Gravity = (GravityType)type;
         }
 
         public GravityHelperModule()
@@ -84,14 +96,7 @@ namespace GravityHelper
 
             On.Celeste.Player.Render += Player_Render;
             IL.Celeste.PlayerHair.AfterUpdate += PlayerHair_AfterUpdate;
-            On.Celeste.PlayerHair.GetHairScale += PlayerHair_GetHairScale;
-
-            GravityChanged += _ =>
-            {
-                var player = Engine.Scene.Entities.FindFirst<Player>();
-                if (player == null) return;
-                updateHitboxes(player);
-            };
+            // On.Celeste.PlayerHair.GetHairScale += PlayerHair_GetHairScale;
         }
 
         public override void Unload()
@@ -120,10 +125,14 @@ namespace GravityHelper
 
             On.Celeste.Player.Render -= Player_Render;
             IL.Celeste.PlayerHair.AfterUpdate -= PlayerHair_AfterUpdate;
+            // On.Celeste.PlayerHair.GetHairScale -= PlayerHair_GetHairScale;
         }
 
-        private static void updateHitboxes(Player player)
+        private static void updateHitboxes(Player player = null)
         {
+            player ??= Engine.Scene.Entities.FindFirst<Player>();
+            if (player == null) return;
+
             var normalHitbox = (Hitbox) normalHitboxFieldInfo.GetValue(player);
             var duckHitbox = (Hitbox) duckHitboxFieldInfo.GetValue(player);
             var normalHurtbox = (Hitbox) normalHurtboxFieldInfo.GetValue(player);
@@ -231,6 +240,8 @@ namespace GravityHelper
 
         private Vector2 PlayerHair_GetHairScale(On.Celeste.PlayerHair.orig_GetHairScale orig, PlayerHair self, int index)
         {
+            if (self == null) return Vector2.One;
+
             var scale = orig(self, index);
             if (Gravity == GravityType.Inverted)
                 scale.Y *= -1;
