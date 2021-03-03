@@ -1,7 +1,6 @@
 ﻿using Celeste;
 using Celeste.Mod;
 using Microsoft.Xna.Framework;
-using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Monocle;
 using MonoMod.Cil;
@@ -16,26 +15,36 @@ namespace GravityHelper
     // ReSharper disable InconsistentNaming
     public class GravityHelperModule : EverestModule
     {
-        public static GravityHelperModule Instance;
+        #region Reflection Cache
 
-        public GravityHelperModule()
-        {
-            Instance = this;
-        }
+        private static readonly FieldInfo normalHitboxFieldInfo = typeof(Player).GetRuntimeFields().First(f => f.Name == "normalHitbox");
+        private static readonly FieldInfo duckHitboxFieldInfo = typeof(Player).GetRuntimeFields().First(f => f.Name == "duckHitbox");
+        private static readonly FieldInfo normalHurtboxFieldInfo = typeof(Player).GetRuntimeFields().First(f => f.Name == "normalHurtbox");
+        private static readonly FieldInfo duckHurtboxFieldInfo = typeof(Player).GetRuntimeFields().First(f => f.Name == "duckHurtbox");
+        private static readonly MethodInfo m_VirtualJoystick_set_Value = typeof(VirtualJoystick).GetProperty("Value")?.GetSetMethod(true);
+
+        #endregion
 
         public override Type SettingsType => typeof(GravityHelperModuleSettings);
 
-        public static GravityHelperModuleSettings Settings => (GravityHelperModuleSettings)Instance._Settings;
-
-        private static readonly MethodInfo m_VirtualJoystick_set_Value = typeof(VirtualJoystick).GetProperty("Value")?.GetSetMethod(true);
+        public static GravityHelperModuleSettings Settings => (GravityHelperModuleSettings) Instance._Settings;
 
         private static IDetour hook_Player_orig_Update;
 
+        public static GravityHelperModule Instance;
+
+        public static event Action<GravityType> GravityChanged;
+
+        private static bool transitioning;
+        private static bool solidMoving;
+
         private static GravityType gravity;
 
-        public static GravityType Gravity {
+        public static GravityType Gravity
+        {
             get => gravity;
-            set {
+            set
+            {
                 if (gravity == value)
                     return;
 
@@ -44,15 +53,13 @@ namespace GravityHelper
             }
         }
 
-        public static event Action<GravityType> GravityChanged;
-
-        private static bool transitioning;
-        private static bool solidMoving;
+        public GravityHelperModule()
+        {
+            Instance = this;
+        }
 
         public override void Load()
         {
-            // return;
-            // IL.Celeste.Player.ctor += Player_ctor;
             On.Celeste.Player.ctor += Player_ctor;
 
             IL.Celeste.Actor.IsRiding_JumpThru += Actor_IsRiding;
@@ -75,7 +82,8 @@ namespace GravityHelper
 
             On.Celeste.Level.Update += LevelOnUpdate;
 
-            GravityChanged += type => {
+            GravityChanged += type =>
+            {
                 var player = Engine.Scene.Entities.FindFirst<Player>();
                 if (player == null)
                     return;
@@ -86,8 +94,6 @@ namespace GravityHelper
 
         public override void Unload()
         {
-            // return;
-            // IL.Celeste.Player.ctor -= Player_ctor;
             On.Celeste.Player.ctor -= Player_ctor;
 
             IL.Celeste.Actor.IsRiding_JumpThru -= Actor_IsRiding;
@@ -111,17 +117,15 @@ namespace GravityHelper
             On.Celeste.Level.Update -= LevelOnUpdate;
         }
 
-        private static void updateHitboxes(Player player) {
-            var normalHitboxFI = typeof(Player).GetRuntimeFields().First(f => f.Name == "normalHitbox");
-            var duckHitboxFI = typeof(Player).GetRuntimeFields().First(f => f.Name == "duckHitbox");
-            var normalHurtboxFI = typeof(Player).GetRuntimeFields().First(f => f.Name == "normalHurtbox");
-            var duckHurtboxFI = typeof(Player).GetRuntimeFields().First(f => f.Name == "duckHurtbox");
-            var normalHitbox = (Hitbox)normalHitboxFI.GetValue(player);
-            var duckHitbox = (Hitbox)duckHitboxFI.GetValue(player);
-            var normalHurtbox = (Hitbox)normalHurtboxFI.GetValue(player);
-            var duckHurtbox = (Hitbox)duckHurtboxFI.GetValue(player);
+        private static void updateHitboxes(Player player)
+        {
+            var normalHitbox = (Hitbox) normalHitboxFieldInfo.GetValue(player);
+            var duckHitbox = (Hitbox) duckHitboxFieldInfo.GetValue(player);
+            var normalHurtbox = (Hitbox) normalHurtboxFieldInfo.GetValue(player);
+            var duckHurtbox = (Hitbox) duckHurtboxFieldInfo.GetValue(player);
 
-            if (Gravity == GravityType.Inverted && normalHitbox.Top < -1 || Gravity == GravityType.Normal && normalHitbox.Bottom > 1) {
+            if (Gravity == GravityType.Inverted && normalHitbox.Top < -1 || Gravity == GravityType.Normal && normalHitbox.Bottom > 1)
+            {
                 player.Position.Y = Gravity == GravityType.Inverted ? normalHitbox.AbsoluteTop : normalHitbox.AbsoluteBottom;
                 normalHitbox.Position.Y = -normalHitbox.Position.Y - normalHitbox.Height;
                 duckHitbox.Position.Y = -duckHitbox.Position.Y - duckHitbox.Height;
@@ -156,7 +160,8 @@ namespace GravityHelper
             solidMoving = false;
         }
 
-        private static void Player_ctor(On.Celeste.Player.orig_ctor orig, Player self, Vector2 position, PlayerSpriteMode spriteMode)
+        private static void Player_ctor(On.Celeste.Player.orig_ctor orig, Player self, Vector2 position,
+            PlayerSpriteMode spriteMode)
         {
             orig(self, position, spriteMode);
 
@@ -174,7 +179,8 @@ namespace GravityHelper
 
         private static void Player_Update(On.Celeste.Player.orig_Update orig, Player self)
         {
-            if (Gravity == GravityType.Normal) {
+            if (Gravity == GravityType.Normal)
+            {
                 orig(self);
                 return;
             }
@@ -188,7 +194,8 @@ namespace GravityHelper
             m_VirtualJoystick_set_Value.Invoke(Input.Aim, new object[] { new Vector2(Input.Aim.Value.X, aimY) });
         }
 
-        private static IEnumerator Level_TransitionRoutine(On.Celeste.Level.orig_TransitionRoutine orig, Level self, LevelData next, Vector2 direction)
+        private static IEnumerator Level_TransitionRoutine(On.Celeste.Level.orig_TransitionRoutine orig, Level self,
+            LevelData next, Vector2 direction)
         {
             transitioning = true;
             IEnumerator origEnum = orig(self, next, direction);
@@ -197,7 +204,8 @@ namespace GravityHelper
             transitioning = false;
         }
 
-        private static bool Player_TransitionTo(On.Celeste.Player.orig_TransitionTo orig, Player self, Vector2 target, Vector2 direction)
+        private static bool Player_TransitionTo(On.Celeste.Player.orig_TransitionTo orig, Player self, Vector2 target,
+            Vector2 direction)
         {
             transitioning = true;
             bool val = orig(self, target, direction);
@@ -222,7 +230,8 @@ namespace GravityHelper
         {
             var cursor = new ILCursor(il);
             cursor.Emit(OpCodes.Ldarg_0);
-            cursor.EmitDelegate<Func<Actor, bool>>(a => a is Player && !solidMoving && !transitioning && Gravity == GravityType.Inverted);
+            cursor.EmitDelegate<Func<Actor, bool>>(a =>
+                a is Player && !solidMoving && !transitioning && Gravity == GravityType.Inverted);
             cursor.Emit(OpCodes.Brfalse_S, cursor.Next);
             cursor.Emit(OpCodes.Ldarg_1);
             cursor.Emit(OpCodes.Neg);
@@ -317,7 +326,8 @@ namespace GravityHelper
         {
             cursor.GotoNext(instr => instr.MatchCall<Vector2>("op_Addition"));
             cursor.Remove();
-            cursor.EmitDelegate<VectorBinaryOperation>((lhs, rhs) => Gravity == GravityType.Inverted ? lhs - rhs : lhs + rhs);
+            cursor.EmitDelegate<VectorBinaryOperation>((lhs, rhs) =>
+                Gravity == GravityType.Inverted ? lhs - rhs : lhs + rhs);
             // cursor.Emit(OpCodes.Br_S, cursor.Next.Next);
         }
 
@@ -325,7 +335,8 @@ namespace GravityHelper
         {
             cursor.GotoNext(instr => instr.MatchCall<Vector2>("op_Subtraction"));
             cursor.Remove();
-            cursor.EmitDelegate<VectorBinaryOperation>((lhs, rhs) => Gravity == GravityType.Inverted ? lhs + rhs : lhs - rhs);
+            cursor.EmitDelegate<VectorBinaryOperation>((lhs, rhs) =>
+                Gravity == GravityType.Inverted ? lhs + rhs : lhs - rhs);
             // cursor.Emit(OpCodes.Br_S, cursor.Next.Next);
         }
 
@@ -333,7 +344,8 @@ namespace GravityHelper
         {
             cursor.GotoNext(instr => instr.MatchCall("System.Math", "Max"));
             cursor.Remove();
-            cursor.EmitDelegate<FloatMathMinMax>((a, b) => Gravity == GravityType.Inverted ? Math.Min(a, b) : Math.Max(a, b));
+            cursor.EmitDelegate<FloatMathMinMax>((a, b) =>
+                Gravity == GravityType.Inverted ? Math.Min(a, b) : Math.Max(a, b));
             // cursor.Emit(OpCodes.Br_S, cursor.Next.Next);
         }
 
