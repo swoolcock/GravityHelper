@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>net452</TargetFramework>
-    <AssemblyName>GravityHack</AssemblyName>
-    <RootNamespace>Celeste.Mod.GravityHack</RootNamespace>
+    <AssemblyName>GravityHelper</AssemblyName>
+    <RootNamespace>GravityHelper</RootNamespace>
     <LangVersion>preview</LangVersion>
   </PropertyGroup>
 

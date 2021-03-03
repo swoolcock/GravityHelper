@@ -1,4 +1,6 @@
-﻿using Microsoft.Xna.Framework;
+﻿using Celeste;
+using Celeste.Mod;
+using Microsoft.Xna.Framework;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Monocle;
@@ -9,21 +11,21 @@ using System.Collections;
 using System.Linq;
 using System.Reflection;
 
-namespace Celeste.Mod.GravityHack
+namespace GravityHelper
 {
     // ReSharper disable InconsistentNaming
-    public class GravityHackModule : EverestModule
+    public class GravityHelperModule : EverestModule
     {
-        public static GravityHackModule Instance;
+        public static GravityHelperModule Instance;
 
-        public GravityHackModule()
+        public GravityHelperModule()
         {
             Instance = this;
         }
 
-        public override Type SettingsType => typeof(GravityHackModuleSettings);
+        public override Type SettingsType => typeof(GravityHelperModuleSettings);
 
-        public static GravityHackModuleSettings Settings => (GravityHackModuleSettings)Instance._Settings;
+        public static GravityHelperModuleSettings Settings => (GravityHelperModuleSettings)Instance._Settings;
 
         private static readonly MethodInfo m_VirtualJoystick_set_Value = typeof(VirtualJoystick).GetProperty("Value")?.GetSetMethod(true);
 
@@ -272,7 +274,7 @@ namespace Celeste.Mod.GravityHack
             cursor.Emit(OpCodes.Br_S, cursor.Next.Next);
             // cursor.GotoNext();
             // cursor.Remove();
-            // cursor.Emit(OpCodes.Call, typeof(GravityHackModule).GetMethod(nameof(subtractToAdd)));
+            // cursor.Emit(OpCodes.Call, typeof(GravityHelperModule).GetMethod(nameof(subtractToAdd)));
         }
 
         private static void Player_ClimbHopBlockedCheck(ILContext il)

@@ -1,8 +1,9 @@
+using Celeste.Mod;
 using Microsoft.Xna.Framework.Input;
 
-namespace Celeste.Mod.GravityHack
+namespace GravityHelper
 {
-    public class GravityHackModuleSettings : EverestModuleSettings
+    public class GravityHelperModuleSettings : EverestModuleSettings
     {
         public bool Enabled { get; set; } = true;
 

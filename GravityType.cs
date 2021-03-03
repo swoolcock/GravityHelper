@@ -1,4 +1,4 @@
-namespace Celeste.Mod.GravityHack {
+namespace GravityHelper {
     public enum GravityType {
         Normal,
         Inverted,

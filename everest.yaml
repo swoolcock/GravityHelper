@@ -1,6 +1,6 @@
-- Name: GravityHack
+- Name: GravityHelper
   Version: 1.0.0
-  DLL: bin/Debug/net452/GravityHack.dll
+  DLL: bin/Debug/net452/GravityHelper.dll
   Dependencies:
     - Name: Everest
       Version: 1.1749.0
