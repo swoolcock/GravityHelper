@@ -140,7 +140,7 @@ namespace GravityHelper
 
             if (Gravity == GravityType.Inverted && normalHitbox.Top < -1 || Gravity == GravityType.Normal && normalHitbox.Bottom > 1)
             {
-                player.Position.Y = Gravity == GravityType.Inverted ? normalHitbox.AbsoluteTop : normalHitbox.AbsoluteBottom;
+                player.Position.Y = Gravity == GravityType.Inverted ? player.Collider.AbsoluteTop : player.Collider.AbsoluteBottom;
                 normalHitbox.Position.Y = -normalHitbox.Position.Y - normalHitbox.Height;
                 duckHitbox.Position.Y = -duckHitbox.Position.Y - duckHitbox.Height;
                 normalHurtbox.Position.Y = -normalHurtbox.Position.Y - normalHurtbox.Height;
