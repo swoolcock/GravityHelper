@@ -104,6 +104,23 @@ namespace GravityHelper
             On.Celeste.Player.Render += Player_Render;
             IL.Celeste.PlayerHair.AfterUpdate += PlayerHair_AfterUpdate;
             // On.Celeste.PlayerHair.GetHairScale += PlayerHair_GetHairScale;
+            IL.Celeste.Player.OnCollideV += PlayerOnOnCollideV;
+
+        private void PlayerOnOnCollideV(ILContext il)
+        {
+            var cursor = new ILCursor(il);
+
+            // if (this.DashAttacking && (double) data.Direction.Y == (double) Math.Sign(this.DashDir.Y))
+            replaceSignWithDelegate(cursor);
+            // this.ReflectBounce(new Vector2(0.0f, (float) -Math.Sign(this.Speed.Y)));
+            replaceSignWithDelegate(cursor);
+            // if (this.DreamDashCheck(Vector2.UnitY * (float) Math.Sign(this.Speed.Y)))
+            replaceSignWithDelegate(cursor);
+
+            cursor.GotoNext(instr => instr.MatchCall<Entity>(nameof(Entity.CollideCheck)));
+            cursor.Goto(cursor.Index - 2);
+            replaceAdditionWithDelegate(cursor, 4);
+        }
         }
 
         public override void Unload()
@@ -134,6 +151,8 @@ namespace GravityHelper
             On.Celeste.Player.Render -= Player_Render;
             IL.Celeste.PlayerHair.AfterUpdate -= PlayerHair_AfterUpdate;
             // On.Celeste.PlayerHair.GetHairScale -= PlayerHair_GetHairScale;
+
+            IL.Celeste.Player.OnCollideV -= PlayerOnOnCollideV;
         }
 
         private static void updateGravity(Player player = null)
@@ -356,7 +375,8 @@ namespace GravityHelper
 
         private delegate Vector2 VectorBinaryOperation(Vector2 lhs, Vector2 rhs);
 
-        private delegate float FloatMathMinMax(float a, float b);
+        private delegate float FloatBinaryOperation(float a, float b);
+        private delegate int FloatUnaryOperation(float a);
 
         private static void replaceAdditionWithDelegate(ILCursor cursor, int count = 1)
         {
@@ -386,8 +406,19 @@ namespace GravityHelper
             {
                 if (count > 0) count--;
                 cursor.Remove();
-                cursor.EmitDelegate<FloatMathMinMax>((a, b) =>
+                cursor.EmitDelegate<FloatBinaryOperation>((a, b) =>
                     ShouldInvert ? Math.Min(a, b) : Math.Max(a, b));
+            }
+        }
+
+        private static void replaceSignWithDelegate(ILCursor cursor, int count = 1)
+        {
+            while (count != 0 && cursor.TryGotoNext(instr => instr.MatchCall("System.Math", "Sign")))
+            {
+                if (count > 0) count--;
+                cursor.Remove();
+                cursor.EmitDelegate<FloatUnaryOperation>(a =>
+                    ShouldInvert ? -Math.Sign(a) : Math.Sign(a));
             }
         }
 
