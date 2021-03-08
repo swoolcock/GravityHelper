@@ -52,7 +52,7 @@ namespace GravityHelper
                 var newValue = value == GravityType.Toggle ? currentGravity.Opposite() : value;
 
                 level.Session.SetCounter(Constants.CurrentGravityCounterKey, (int)newValue);
-                updateHitboxes();
+                updateGravity();
 
                 GravityChanged?.Invoke(newValue);
             }
@@ -128,7 +128,7 @@ namespace GravityHelper
             // On.Celeste.PlayerHair.GetHairScale -= PlayerHair_GetHairScale;
         }
 
-        private static void updateHitboxes(Player player = null)
+        private static void updateGravity(Player player = null)
         {
             player ??= Engine.Scene.Entities.FindFirst<Player>();
             if (player == null) return;
@@ -180,7 +180,7 @@ namespace GravityHelper
         {
             orig(self, position, spriteMode);
 
-            updateHitboxes(self);
+            updateGravity(self);
 
             self.Add(new TransitionListener
             {
@@ -270,10 +270,6 @@ namespace GravityHelper
         private static void Player_orig_Update(ILContext il)
         {
             var cursor = new ILCursor(il);
-            // (Speed.Y >= 0f) -> (Speed.Y <= 0f)
-            cursor.GotoNext(instr => instr.Match(OpCodes.Blt_Un_S));
-            cursor.Next.OpCode = OpCodes.Bgt_Un_S;
-
             // (Position + Vector2.UnitY) -> (Position - Vector2.UnitY)
             replaceAdditionWithDelegate(cursor, 2);
 
