@@ -283,22 +283,16 @@ namespace GravityHelper
         private static void Player_ClimbUpdate(ILContext il)
         {
             var cursor = new ILCursor(il);
-            cursor.GotoNext(MoveType.After, instr =>
-                instr.MatchCall<Vector2>("get_UnitY") && instr.Next.MatchCall<Vector2>("op_Subtraction"));
-            cursor.Emit(OpCodes.Ldc_I4_1);
-            cursor.Emit(OpCodes.Brfalse_S, cursor.Next);
-            cursor.Emit(OpCodes.Call, typeof(Vector2).GetMethod("op_Addition"));
-            cursor.Emit(OpCodes.Br_S, cursor.Next.Next);
+            cursor.GotoNext(MoveType.After,
+                instr => instr.MatchCall<Vector2>("get_UnitY") && instr.Next.MatchCall<Vector2>("op_Subtraction"));
+            replaceSubtractionWithDelegate(cursor);
         }
 
         private static void Player_ClimbHopBlockedCheck(ILContext il)
         {
             var cursor = new ILCursor(il);
             cursor.GotoNext(instr => instr.MatchCall<Vector2>("op_Subtraction"));
-            cursor.Emit(OpCodes.Ldc_I4_1);
-            cursor.Emit(OpCodes.Brfalse_S, cursor.Next);
-            cursor.Emit(OpCodes.Call, typeof(Vector2).GetMethod("op_Addition"));
-            cursor.Emit(OpCodes.Br_S, cursor.Next.Next);
+            replaceSubtractionWithDelegate(cursor);
         }
 
         private static void Player_BeforeDownTransition(ILContext il) => replaceMaxWithDelegate(new ILCursor(il));
