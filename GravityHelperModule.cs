@@ -31,6 +31,7 @@ namespace GravityHelper
         public static GravityHelperModuleSettings Settings => (GravityHelperModuleSettings) Instance._Settings;
 
         private static IDetour hook_Player_orig_Update;
+        private static IDetour hook_Player_orig_UpdateSprite;
 
         public static GravityHelperModule Instance;
 
@@ -81,6 +82,10 @@ namespace GravityHelper
 
             On.Celeste.Player.Update += Player_Update;
             hook_Player_orig_Update = new ILHook(typeof(Player).GetMethod(nameof(Player.orig_Update)), Player_orig_Update);
+
+            var updateSpriteMethod = typeof(Player).GetRuntimeMethods().First(m => m.Name == "orig_UpdateSprite");
+            hook_Player_orig_UpdateSprite = new ILHook(updateSpriteMethod, Player_orig_UpdateSprite);
+
             IL.Celeste.Player.ClimbUpdate += Player_ClimbUpdate;
             IL.Celeste.Player.ClimbHopBlockedCheck += Player_ClimbHopBlockedCheck;
 
@@ -110,6 +115,7 @@ namespace GravityHelper
 
             On.Celeste.Player.Update -= Player_Update;
             hook_Player_orig_Update.Dispose();
+            hook_Player_orig_UpdateSprite.Dispose();
             IL.Celeste.Player.ClimbUpdate -= Player_ClimbUpdate;
             IL.Celeste.Player.ClimbHopBlockedCheck -= Player_ClimbHopBlockedCheck;
 
@@ -278,6 +284,23 @@ namespace GravityHelper
 
             // (Position + Vector2.UnitY) -> (Position - Vector2.UnitY)
             replaceAdditionWithDelegate(cursor, 2);
+        }
+
+        private static void Player_orig_UpdateSprite(ILContext il)
+        {
+            var cursor = new ILCursor(il);
+
+            // fix dangling animation
+            replaceAdditionWithDelegate(cursor);
+
+            // skip push check
+            cursor.GotoNext(MoveType.After, instr => instr.MatchCall<Vector2>("op_Addition"));
+
+            // fix edge animation
+            replaceAdditionWithDelegate(cursor, 3);
+
+            // fix edgeBack animation
+            replaceAdditionWithDelegate(cursor, 3);
         }
 
         private static void Player_ClimbUpdate(ILContext il)
