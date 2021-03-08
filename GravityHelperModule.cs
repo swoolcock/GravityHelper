@@ -272,7 +272,11 @@ namespace GravityHelper
             var cursor = new ILCursor(il);
             cursor.Emit(OpCodes.Ldarg_0);
             cursor.EmitDelegate<Func<Actor, bool>>(a =>
-                a is Player && !solidMoving && !transitioning && Gravity == GravityType.Inverted);
+                a is Player player
+                && player.CurrentBooster == null
+                && !solidMoving
+                && !transitioning
+                && ShouldInvert);
             cursor.Emit(OpCodes.Brfalse_S, cursor.Next);
             cursor.Emit(OpCodes.Ldarg_1);
             cursor.Emit(OpCodes.Neg);
