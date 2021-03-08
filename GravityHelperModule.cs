@@ -37,6 +37,8 @@ namespace GravityHelper
 
         public static event Action<GravityType> GravityChanged;
 
+        public static bool ShouldInvert => Settings.Enabled && Gravity == GravityType.Inverted;
+
         private static bool transitioning;
         private static bool solidMoving;
 
@@ -136,6 +138,8 @@ namespace GravityHelper
 
         private static void updateGravity(Player player = null)
         {
+            if (!Settings.Enabled) return;
+
             player ??= Engine.Scene.Entities.FindFirst<Player>();
             if (player == null) return;
 
@@ -146,7 +150,8 @@ namespace GravityHelper
 
             if (Gravity == GravityType.Inverted && normalHitbox.Top < -1 || Gravity == GravityType.Normal && normalHitbox.Bottom > 1)
             {
-                player.Position.Y = Gravity == GravityType.Inverted ? player.Collider.AbsoluteTop : player.Collider.AbsoluteBottom;
+                var collider = player.Collider ?? normalHitbox;
+                player.Position.Y = Gravity == GravityType.Inverted ? collider.AbsoluteTop : collider.AbsoluteBottom;
                 player.Speed.Y *= -1;
                 normalHitbox.Position.Y = -normalHitbox.Position.Y - normalHitbox.Height;
                 duckHitbox.Position.Y = -duckHitbox.Position.Y - duckHitbox.Height;
@@ -162,7 +167,8 @@ namespace GravityHelper
             if (Settings.ToggleInvertGravity.Pressed)
             {
                 Settings.ToggleInvertGravity.ConsumePress();
-                Gravity = Gravity == GravityType.Normal ? GravityType.Inverted : GravityType.Normal;
+                if (Settings.Enabled)
+                    Gravity = Gravity.Opposite();
             }
 
             orig(self);
@@ -170,7 +176,7 @@ namespace GravityHelper
 
         private static void Solid_MoveVExact(On.Celeste.Solid.orig_MoveVExact orig, Solid self, int move)
         {
-            if (Gravity == GravityType.Normal)
+            if (!ShouldInvert)
             {
                 orig(self, move);
                 return;
@@ -196,11 +202,11 @@ namespace GravityHelper
         }
 
         private static bool Actor_OnGround_int(On.Celeste.Actor.orig_OnGround_int orig, Actor self, int downCheck) =>
-            orig(self, Gravity == GravityType.Inverted && self is Player ? -downCheck : downCheck);
+            orig(self, ShouldInvert && self is Player ? -downCheck : downCheck);
 
         private static void Player_Update(On.Celeste.Player.orig_Update orig, Player self)
         {
-            if (Gravity == GravityType.Normal)
+            if (!ShouldInvert)
             {
                 orig(self);
                 return;
@@ -236,13 +242,15 @@ namespace GravityHelper
 
         private void Player_Render(On.Celeste.Player.orig_Render orig, Player self)
         {
-            if (Gravity == GravityType.Inverted)
-                self.Sprite.Scale.Y *= -1;
+            var scaleY = self.Sprite.Scale.Y;
+
+            if (ShouldInvert)
+                self.Sprite.Scale.Y = -scaleY;
 
             orig(self);
 
-            if (Gravity == GravityType.Inverted)
-                self.Sprite.Scale.Y *= -1;
+            if (ShouldInvert)
+                self.Sprite.Scale.Y = scaleY;
         }
 
         private Vector2 PlayerHair_GetHairScale(On.Celeste.PlayerHair.orig_GetHairScale orig, PlayerHair self, int index)
@@ -250,7 +258,7 @@ namespace GravityHelper
             if (self == null) return Vector2.One;
 
             var scale = orig(self, index);
-            if (Gravity == GravityType.Inverted)
+            if (ShouldInvert)
                 scale.Y *= -1;
             return scale;
         }
@@ -324,7 +332,7 @@ namespace GravityHelper
         {
             var cursor = new ILCursor(il);
             cursor.GotoNext(instr => instr.MatchLdcR4(-105f));
-            cursor.EmitDelegate<Func<float>>(() => Gravity == GravityType.Normal ? -105f : 105f);
+            cursor.EmitDelegate<Func<float>>(() => !ShouldInvert ? -105f : 105f);
             cursor.Emit(OpCodes.Br_S, cursor.Next.Next);
         }
 
@@ -353,7 +361,7 @@ namespace GravityHelper
                 if (count > 0) count--;
                 cursor.Remove();
                 cursor.EmitDelegate<VectorBinaryOperation>((lhs, rhs) =>
-                    lhs + (Gravity == GravityType.Inverted ? new Vector2(rhs.X, -rhs.Y) : rhs));
+                    lhs + (ShouldInvert ? new Vector2(rhs.X, -rhs.Y) : rhs));
             }
         }
 
@@ -364,7 +372,7 @@ namespace GravityHelper
                 if (count > 0) count--;
                 cursor.Remove();
                 cursor.EmitDelegate<VectorBinaryOperation>((lhs, rhs) =>
-                    lhs - (Gravity == GravityType.Inverted ? new Vector2(rhs.X, -rhs.Y) : rhs));
+                    lhs - (ShouldInvert ? new Vector2(rhs.X, -rhs.Y) : rhs));
             }
         }
 
@@ -375,7 +383,7 @@ namespace GravityHelper
                 if (count > 0) count--;
                 cursor.Remove();
                 cursor.EmitDelegate<FloatMathMinMax>((a, b) =>
-                    Gravity == GravityType.Inverted ? Math.Min(a, b) : Math.Max(a, b));
+                    ShouldInvert ? Math.Min(a, b) : Math.Max(a, b));
             }
         }
 
