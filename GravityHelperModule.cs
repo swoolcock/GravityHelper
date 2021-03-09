@@ -9,7 +9,7 @@ using System;
 using System.Collections;
 using System.Linq;
 using System.Reflection;
-// using EventTrigger = On.Celeste.EventTrigger;
+using Spikes = On.Celeste.Spikes;
 
 namespace GravityHelper
 {
@@ -58,6 +58,10 @@ namespace GravityHelper
                 updateGravity();
 
                 GravityChanged?.Invoke(newValue);
+
+                var gravityListeners = Engine.Scene.Tracker.GetComponents<GravityListener>().ToArray();
+                foreach (Component component in gravityListeners)
+                    (component as GravityListener)?.GravityChanged(newValue);
             }
         }
 
@@ -104,7 +108,45 @@ namespace GravityHelper
             On.Celeste.Player.Render += Player_Render;
             IL.Celeste.PlayerHair.AfterUpdate += PlayerHair_AfterUpdate;
             // On.Celeste.PlayerHair.GetHairScale += PlayerHair_GetHairScale;
+
             IL.Celeste.Player.OnCollideV += PlayerOnOnCollideV;
+            // IL.Celeste.Player.SlipCheck += PlayerOnSlipCheck;
+            // IL.Celeste.Player.DreamDashCheck += PlayerOnDreamDashCheck;
+            On.Celeste.Player.SlipCheck += PlayerOnSlipCheck;
+            On.Celeste.Spikes.ctor_Vector2_int_Directions_string += SpikesOnctor_Vector2_int_Directions_string;
+        }
+
+        private void SpikesOnctor_Vector2_int_Directions_string(Spikes.orig_ctor_Vector2_int_Directions_string orig, Celeste.Spikes self, Vector2 position, int size, Celeste.Spikes.Directions direction, string type)
+        {
+            orig(self, position, size, direction, type);
+            self.Add(new GravityListener());
+        }
+
+        private bool PlayerOnSlipCheck(On.Celeste.Player.orig_SlipCheck orig, Player self, float addY)
+        {
+            if (!ShouldInvert)
+                return orig(self, addY);
+
+            Vector2 point = self.Facing != Facings.Right ? self.BottomLeft - Vector2.UnitX - Vector2.UnitY * (4f + addY) : self.BottomRight - Vector2.UnitY * (4f + addY);
+            return !self.Scene.CollideCheck<Solid>(point) && !self.Scene.CollideCheck<Solid>(point - Vector2.UnitY * (addY - 4f));
+        }
+
+        private void PlayerOnDreamDashCheck(ILContext il)
+        {
+            var cursor = new ILCursor(il);
+            // DreamBlock dreamBlock = this.CollideFirst<DreamBlock>(this.Position + dir);
+            replaceAdditionWithDelegate(cursor);
+            // if (this.CollideCheck<Solid, DreamBlock>(this.Position + dir))
+            replaceAdditionWithDelegate(cursor);
+            // if (!this.CollideCheck<Solid, DreamBlock>(this.Position + dir + vector2 * (float) index))
+            replaceAdditionWithDelegate(cursor, 2);
+            // this.Position = this.Position + vector2 * (float) index;
+            replaceAdditionWithDelegate(cursor);
+            // if (!this.CollideCheck<Solid, DreamBlock>(this.Position + dir + vector2 * (float) index))
+            replaceAdditionWithDelegate(cursor, 2);
+            // this.Position = this.Position + vector2 * (float) index;
+            replaceAdditionWithDelegate(cursor);
+        }
 
         private void PlayerOnOnCollideV(ILContext il)
         {
@@ -121,7 +163,6 @@ namespace GravityHelper
             cursor.Goto(cursor.Index - 2);
             replaceAdditionWithDelegate(cursor, 4);
         }
-        }
 
         public override void Unload()
         {
@@ -133,8 +174,8 @@ namespace GravityHelper
             On.Celeste.Actor.OnGround_int -= Actor_OnGround_int;
 
             On.Celeste.Player.Update -= Player_Update;
-            hook_Player_orig_Update.Dispose();
-            hook_Player_orig_UpdateSprite.Dispose();
+            hook_Player_orig_Update?.Dispose();
+            hook_Player_orig_UpdateSprite?.Dispose();
             IL.Celeste.Player.ClimbUpdate -= Player_ClimbUpdate;
             IL.Celeste.Player.ClimbHopBlockedCheck -= Player_ClimbHopBlockedCheck;
 
@@ -337,15 +378,18 @@ namespace GravityHelper
         private static void Player_ClimbUpdate(ILContext il)
         {
             var cursor = new ILCursor(il);
+            // if (this.CollideCheck<Solid>(this.Position - Vector2.UnitY) || this.ClimbHopBlockedCheck() && this.SlipCheck(-1f))
             cursor.GotoNext(MoveType.After,
                 instr => instr.MatchCall<Vector2>("get_UnitY") && instr.Next.MatchCall<Vector2>("op_Subtraction"));
             replaceSubtractionWithDelegate(cursor);
+
+            // if (Input.MoveY.Value != 1 && (double) this.Speed.Y > 0.0 && !this.CollideCheck<Solid>(this.Position + new Vector2((float) this.Facing, 1f)))
+            replaceAdditionWithDelegate(cursor);
         }
 
         private static void Player_ClimbHopBlockedCheck(ILContext il)
         {
             var cursor = new ILCursor(il);
-            cursor.GotoNext(instr => instr.MatchCall<Vector2>("op_Subtraction"));
             replaceSubtractionWithDelegate(cursor);
         }
 
