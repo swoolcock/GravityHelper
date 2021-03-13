@@ -25,9 +25,17 @@ namespace GravityHelper
         private static readonly FieldInfo starFlyHitboxFieldInfo = typeof(Player).GetRuntimeFields().First(f => f.Name == "starFlyHitbox");
         private static readonly FieldInfo starFlyHurtboxFieldInfo = typeof(Player).GetRuntimeFields().First(f => f.Name == "starFlyHurtbox");
         private static readonly FieldInfo varJumpTimerFieldInfo = typeof(Player).GetRuntimeFields().First(f => f.Name == "varJumpTimer");
-        private static readonly MethodInfo m_VirtualJoystick_set_Value = typeof(VirtualJoystick).GetProperty("Value")?.GetSetMethod(true);
+        private static readonly MethodInfo virtualJoystickSetValueMethodInfo = typeof(VirtualJoystick).GetProperty("Value")?.GetSetMethod(true);
+
+        private static readonly object[] virtualJoystickParams = { Vector2.Zero };
 
         #endregion
+
+        private static void setVirtualJoystickValue(Vector2 value)
+        {
+            virtualJoystickParams[0] = value;
+            virtualJoystickSetValueMethodInfo.Invoke(Input.Aim, virtualJoystickParams);
+        }
 
         public override Type SettingsType => typeof(GravityHelperModuleSettings);
 
@@ -223,16 +231,16 @@ namespace GravityHelper
             void invertHitbox(Hitbox hitbox) => hitbox.Position.Y = -hitbox.Position.Y - hitbox.Height;
 
             var normalHitbox = (Hitbox) normalHitboxFieldInfo.GetValue(player);
-            var normalHurtbox = (Hitbox) normalHurtboxFieldInfo.GetValue(player);
-            var duckHitbox = (Hitbox) duckHitboxFieldInfo.GetValue(player);
-            var duckHurtbox = (Hitbox) duckHurtboxFieldInfo.GetValue(player);
-            var starFlyHitbox = (Hitbox) starFlyHitboxFieldInfo.GetValue(player);
-            var starFlyHurtbox = (Hitbox) starFlyHurtboxFieldInfo.GetValue(player);
-
             var collider = player.Collider ?? normalHitbox;
 
             if (Gravity == GravityType.Inverted && collider.Top < -1 || Gravity == GravityType.Normal && collider.Bottom > 1)
             {
+                var normalHurtbox = (Hitbox) normalHurtboxFieldInfo.GetValue(player);
+                var duckHitbox = (Hitbox) duckHitboxFieldInfo.GetValue(player);
+                var duckHurtbox = (Hitbox) duckHurtboxFieldInfo.GetValue(player);
+                var starFlyHitbox = (Hitbox) starFlyHitboxFieldInfo.GetValue(player);
+                var starFlyHurtbox = (Hitbox) starFlyHurtboxFieldInfo.GetValue(player);
+
                 player.Position.Y = Gravity == GravityType.Inverted ? collider.AbsoluteTop : collider.AbsoluteBottom;
                 player.Speed.Y *= -1;
                 player.DashDir.Y *= -1;
@@ -299,13 +307,16 @@ namespace GravityHelper
                 return;
             }
 
-            float aimY = Input.Aim.Value.Y;
-            int moveY = Input.MoveY.Value;
+            var aimY = Input.Aim.Value.Y;
+            var moveY = Input.MoveY.Value;
+
+            setVirtualJoystickValue(new Vector2(Input.Aim.Value.X, -aimY));
             Input.MoveY.Value = -moveY;
-            m_VirtualJoystick_set_Value.Invoke(Input.Aim, new object[] { new Vector2(Input.Aim.Value.X, -aimY) });
+
             orig(self);
+
             Input.MoveY.Value = moveY;
-            m_VirtualJoystick_set_Value.Invoke(Input.Aim, new object[] { new Vector2(Input.Aim.Value.X, aimY) });
+            setVirtualJoystickValue(new Vector2(Input.Aim.Value.X, aimY));
         }
 
         private static IEnumerator Level_TransitionRoutine(On.Celeste.Level.orig_TransitionRoutine orig, Level self,
