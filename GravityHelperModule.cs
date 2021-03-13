@@ -19,9 +19,11 @@ namespace GravityHelper
         #region Reflection Cache
 
         private static readonly FieldInfo normalHitboxFieldInfo = typeof(Player).GetRuntimeFields().First(f => f.Name == "normalHitbox");
-        private static readonly FieldInfo duckHitboxFieldInfo = typeof(Player).GetRuntimeFields().First(f => f.Name == "duckHitbox");
         private static readonly FieldInfo normalHurtboxFieldInfo = typeof(Player).GetRuntimeFields().First(f => f.Name == "normalHurtbox");
+        private static readonly FieldInfo duckHitboxFieldInfo = typeof(Player).GetRuntimeFields().First(f => f.Name == "duckHitbox");
         private static readonly FieldInfo duckHurtboxFieldInfo = typeof(Player).GetRuntimeFields().First(f => f.Name == "duckHurtbox");
+        private static readonly FieldInfo starFlyHitboxFieldInfo = typeof(Player).GetRuntimeFields().First(f => f.Name == "starFlyHitbox");
+        private static readonly FieldInfo starFlyHurtboxFieldInfo = typeof(Player).GetRuntimeFields().First(f => f.Name == "starFlyHurtbox");
         private static readonly MethodInfo m_VirtualJoystick_set_Value = typeof(VirtualJoystick).GetProperty("Value")?.GetSetMethod(true);
 
         #endregion
@@ -203,20 +205,27 @@ namespace GravityHelper
             player ??= Engine.Scene.Entities.FindFirst<Player>();
             if (player == null) return;
 
-            var normalHitbox = (Hitbox) normalHitboxFieldInfo.GetValue(player);
-            var duckHitbox = (Hitbox) duckHitboxFieldInfo.GetValue(player);
-            var normalHurtbox = (Hitbox) normalHurtboxFieldInfo.GetValue(player);
-            var duckHurtbox = (Hitbox) duckHurtboxFieldInfo.GetValue(player);
+            void invertHitbox(Hitbox hitbox) => hitbox.Position.Y = -hitbox.Position.Y - hitbox.Height;
 
-            if (Gravity == GravityType.Inverted && normalHitbox.Top < -1 || Gravity == GravityType.Normal && normalHitbox.Bottom > 1)
+            var normalHitbox = (Hitbox) normalHitboxFieldInfo.GetValue(player);
+            var normalHurtbox = (Hitbox) normalHurtboxFieldInfo.GetValue(player);
+            var duckHitbox = (Hitbox) duckHitboxFieldInfo.GetValue(player);
+            var duckHurtbox = (Hitbox) duckHurtboxFieldInfo.GetValue(player);
+            var starFlyHitbox = (Hitbox) starFlyHitboxFieldInfo.GetValue(player);
+            var starFlyHurtbox = (Hitbox) starFlyHurtboxFieldInfo.GetValue(player);
+
+            var collider = player.Collider ?? normalHitbox;
+
+            if (Gravity == GravityType.Inverted && collider.Top < -1 || Gravity == GravityType.Normal && collider.Bottom > 1)
             {
-                var collider = player.Collider ?? normalHitbox;
                 player.Position.Y = Gravity == GravityType.Inverted ? collider.AbsoluteTop : collider.AbsoluteBottom;
                 player.Speed.Y *= -1;
-                normalHitbox.Position.Y = -normalHitbox.Position.Y - normalHitbox.Height;
-                duckHitbox.Position.Y = -duckHitbox.Position.Y - duckHitbox.Height;
-                normalHurtbox.Position.Y = -normalHurtbox.Position.Y - normalHurtbox.Height;
-                duckHurtbox.Position.Y = -duckHurtbox.Position.Y - duckHurtbox.Height;
+                invertHitbox(normalHitbox);
+                invertHitbox(normalHurtbox);
+                invertHitbox(duckHitbox);
+                invertHitbox(duckHurtbox);
+                invertHitbox(starFlyHitbox);
+                invertHitbox(starFlyHurtbox);
             }
         }
 
@@ -399,8 +408,8 @@ namespace GravityHelper
         {
             var cursor = new ILCursor(il);
             cursor.GotoNext(instr => instr.MatchLdcR4(-105f));
+            cursor.Remove();
             cursor.EmitDelegate<Func<float>>(() => !ShouldInvert ? -105f : 105f);
-            cursor.Emit(OpCodes.Br_S, cursor.Next.Next);
         }
 
         private static void Solid_GetPlayerOnTop(ILContext il) => replaceSubtractionWithDelegate(new ILCursor(il));
