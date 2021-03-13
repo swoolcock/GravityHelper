@@ -7,19 +7,19 @@ namespace GravityHelper.Triggers
     [CustomEntity("GravityHelper/GravityTrigger")]
     public class GravityTrigger : Trigger
     {
-        private readonly GravityType gravityType;
+        public GravityType GravityType { get; }
 
         public GravityTrigger(EntityData data, Vector2 offset)
             : base(data, offset)
         {
-            gravityType = (GravityType)data.Int("gravityType");
+            GravityType = (GravityType)data.Int("gravityType");
         }
 
         public override void OnEnter(Player player)
         {
             base.OnEnter(player);
 
-            GravityHelperModule.Gravity = gravityType;
+            GravityHelperModule.Gravity = GravityType;
         }
     }
 }

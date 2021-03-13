@@ -120,6 +120,19 @@ namespace GravityHelper
             On.Celeste.Spikes.ctor_Vector2_int_Directions_string += SpikesOnctor_Vector2_int_Directions_string;
         }
 
+        private void PlayerOnAdded(On.Celeste.Player.orig_Added orig, Player self, Scene scene)
+        {
+            orig(self, scene);
+
+            // SpawnGravityTrigger is tracked to make this check faster on spawn
+            if (self.Scene.Tracker.Entities.ContainsKey(typeof(SpawnGravityTrigger)))
+            {
+                SpawnGravityTrigger trigger = self.CollideFirst<SpawnGravityTrigger>();
+                if (trigger != null)
+                    Gravity = trigger.GravityType;
+            }
+        }
+
         private void SpikesOnctor_Vector2_int_Directions_string(Spikes.orig_ctor_Vector2_int_Directions_string orig, Celeste.Spikes self, Vector2 position, int size, Celeste.Spikes.Directions direction, string type)
         {
             orig(self, position, size, direction, type);
