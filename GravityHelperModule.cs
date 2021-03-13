@@ -24,6 +24,7 @@ namespace GravityHelper
         private static readonly FieldInfo duckHurtboxFieldInfo = typeof(Player).GetRuntimeFields().First(f => f.Name == "duckHurtbox");
         private static readonly FieldInfo starFlyHitboxFieldInfo = typeof(Player).GetRuntimeFields().First(f => f.Name == "starFlyHitbox");
         private static readonly FieldInfo starFlyHurtboxFieldInfo = typeof(Player).GetRuntimeFields().First(f => f.Name == "starFlyHurtbox");
+        private static readonly FieldInfo varJumpTimerFieldInfo = typeof(Player).GetRuntimeFields().First(f => f.Name == "varJumpTimer");
         private static readonly MethodInfo m_VirtualJoystick_set_Value = typeof(VirtualJoystick).GetProperty("Value")?.GetSetMethod(true);
 
         #endregion
@@ -87,6 +88,7 @@ namespace GravityHelper
             IL.Celeste.Actor.IsRiding_Solid += Actor_IsRiding;
             IL.Celeste.Actor.MoveVExact += Actor_MoveVExact;
             On.Celeste.Actor.OnGround_int += Actor_OnGround_int;
+            On.Celeste.Player.Added += PlayerOnAdded;
 
             On.Celeste.Player.Update += Player_Update;
             hook_Player_orig_Update = new ILHook(typeof(Player).GetMethod(nameof(Player.orig_Update)), Player_orig_Update);
@@ -221,6 +223,8 @@ namespace GravityHelper
                 player.Position.Y = Gravity == GravityType.Inverted ? collider.AbsoluteTop : collider.AbsoluteBottom;
                 player.Speed.Y *= -1;
                 player.DashDir.Y *= -1;
+                varJumpTimerFieldInfo.SetValue(player, 0f);
+
                 invertHitbox(normalHitbox);
                 invertHitbox(normalHurtbox);
                 invertHitbox(duckHitbox);
