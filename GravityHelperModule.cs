@@ -9,6 +9,7 @@ using System;
 using System.Collections;
 using System.Linq;
 using System.Reflection;
+using GravityHelper.Triggers;
 using Spikes = On.Celeste.Spikes;
 
 namespace GravityHelper
@@ -53,27 +54,44 @@ namespace GravityHelper
         private static bool transitioning;
         private static bool solidMoving;
 
+        private static GravityType? gravity;
         public static GravityType Gravity
         {
-            get => Engine.Scene is Level level ? (GravityType)level.Session.GetCounter(Constants.CurrentGravityCounterKey) : GravityType.Normal;
+            get => Engine.Scene is Level level && Settings.Enabled ? gravity ??= (GravityType)level.Session.GetCounter(Constants.CurrentGravityCounterKey) : GravityType.Normal;
             set
             {
-                if (!(Engine.Scene is Level level)) return;
+                if (!(Engine.Scene is Level level) || !Settings.Enabled) return;
 
-                var currentGravity = Gravity;
+                var currentGravity = (GravityType)level.Session.GetCounter(Constants.CurrentGravityCounterKey);
+
                 if (value == currentGravity) return;
 
                 var newValue = value == GravityType.Toggle ? currentGravity.Opposite() : value;
+                gravity = newValue;
 
                 level.Session.SetCounter(Constants.CurrentGravityCounterKey, (int)newValue);
-                updateGravity();
 
-                GravityChanged?.Invoke(newValue);
-
-                var gravityListeners = Engine.Scene.Tracker.GetComponents<GravityListener>().ToArray();
-                foreach (Component component in gravityListeners)
-                    (component as GravityListener)?.GravityChanged(newValue);
+                TriggerGravityChanged();
             }
+        }
+
+        public static void TriggerGravityChanged()
+        {
+            var currentGravity = Gravity;
+
+            updateGravity();
+
+            GravityChanged?.Invoke(currentGravity);
+
+            var gravityListeners = Engine.Scene.Tracker.GetComponents<GravityListener>().ToArray();
+            foreach (Component component in gravityListeners)
+                (component as GravityListener)?.GravityChanged(currentGravity);
+        }
+
+        public static GravityType PreviousGravity
+        {
+            get => Engine.Scene is Level level ? (GravityType)level.Session.GetCounter(Constants.PreviousGravityCounterKey) : GravityType.Normal;
+            set => (Engine.Scene as Level)?.Session.SetCounter(Constants.PreviousGravityCounterKey, (int)value);
         }
 
         [Command("gravity", "[Gravity Helper] Sets the gravity:\n 0 -> Normal\n 1 -> Inverted\n 2 -> Toggle")]
@@ -97,6 +115,7 @@ namespace GravityHelper
             IL.Celeste.Actor.MoveVExact += Actor_MoveVExact;
             On.Celeste.Actor.OnGround_int += Actor_OnGround_int;
             On.Celeste.Player.Added += PlayerOnAdded;
+            On.Celeste.Player.Die += PlayerOnDie;
 
             On.Celeste.Player.Update += Player_Update;
             hook_Player_orig_Update = new ILHook(typeof(Player).GetMethod(nameof(Player.orig_Update)), Player_orig_Update);
@@ -128,17 +147,25 @@ namespace GravityHelper
             On.Celeste.Spikes.ctor_Vector2_int_Directions_string += SpikesOnctor_Vector2_int_Directions_string;
         }
 
+        private PlayerDeadBody PlayerOnDie(On.Celeste.Player.orig_Die orig, Player self, Vector2 direction, bool evenifinvincible, bool registerdeathinstats)
+        {
+            if (Settings.Enabled)
+                Gravity = PreviousGravity;
+
+            return orig(self, direction, evenifinvincible, registerdeathinstats);
+        }
+
         private void PlayerOnAdded(On.Celeste.Player.orig_Added orig, Player self, Scene scene)
         {
             orig(self, scene);
 
             // SpawnGravityTrigger is tracked to make this check faster on spawn
-            if (self.Scene.Tracker.Entities.ContainsKey(typeof(SpawnGravityTrigger)))
-            {
-                SpawnGravityTrigger trigger = self.CollideFirst<SpawnGravityTrigger>();
-                if (trigger != null)
-                    Gravity = trigger.GravityType;
-            }
+            SpawnGravityTrigger trigger = self.Scene.Tracker.Entities.ContainsKey(typeof(SpawnGravityTrigger)) ? null : self.CollideFirst<SpawnGravityTrigger>();
+            if (trigger != null)
+                Gravity = trigger.GravityType;
+            // make sure we update any listeners on spawn
+            else
+                TriggerGravityChanged();
         }
 
         private void SpikesOnctor_Vector2_int_Directions_string(Spikes.orig_ctor_Vector2_int_Directions_string orig, Celeste.Spikes self, Vector2 position, int size, Celeste.Spikes.Directions direction, string type)
@@ -332,6 +359,9 @@ namespace GravityHelper
         private static bool Player_TransitionTo(On.Celeste.Player.orig_TransitionTo orig, Player self, Vector2 target,
             Vector2 direction)
         {
+            if (Settings.Enabled)
+                PreviousGravity = Gravity;
+
             transitioning = true;
             bool val = orig(self, target, direction);
             transitioning = false;
