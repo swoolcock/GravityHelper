@@ -220,6 +220,7 @@ namespace GravityHelper
             {
                 player.Position.Y = Gravity == GravityType.Inverted ? collider.AbsoluteTop : collider.AbsoluteBottom;
                 player.Speed.Y *= -1;
+                player.DashDir.Y *= -1;
                 invertHitbox(normalHitbox);
                 invertHitbox(normalHurtbox);
                 invertHitbox(duckHitbox);
