@@ -123,8 +123,10 @@ namespace GravityHelper
             var updateSpriteMethod = typeof(Player).GetRuntimeMethods().First(m => m.Name == "orig_UpdateSprite");
             hook_Player_orig_UpdateSprite = new ILHook(updateSpriteMethod, Player_orig_UpdateSprite);
 
+            IL.Celeste.Player.NormalUpdate += PlayerOnNormalUpdate;
             IL.Celeste.Player.ClimbUpdate += Player_ClimbUpdate;
             IL.Celeste.Player.ClimbHopBlockedCheck += Player_ClimbHopBlockedCheck;
+            IL.Celeste.Player.ClimbCheck += PlayerOnClimbCheck;
 
             On.Celeste.Player.TransitionTo += Player_TransitionTo;
             //On.Celeste.Level.TransitionRoutine += Level_TransitionRoutine;
@@ -145,6 +147,33 @@ namespace GravityHelper
             // IL.Celeste.Player.DreamDashCheck += PlayerOnDreamDashCheck;
             On.Celeste.Player.SlipCheck += PlayerOnSlipCheck;
             On.Celeste.Spikes.ctor_Vector2_int_Directions_string += SpikesOnctor_Vector2_int_Directions_string;
+        }
+
+        private void PlayerOnClimbCheck(ILContext il)
+        {
+            var cursor = new ILCursor(il);
+
+            // replace Y
+            replaceAdditionWithDelegate(cursor);
+
+            // skip X
+            cursor.GotoNext(MoveType.After, instr => instr.MatchCall<Vector2>("op_Addition"));
+
+            // replace Y
+            replaceAdditionWithDelegate(cursor);
+        }
+
+        private void PlayerOnNormalUpdate(ILContext il)
+        {
+            var cursor = new ILCursor(il);
+
+            // if (!this.CollideCheck<Solid>(this.Position + Vector2.UnitY * (float) -index) && this.ClimbCheck((int) this.Facing, -index))
+            cursor.GotoNext(MoveType.After, instr => instr.MatchCall<Vector2>("get_UnitY"));
+            replaceAdditionWithDelegate(cursor);
+
+            // if ((water = this.CollideFirst<Water>(this.Position + Vector2.UnitY * 2f)) != null)
+            cursor.GotoNext(MoveType.After, instr => instr.MatchCall<Vector2>("get_UnitY"));
+            replaceAdditionWithDelegate(cursor);
         }
 
         private PlayerDeadBody PlayerOnDie(On.Celeste.Player.orig_Die orig, Player self, Vector2 direction, bool evenifinvincible, bool registerdeathinstats)
