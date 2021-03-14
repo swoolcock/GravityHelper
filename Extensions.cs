@@ -5,8 +5,9 @@ using MonoMod.Cil;
 
 namespace GravityHelper
 {
-    internal static class ILExtensions
+    internal static class Extensions
     {
+        #region IL Extensions
         public static bool AdditionPredicate(Instruction instr) => instr.MatchCall<Vector2>("op_Addition");
         public static bool SubtractionPredicate(Instruction instr) => instr.MatchCall<Vector2>("op_Subtraction");
         public static bool UnitYPredicate(Instruction instr) => instr.MatchCall<Vector2>("get_UnitY");
@@ -49,5 +50,7 @@ namespace GravityHelper
         public static void GotoNextMax(this ILCursor cursor, MoveType moveType) => cursor.GotoNext(moveType, MaxPredicate);
         public static void GotoNextSign(this ILCursor cursor, MoveType moveType) => cursor.GotoNext(moveType, SignPredicate);
         public static void GotoNextUnitY(this ILCursor cursor, MoveType moveType) => cursor.GotoNext(moveType, UnitYPredicate);
+
+        #endregion
     }
 }

@@ -19,7 +19,7 @@ namespace GravityHelper.Triggers
         {
             base.OnEnter(player);
 
-            GravityHelperModule.Gravity = GravityType;
+            GravityHelperModule.Session.Gravity = GravityType;
         }
     }
 }

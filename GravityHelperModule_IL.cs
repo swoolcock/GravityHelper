@@ -106,7 +106,7 @@ namespace GravityHelper
             var cursor = new ILCursor(il);
 
             // if (this.CollideCheck<Solid>(this.Position - Vector2.UnitY) || this.ClimbHopBlockedCheck() && this.SlipCheck(-1f))
-            cursor.GotoNext(MoveType.After, instr => ILExtensions.UnitYPredicate(instr) && ILExtensions.SubtractionPredicate(instr.Next));
+            cursor.GotoNext(MoveType.After, instr => Extensions.UnitYPredicate(instr) && Extensions.SubtractionPredicate(instr.Next));
             cursor.ReplaceSubtractionWithDelegate();
 
             // if (Input.MoveY.Value != 1 && (double) this.Speed.Y > 0.0 && !this.CollideCheck<Solid>(this.Position + new Vector2((float) this.Facing, 1f)))
@@ -134,11 +134,10 @@ namespace GravityHelper
 
         private static void PlayerHair_AfterUpdate(ILContext il)
         {
-            // FIXME
-            // var cursor = new ILCursor(il);
-            // cursor.ReplaceAdditionWithDelegate(-1);
-            // cursor.Goto(0);
-            // cursor.ReplaceSubtractionWithDelegate(-1);
+            var cursor = new ILCursor(il);
+            cursor.ReplaceAdditionWithDelegate(-1);
+            cursor.Goto(0);
+            cursor.ReplaceSubtractionWithDelegate(-1);
         }
 
         private static void Player_ClimbCheck(ILContext il)

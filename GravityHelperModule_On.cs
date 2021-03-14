@@ -44,7 +44,7 @@ namespace GravityHelper
             {
                 Settings.ToggleInvertGravity.ConsumePress();
                 if (Settings.Enabled)
-                    Gravity = Gravity.Opposite();
+                    Session.Gravity = GravityType.Toggle;
             }
 
             orig(self);
@@ -68,13 +68,11 @@ namespace GravityHelper
         {
             orig(self, position, spriteMode);
 
-            updateGravity(self);
-
             self.Add(new TransitionListener
             {
                 OnOutBegin = () => transitioning = true,
                 OnInEnd = () => transitioning = false
-            });
+            }, new GravityListener());
         }
 
         private static bool Actor_OnGround_int(On.Celeste.Actor.orig_OnGround_int orig, Actor self, int downCheck) =>
@@ -114,7 +112,7 @@ namespace GravityHelper
             Vector2 direction)
         {
             if (Settings.Enabled)
-                PreviousGravity = Gravity;
+                Session.PreviousGravity = Session.Gravity;
 
             transitioning = true;
             bool val = orig(self, target, direction);
@@ -151,12 +149,17 @@ namespace GravityHelper
 
             // CollideFirst<T> will crash if no such entity exists (we really need a CollideFirstOrDefault<T>!)
             SpawnGravityTrigger trigger = scene.Entities.AmountOf<SpawnGravityTrigger>() > 0 ? self.CollideFirst<SpawnGravityTrigger>() : null;
-            SetGravity(trigger?.GravityType ?? PreviousGravity, scene, true);
+            Session.Gravity = trigger?.GravityType ?? Session.PreviousGravity;
         }
 
         private static void Spikes_ctor_Vector2_int_Directions_string(Spikes.orig_ctor_Vector2_int_Directions_string orig, Celeste.Spikes self, Vector2 position, int size, Celeste.Spikes.Directions direction, string type)
         {
             orig(self, position, size, direction, type);
+
+            // we add a disabled ledge blocker for downward spikes
+            if (self.Direction == Celeste.Spikes.Directions.Down)
+                self.Add(new LedgeBlocker { Blocking = false });
+
             self.Add(new GravityListener());
         }
 
