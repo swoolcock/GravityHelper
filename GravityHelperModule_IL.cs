@@ -1,6 +1,5 @@
 using System;
 using Celeste;
-using Microsoft.Xna.Framework;
 using Mono.Cecil.Cil;
 using Monocle;
 using MonoMod.Cil;
@@ -11,10 +10,6 @@ namespace GravityHelper
     // ReSharper disable InconsistentNaming
     public partial class GravityHelperModule
     {
-        private delegate Vector2 VectorBinaryOperation(Vector2 lhs, Vector2 rhs);
-        private delegate float FloatBinaryOperation(float a, float b);
-        private delegate int FloatUnaryOperation(float a);
-
         private static IDetour hook_Player_orig_Update;
         private static IDetour hook_Player_orig_UpdateSprite;
 
@@ -73,19 +68,20 @@ namespace GravityHelper
             cursor.Emit(OpCodes.Starg, 1);
         }
 
-        private static void Actor_IsRiding(ILContext il) => replaceAdditionWithDelegate(new ILCursor(il));
+        private static void Actor_IsRiding(ILContext il) => new ILCursor(il).ReplaceAdditionWithDelegate();
 
         private static void Player_orig_Update(ILContext il)
         {
             var cursor = new ILCursor(il);
+
             // (Position + Vector2.UnitY) -> (Position - Vector2.UnitY)
-            replaceAdditionWithDelegate(cursor, 2);
+            cursor.ReplaceAdditionWithDelegate(2);
 
             // Math.Min(base.Y, highestAirY) -> Math.Max(base.Y, highestAirY)
-            replaceMaxWithDelegate(cursor);
+            cursor.ReplaceMaxWithDelegate();
 
             // (Position + Vector2.UnitY) -> (Position - Vector2.UnitY)
-            replaceAdditionWithDelegate(cursor, 2);
+            cursor.ReplaceAdditionWithDelegate(2);
         }
 
         private static void Player_orig_UpdateSprite(ILContext il)
@@ -93,37 +89,38 @@ namespace GravityHelper
             var cursor = new ILCursor(il);
 
             // fix dangling animation
-            replaceAdditionWithDelegate(cursor);
+            cursor.ReplaceAdditionWithDelegate();
 
             // skip push check
-            cursor.GotoNext(MoveType.After, instr => instr.MatchCall<Vector2>("op_Addition"));
+            cursor.GotoNextAddition(MoveType.After);
 
             // fix edge animation
-            replaceAdditionWithDelegate(cursor, 3);
+            cursor.ReplaceAdditionWithDelegate(3);
 
             // fix edgeBack animation
-            replaceAdditionWithDelegate(cursor, 3);
+            cursor.ReplaceAdditionWithDelegate(3);
         }
 
         private static void Player_ClimbUpdate(ILContext il)
         {
             var cursor = new ILCursor(il);
+
             // if (this.CollideCheck<Solid>(this.Position - Vector2.UnitY) || this.ClimbHopBlockedCheck() && this.SlipCheck(-1f))
-            cursor.GotoNext(MoveType.After,
-                instr => instr.MatchCall<Vector2>("get_UnitY") && instr.Next.MatchCall<Vector2>("op_Subtraction"));
-            replaceSubtractionWithDelegate(cursor);
+            cursor.GotoNext(MoveType.After, instr => ILExtensions.UnitYPredicate(instr) && ILExtensions.SubtractionPredicate(instr.Next));
+            cursor.ReplaceSubtractionWithDelegate();
 
             // if (Input.MoveY.Value != 1 && (double) this.Speed.Y > 0.0 && !this.CollideCheck<Solid>(this.Position + new Vector2((float) this.Facing, 1f)))
-            replaceAdditionWithDelegate(cursor);
+            cursor.ReplaceAdditionWithDelegate();
         }
 
-        private static void Player_ClimbHopBlockedCheck(ILContext il)
+        private static void Player_ClimbHopBlockedCheck(ILContext il) => new ILCursor(il).ReplaceSubtractionWithDelegate();
+
+        private static void Player_BeforeDownTransition(ILContext il)
         {
+            // replaceMaxWithDelegate(new ILCursor(il));
             var cursor = new ILCursor(il);
-            replaceSubtractionWithDelegate(cursor);
+            cursor.ReplaceAdditionWithDelegate();
         }
-
-        private static void Player_BeforeDownTransition(ILContext il) => replaceMaxWithDelegate(new ILCursor(il));
 
         private static void Player_BeforeUpTransition(ILContext il)
         {
@@ -133,14 +130,15 @@ namespace GravityHelper
             cursor.EmitDelegate<Func<float>>(() => !ShouldInvert ? -105f : 105f);
         }
 
-        private static void Solid_GetPlayerOnTop(ILContext il) => replaceSubtractionWithDelegate(new ILCursor(il));
+        private static void Solid_GetPlayerOnTop(ILContext il) => new ILCursor(il).ReplaceSubtractionWithDelegate();
 
         private static void PlayerHair_AfterUpdate(ILContext il)
         {
-            var cursor = new ILCursor(il);
-            replaceAdditionWithDelegate(cursor, -1);
-            cursor.Goto(0);
-            replaceSubtractionWithDelegate(cursor, -1);
+            // FIXME
+            // var cursor = new ILCursor(il);
+            // cursor.ReplaceAdditionWithDelegate(-1);
+            // cursor.Goto(0);
+            // cursor.ReplaceSubtractionWithDelegate(-1);
         }
 
         private static void Player_ClimbCheck(ILContext il)
@@ -148,13 +146,13 @@ namespace GravityHelper
             var cursor = new ILCursor(il);
 
             // replace Y
-            replaceAdditionWithDelegate(cursor);
+            cursor.ReplaceAdditionWithDelegate();
 
             // skip X
-            cursor.GotoNext(MoveType.After, instr => instr.MatchCall<Vector2>("op_Addition"));
+            cursor.GotoNextAddition(MoveType.After);
 
             // replace Y
-            replaceAdditionWithDelegate(cursor);
+            cursor.ReplaceAdditionWithDelegate();
         }
 
         private static void Player_NormalUpdate(ILContext il)
@@ -162,29 +160,29 @@ namespace GravityHelper
             var cursor = new ILCursor(il);
 
             // if (!this.CollideCheck<Solid>(this.Position + Vector2.UnitY * (float) -index) && this.ClimbCheck((int) this.Facing, -index))
-            cursor.GotoNext(MoveType.After, instr => instr.MatchCall<Vector2>("get_UnitY"));
-            replaceAdditionWithDelegate(cursor);
+            cursor.GotoNextUnitY(MoveType.After);
+            cursor.ReplaceAdditionWithDelegate();
 
             // if ((water = this.CollideFirst<Water>(this.Position + Vector2.UnitY * 2f)) != null)
-            cursor.GotoNext(MoveType.After, instr => instr.MatchCall<Vector2>("get_UnitY"));
-            replaceAdditionWithDelegate(cursor);
+            cursor.GotoNextUnitY(MoveType.After);
+            cursor.ReplaceAdditionWithDelegate();
         }
 
         private static void PlayerOnDreamDashCheck(ILContext il)
         {
             var cursor = new ILCursor(il);
             // DreamBlock dreamBlock = this.CollideFirst<DreamBlock>(this.Position + dir);
-            replaceAdditionWithDelegate(cursor);
+            cursor.ReplaceAdditionWithDelegate();
             // if (this.CollideCheck<Solid, DreamBlock>(this.Position + dir))
-            replaceAdditionWithDelegate(cursor);
+            cursor.ReplaceAdditionWithDelegate();
             // if (!this.CollideCheck<Solid, DreamBlock>(this.Position + dir + vector2 * (float) index))
-            replaceAdditionWithDelegate(cursor, 2);
+            cursor.ReplaceAdditionWithDelegate(2);
             // this.Position = this.Position + vector2 * (float) index;
-            replaceAdditionWithDelegate(cursor);
+            cursor.ReplaceAdditionWithDelegate();
             // if (!this.CollideCheck<Solid, DreamBlock>(this.Position + dir + vector2 * (float) index))
-            replaceAdditionWithDelegate(cursor, 2);
+            cursor.ReplaceAdditionWithDelegate(2);
             // this.Position = this.Position + vector2 * (float) index;
-            replaceAdditionWithDelegate(cursor);
+            cursor.ReplaceAdditionWithDelegate();
         }
 
         private static void Player_OnCollideV(ILContext il)
@@ -192,59 +190,15 @@ namespace GravityHelper
             var cursor = new ILCursor(il);
 
             // if (this.DashAttacking && (double) data.Direction.Y == (double) Math.Sign(this.DashDir.Y))
-            replaceSignWithDelegate(cursor);
+            cursor.ReplaceSignWithDelegate();
             // this.ReflectBounce(new Vector2(0.0f, (float) -Math.Sign(this.Speed.Y)));
-            replaceSignWithDelegate(cursor);
+            cursor.ReplaceSignWithDelegate();
             // if (this.DreamDashCheck(Vector2.UnitY * (float) Math.Sign(this.Speed.Y)))
-            replaceSignWithDelegate(cursor);
+            cursor.ReplaceSignWithDelegate();
 
             cursor.GotoNext(instr => instr.MatchCall<Entity>(nameof(Entity.CollideCheck)));
             cursor.Goto(cursor.Index - 2);
-            replaceAdditionWithDelegate(cursor, 4);
-        }
-
-        private static void replaceAdditionWithDelegate(ILCursor cursor, int count = 1)
-        {
-            while (count != 0 && cursor.TryGotoNext(instr => instr.MatchCall<Vector2>("op_Addition")))
-            {
-                if (count > 0) count--;
-                cursor.Remove();
-                cursor.EmitDelegate<VectorBinaryOperation>((lhs, rhs) =>
-                    lhs + (ShouldInvert ? new Vector2(rhs.X, -rhs.Y) : rhs));
-            }
-        }
-
-        private static void replaceSubtractionWithDelegate(ILCursor cursor, int count = 1)
-        {
-            while (count != 0 && cursor.TryGotoNext(instr => instr.MatchCall<Vector2>("op_Subtraction")))
-            {
-                if (count > 0) count--;
-                cursor.Remove();
-                cursor.EmitDelegate<VectorBinaryOperation>((lhs, rhs) =>
-                    lhs - (ShouldInvert ? new Vector2(rhs.X, -rhs.Y) : rhs));
-            }
-        }
-
-        private static void replaceMaxWithDelegate(ILCursor cursor, int count = 1)
-        {
-            while (count != 0 && cursor.TryGotoNext(instr => instr.MatchCall("System.Math", "Max")))
-            {
-                if (count > 0) count--;
-                cursor.Remove();
-                cursor.EmitDelegate<FloatBinaryOperation>((a, b) =>
-                    ShouldInvert ? Math.Min(a, b) : Math.Max(a, b));
-            }
-        }
-
-        private static void replaceSignWithDelegate(ILCursor cursor, int count = 1)
-        {
-            while (count != 0 && cursor.TryGotoNext(instr => instr.MatchCall("System.Math", "Sign")))
-            {
-                if (count > 0) count--;
-                cursor.Remove();
-                cursor.EmitDelegate<FloatUnaryOperation>(a =>
-                    ShouldInvert ? -Math.Sign(a) : Math.Sign(a));
-            }
+            cursor.ReplaceAdditionWithDelegate(4);
         }
     }
 }
