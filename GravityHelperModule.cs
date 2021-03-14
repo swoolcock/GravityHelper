@@ -58,26 +58,23 @@ namespace GravityHelper
         public static GravityType Gravity
         {
             get => Engine.Scene is Level level && Settings.Enabled ? gravity ??= (GravityType)level.Session.GetCounter(Constants.CurrentGravityCounterKey) : GravityType.Normal;
-            set
-            {
-                if (!(Engine.Scene is Level level) || !Settings.Enabled) return;
-
-                var currentGravity = (GravityType)level.Session.GetCounter(Constants.CurrentGravityCounterKey);
-
-                if (value == currentGravity) return;
-
-                var newValue = value == GravityType.Toggle ? currentGravity.Opposite() : value;
-                gravity = newValue;
-
-                level.Session.SetCounter(Constants.CurrentGravityCounterKey, (int)newValue);
-
-                TriggerGravityChanged();
-            }
+            set => SetGravity(value);
         }
 
-        public static void TriggerGravityChanged()
+        public static void SetGravity(GravityType gravityType, Scene scene = null, bool forceTrigger = false)
         {
-            var currentGravity = Gravity;
+            scene ??= Engine.Scene;
+
+            if (!(scene is Level level) || !Settings.Enabled) return;
+
+            var currentGravity = (GravityType)level.Session.GetCounter(Constants.CurrentGravityCounterKey);
+
+            if (gravityType == currentGravity && !forceTrigger) return;
+
+            var newValue = gravityType == GravityType.Toggle ? currentGravity.Opposite() : gravityType;
+            gravity = newValue;
+
+            level.Session.SetCounter(Constants.CurrentGravityCounterKey, (int)newValue);
 
             updateGravity();
 
@@ -115,7 +112,6 @@ namespace GravityHelper
             IL.Celeste.Actor.MoveVExact += Actor_MoveVExact;
             On.Celeste.Actor.OnGround_int += Actor_OnGround_int;
             On.Celeste.Player.Added += PlayerOnAdded;
-            On.Celeste.Player.Die += PlayerOnDie;
 
             On.Celeste.Player.Update += Player_Update;
             hook_Player_orig_Update = new ILHook(typeof(Player).GetMethod(nameof(Player.orig_Update)), Player_orig_Update);
@@ -176,25 +172,13 @@ namespace GravityHelper
             replaceAdditionWithDelegate(cursor);
         }
 
-        private PlayerDeadBody PlayerOnDie(On.Celeste.Player.orig_Die orig, Player self, Vector2 direction, bool evenifinvincible, bool registerdeathinstats)
-        {
-            if (Settings.Enabled)
-                Gravity = PreviousGravity;
-
-            return orig(self, direction, evenifinvincible, registerdeathinstats);
-        }
-
         private void PlayerOnAdded(On.Celeste.Player.orig_Added orig, Player self, Scene scene)
         {
             orig(self, scene);
 
-            // SpawnGravityTrigger is tracked to make this check faster on spawn
-            SpawnGravityTrigger trigger = self.Scene.Tracker.Entities.ContainsKey(typeof(SpawnGravityTrigger)) ? null : self.CollideFirst<SpawnGravityTrigger>();
-            if (trigger != null)
-                Gravity = trigger.GravityType;
-            // make sure we update any listeners on spawn
-            else
-                TriggerGravityChanged();
+            // CollideFirst<T> will crash if no such entity exists (we really need a CollideFirstOrDefault<T>!)
+            SpawnGravityTrigger trigger = scene.Entities.AmountOf<SpawnGravityTrigger>() > 0 ? self.CollideFirst<SpawnGravityTrigger>() : null;
+            SetGravity(trigger?.GravityType ?? PreviousGravity, scene, true);
         }
 
         private void SpikesOnctor_Vector2_int_Directions_string(Spikes.orig_ctor_Vector2_int_Directions_string orig, Celeste.Spikes self, Vector2 position, int size, Celeste.Spikes.Directions direction, string type)
