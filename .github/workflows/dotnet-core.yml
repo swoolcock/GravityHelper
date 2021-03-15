@@ -17,4 +17,4 @@ jobs:
     - name: Install dependencies
       run: dotnet restore
     - name: Build
-      run: dotnet build GravityHelper --configuration Release --no-restore
+      run: dotnet build GravityHelper.csproj --configuration Release --no-restore
