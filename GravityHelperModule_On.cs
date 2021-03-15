@@ -13,6 +13,7 @@ namespace GravityHelper
     {
         private static void loadOnHooks()
         {
+            On.Celeste.Actor.MoveVExact += Actor_MoveVExact;
             On.Celeste.Actor.OnGround_int += Actor_OnGround_int;
             On.Celeste.Level.Update += Level_Update;
             On.Celeste.Player.ctor += Player_ctor;
@@ -29,6 +30,7 @@ namespace GravityHelper
 
         private static void unloadOnHooks()
         {
+            On.Celeste.Actor.MoveVExact -= Actor_MoveVExact;
             On.Celeste.Actor.OnGround_int -= Actor_OnGround_int;
             On.Celeste.Level.Update -= Level_Update;
             On.Celeste.Player.ctor -= Player_ctor;
@@ -41,6 +43,12 @@ namespace GravityHelper
             On.Celeste.Player.Update -= Player_Update;
             On.Celeste.Solid.MoveVExact -= Solid_MoveVExact;
             On.Celeste.Spikes.ctor_Vector2_int_Directions_string -= Spikes_ctor_Vector2_int_Directions_string;
+        }
+
+        private static bool Actor_MoveVExact(On.Celeste.Actor.orig_MoveVExact orig, Actor self, int movev, Collision oncollide, Solid pusher)
+        {
+            var shouldInvert = self is Player player && player.CurrentBooster == null && !solidMoving && !transitioning && ShouldInvert;
+            return orig(self, shouldInvert ? -movev : movev, oncollide, pusher);
         }
 
         private static void Level_Update(On.Celeste.Level.orig_Update orig, Level self)

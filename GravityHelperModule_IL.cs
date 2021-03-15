@@ -19,7 +19,7 @@ namespace GravityHelper
         {
             IL.Celeste.Actor.IsRiding_JumpThru += Actor_IsRiding;
             IL.Celeste.Actor.IsRiding_Solid += Actor_IsRiding;
-            IL.Celeste.Actor.MoveVExact += Actor_MoveVExact;
+            // IL.Celeste.Actor.MoveVExact += Actor_MoveVExact;
             IL.Celeste.Level.EnforceBounds += Level_EnforceBounds;
             IL.Celeste.Player.ClimbCheck += Player_ClimbCheck;
             IL.Celeste.Player.ClimbHopBlockedCheck += Player_ClimbHopBlockedCheck;
@@ -49,7 +49,7 @@ namespace GravityHelper
         {
             IL.Celeste.Actor.IsRiding_JumpThru -= Actor_IsRiding;
             IL.Celeste.Actor.IsRiding_Solid -= Actor_IsRiding;
-            IL.Celeste.Actor.MoveVExact -= Actor_MoveVExact;
+            // IL.Celeste.Actor.MoveVExact -= Actor_MoveVExact;
             IL.Celeste.Level.EnforceBounds -= Level_EnforceBounds;
             IL.Celeste.Player.ClimbCheck -= Player_ClimbCheck;
             IL.Celeste.Player.ClimbHopBlockedCheck -= Player_ClimbHopBlockedCheck;
