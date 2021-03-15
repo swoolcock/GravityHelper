@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using Celeste;
 using GravityHelper.Triggers;
@@ -16,6 +17,8 @@ namespace GravityHelper
             On.Celeste.Level.Update += Level_Update;
             On.Celeste.Player.ctor += Player_ctor;
             On.Celeste.Player.Added += Player_Added;
+            On.Celeste.Player.BeforeUpTransition += Player_BeforeUpTransition;
+            On.Celeste.Player.BeforeDownTransition += Player_BeforeDownTransition;
             On.Celeste.Player.Render += Player_Render;
             On.Celeste.Player.SlipCheck += Player_SlipCheck;
             On.Celeste.Player.TransitionTo += Player_TransitionTo;
@@ -30,6 +33,8 @@ namespace GravityHelper
             On.Celeste.Level.Update -= Level_Update;
             On.Celeste.Player.ctor -= Player_ctor;
             On.Celeste.Player.Added -= Player_Added;
+            On.Celeste.Player.BeforeUpTransition -= Player_BeforeUpTransition;
+            On.Celeste.Player.BeforeDownTransition -= Player_BeforeDownTransition;
             On.Celeste.Player.Render -= Player_Render;
             On.Celeste.Player.SlipCheck -= Player_SlipCheck;
             On.Celeste.Player.TransitionTo -= Player_TransitionTo;
@@ -70,8 +75,7 @@ namespace GravityHelper
 
             self.Add(new TransitionListener
             {
-                OnOutBegin = () => transitioning = true,
-                OnInEnd = () => transitioning = false
+                OnOutBegin = () => Session.PreviousGravity = Session.Gravity,
             }, new GravityListener());
         }
 
@@ -89,31 +93,62 @@ namespace GravityHelper
             var aimY = Input.Aim.Value.Y;
             var moveY = Input.MoveY.Value;
 
-            setVirtualJoystickValue(new Vector2(Input.Aim.Value.X, -aimY));
+            Input.Aim.SetValue(new Vector2(Input.Aim.Value.X, -aimY));
             Input.MoveY.Value = -moveY;
 
             orig(self);
 
             Input.MoveY.Value = moveY;
-            setVirtualJoystickValue(new Vector2(Input.Aim.Value.X, aimY));
+            Input.Aim.SetValue(new Vector2(Input.Aim.Value.X, aimY));
         }
 
-        private static IEnumerator Level_TransitionRoutine(On.Celeste.Level.orig_TransitionRoutine orig, Level self,
-            LevelData next, Vector2 direction)
+        private static void Player_BeforeDownTransition(On.Celeste.Player.orig_BeforeDownTransition orig, Player self)
         {
-            transitioning = true;
-            IEnumerator origEnum = orig(self, next, direction);
-            while (origEnum.MoveNext())
-                yield return origEnum.Current;
-            transitioning = false;
+            if (!ShouldInvert)
+            {
+                orig(self);
+                return;
+            }
+
+            // FIXME: copied from Player.BeforeUpTransition - we never call orig!
+            self.Speed.X = 0.0f;
+            if (self.StateMachine.State != Player.StRedDash && self.StateMachine.State != Player.StReflectionFall && self.StateMachine.State != Player.StStarFly)
+            {
+                self.SetVarJumpSpeed(self.Speed.Y = -105f);
+                self.StateMachine.State = self.StateMachine.State != Player.StSummitLaunch ? Player.StNormal : Player.StIntroJump;
+                self.AutoJump = true;
+                self.AutoJumpTimer = 0.0f;
+                self.SetVarJumpTimer(0.2f);
+            }
+            self.SetDashCooldownTimer(0.2f);
+        }
+
+        private static void Player_BeforeUpTransition(On.Celeste.Player.orig_BeforeUpTransition orig, Player self)
+        {
+            if (!ShouldInvert)
+            {
+                orig(self);
+                return;
+            }
+
+            // FIXME: copied from Player.BeforeDownTransition - we never call orig!
+            if (self.StateMachine.State != Player.StRedDash && self.StateMachine.State != Player.StReflectionFall && self.StateMachine.State != Player.StStarFly)
+            {
+                self.StateMachine.State = Player.StNormal;
+                self.Speed.Y = Math.Max(0.0f, self.Speed.Y);
+                self.AutoJump = false;
+                self.SetVarJumpTimer(0.0f);
+            }
+            foreach (Entity entity in self.Scene.Tracker.GetEntities<Platform>())
+            {
+                if (!(entity is SolidTiles) && self.CollideCheckOutside(entity, self.Position - Vector2.UnitY * self.Height))
+                    entity.Collidable = false;
+            }
         }
 
         private static bool Player_TransitionTo(On.Celeste.Player.orig_TransitionTo orig, Player self, Vector2 target,
             Vector2 direction)
         {
-            if (Settings.Enabled)
-                Session.PreviousGravity = Session.Gravity;
-
             transitioning = true;
             bool val = orig(self, target, direction);
             transitioning = false;

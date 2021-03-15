@@ -1,28 +1,12 @@
-﻿using Celeste;
-using Celeste.Mod;
-using Microsoft.Xna.Framework;
+﻿using Celeste.Mod;
 using Monocle;
 using System;
-using System.Linq;
-using System.Reflection;
 
 namespace GravityHelper
 {
     // ReSharper disable InconsistentNaming
     public partial class GravityHelperModule : EverestModule
     {
-        private static readonly MethodInfo virtualJoystickSetValueMethodInfo = typeof(VirtualJoystick).GetProperty("Value")?.GetSetMethod(true);
-        private static readonly MethodInfo updateSpriteMethodInfo = typeof(Player).GetRuntimeMethods().First(m => m.Name == "orig_UpdateSprite");
-        private static readonly MethodInfo playerOrigUpdateMethodInfo = typeof(Player).GetMethod(nameof(Player.orig_Update));
-
-        private static readonly object[] virtualJoystickParams = { Vector2.Zero };
-
-        private static void setVirtualJoystickValue(Vector2 value)
-        {
-            virtualJoystickParams[0] = value;
-            virtualJoystickSetValueMethodInfo.Invoke(Input.Aim, virtualJoystickParams);
-        }
-
         public override Type SettingsType => typeof(GravityHelperModuleSettings);
         public static GravityHelperModuleSettings Settings => (GravityHelperModuleSettings) Instance._Settings;
 

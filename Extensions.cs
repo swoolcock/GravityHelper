@@ -1,12 +1,34 @@
 using System;
+using Celeste;
 using Microsoft.Xna.Framework;
 using Mono.Cecil.Cil;
+using Monocle;
 using MonoMod.Cil;
 
 namespace GravityHelper
 {
     internal static class Extensions
     {
+        #region Reflection Extensions
+
+        public static Hitbox GetNormalHitbox(this Player player) => (Hitbox) ReflectionCache.NormalHitboxFieldInfo.GetValue(player);
+        public static Hitbox GetNormalHurtbox(this Player player) => (Hitbox) ReflectionCache.NormalHurtboxFieldInfo.GetValue(player);
+        public static Hitbox GetDuckHitbox(this Player player) => (Hitbox) ReflectionCache.DuckHitboxFieldInfo.GetValue(player);
+        public static Hitbox GetDuckHurtbox(this Player player) => (Hitbox) ReflectionCache.DuckHurtboxFieldInfo.GetValue(player);
+        public static Hitbox GetStarFlyHitbox(this Player player) => (Hitbox) ReflectionCache.StarFlyHitboxFieldInfo.GetValue(player);
+        public static Hitbox GetStarFlyHurtbox(this Player player) => (Hitbox) ReflectionCache.StarFlyHurtboxFieldInfo.GetValue(player);
+        public static void SetVarJumpTimer(this Player player, float value) => ReflectionCache.VarJumpTimerFieldInfo.SetValue(player, value);
+        public static void SetVarJumpSpeed(this Player player, float value) => ReflectionCache.VarJumpSpeedFieldInfo.SetValue(player, value);
+        public static void SetDashCooldownTimer(this Player player, float value) => ReflectionCache.DashCooldownTimerFieldInfo.SetValue(player, value);
+
+        public static void SetValue(this VirtualJoystick virtualJoystick, Vector2 value)
+        {
+            ReflectionCache.VirtualJoystickSetValueParams[0] = value;
+            ReflectionCache.VirtualJoystickSetValueMethodInfo.Invoke(virtualJoystick, ReflectionCache.VirtualJoystickSetValueParams);
+        }
+
+        #endregion
+
         #region IL Extensions
         public static bool AdditionPredicate(Instruction instr) => instr.MatchCall<Vector2>("op_Addition");
         public static bool SubtractionPredicate(Instruction instr) => instr.MatchCall<Vector2>("op_Subtraction");
@@ -45,11 +67,11 @@ namespace GravityHelper
         public static void ReplaceMaxWithDelegate(this ILCursor cursor, int count = 1) => cursor.ReplaceWithDelegate(MaxPredicate, MaxDelegate, count);
         public static void ReplaceSignWithDelegate(this ILCursor cursor, int count = 1) => cursor.ReplaceWithDelegate(SignPredicate, SignDelegate, count);
 
-        public static void GotoNextAddition(this ILCursor cursor, MoveType moveType) => cursor.GotoNext(moveType, AdditionPredicate);
-        public static void GotoNextSubtraction(this ILCursor cursor, MoveType moveType) => cursor.GotoNext(moveType, SubtractionPredicate);
-        public static void GotoNextMax(this ILCursor cursor, MoveType moveType) => cursor.GotoNext(moveType, MaxPredicate);
-        public static void GotoNextSign(this ILCursor cursor, MoveType moveType) => cursor.GotoNext(moveType, SignPredicate);
-        public static void GotoNextUnitY(this ILCursor cursor, MoveType moveType) => cursor.GotoNext(moveType, UnitYPredicate);
+        public static void GotoNextAddition(this ILCursor cursor, MoveType moveType = MoveType.Before) => cursor.GotoNext(moveType, AdditionPredicate);
+        public static void GotoNextSubtraction(this ILCursor cursor, MoveType moveType = MoveType.Before) => cursor.GotoNext(moveType, SubtractionPredicate);
+        public static void GotoNextMax(this ILCursor cursor, MoveType moveType = MoveType.Before) => cursor.GotoNext(moveType, MaxPredicate);
+        public static void GotoNextSign(this ILCursor cursor, MoveType moveType = MoveType.Before) => cursor.GotoNext(moveType, SignPredicate);
+        public static void GotoNextUnitY(this ILCursor cursor, MoveType moveType = MoveType.Before) => cursor.GotoNext(moveType, UnitYPredicate);
 
         #endregion
     }
