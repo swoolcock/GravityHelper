@@ -20,7 +20,7 @@ jobs:
     - name: Build
       run: dotnet build GravityHelper.csproj --configuration Release -p:version=${{env.CURRENT_TAG}} --no-restore
     - name: Package
-      run: zip -q -j GravityHelper.zip everest.yaml bin/Release/net452/GravityHelper.dll
+      run: zip -q -r GravityHelper.zip everest.yaml bin/GravityHelper.dll Ahorn
     - name: Create Release
       id: create_release
       uses: actions/create-release@latest
