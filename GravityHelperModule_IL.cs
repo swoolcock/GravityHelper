@@ -1,6 +1,4 @@
-using System;
 using Celeste;
-using Microsoft.Xna.Framework;
 using Monocle;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
@@ -18,12 +16,16 @@ namespace GravityHelper
             IL.Celeste.Actor.IsRiding_JumpThru += Actor_IsRiding;
             IL.Celeste.Actor.IsRiding_Solid += Actor_IsRiding;
             IL.Celeste.Level.EnforceBounds += Level_EnforceBounds;
+            IL.Celeste.Player.Bounce += Player_Bounce;
             IL.Celeste.Player.ClimbCheck += Player_ClimbCheck;
             IL.Celeste.Player.ClimbHopBlockedCheck += Player_ClimbHopBlockedCheck;
             IL.Celeste.Player.ClimbUpdate += Player_ClimbUpdate;
             IL.Celeste.Player.Jump += Player_Jump;
             IL.Celeste.Player.NormalUpdate += Player_NormalUpdate;
+            IL.Celeste.Player.OnCollideH += Player_OnCollideH;
             IL.Celeste.Player.OnCollideV += Player_OnCollideV;
+            IL.Celeste.Player.SideBounce += Player_SideBounce;
+            IL.Celeste.Player.SuperBounce += Player_SuperBounce;
             IL.Celeste.PlayerHair.AfterUpdate += PlayerHair_AfterUpdate;
             IL.Celeste.Solid.GetPlayerOnTop += Solid_GetPlayerOnTop;
 
@@ -36,12 +38,16 @@ namespace GravityHelper
             IL.Celeste.Actor.IsRiding_JumpThru -= Actor_IsRiding;
             IL.Celeste.Actor.IsRiding_Solid -= Actor_IsRiding;
             IL.Celeste.Level.EnforceBounds -= Level_EnforceBounds;
+            IL.Celeste.Player.Bounce -= Player_Bounce;
             IL.Celeste.Player.ClimbCheck -= Player_ClimbCheck;
             IL.Celeste.Player.ClimbHopBlockedCheck -= Player_ClimbHopBlockedCheck;
             IL.Celeste.Player.ClimbUpdate -= Player_ClimbUpdate;
             IL.Celeste.Player.Jump -= Player_Jump;
             IL.Celeste.Player.NormalUpdate -= Player_NormalUpdate;
+            IL.Celeste.Player.OnCollideH -= Player_OnCollideH;
             IL.Celeste.Player.OnCollideV -= Player_OnCollideV;
+            IL.Celeste.Player.SideBounce -= Player_SideBounce;
+            IL.Celeste.Player.SuperBounce -= Player_SuperBounce;
             IL.Celeste.PlayerHair.AfterUpdate -= PlayerHair_AfterUpdate;
             IL.Celeste.Solid.GetPlayerOnTop -= Solid_GetPlayerOnTop;
 
@@ -52,15 +58,50 @@ namespace GravityHelper
             hook_Player_orig_UpdateSprite = null;
         }
 
+        private static void Player_SideBounce(ILContext il)
+        {
+            var cursor = new ILCursor(il);
+
+            // this.MoveV(Calc.Clamp(fromY - this.Bottom, -4f, 4f));
+            cursor.ReplaceBottomWithDelegate();
+        }
+
+        private static void Player_SuperBounce(ILContext il)
+        {
+            var cursor = new ILCursor(il);
+
+            // this.MoveV(fromY - this.Bottom);
+            cursor.ReplaceBottomWithDelegate();
+        }
+
+        private static void Player_Bounce(ILContext il)
+        {
+            var cursor = new ILCursor(il);
+
+            // this.MoveVExact((int) ((double) fromY - (double) this.Bottom));
+            cursor.ReplaceBottomWithDelegate();
+        }
+
+        private static void Player_OnCollideH(ILContext il)
+        {
+            var cursor = new ILCursor(il);
+
+            // (SKIP) if (this.onGround && this.DuckFreeAt(this.Position + Vector2.UnitX * (float) Math.Sign(this.Speed.X)))
+            cursor.GotoNext(MoveType.After, instr => instr.MatchCallvirt<Player>(nameof(Player.DuckFreeAt)));
+
+            // if (!this.CollideCheck<Solid>(this.Position + new Vector2((float) Math.Sign(this.Speed.X), (float) (index1 * index2))))
+            cursor.ReplaceAdditionWithDelegate();
+        }
+
         private static void Level_EnforceBounds(ILContext il)
         {
             var cursor = new ILCursor(il);
 
             // else if ((double) player.Bottom > (double) bounds.Bottom && this.Session.MapData.CanTransitionTo(this, player.Center + Vector2.UnitY * 12f) && !this.Session.LevelData.DisableDownTransition)
             cursor.GotoNext(instr => instr.MatchCallvirt<Player>(nameof(Player.BeforeDownTransition)));
-            cursor.GotoPrev(instr => instr.MatchCallvirt<Entity>("get_Bottom"));
+            cursor.GotoPrev(Extensions.BottomPredicate);
             cursor.Remove();
-            cursor.EmitDelegate<Func<Entity, float>>(e => ShouldInvert ? e.Top : e.Bottom);
+            cursor.EmitDelegate(Extensions.BottomDelegate);
         }
 
         private static void Player_Jump(ILContext il)
@@ -71,9 +112,7 @@ namespace GravityHelper
             cursor.ReplaceAdditionWithDelegate();
 
             // Dust.Burst(this.BottomCenter, -1.5707964f, 4, this.DustParticleFromSurfaceIndex(index));
-            cursor.GotoNext(instr => instr.MatchCall<Entity>("get_BottomCenter"));
-            cursor.Remove();
-            cursor.EmitDelegate<Func<Entity, Vector2>>(e => ShouldInvert ? e.TopCenter + Vector2.UnitY : e.BottomCenter);
+            cursor.ReplaceBottomCenterWithDelegate();
         }
 
         private static void Actor_IsRiding(ILContext il) => new ILCursor(il).ReplaceAdditionWithDelegate();
@@ -82,13 +121,22 @@ namespace GravityHelper
         {
             var cursor = new ILCursor(il);
 
-            // (Position + Vector2.UnitY) -> (Position - Vector2.UnitY)
+            // Platform platform = (Platform) this.CollideFirst<Solid>(this.Position + Vector2.UnitY) ?? (Platform) this.CollideFirstOutside<JumpThru>(this.Position + Vector2.UnitY);
             cursor.ReplaceAdditionWithDelegate(2);
 
-            // Math.Min(base.Y, highestAirY) -> Math.Max(base.Y, highestAirY)
-            cursor.ReplaceMaxWithDelegate();
+            // this.highestAirY = !this.onGround ? Math.Min(this.Y, this.highestAirY) : this.Y;
+            cursor.ReplaceMinWithDelegate();
 
-            // (Position + Vector2.UnitY) -> (Position - Vector2.UnitY)
+            // else if (this.onGround && (this.CollideCheck<Solid, NegaBlock>(this.Position + Vector2.UnitY) || this.CollideCheckOutside<JumpThru>(this.Position + Vector2.UnitY)) && (!this.CollideCheck<Spikes>(this.Position) || SaveData.Instance.Assists.Invincible))
+            cursor.ReplaceAdditionWithDelegate(2);
+
+            // (SKIP) else if (!this.CollideCheck<Solid>(this.Position + Vector2.UnitX * (float) Math.Sign(this.wallSpeedRetained)))
+            cursor.GotoNextAddition(MoveType.After);
+
+            // (SKIP) else if (!this.CollideCheck<Solid>(this.Position + Vector2.UnitX * (float) this.hopWaitX))
+            cursor.GotoNextAddition(MoveType.After);
+
+            // if (!this.onGround && this.DashAttacking && (double) this.DashDir.Y == 0.0 && (this.CollideCheck<Solid>(this.Position + Vector2.UnitY * 3f) || this.CollideCheckOutside<JumpThru>(this.Position + Vector2.UnitY * 3f)))
             cursor.ReplaceAdditionWithDelegate(2);
         }
 
