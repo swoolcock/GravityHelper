@@ -18,3 +18,10 @@ jobs:
       run: dotnet restore
     - name: Build
       run: dotnet build GravityHelper.csproj --configuration Release --no-restore
+    - name: Package
+      run: zip -q -r GravityHelper.zip everest.yaml bin/GravityHelper.dll Ahorn
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        path: ./GravityHelper.zip
+        name: GravityHelper.zip
