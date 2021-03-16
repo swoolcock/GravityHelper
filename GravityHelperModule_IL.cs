@@ -1,7 +1,6 @@
 using System;
 using Celeste;
 using Microsoft.Xna.Framework;
-using Mono.Cecil.Cil;
 using Monocle;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
@@ -13,13 +12,11 @@ namespace GravityHelper
     {
         private static IDetour hook_Player_orig_Update;
         private static IDetour hook_Player_orig_UpdateSprite;
-        private static IDetour hook_Level_orig_TransitionRoutine;
 
         private static void loadILHooks()
         {
             IL.Celeste.Actor.IsRiding_JumpThru += Actor_IsRiding;
             IL.Celeste.Actor.IsRiding_Solid += Actor_IsRiding;
-            // IL.Celeste.Actor.MoveVExact += Actor_MoveVExact;
             IL.Celeste.Level.EnforceBounds += Level_EnforceBounds;
             IL.Celeste.Player.ClimbCheck += Player_ClimbCheck;
             IL.Celeste.Player.ClimbHopBlockedCheck += Player_ClimbHopBlockedCheck;
@@ -34,22 +31,10 @@ namespace GravityHelper
             hook_Player_orig_UpdateSprite = new ILHook(ReflectionCache.UpdateSpriteMethodInfo, Player_orig_UpdateSprite);
         }
 
-        private static void Level_EnforceBounds(ILContext il)
-        {
-            var cursor = new ILCursor(il);
-
-            // else if ((double) player.Bottom > (double) bounds.Bottom && this.Session.MapData.CanTransitionTo(this, player.Center + Vector2.UnitY * 12f) && !this.Session.LevelData.DisableDownTransition)
-            cursor.GotoNext(instr => instr.MatchCallvirt<Player>(nameof(Player.BeforeDownTransition)));
-            cursor.GotoPrev(instr => instr.MatchCallvirt<Entity>("get_Bottom"));
-            cursor.Remove();
-            cursor.EmitDelegate<Func<Entity, float>>(e => ShouldInvert ? e.Top : e.Bottom);
-        }
-
         private static void unloadILHooks()
         {
             IL.Celeste.Actor.IsRiding_JumpThru -= Actor_IsRiding;
             IL.Celeste.Actor.IsRiding_Solid -= Actor_IsRiding;
-            // IL.Celeste.Actor.MoveVExact -= Actor_MoveVExact;
             IL.Celeste.Level.EnforceBounds -= Level_EnforceBounds;
             IL.Celeste.Player.ClimbCheck -= Player_ClimbCheck;
             IL.Celeste.Player.ClimbHopBlockedCheck -= Player_ClimbHopBlockedCheck;
@@ -65,25 +50,17 @@ namespace GravityHelper
 
             hook_Player_orig_UpdateSprite?.Dispose();
             hook_Player_orig_UpdateSprite = null;
-
-            hook_Level_orig_TransitionRoutine?.Dispose();
-            hook_Level_orig_TransitionRoutine = null;
         }
 
-        private static void Actor_MoveVExact(ILContext il)
+        private static void Level_EnforceBounds(ILContext il)
         {
             var cursor = new ILCursor(il);
-            cursor.Emit(OpCodes.Ldarg_0);
-            cursor.EmitDelegate<Func<Actor, bool>>(a =>
-                a is Player player
-                && player.CurrentBooster == null
-                && !solidMoving
-                && !transitioning
-                && ShouldInvert);
-            cursor.Emit(OpCodes.Brfalse_S, cursor.Next);
-            cursor.Emit(OpCodes.Ldarg_1);
-            cursor.Emit(OpCodes.Neg);
-            cursor.Emit(OpCodes.Starg, 1);
+
+            // else if ((double) player.Bottom > (double) bounds.Bottom && this.Session.MapData.CanTransitionTo(this, player.Center + Vector2.UnitY * 12f) && !this.Session.LevelData.DisableDownTransition)
+            cursor.GotoNext(instr => instr.MatchCallvirt<Player>(nameof(Player.BeforeDownTransition)));
+            cursor.GotoPrev(instr => instr.MatchCallvirt<Entity>("get_Bottom"));
+            cursor.Remove();
+            cursor.EmitDelegate<Func<Entity, float>>(e => ShouldInvert ? e.Top : e.Bottom);
         }
 
         private static void Player_Jump(ILContext il)

@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using Celeste;
 using GravityHelper.Triggers;
 using Microsoft.Xna.Framework;
@@ -56,8 +55,7 @@ namespace GravityHelper
             if (Settings.ToggleInvertGravity.Pressed)
             {
                 Settings.ToggleInvertGravity.ConsumePress();
-                if (Settings.Enabled)
-                    Session.Gravity = GravityType.Toggle;
+                Session.Gravity = GravityType.Toggle;
             }
 
             orig(self);
@@ -190,8 +188,7 @@ namespace GravityHelper
         {
             orig(self, scene);
 
-            // CollideFirst<T> will crash if no such entity exists (we really need a CollideFirstOrDefault<T>!)
-            SpawnGravityTrigger trigger = scene.Entities.AmountOf<SpawnGravityTrigger>() > 0 ? self.CollideFirst<SpawnGravityTrigger>() : null;
+            SpawnGravityTrigger trigger = self.CollideFirstOrDefault<SpawnGravityTrigger>();
             Session.Gravity = trigger?.GravityType ?? Session.PreviousGravity;
         }
 

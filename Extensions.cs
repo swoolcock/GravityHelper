@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Celeste;
 using Microsoft.Xna.Framework;
 using Mono.Cecil.Cil;
@@ -9,6 +10,17 @@ namespace GravityHelper
 {
     internal static class Extensions
     {
+        #region Misc Extensions
+
+        public static bool UsesGravityHelper(this Session session) =>
+            session.MapData?.Levels?.Any(level => (level.Triggers?.Any(trigger => trigger.Name.StartsWith("GravityHelper")) ?? false) ||
+                                                  (level.Entities?.Any(entity => entity.Name.StartsWith("GravityHelper")) ?? false)) ?? false;
+
+        public static T CollideFirstOrDefault<T>(this Entity entity) where T : Entity =>
+            entity.Scene.Tracker.Entities.ContainsKey(typeof(T)) ? entity.CollideFirst<T>() : default;
+
+        #endregion
+
         #region Reflection Extensions
 
         public static Hitbox GetNormalHitbox(this Player player) => (Hitbox) ReflectionCache.NormalHitboxFieldInfo.GetValue(player);

@@ -1,6 +1,11 @@
 ﻿using Celeste.Mod;
 using Monocle;
 using System;
+using Microsoft.Xna.Framework;
+using On.Celeste;
+using HiresSnow = Celeste.HiresSnow;
+using Overworld = Celeste.Overworld;
+using Session = Celeste.Session;
 
 namespace GravityHelper
 {
@@ -20,17 +25,61 @@ namespace GravityHelper
             Instance = this;
         }
 
+        #region Hook Activation
+
         public override void Load()
         {
-            loadOnHooks();
-            loadILHooks();
+            On.Celeste.LevelLoader.ctor += LevelLoader_ctor;
+            On.Celeste.OverworldLoader.ctor += OverworldLoader_ctor;
         }
 
         public override void Unload()
         {
-            unloadOnHooks();
-            unloadILHooks();
+            On.Celeste.LevelLoader.ctor -= LevelLoader_ctor;
+            On.Celeste.OverworldLoader.ctor -= OverworldLoader_ctor;
+
+            deactivateHooks();
         }
+
+        private static bool hooksActive;
+
+        private static void activateHooks()
+        {
+            if (hooksActive) return;
+            hooksActive = true;
+
+            loadOnHooks();
+            loadILHooks();
+        }
+
+        private static void deactivateHooks()
+        {
+            if (!hooksActive) return;
+            hooksActive = false;
+
+            unloadILHooks();
+            unloadOnHooks();
+        }
+
+        private void OverworldLoader_ctor(OverworldLoader.orig_ctor orig, Celeste.OverworldLoader self, Overworld.StartMode startmode, HiresSnow snow)
+        {
+            orig(self, startmode, snow);
+
+            if (startmode != (Overworld.StartMode)(-1))
+                deactivateHooks();
+        }
+
+        private void LevelLoader_ctor(LevelLoader.orig_ctor orig, Celeste.LevelLoader self, Session session, Vector2? startposition)
+        {
+            orig(self, session, startposition);
+
+            if (Settings.AllowInAllMaps || session.UsesGravityHelper())
+                activateHooks();
+            else
+                deactivateHooks();
+        }
+
+        #endregion
 
         private static bool transitioning;
         private static bool solidMoving;
@@ -43,6 +92,6 @@ namespace GravityHelper
                 (component as GravityListener)?.GravityChanged(gravity);
         }
 
-        public static bool ShouldInvert => Settings.Enabled && Session.Gravity == GravityType.Inverted;
-   }
+        public static bool ShouldInvert => Session.Gravity == GravityType.Inverted;
+    }
 }

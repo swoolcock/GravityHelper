@@ -5,7 +5,7 @@ namespace GravityHelper
 {
     public class GravityHelperModuleSettings : EverestModuleSettings
     {
-        public bool Enabled { get; set; } = true;
+        public bool AllowInAllMaps { get; set; } = false;
 
         [DefaultButtonBinding(0, Keys.NumPad1)]
         public ButtonBinding ToggleInvertGravity { get; set; }
