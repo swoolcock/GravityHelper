@@ -1,4 +1,6 @@
+using System;
 using Celeste;
+using Microsoft.Xna.Framework;
 using Monocle;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
@@ -20,6 +22,7 @@ namespace GravityHelper
             IL.Celeste.Player.ClimbCheck += Player_ClimbCheck;
             IL.Celeste.Player.ClimbHopBlockedCheck += Player_ClimbHopBlockedCheck;
             IL.Celeste.Player.ClimbUpdate += Player_ClimbUpdate;
+            IL.Celeste.Player.ExplodeLaunch_Vector2_bool_bool += Player_ExplodeLaunch_Vector2_bool_bool;
             IL.Celeste.Player.Jump += Player_Jump;
             IL.Celeste.Player.NormalUpdate += Player_NormalUpdate;
             IL.Celeste.Player.OnCollideH += Player_OnCollideH;
@@ -33,6 +36,16 @@ namespace GravityHelper
             hook_Player_orig_UpdateSprite = new ILHook(ReflectionCache.UpdateSpriteMethodInfo, Player_orig_UpdateSprite);
         }
 
+        private static void Player_ExplodeLaunch_Vector2_bool_bool(ILContext il)
+        {
+            var cursor = new ILCursor(il);
+
+            // Vector2 vector2 = (this.Center - from).SafeNormalize(-Vector2.UnitY);
+            cursor.GotoNext(instr => instr.MatchCall<Vector2>("op_UnaryNegation"));
+            cursor.Index += 2;
+            cursor.EmitDelegate<Func<Vector2, Vector2>>(v => ShouldInvert ? new Vector2(v.X, -v.Y) : v);
+        }
+
         private static void unloadILHooks()
         {
             IL.Celeste.Actor.IsRiding_JumpThru -= Actor_IsRiding;
@@ -42,6 +55,7 @@ namespace GravityHelper
             IL.Celeste.Player.ClimbCheck -= Player_ClimbCheck;
             IL.Celeste.Player.ClimbHopBlockedCheck -= Player_ClimbHopBlockedCheck;
             IL.Celeste.Player.ClimbUpdate -= Player_ClimbUpdate;
+            IL.Celeste.Player.ExplodeLaunch_Vector2_bool_bool -= Player_ExplodeLaunch_Vector2_bool_bool;
             IL.Celeste.Player.Jump -= Player_Jump;
             IL.Celeste.Player.NormalUpdate -= Player_NormalUpdate;
             IL.Celeste.Player.OnCollideH -= Player_OnCollideH;
