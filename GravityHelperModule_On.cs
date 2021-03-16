@@ -4,6 +4,7 @@ using GravityHelper.Triggers;
 using Microsoft.Xna.Framework;
 using Monocle;
 using Spikes = On.Celeste.Spikes;
+using Spring = On.Celeste.Spring;
 
 namespace GravityHelper
 {
@@ -25,6 +26,7 @@ namespace GravityHelper
             On.Celeste.Player.Update += Player_Update;
             On.Celeste.Solid.MoveVExact += Solid_MoveVExact;
             On.Celeste.Spikes.ctor_Vector2_int_Directions_string += Spikes_ctor_Vector2_int_Directions_string;
+            On.Celeste.Spring.OnCollide += Spring_OnCollide;
         }
 
         private static void unloadOnHooks()
@@ -42,6 +44,26 @@ namespace GravityHelper
             On.Celeste.Player.Update -= Player_Update;
             On.Celeste.Solid.MoveVExact -= Solid_MoveVExact;
             On.Celeste.Spikes.ctor_Vector2_int_Directions_string -= Spikes_ctor_Vector2_int_Directions_string;
+            On.Celeste.Spring.OnCollide -= Spring_OnCollide;
+        }
+
+        private static void Spring_OnCollide(Spring.orig_OnCollide orig, Celeste.Spring self, Player player)
+        {
+            if (!ShouldInvert)
+            {
+                orig(self, player);
+                return;
+            }
+
+            // check copied from orig
+            if (player.StateMachine.State == Player.StDreamDash || !self.GetPlayerCanUse())
+                return;
+
+            // if we hit a floor spring while inverted, flip gravity back to normal
+            if (self.Orientation == Celeste.Spring.Orientations.Floor)
+                Session.Gravity = GravityType.Normal;
+
+            orig(self, player);
         }
 
         private static bool Actor_MoveVExact(On.Celeste.Actor.orig_MoveVExact orig, Actor self, int movev, Collision oncollide, Solid pusher)
