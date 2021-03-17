@@ -74,6 +74,11 @@ namespace GravityHelper
 
             // if (player.onGround && (double) player.DashDir.X != 0.0 && ((double) player.DashDir.Y > 0.0 && (double) player.Speed.Y > 0.0) && (!player.Inventory.DreamDash || !player.CollideCheck<DreamBlock>(player.Position + Vector2.UnitY)))
             cursor.ReplaceAdditionWithDelegate();
+
+            // SlashFx.Burst(player.Center, player.DashDir.Angle());
+            cursor.GotoNext(instr => instr.MatchCall<SlashFx>(nameof(SlashFx.Burst)));
+            cursor.Index--;
+            cursor.EmitInvertVectorDelegate();
         }
 
         private static void Player_ExplodeLaunch_Vector2_bool_bool(ILContext il)
@@ -83,7 +88,7 @@ namespace GravityHelper
             // Vector2 vector2 = (this.Center - from).SafeNormalize(-Vector2.UnitY);
             cursor.GotoNext(instr => instr.MatchCall<Vector2>("op_UnaryNegation"));
             cursor.Index += 2;
-            cursor.EmitDelegate<Func<Vector2, Vector2>>(v => ShouldInvert ? new Vector2(v.X, -v.Y) : v);
+            cursor.EmitInvertVectorDelegate();
         }
 
         private static void Player_SideBounce(ILContext il)
