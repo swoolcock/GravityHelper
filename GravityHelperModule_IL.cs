@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework;
 using Monocle;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
+using MonoMod.Utils;
 
 namespace GravityHelper
 {
@@ -12,6 +13,7 @@ namespace GravityHelper
     {
         private static IDetour hook_Player_orig_Update;
         private static IDetour hook_Player_orig_UpdateSprite;
+        private static IDetour hook_Player_DashCoroutine;
 
         private static void loadILHooks()
         {
@@ -34,16 +36,7 @@ namespace GravityHelper
 
             hook_Player_orig_Update = new ILHook(ReflectionCache.PlayerOrigUpdateMethodInfo, Player_orig_Update);
             hook_Player_orig_UpdateSprite = new ILHook(ReflectionCache.UpdateSpriteMethodInfo, Player_orig_UpdateSprite);
-        }
-
-        private static void Player_ExplodeLaunch_Vector2_bool_bool(ILContext il)
-        {
-            var cursor = new ILCursor(il);
-
-            // Vector2 vector2 = (this.Center - from).SafeNormalize(-Vector2.UnitY);
-            cursor.GotoNext(instr => instr.MatchCall<Vector2>("op_UnaryNegation"));
-            cursor.Index += 2;
-            cursor.EmitDelegate<Func<Vector2, Vector2>>(v => ShouldInvert ? new Vector2(v.X, -v.Y) : v);
+            hook_Player_DashCoroutine = new ILHook(ReflectionCache.PlayerDashCoroutineMethodInfo.GetStateMachineTarget(), Player_DashCoroutine);
         }
 
         private static void unloadILHooks()
@@ -70,6 +63,27 @@ namespace GravityHelper
 
             hook_Player_orig_UpdateSprite?.Dispose();
             hook_Player_orig_UpdateSprite = null;
+
+            hook_Player_DashCoroutine?.Dispose();
+            hook_Player_DashCoroutine = null;
+        }
+
+        private static void Player_DashCoroutine(ILContext il)
+        {
+            var cursor = new ILCursor(il);
+
+            // if (player.onGround && (double) player.DashDir.X != 0.0 && ((double) player.DashDir.Y > 0.0 && (double) player.Speed.Y > 0.0) && (!player.Inventory.DreamDash || !player.CollideCheck<DreamBlock>(player.Position + Vector2.UnitY)))
+            cursor.ReplaceAdditionWithDelegate();
+        }
+
+        private static void Player_ExplodeLaunch_Vector2_bool_bool(ILContext il)
+        {
+            var cursor = new ILCursor(il);
+
+            // Vector2 vector2 = (this.Center - from).SafeNormalize(-Vector2.UnitY);
+            cursor.GotoNext(instr => instr.MatchCall<Vector2>("op_UnaryNegation"));
+            cursor.Index += 2;
+            cursor.EmitDelegate<Func<Vector2, Vector2>>(v => ShouldInvert ? new Vector2(v.X, -v.Y) : v);
         }
 
         private static void Player_SideBounce(ILContext il)
@@ -222,23 +236,6 @@ namespace GravityHelper
             cursor.ReplaceAdditionWithDelegate();
         }
 
-        private static void PlayerOnDreamDashCheck(ILContext il)
-        {
-            var cursor = new ILCursor(il);
-            // DreamBlock dreamBlock = this.CollideFirst<DreamBlock>(this.Position + dir);
-            cursor.ReplaceAdditionWithDelegate();
-            // if (this.CollideCheck<Solid, DreamBlock>(this.Position + dir))
-            cursor.ReplaceAdditionWithDelegate();
-            // if (!this.CollideCheck<Solid, DreamBlock>(this.Position + dir + vector2 * (float) index))
-            cursor.ReplaceAdditionWithDelegate(2);
-            // this.Position = this.Position + vector2 * (float) index;
-            cursor.ReplaceAdditionWithDelegate();
-            // if (!this.CollideCheck<Solid, DreamBlock>(this.Position + dir + vector2 * (float) index))
-            cursor.ReplaceAdditionWithDelegate(2);
-            // this.Position = this.Position + vector2 * (float) index;
-            cursor.ReplaceAdditionWithDelegate();
-        }
-
         private static void Player_OnCollideV(ILContext il)
         {
             var cursor = new ILCursor(il);
@@ -246,9 +243,9 @@ namespace GravityHelper
             // if (this.DashAttacking && (double) data.Direction.Y == (double) Math.Sign(this.DashDir.Y))
             cursor.ReplaceSignWithDelegate();
             // this.ReflectBounce(new Vector2(0.0f, (float) -Math.Sign(this.Speed.Y)));
-            cursor.ReplaceSignWithDelegate();
+            // cursor.ReplaceSignWithDelegate();
             // if (this.DreamDashCheck(Vector2.UnitY * (float) Math.Sign(this.Speed.Y)))
-            cursor.ReplaceSignWithDelegate();
+            // cursor.ReplaceSignWithDelegate();
 
             cursor.GotoNext(instr => instr.MatchCall<Entity>(nameof(Entity.CollideCheck)));
             cursor.Goto(cursor.Index - 2);

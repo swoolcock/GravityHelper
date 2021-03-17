@@ -23,6 +23,7 @@ namespace GravityHelper
         public static readonly MethodInfo UpdateSpriteMethodInfo = typeof(Player).GetRuntimeMethods().First(m => m.Name == "orig_UpdateSprite");
         public static readonly MethodInfo PlayerOrigUpdateMethodInfo = typeof(Player).GetMethod(nameof(Player.orig_Update));
         public static readonly MethodInfo LevelOrigTransitionRoutineMethodInfo = typeof(Level).GetRuntimeMethods().First(m => m.Name == "orig_TransitionRoutine");
+        public static readonly MethodInfo PlayerDashCoroutineMethodInfo = typeof(Player).GetMethod("DashCoroutine", BindingFlags.NonPublic | BindingFlags.Instance);
 
         public static readonly object[] VirtualJoystickSetValueParams = { Vector2.Zero };
     }

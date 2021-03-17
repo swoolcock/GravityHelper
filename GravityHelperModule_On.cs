@@ -20,6 +20,9 @@ namespace GravityHelper
             On.Celeste.Player.Added += Player_Added;
             On.Celeste.Player.BeforeUpTransition += Player_BeforeUpTransition;
             On.Celeste.Player.BeforeDownTransition += Player_BeforeDownTransition;
+            On.Celeste.Player.DreamDashCheck += Player_DreamDashCheck;
+            On.Celeste.Player.DreamDashUpdate += Player_DreamDashUpdate;
+            On.Celeste.Player.ReflectBounce += Player_ReflectBounce;
             On.Celeste.Player.Render += Player_Render;
             On.Celeste.Player.SlipCheck += Player_SlipCheck;
             On.Celeste.Player.TransitionTo += Player_TransitionTo;
@@ -38,6 +41,9 @@ namespace GravityHelper
             On.Celeste.Player.Added -= Player_Added;
             On.Celeste.Player.BeforeUpTransition -= Player_BeforeUpTransition;
             On.Celeste.Player.BeforeDownTransition -= Player_BeforeDownTransition;
+            On.Celeste.Player.DreamDashCheck -= Player_DreamDashCheck;
+            On.Celeste.Player.DreamDashUpdate -= Player_DreamDashUpdate;
+            On.Celeste.Player.ReflectBounce -= Player_ReflectBounce;
             On.Celeste.Player.Render -= Player_Render;
             On.Celeste.Player.SlipCheck -= Player_SlipCheck;
             On.Celeste.Player.TransitionTo -= Player_TransitionTo;
@@ -45,6 +51,41 @@ namespace GravityHelper
             On.Celeste.Solid.MoveVExact -= Solid_MoveVExact;
             On.Celeste.Spikes.ctor_Vector2_int_Directions_string -= Spikes_ctor_Vector2_int_Directions_string;
             On.Celeste.Spring.OnCollide -= Spring_OnCollide;
+        }
+
+        private static void Player_ReflectBounce(On.Celeste.Player.orig_ReflectBounce orig, Player self, Vector2 direction) =>
+            orig(self, ShouldInvert ? new Vector2(direction.X, -direction.Y) : direction);
+
+        private static int Player_DreamDashUpdate(On.Celeste.Player.orig_DreamDashUpdate orig, Player self)
+        {
+            if (!ShouldInvert)
+                return orig(self);
+
+            self.Speed.Y *= -1;
+            self.DashDir.Y *= -1;
+
+            var rv = orig(self);
+
+            self.Speed.Y *= -1;
+            self.DashDir.Y *= -1;
+
+            return rv;
+        }
+
+        private static bool Player_DreamDashCheck(On.Celeste.Player.orig_DreamDashCheck orig, Player self, Vector2 dir)
+        {
+            if (!ShouldInvert)
+                return orig(self, dir);
+
+            self.Speed.Y *= -1;
+            self.DashDir.Y *= -1;
+
+            var rv = orig(self, new Vector2(dir.X, -dir.Y));
+
+            self.Speed.Y *= -1;
+            self.DashDir.Y *= -1;
+
+            return rv;
         }
 
         private static void Spring_OnCollide(Spring.orig_OnCollide orig, Celeste.Spring self, Player player)
@@ -68,7 +109,11 @@ namespace GravityHelper
 
         private static bool Actor_MoveVExact(On.Celeste.Actor.orig_MoveVExact orig, Actor self, int movev, Collision oncollide, Solid pusher)
         {
-            var shouldInvert = self is Player player && player.CurrentBooster == null && !solidMoving && !transitioning && ShouldInvert;
+            var shouldInvert = self is Player player
+                               && player.StateMachine.State != Player.StDreamDash
+                               && player.CurrentBooster == null
+                               && !solidMoving && !transitioning
+                               && ShouldInvert;
             return orig(self, shouldInvert ? -movev : movev, oncollide, pusher);
         }
 
