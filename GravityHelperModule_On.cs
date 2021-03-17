@@ -29,6 +29,7 @@ namespace GravityHelper
             On.Celeste.Player.Update += Player_Update;
             On.Celeste.Solid.MoveVExact += Solid_MoveVExact;
             On.Celeste.Spikes.ctor_Vector2_int_Directions_string += Spikes_ctor_Vector2_int_Directions_string;
+            On.Celeste.Spikes.OnCollide += Spikes_OnCollide;
             On.Celeste.Spring.OnCollide += Spring_OnCollide;
         }
 
@@ -50,7 +51,22 @@ namespace GravityHelper
             On.Celeste.Player.Update -= Player_Update;
             On.Celeste.Solid.MoveVExact -= Solid_MoveVExact;
             On.Celeste.Spikes.ctor_Vector2_int_Directions_string -= Spikes_ctor_Vector2_int_Directions_string;
+            On.Celeste.Spikes.OnCollide -= Spikes_OnCollide;
             On.Celeste.Spring.OnCollide -= Spring_OnCollide;
+        }
+
+        private static void Spikes_OnCollide(Spikes.orig_OnCollide orig, Celeste.Spikes self, Player player)
+        {
+            if (!ShouldInvert || self.Direction == Celeste.Spikes.Directions.Left || self.Direction == Celeste.Spikes.Directions.Right)
+            {
+                orig(self, player);
+                return;
+            }
+
+            if (self.Direction == Celeste.Spikes.Directions.Up && player.Speed.Y <= 0)
+                player.Die(new Vector2(0, -1));
+            else if (self.Direction == Celeste.Spikes.Directions.Down && player.Speed.Y >= 0 && player.Top >= self.Top)
+                player.Die(new Vector2(0, 1));
         }
 
         private static void Player_ReflectBounce(On.Celeste.Player.orig_ReflectBounce orig, Player self, Vector2 direction) =>
