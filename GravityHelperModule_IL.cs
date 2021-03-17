@@ -1,6 +1,7 @@
 using System;
 using Celeste;
 using Microsoft.Xna.Framework;
+using Mono.Cecil.Cil;
 using Monocle;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
@@ -30,8 +31,9 @@ namespace GravityHelper
             IL.Celeste.Player.OnCollideH += Player_OnCollideH;
             IL.Celeste.Player.OnCollideV += Player_OnCollideV;
             IL.Celeste.Player.SideBounce += Player_SideBounce;
+            IL.Celeste.Player.StarFlyUpdate += Player_StarFlyUpdate;
             IL.Celeste.Player.SuperBounce += Player_SuperBounce;
-            IL.Celeste.PlayerHair.AfterUpdate += PlayerHair_AfterUpdate;
+            IL.Celeste.PlayerHair.Render += PlayerHair_Render;
             IL.Celeste.Solid.GetPlayerOnTop += Solid_GetPlayerOnTop;
 
             hook_Player_orig_Update = new ILHook(ReflectionCache.PlayerOrigUpdateMethodInfo, Player_orig_Update);
@@ -54,8 +56,9 @@ namespace GravityHelper
             IL.Celeste.Player.OnCollideH -= Player_OnCollideH;
             IL.Celeste.Player.OnCollideV -= Player_OnCollideV;
             IL.Celeste.Player.SideBounce -= Player_SideBounce;
+            IL.Celeste.Player.StarFlyUpdate -= Player_StarFlyUpdate;
             IL.Celeste.Player.SuperBounce -= Player_SuperBounce;
-            IL.Celeste.PlayerHair.AfterUpdate -= PlayerHair_AfterUpdate;
+            IL.Celeste.PlayerHair.Render -= PlayerHair_Render;
             IL.Celeste.Solid.GetPlayerOnTop -= Solid_GetPlayerOnTop;
 
             hook_Player_orig_Update?.Dispose();
@@ -66,6 +69,36 @@ namespace GravityHelper
 
             hook_Player_DashCoroutine?.Dispose();
             hook_Player_DashCoroutine = null;
+        }
+
+        private static void PlayerHair_Render(ILContext il)
+        {
+            var cursor = new ILCursor(il);
+
+            // this.GetHairTexture(index).Draw(this.Nodes[index], origin, this.GetHairColor(index), this.GetHairScale(index));
+            cursor.GotoNext(instr => instr.MatchCallvirt<PlayerHair>(nameof(PlayerHair.GetHairColor)));
+            cursor.GotoPrev(instr => instr.MatchLdloc(1));
+            cursor.Emit(OpCodes.Ldarg_0);
+            cursor.EmitDelegate<Func<Vector2, PlayerHair, Vector2>>((v, hair) =>
+            {
+                if (ShouldInvert && hair.Entity is Player player)
+                {
+                    return player.StateMachine.State != Player.StStarFly
+                        ? new Vector2(v.X, 2 * player.Position.Y - v.Y)
+                        : new Vector2(v.X, v.Y + 2 * player.GetNormalHitbox().CenterY);
+                }
+                return v;
+            });
+        }
+
+        private static void Player_StarFlyUpdate(ILContext il)
+        {
+            var cursor = new ILCursor(il);
+
+            // this.level.Particles.Emit(FlyFeather.P_Flying, 1, this.Center, Vector2.One * 2f, (-this.Speed).Angle());
+            cursor.GotoNext(instr => instr.MatchCallvirt<ParticleSystem>(nameof(ParticleSystem.Emit)));
+            cursor.Index--;
+            cursor.EmitInvertVectorDelegate();
         }
 
         private static void Player_DashCoroutine(ILContext il)
