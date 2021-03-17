@@ -27,7 +27,6 @@ namespace GravityHelper
             On.Celeste.Player.SlipCheck += Player_SlipCheck;
             On.Celeste.Player.TransitionTo += Player_TransitionTo;
             On.Celeste.Player.Update += Player_Update;
-            On.Celeste.PlayerHair.GetHairScale += PlayerHair_GetHairScale;
             On.Celeste.Solid.MoveVExact += Solid_MoveVExact;
             On.Celeste.Spikes.ctor_Vector2_int_Directions_string += Spikes_ctor_Vector2_int_Directions_string;
             On.Celeste.Spikes.OnCollide += Spikes_OnCollide;
@@ -50,7 +49,6 @@ namespace GravityHelper
             On.Celeste.Player.SlipCheck -= Player_SlipCheck;
             On.Celeste.Player.TransitionTo -= Player_TransitionTo;
             On.Celeste.Player.Update -= Player_Update;
-            On.Celeste.PlayerHair.GetHairScale -= PlayerHair_GetHairScale;
             On.Celeste.Solid.MoveVExact -= Solid_MoveVExact;
             On.Celeste.Spikes.ctor_Vector2_int_Directions_string -= Spikes_ctor_Vector2_int_Directions_string;
             On.Celeste.Spikes.OnCollide -= Spikes_OnCollide;
@@ -257,15 +255,6 @@ namespace GravityHelper
 
             if (ShouldInvert)
                 self.Sprite.Scale.Y = scaleY;
-        }
-
-        private static Vector2 PlayerHair_GetHairScale(On.Celeste.PlayerHair.orig_GetHairScale orig, PlayerHair self, int index)
-        {
-            if (!ShouldInvert)
-                return orig(self, index);
-
-            var scale = orig(self, index);
-            return new Vector2(scale.X, -scale.Y);
         }
 
         private static void Player_Added(On.Celeste.Player.orig_Added orig, Player self, Scene scene)

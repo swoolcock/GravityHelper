@@ -89,6 +89,9 @@ namespace GravityHelper
                 }
                 return v;
             });
+
+            cursor.GotoNext(MoveType.After, instr => instr.MatchCallvirt<PlayerHair>("GetHairScale"));
+            cursor.EmitInvertVectorDelegate();
         }
 
         private static void Player_StarFlyUpdate(ILContext il)
@@ -239,14 +242,6 @@ namespace GravityHelper
 
         private static void Solid_GetPlayerOnTop(ILContext il) => new ILCursor(il).ReplaceSubtractionWithDelegate();
 
-        private static void PlayerHair_AfterUpdate(ILContext il)
-        {
-            var cursor = new ILCursor(il);
-            cursor.ReplaceAdditionWithDelegate(-1);
-            cursor.Goto(0);
-            cursor.ReplaceSubtractionWithDelegate(-1);
-        }
-
         private static void Player_ClimbCheck(ILContext il)
         {
             var cursor = new ILCursor(il);
@@ -280,10 +275,6 @@ namespace GravityHelper
 
             // if (this.DashAttacking && (double) data.Direction.Y == (double) Math.Sign(this.DashDir.Y))
             cursor.ReplaceSignWithDelegate();
-            // this.ReflectBounce(new Vector2(0.0f, (float) -Math.Sign(this.Speed.Y)));
-            // cursor.ReplaceSignWithDelegate();
-            // if (this.DreamDashCheck(Vector2.UnitY * (float) Math.Sign(this.Speed.Y)))
-            // cursor.ReplaceSignWithDelegate();
 
             cursor.GotoNext(instr => instr.MatchCall<Entity>(nameof(Entity.CollideCheck)));
             cursor.Goto(cursor.Index - 2);
