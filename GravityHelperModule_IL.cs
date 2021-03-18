@@ -75,21 +75,40 @@ namespace GravityHelper
         {
             var cursor = new ILCursor(il);
 
+            void emitChangePositionDelegate()
+            {
+                cursor.Emit(OpCodes.Ldarg_0);
+                cursor.EmitDelegate<Func<Vector2, PlayerHair, Vector2>>((v, hair) =>
+                {
+                    if (ShouldInvert && hair.Entity is Player player)
+                    {
+                        return player.StateMachine.State != Player.StStarFly
+                            ? new Vector2(v.X, 2 * player.Position.Y - v.Y)
+                            : new Vector2(v.X, v.Y + 2 * player.GetNormalHitbox().CenterY);
+                    }
+                    return v;
+                });
+            }
+
+            // invert this.GetHairScale(index);
+            cursor.GotoNext(MoveType.After, instr => instr.MatchCallvirt<PlayerHair>("GetHairScale"));
+            cursor.EmitInvertVectorDelegate();
+
+            for (int i = 0; i < 4; i++)
+            {
+                // match hairTexture.Draw
+                cursor.GotoNext(instr => instr.MatchCallvirt<MTexture>(nameof(MTexture.Draw)));
+                cursor.GotoPrev(instr => instr.MatchLdcR4(out _));
+                cursor.Index--;
+                // adjust this.Nodes[index]
+                emitChangePositionDelegate();
+                cursor.GotoNext(MoveType.After,instr => instr.MatchCallvirt<MTexture>(nameof(MTexture.Draw)));
+            }
+
             // this.GetHairTexture(index).Draw(this.Nodes[index], origin, this.GetHairColor(index), this.GetHairScale(index));
             cursor.GotoNext(instr => instr.MatchCallvirt<PlayerHair>(nameof(PlayerHair.GetHairColor)));
             cursor.GotoPrev(instr => instr.MatchLdloc(1));
-            cursor.Emit(OpCodes.Ldarg_0);
-            cursor.EmitDelegate<Func<Vector2, PlayerHair, Vector2>>((v, hair) =>
-            {
-                if (ShouldInvert && hair.Entity is Player player)
-                {
-                    return player.StateMachine.State != Player.StStarFly
-                        ? new Vector2(v.X, 2 * player.Position.Y - v.Y)
-                        : new Vector2(v.X, v.Y + 2 * player.GetNormalHitbox().CenterY);
-                }
-                return v;
-            });
-
+            emitChangePositionDelegate();
             cursor.GotoNext(MoveType.After, instr => instr.MatchCallvirt<PlayerHair>("GetHairScale"));
             cursor.EmitInvertVectorDelegate();
         }
