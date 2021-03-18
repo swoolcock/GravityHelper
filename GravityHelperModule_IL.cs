@@ -64,10 +64,10 @@ namespace GravityHelper
             IL.Celeste.Player.SideBounce -= Player_SideBounce;
             IL.Celeste.Player.StarFlyUpdate -= Player_StarFlyUpdate;
             IL.Celeste.Player.SuperBounce -= Player_SuperBounce;
-            IL.Celeste.Player.SwimCheck += Player_SwimCheck;
-            IL.Celeste.Player.SwimJumpCheck += Player_SwimJumpCheck;
-            IL.Celeste.Player.SwimRiseCheck += Player_SwimRiseCheck;
-            IL.Celeste.Player.SwimUnderwaterCheck += Player_SwimUnderwaterCheck;
+            IL.Celeste.Player.SwimCheck -= Player_SwimCheck;
+            IL.Celeste.Player.SwimJumpCheck -= Player_SwimJumpCheck;
+            IL.Celeste.Player.SwimRiseCheck -= Player_SwimRiseCheck;
+            IL.Celeste.Player.SwimUnderwaterCheck -= Player_SwimUnderwaterCheck;
             IL.Celeste.PlayerHair.Render -= PlayerHair_Render;
             IL.Celeste.Solid.GetPlayerOnTop -= Solid_GetPlayerOnTop;
 
