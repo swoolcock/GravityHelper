@@ -20,6 +20,7 @@ namespace GravityHelper
         {
             IL.Celeste.Actor.IsRiding_JumpThru += Actor_IsRiding;
             IL.Celeste.Actor.IsRiding_Solid += Actor_IsRiding;
+            IL.Celeste.Bumper.OnPlayer += Bumper_OnPlayer;
             IL.Celeste.Level.EnforceBounds += Level_EnforceBounds;
             IL.Celeste.Player._IsOverWater += Player_IsOverWater;
             IL.Celeste.Player.Bounce += Player_Bounce;
@@ -49,6 +50,7 @@ namespace GravityHelper
         {
             IL.Celeste.Actor.IsRiding_JumpThru -= Actor_IsRiding;
             IL.Celeste.Actor.IsRiding_Solid -= Actor_IsRiding;
+            IL.Celeste.Bumper.OnPlayer -= Bumper_OnPlayer;
             IL.Celeste.Level.EnforceBounds -= Level_EnforceBounds;
             IL.Celeste.Player._IsOverWater -= Player_IsOverWater;
             IL.Celeste.Player.Bounce -= Player_Bounce;
@@ -77,6 +79,20 @@ namespace GravityHelper
 
             hook_Player_DashCoroutine?.Dispose();
             hook_Player_DashCoroutine = null;
+        }
+
+        private static void Bumper_OnPlayer(ILContext il)
+        {
+            var cursor = new ILCursor(il);
+            cursor.GotoNext(instr => instr.MatchCallvirt<Player>(nameof(Player.ExplodeLaunch)));
+            cursor.GotoPrev(MoveType.After, instr => instr.MatchLdfld<Entity>(nameof(Entity.Position)));
+
+            cursor.Emit(OpCodes.Ldarg_1);
+            cursor.EmitDelegate<Func<Vector2, Player, Vector2>>((v, p) =>
+            {
+                if (!ShouldInvert) return v;
+                return new Vector2(v.X,  p.CenterY - (v.Y - p.CenterY));
+            });
         }
 
         private static void Player_IsOverWater(ILContext il)
