@@ -33,6 +33,7 @@ namespace GravityHelper
         public static void SetVarJumpSpeed(this Player player, float value) => ReflectionCache.VarJumpSpeedFieldInfo.SetValue(player, value);
         public static void SetDashCooldownTimer(this Player player, float value) => ReflectionCache.DashCooldownTimerFieldInfo.SetValue(player, value);
         public static bool GetPlayerCanUse(this Spring spring) => (bool)ReflectionCache.PlayerCanUseFieldInfo.GetValue(spring);
+        public static float GetRespawnTimer(this Bumper bumper) => (float) ReflectionCache.BumperRespawnTimer.GetValue(bumper);
 
         public static void SetValue(this VirtualJoystick virtualJoystick, Vector2 value)
         {

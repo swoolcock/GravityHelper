@@ -18,6 +18,7 @@ namespace GravityHelper
         public static readonly FieldInfo VarJumpSpeedFieldInfo = typeof(Player).GetRuntimeFields().First(f => f.Name == "varJumpSpeed");
         public static readonly FieldInfo DashCooldownTimerFieldInfo = typeof(Player).GetRuntimeFields().First(f => f.Name == "dashCooldownTimer");
         public static readonly FieldInfo PlayerCanUseFieldInfo = typeof(Spring).GetRuntimeFields().First(f => f.Name == "playerCanUse");
+        public static readonly FieldInfo BumperRespawnTimer = typeof(Bumper).GetRuntimeFields().First(f => f.Name == "respawnTimer");
 
         public static readonly MethodInfo VirtualJoystickSetValueMethodInfo = typeof(VirtualJoystick).GetProperty("Value")?.GetSetMethod(true);
         public static readonly MethodInfo UpdateSpriteMethodInfo = typeof(Player).GetRuntimeMethods().First(m => m.Name == "orig_UpdateSprite");

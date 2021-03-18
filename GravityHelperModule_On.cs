@@ -3,6 +3,7 @@ using Celeste;
 using GravityHelper.Triggers;
 using Microsoft.Xna.Framework;
 using Monocle;
+using Bumper = On.Celeste.Bumper;
 using Spikes = On.Celeste.Spikes;
 using Spring = On.Celeste.Spring;
 
@@ -15,6 +16,7 @@ namespace GravityHelper
         {
             On.Celeste.Actor.MoveVExact += Actor_MoveVExact;
             On.Celeste.Actor.OnGround_int += Actor_OnGround_int;
+            On.Celeste.Bumper.OnPlayer += Bumper_OnPlayer;
             On.Celeste.Level.Update += Level_Update;
             On.Celeste.Player.ctor += Player_ctor;
             On.Celeste.Player.Added += Player_Added;
@@ -37,6 +39,7 @@ namespace GravityHelper
         {
             On.Celeste.Actor.MoveVExact -= Actor_MoveVExact;
             On.Celeste.Actor.OnGround_int -= Actor_OnGround_int;
+            On.Celeste.Bumper.OnPlayer -= Bumper_OnPlayer;
             On.Celeste.Level.Update -= Level_Update;
             On.Celeste.Player.ctor -= Player_ctor;
             On.Celeste.Player.Added -= Player_Added;
@@ -53,6 +56,16 @@ namespace GravityHelper
             On.Celeste.Spikes.ctor_Vector2_int_Directions_string -= Spikes_ctor_Vector2_int_Directions_string;
             On.Celeste.Spikes.OnCollide -= Spikes_OnCollide;
             On.Celeste.Spring.OnCollide -= Spring_OnCollide;
+        }
+
+        private static void Bumper_OnPlayer(Bumper.orig_OnPlayer orig, Celeste.Bumper self, Player player)
+        {
+            // need to get respawn timer first, as orig can potentially modify it
+            var respawnTimer = self.GetRespawnTimer();
+            orig(self, player);
+
+            if (ShouldInvert && respawnTimer <= 0)
+                player.Speed.Y *= -1;
         }
 
         private static void Spikes_OnCollide(Spikes.orig_OnCollide orig, Celeste.Spikes self, Player player)
