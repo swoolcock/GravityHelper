@@ -21,7 +21,6 @@ namespace GravityHelper
             IL.Celeste.Actor.IsRiding_JumpThru += Actor_IsRiding;
             IL.Celeste.Actor.IsRiding_Solid += Actor_IsRiding;
             IL.Celeste.Bumper.OnPlayer += Bumper_OnPlayer;
-            IL.Celeste.Level.EnforceBounds += Level_EnforceBounds;
             IL.Celeste.Player._IsOverWater += Player_IsOverWater;
             IL.Celeste.Player.Bounce += Player_Bounce;
             IL.Celeste.Player.ClimbCheck += Player_ClimbCheck;
@@ -51,7 +50,6 @@ namespace GravityHelper
             IL.Celeste.Actor.IsRiding_JumpThru -= Actor_IsRiding;
             IL.Celeste.Actor.IsRiding_Solid -= Actor_IsRiding;
             IL.Celeste.Bumper.OnPlayer -= Bumper_OnPlayer;
-            IL.Celeste.Level.EnforceBounds -= Level_EnforceBounds;
             IL.Celeste.Player._IsOverWater -= Player_IsOverWater;
             IL.Celeste.Player.Bounce -= Player_Bounce;
             IL.Celeste.Player.ClimbCheck -= Player_ClimbCheck;
@@ -228,17 +226,6 @@ namespace GravityHelper
 
             // if (!this.CollideCheck<Solid>(this.Position + new Vector2((float) Math.Sign(this.Speed.X), (float) (index1 * index2))))
             cursor.ReplaceAdditionWithDelegate();
-        }
-
-        private static void Level_EnforceBounds(ILContext il)
-        {
-            var cursor = new ILCursor(il);
-
-            // else if ((double) player.Bottom > (double) bounds.Bottom && this.Session.MapData.CanTransitionTo(this, player.Center + Vector2.UnitY * 12f) && !this.Session.LevelData.DisableDownTransition)
-            cursor.GotoNext(instr => instr.MatchCallvirt<Player>(nameof(Player.BeforeDownTransition)));
-            cursor.GotoPrev(Extensions.BottomPredicate);
-            cursor.Remove();
-            cursor.EmitDelegate(Extensions.BottomDelegate);
         }
 
         private static void Player_Jump(ILContext il)

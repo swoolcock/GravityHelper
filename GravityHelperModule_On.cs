@@ -15,6 +15,7 @@ namespace GravityHelper
         {
             On.Celeste.Actor.MoveVExact += Actor_MoveVExact;
             On.Celeste.Actor.OnGround_int += Actor_OnGround_int;
+            On.Celeste.Level.EnforceBounds += Level_EnforceBounds;
             On.Celeste.Level.Update += Level_Update;
             On.Celeste.Player.ctor += Player_ctor;
             On.Celeste.Player.Added += Player_Added;
@@ -37,6 +38,7 @@ namespace GravityHelper
         {
             On.Celeste.Actor.MoveVExact -= Actor_MoveVExact;
             On.Celeste.Actor.OnGround_int -= Actor_OnGround_int;
+            On.Celeste.Level.EnforceBounds -= Level_EnforceBounds;
             On.Celeste.Level.Update -= Level_Update;
             On.Celeste.Player.ctor -= Player_ctor;
             On.Celeste.Player.Added -= Player_Added;
@@ -53,6 +55,110 @@ namespace GravityHelper
             On.Celeste.Spikes.ctor_Vector2_int_Directions_string -= Spikes_ctor_Vector2_int_Directions_string;
             On.Celeste.Spikes.OnCollide -= Spikes_OnCollide;
             On.Celeste.Spring.OnCollide -= Spring_OnCollide;
+        }
+
+        private static void Level_EnforceBounds(On.Celeste.Level.orig_EnforceBounds orig, Level self, Player player)
+        {
+            if (!ShouldInvert)
+            {
+                orig(self, player);
+                return;
+            }
+
+            // TODO: not copy the entire contents of Level.EnforceBounds
+
+            Rectangle bounds = self.Bounds;
+            Rectangle rectangle = new Rectangle((int) self.Camera.Left, (int) self.Camera.Top, 320, 180);
+            if (self.Transitioning)
+                return;
+            if (self.CameraLockMode == Level.CameraLockModes.FinalBoss && player.Left < (double) rectangle.Left)
+            {
+                player.Left = rectangle.Left;
+                player.OnBoundsH();
+            }
+            else if (player.Left < (double) bounds.Left)
+            {
+                if (player.Top >= (double) bounds.Top && player.Bottom < (double) bounds.Bottom &&
+                    self.Session.MapData.CanTransitionTo(self, player.Center + Vector2.UnitX * -8f))
+                {
+                    player.BeforeSideTransition();
+                    self.CallNextLevel(player.Center + Vector2.UnitX * -8f, -Vector2.UnitX);
+                    return;
+                }
+
+                player.Left = bounds.Left;
+                player.OnBoundsH();
+            }
+
+            TheoCrystal entity = self.Tracker.GetEntity<TheoCrystal>();
+            if (self.CameraLockMode == Level.CameraLockModes.FinalBoss && player.Right > (double) rectangle.Right &&
+                rectangle.Right < bounds.Right - 4)
+            {
+                player.Right = rectangle.Right;
+                player.OnBoundsH();
+            }
+            else if (entity != null && (player.Holding == null || !player.Holding.IsHeld) && player.Right > (double) (bounds.Right - 1))
+                player.Right = bounds.Right - 1;
+            else if (player.Right > (double) bounds.Right)
+            {
+                if (player.Top >= (double) bounds.Top && player.Bottom < (double) bounds.Bottom &&
+                    self.Session.MapData.CanTransitionTo(self, player.Center + Vector2.UnitX * 8f))
+                {
+                    player.BeforeSideTransition();
+                    self.CallNextLevel(player.Center + Vector2.UnitX * 8f, Vector2.UnitX);
+                    return;
+                }
+
+                player.Right = bounds.Right;
+                player.OnBoundsH();
+            }
+
+            // changes start here
+
+            void tryToDie(int bounceAtPoint)
+            {
+                if (SaveData.Instance.Assists.Invincible)
+                {
+                    player.Play("event:/game/general/assist_screenbottom");
+                    player.Bounce(bounceAtPoint);
+                }
+                else
+                    player.Die(Vector2.Zero);
+            }
+
+            // transition down if required
+            if (self.CameraLockMode != Level.CameraLockModes.None && player.Bottom > rectangle.Bottom)
+            {
+                player.Bottom = rectangle.Bottom;
+                player.OnBoundsV();
+            }
+            else if (player.CenterY > bounds.Bottom)
+            {
+                if (self.Session.MapData.CanTransitionTo(self,
+                        player.Center + Vector2.UnitY * 12f) &&
+                    !self.Session.LevelData.DisableDownTransition &&
+                    !player.CollideCheck<Solid>(player.Position + Vector2.UnitY * 4f))
+                {
+                    player.BeforeDownTransition();
+                    self.CallNextLevel(player.Center + Vector2.UnitY * 12f, Vector2.UnitY);
+                }
+                else
+                {
+                    player.CenterY = bounds.Bottom;
+                    player.OnBoundsV();
+                }
+            }
+
+            // die or transition up if required
+            if (self.CameraLockMode != Level.CameraLockModes.None && rectangle.Top > bounds.Top + 4 && player.Bottom < rectangle.Top)
+                tryToDie(rectangle.Top);
+            else if (player.Top < bounds.Top && self.Session.MapData.CanTransitionTo(self, player.Center - Vector2.UnitY * 12f))
+            {
+                player.BeforeUpTransition();
+                self.CallNextLevel(player.Center - Vector2.UnitY * 12f, -Vector2.UnitY);
+            }
+            else if (player.Bottom < bounds.Top)
+                tryToDie(bounds.Top);
         }
 
         private static void Spikes_OnCollide(Spikes.orig_OnCollide orig, Celeste.Spikes self, Player player)
