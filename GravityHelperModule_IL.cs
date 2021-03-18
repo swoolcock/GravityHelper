@@ -21,6 +21,7 @@ namespace GravityHelper
             IL.Celeste.Actor.IsRiding_JumpThru += Actor_IsRiding;
             IL.Celeste.Actor.IsRiding_Solid += Actor_IsRiding;
             IL.Celeste.Level.EnforceBounds += Level_EnforceBounds;
+            IL.Celeste.Player._IsOverWater += Player_IsOverWater;
             IL.Celeste.Player.Bounce += Player_Bounce;
             IL.Celeste.Player.ClimbCheck += Player_ClimbCheck;
             IL.Celeste.Player.ClimbHopBlockedCheck += Player_ClimbHopBlockedCheck;
@@ -33,6 +34,10 @@ namespace GravityHelper
             IL.Celeste.Player.SideBounce += Player_SideBounce;
             IL.Celeste.Player.StarFlyUpdate += Player_StarFlyUpdate;
             IL.Celeste.Player.SuperBounce += Player_SuperBounce;
+            IL.Celeste.Player.SwimCheck += Player_SwimCheck;
+            IL.Celeste.Player.SwimJumpCheck += Player_SwimJumpCheck;
+            IL.Celeste.Player.SwimRiseCheck += Player_SwimRiseCheck;
+            IL.Celeste.Player.SwimUnderwaterCheck += Player_SwimUnderwaterCheck;
             IL.Celeste.PlayerHair.Render += PlayerHair_Render;
             IL.Celeste.Solid.GetPlayerOnTop += Solid_GetPlayerOnTop;
 
@@ -46,6 +51,7 @@ namespace GravityHelper
             IL.Celeste.Actor.IsRiding_JumpThru -= Actor_IsRiding;
             IL.Celeste.Actor.IsRiding_Solid -= Actor_IsRiding;
             IL.Celeste.Level.EnforceBounds -= Level_EnforceBounds;
+            IL.Celeste.Player._IsOverWater -= Player_IsOverWater;
             IL.Celeste.Player.Bounce -= Player_Bounce;
             IL.Celeste.Player.ClimbCheck -= Player_ClimbCheck;
             IL.Celeste.Player.ClimbHopBlockedCheck -= Player_ClimbHopBlockedCheck;
@@ -58,6 +64,10 @@ namespace GravityHelper
             IL.Celeste.Player.SideBounce -= Player_SideBounce;
             IL.Celeste.Player.StarFlyUpdate -= Player_StarFlyUpdate;
             IL.Celeste.Player.SuperBounce -= Player_SuperBounce;
+            IL.Celeste.Player.SwimCheck += Player_SwimCheck;
+            IL.Celeste.Player.SwimJumpCheck += Player_SwimJumpCheck;
+            IL.Celeste.Player.SwimRiseCheck += Player_SwimRiseCheck;
+            IL.Celeste.Player.SwimUnderwaterCheck += Player_SwimUnderwaterCheck;
             IL.Celeste.PlayerHair.Render -= PlayerHair_Render;
             IL.Celeste.Solid.GetPlayerOnTop -= Solid_GetPlayerOnTop;
 
@@ -69,6 +79,41 @@ namespace GravityHelper
 
             hook_Player_DashCoroutine?.Dispose();
             hook_Player_DashCoroutine = null;
+        }
+
+        private static void Player_IsOverWater(ILContext il)
+        {
+            var cursor = new ILCursor(il);
+            cursor.GotoNext(MoveType.After, instr => instr.MatchLdloc(0));
+            cursor.EmitDelegate<Func<Rectangle, Rectangle>>(r =>
+            {
+                if (ShouldInvert) r.Y -= 2;
+                return r;
+            });
+        }
+
+        private static void Player_SwimUnderwaterCheck(ILContext il)
+        {
+            var cursor = new ILCursor(il);
+            cursor.ReplaceAdditionWithDelegate();
+        }
+
+        private static void Player_SwimRiseCheck(ILContext il)
+        {
+            var cursor = new ILCursor(il);
+            cursor.ReplaceAdditionWithDelegate();
+        }
+
+        private static void Player_SwimJumpCheck(ILContext il)
+        {
+            var cursor = new ILCursor(il);
+            cursor.ReplaceAdditionWithDelegate();
+        }
+
+        private static void Player_SwimCheck(ILContext il)
+        {
+            var cursor = new ILCursor(il);
+            cursor.ReplaceAdditionWithDelegate();
         }
 
         private static void PlayerHair_Render(ILContext il)
@@ -203,7 +248,11 @@ namespace GravityHelper
             cursor.ReplaceBottomCenterWithDelegate();
         }
 
-        private static void Actor_IsRiding(ILContext il) => new ILCursor(il).ReplaceAdditionWithDelegate();
+        private static void Actor_IsRiding(ILContext il)
+        {
+            var cursor = new ILCursor(il);
+            cursor.ReplaceAdditionWithDelegate();
+        }
 
         private static void Player_orig_Update(ILContext il)
         {
@@ -226,6 +275,16 @@ namespace GravityHelper
 
             // if (!this.onGround && this.DashAttacking && (double) this.DashDir.Y == 0.0 && (this.CollideCheck<Solid>(this.Position + Vector2.UnitY * 3f) || this.CollideCheckOutside<JumpThru>(this.Position + Vector2.UnitY * 3f)))
             cursor.ReplaceAdditionWithDelegate(2);
+
+            // invert Center.Y check (fixes Madeline slamming into the ground when climbing down into water)
+            // if (water != null && (double) this.Center.Y < (double) water.Center.Y)
+            cursor.GotoNext(MoveType.After, instr => instr.MatchCallvirt<Player>("SwimCheck"));
+            cursor.GotoNext(MoveType.After, instr => instr.MatchCallvirt<Player>("SwimCheck"));
+            cursor.GotoNext(MoveType.After, instr => instr.MatchCallvirt<Player>("SwimCheck"));
+            cursor.GotoNext(MoveType.After, instr => instr.MatchLdfld<Vector2>(nameof(Vector2.Y)));
+            cursor.EmitDelegate<Func<float, float>>(f => ShouldInvert ? -f : f);
+            cursor.GotoNext(MoveType.After, instr => instr.MatchLdfld<Vector2>(nameof(Vector2.Y)));
+            cursor.EmitDelegate<Func<float, float>>(f => ShouldInvert ? -f : f);
         }
 
         private static void Player_orig_UpdateSprite(ILContext il)
