@@ -19,6 +19,28 @@ namespace GravityHelper
         public static T CollideFirstOrDefault<T>(this Entity entity) where T : Entity =>
             entity.Scene.Tracker.Entities.ContainsKey(typeof(T)) ? entity.CollideFirst<T>() : default;
 
+        public static Entity CollideFirstOutside(this Entity entity, Type type, Vector2 at)
+        {
+            foreach (Entity b in entity.Scene.Tracker.Entities[type])
+            {
+                if (!Collide.Check(entity, b) && Collide.Check(entity, b, at))
+                    return b;
+            }
+
+            return default;
+        }
+
+        public static bool CollideCheckOutside(this Entity entity, Type type, Vector2 at)
+        {
+            foreach (Entity b in entity.Scene.Tracker.Entities[type])
+            {
+                if (!Collide.Check(entity, b) && Collide.Check(entity, b, at))
+                    return true;
+            }
+
+            return false;
+        }
+
         #endregion
 
         #region Reflection Extensions
@@ -108,6 +130,9 @@ namespace GravityHelper
 
         public static void EmitInvertVectorDelegate(this ILCursor cursor) =>
             cursor.EmitDelegate<Func<Vector2, Vector2>>(v => GravityHelperModule.ShouldInvert ? new Vector2(v.X, -v.Y) : v);
+
+        public static void EmitInvertFloatDelegate(this ILCursor cursor) =>
+            cursor.EmitDelegate<Func<float, float>>(f => GravityHelperModule.ShouldInvert ? -f : f);
 
         #endregion
     }

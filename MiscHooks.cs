@@ -115,18 +115,23 @@ namespace GravityHelper
 
         #region On Hooks
 
-        private static bool Actor_MoveVExact(On.Celeste.Actor.orig_MoveVExact orig, Actor self, int movev, Collision oncollide, Solid pusher)
-        {
-            var shouldInvert = self is Player player
-                               && player.StateMachine.State != Player.StDreamDash
-                               && player.CurrentBooster == null
-                               && !GravityHelperModule.SolidMoving && !GravityHelperModule.Transitioning
-                               && GravityHelperModule.ShouldInvert;
-            return orig(self, shouldInvert ? -movev : movev, oncollide, pusher);
-        }
+        private static bool Actor_MoveVExact(On.Celeste.Actor.orig_MoveVExact orig, Actor self, int movev, Collision oncollide, Solid pusher) =>
+            orig(self, GravityHelperModule.ShouldInvertActor(self) ? -movev : movev, oncollide, pusher);
 
-        private static bool Actor_OnGround_int(On.Celeste.Actor.orig_OnGround_int orig, Actor self, int downCheck) =>
-            orig(self, GravityHelperModule.ShouldInvert && self is Player ? -downCheck : downCheck);
+        private static bool Actor_OnGround_int(On.Celeste.Actor.orig_OnGround_int orig, Actor self, int downCheck)
+        {
+            if (!GravityHelperModule.ShouldInvert || !(self is Player))
+                return orig(self, downCheck);
+
+            if (self.CollideCheck<Solid>(self.Position - Vector2.UnitY * downCheck))
+                return true;
+
+            var udjtType = ReflectionCache.UpsideDownJumpThruType;
+            if (!self.IgnoreJumpThrus && udjtType != null)
+                return self.CollideCheckOutside(udjtType, self.Position - Vector2.UnitY * downCheck);
+
+            return false;
+        }
 
         private static void Level_EnforceBounds(On.Celeste.Level.orig_EnforceBounds orig, Level self, Player player)
         {

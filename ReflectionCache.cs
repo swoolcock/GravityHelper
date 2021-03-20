@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Reflection;
 using Celeste;
@@ -8,25 +9,34 @@ namespace GravityHelper
 {
     internal static class ReflectionCache
     {
-        public static readonly FieldInfo NormalHitboxFieldInfo = typeof(Player).GetRuntimeFields().First(f => f.Name == "normalHitbox");
-        public static readonly FieldInfo NormalHurtboxFieldInfo = typeof(Player).GetRuntimeFields().First(f => f.Name == "normalHurtbox");
-        public static readonly FieldInfo DuckHitboxFieldInfo = typeof(Player).GetRuntimeFields().First(f => f.Name == "duckHitbox");
-        public static readonly FieldInfo DuckHurtboxFieldInfo = typeof(Player).GetRuntimeFields().First(f => f.Name == "duckHurtbox");
-        public static readonly FieldInfo StarFlyHitboxFieldInfo = typeof(Player).GetRuntimeFields().First(f => f.Name == "starFlyHitbox");
-        public static readonly FieldInfo StarFlyHurtboxFieldInfo = typeof(Player).GetRuntimeFields().First(f => f.Name == "starFlyHurtbox");
-        public static readonly FieldInfo VarJumpTimerFieldInfo = typeof(Player).GetRuntimeFields().First(f => f.Name == "varJumpTimer");
-        public static readonly FieldInfo VarJumpSpeedFieldInfo = typeof(Player).GetRuntimeFields().First(f => f.Name == "varJumpSpeed");
-        public static readonly FieldInfo DashCooldownTimerFieldInfo = typeof(Player).GetRuntimeFields().First(f => f.Name == "dashCooldownTimer");
-        public static readonly FieldInfo PlayerCanUseFieldInfo = typeof(Spring).GetRuntimeFields().First(f => f.Name == "playerCanUse");
-        public static readonly FieldInfo BumperRespawnTimer = typeof(Bumper).GetRuntimeFields().First(f => f.Name == "respawnTimer");
+        public static Type GetTypeByName(string name) =>
+            AppDomain.CurrentDomain.GetAssemblies().Reverse().Select(a => a.GetType(name)).FirstOrDefault(t => t != null);
+
+        public static readonly FieldInfo NormalHitboxFieldInfo = typeof(Player).GetField("normalHitbox", BindingFlags.Instance | BindingFlags.NonPublic);
+        public static readonly FieldInfo NormalHurtboxFieldInfo = typeof(Player).GetField("normalHurtbox", BindingFlags.Instance | BindingFlags.NonPublic);
+        public static readonly FieldInfo DuckHitboxFieldInfo = typeof(Player).GetField("duckHitbox", BindingFlags.Instance | BindingFlags.NonPublic);
+        public static readonly FieldInfo DuckHurtboxFieldInfo = typeof(Player).GetField("duckHurtbox", BindingFlags.Instance | BindingFlags.NonPublic);
+        public static readonly FieldInfo StarFlyHitboxFieldInfo = typeof(Player).GetField("starFlyHitbox", BindingFlags.Instance | BindingFlags.NonPublic);
+        public static readonly FieldInfo StarFlyHurtboxFieldInfo = typeof(Player).GetField("starFlyHurtbox", BindingFlags.Instance | BindingFlags.NonPublic);
+        public static readonly FieldInfo VarJumpTimerFieldInfo = typeof(Player).GetField("varJumpTimer", BindingFlags.Instance | BindingFlags.NonPublic);
+        public static readonly FieldInfo VarJumpSpeedFieldInfo = typeof(Player).GetField("varJumpSpeed", BindingFlags.Instance | BindingFlags.NonPublic);
+        public static readonly FieldInfo DashCooldownTimerFieldInfo = typeof(Player).GetField("dashCooldownTimer", BindingFlags.Instance | BindingFlags.NonPublic);
+        public static readonly FieldInfo PlayerCanUseFieldInfo = typeof(Spring).GetField("playerCanUse", BindingFlags.Instance | BindingFlags.NonPublic);
+        public static readonly FieldInfo BumperRespawnTimer = typeof(Bumper).GetField("respawnTimer", BindingFlags.Instance | BindingFlags.NonPublic);
+        public static readonly FieldInfo PlayerLastClimbMoveFieldInfo = typeof (Player).GetField("lastClimbMove", BindingFlags.Instance | BindingFlags.NonPublic);
 
         public static readonly MethodInfo VirtualJoystickSetValueMethodInfo = typeof(VirtualJoystick).GetProperty("Value")?.GetSetMethod(true);
-        public static readonly MethodInfo UpdateSpriteMethodInfo = typeof(Player).GetRuntimeMethods().First(m => m.Name == "orig_UpdateSprite");
+        public static readonly MethodInfo UpdateSpriteMethodInfo = typeof(Player).GetMethod("orig_UpdateSprite", BindingFlags.Instance | BindingFlags.NonPublic);
         public static readonly MethodInfo PlayerOrigUpdateMethodInfo = typeof(Player).GetMethod(nameof(Player.orig_Update));
-        public static readonly MethodInfo LevelOrigTransitionRoutineMethodInfo = typeof(Level).GetRuntimeMethods().First(m => m.Name == "orig_TransitionRoutine");
-        public static readonly MethodInfo PlayerDashCoroutineMethodInfo = typeof(Player).GetMethod("DashCoroutine", BindingFlags.NonPublic | BindingFlags.Instance);
-        public static readonly MethodInfo LevelNextLevelMethodInfo = typeof(Level).GetMethod("NextLevel", BindingFlags.NonPublic | BindingFlags.Instance);
+        public static readonly MethodInfo LevelOrigTransitionRoutineMethodInfo = typeof(Level).GetMethod("orig_TransitionRoutine", BindingFlags.Instance | BindingFlags.NonPublic);
+        public static readonly MethodInfo PlayerDashCoroutineMethodInfo = typeof(Player).GetMethod("DashCoroutine", BindingFlags.Instance | BindingFlags.NonPublic);
+        public static readonly MethodInfo LevelNextLevelMethodInfo = typeof(Level).GetMethod("NextLevel", BindingFlags.Instance | BindingFlags.NonPublic);
 
         public static readonly object[] VirtualJoystickSetValueParams = { Vector2.Zero };
+
+        // optional dependencies
+
+        private static Type upsideDownJumpThruType;
+        public static Type UpsideDownJumpThruType => upsideDownJumpThruType ??= GetTypeByName("Celeste.Mod.MaxHelpingHand.Entities.UpsideDownJumpThru");
     }
 }

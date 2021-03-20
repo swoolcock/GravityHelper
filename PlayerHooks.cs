@@ -1,7 +1,9 @@
 using System;
+using System.Reflection;
 using Celeste;
 using GravityHelper.Triggers;
 using Microsoft.Xna.Framework;
+using Mono.Cecil.Cil;
 using Monocle;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
@@ -14,6 +16,9 @@ namespace GravityHelper
         private static IDetour hook_Player_orig_Update;
         private static IDetour hook_Player_orig_UpdateSprite;
         private static IDetour hook_Player_DashCoroutine;
+        private static IDetour hook_UpsideDownJumpThru_onPlayerOnCollideV;
+        private static IDetour hook_UpsideDownJumpThru_onActorMoveVExact;
+        private static IDetour hook_UpsideDownJumpThru_onPlayerUpdate;
 
         public static void Load()
         {
@@ -40,6 +45,7 @@ namespace GravityHelper
             On.Celeste.Player.BeforeDownTransition += Player_BeforeDownTransition;
             On.Celeste.Player.DreamDashCheck += Player_DreamDashCheck;
             On.Celeste.Player.DreamDashUpdate += Player_DreamDashUpdate;
+            On.Celeste.Player.JumpThruBoostBlockedCheck += Player_JumpThruBoostBlockedCheck;
             On.Celeste.Player.ReflectBounce += Player_ReflectBounce;
             On.Celeste.Player.Render += Player_Render;
             On.Celeste.Player.SlipCheck += Player_SlipCheck;
@@ -49,6 +55,58 @@ namespace GravityHelper
             hook_Player_orig_Update = new ILHook(ReflectionCache.PlayerOrigUpdateMethodInfo, Player_orig_Update);
             hook_Player_orig_UpdateSprite = new ILHook(ReflectionCache.UpdateSpriteMethodInfo, Player_orig_UpdateSprite);
             hook_Player_DashCoroutine = new ILHook(ReflectionCache.PlayerDashCoroutineMethodInfo.GetStateMachineTarget(), Player_DashCoroutine);
+
+            using (new DetourContext {After = {"MaxHelpingHand"}})
+            {
+                var udjtType = ReflectionCache.GetTypeByName("Celeste.Mod.MaxHelpingHand.Entities.UpsideDownJumpThru");
+                if (udjtType != null)
+                {
+                    // var onPlayerOnCollideV = udjtType.GetMethod("onPlayerOnCollideV", BindingFlags.Static | BindingFlags.NonPublic);
+                    // hook_UpsideDownJumpThru_onPlayerOnCollideV = new ILHook(onPlayerOnCollideV, UpsideDownJumpThru_onPlayerOnCollideV);
+                    //
+                    // var onActorMoveVExact = udjtType.GetMethod("onActorMoveVExact", BindingFlags.Static | BindingFlags.NonPublic);
+                    // hook_UpsideDownJumpThru_onActorMoveVExact = new ILHook(onActorMoveVExact, UpsideDownJumpThru_onActorMoveVExact);
+
+                    // var onPlayerUpdate = udjtType.GetMethod("onPlayerUpdate", BindingFlags.Static | BindingFlags.NonPublic);
+                    // hook_UpsideDownJumpThru_onPlayerUpdate = new ILHook(onPlayerUpdate, UpsideDownJumpThru_onPlayerUpdate);
+                }
+            }
+        }
+
+        private static void UpsideDownJumpThru_onPlayerUpdate(ILContext il)
+        {
+            var cursor = new ILCursor(il);
+        }
+
+        private static void UpsideDownJumpThru_onActorMoveVExact(ILContext il)
+        {
+            var cursor = new ILCursor(il);
+        }
+
+        private static void UpsideDownJumpThru_onPlayerOnCollideV(ILContext il)
+        {
+            /*
+             * if (self.StateMachine.State != StStarFly && self.StateMachine.State != StSwim && (self.StateMachine.State != StDreamDash && (double) self.Speed.Y < 0.0) && self.CollideCheckOutside<UpsideDownJumpThru>(self.Position - Vector2.UnitY))
+             * {
+             *     self.Speed.Y = 0.0f;
+             *     UpsideDownJumpThru.playerVarJumpTimer.SetValue((object) self, (object) 0);
+             * }
+             */
+
+            var cursor = new ILCursor(il);
+
+            cursor.GotoNext(instr => instr.MatchLdarg(0));
+            var orig = cursor.Next;
+            cursor.Goto(0);
+
+            cursor.Emit(OpCodes.Ldarg_1); // player
+            cursor.EmitDelegate<Func<Player, bool>>(p =>
+            {
+                if (!GravityHelperModule.ShouldInvert) return true;
+                // TODO: custom code?
+                return false;
+            });
+            cursor.Emit(OpCodes.Brfalse_S, orig);
         }
 
         public static void Unload()
@@ -76,6 +134,7 @@ namespace GravityHelper
             On.Celeste.Player.BeforeDownTransition -= Player_BeforeDownTransition;
             On.Celeste.Player.DreamDashCheck -= Player_DreamDashCheck;
             On.Celeste.Player.DreamDashUpdate -= Player_DreamDashUpdate;
+            On.Celeste.Player.JumpThruBoostBlockedCheck -= Player_JumpThruBoostBlockedCheck;
             On.Celeste.Player.ReflectBounce -= Player_ReflectBounce;
             On.Celeste.Player.Render -= Player_Render;
             On.Celeste.Player.SlipCheck -= Player_SlipCheck;
@@ -90,7 +149,19 @@ namespace GravityHelper
 
             hook_Player_DashCoroutine?.Dispose();
             hook_Player_DashCoroutine = null;
+
+            hook_UpsideDownJumpThru_onPlayerOnCollideV?.Dispose();
+            hook_UpsideDownJumpThru_onPlayerOnCollideV = null;
+
+            hook_UpsideDownJumpThru_onActorMoveVExact?.Dispose();
+            hook_UpsideDownJumpThru_onActorMoveVExact = null;
+
+            hook_UpsideDownJumpThru_onPlayerUpdate?.Dispose();
+            hook_UpsideDownJumpThru_onPlayerUpdate = null;
         }
+
+        private static bool Player_JumpThruBoostBlockedCheck(On.Celeste.Player.orig_JumpThruBoostBlockedCheck orig, Player self) =>
+            GravityHelperModule.ShouldInvert || orig(self);
 
         #region IL Hooks
 
@@ -193,26 +264,89 @@ namespace GravityHelper
         {
             var cursor = new ILCursor(il);
 
-            // if (this.DashAttacking && (double) data.Direction.Y == (double) Math.Sign(this.DashDir.Y))
+            /*
+             * if (this.DashAttacking && (double) data.Direction.Y == (double) Math.Sign(this.DashDir.Y))
+             */
+
+            // ensure the check uses the real dash direction
             cursor.ReplaceSignWithDelegate();
 
+            /*
+             * if (!this.CollideCheck<Solid>(this.Position + new Vector2((float) -index, -1f)))
+             * {
+             *   this.Position = this.Position + new Vector2((float) -index, -1f);
+             *   return;
+             * }
+             */
+
+            // ensure ceiling correction works
             cursor.GotoNext(instr => instr.MatchCall<Entity>(nameof(Entity.CollideCheck)));
             cursor.Goto(cursor.Index - 2);
             cursor.ReplaceAdditionWithDelegate(4);
+
+            /*
+             * if ((double) this.Speed.Y < 0.0)
+             * {
+             *   int num = 4;
+             *   if (this.DashAttacking && (double) Math.Abs(this.Speed.X) < 0.009999999776482582)
+             */
+
+            // insert code to stop at jumpthrus
+            cursor.GotoNext(instr => instr.MatchCallvirt<Player>("DreamDashCheck"));
+            cursor.GotoPrev(instr => instr.MatchLdarg(0));
+            var dreamDashCheck = cursor.Next;
+            cursor.GotoPrev(instr => instr.MatchCallvirt<Player>("get_DashAttacking"));
+            cursor.GotoPrev(instr => instr.MatchLdcI4(4));
+            cursor.Emit(OpCodes.Ldarg_0);
+            cursor.EmitDelegate<Func<Player, bool>>(p =>
+            {
+                if (!GravityHelperModule.ShouldInvert) return true;
+                var jumpthru = p.CollideFirstOutside<JumpThru>(p.Position + Vector2.UnitY);
+                var shouldStop = jumpthru != null && p.Bottom <= jumpthru.Top;
+                if (!shouldStop)
+                {
+                    p.SetVarJumpTimer(0);
+                    FieldInfo field = typeof (Player).GetField("lastClimbMove", BindingFlags.Instance | BindingFlags.NonPublic);
+                    field.SetValue(p, 0);
+                }
+                return !shouldStop;
+            });
+            cursor.Emit(OpCodes.Brfalse_S, dreamDashCheck);
         }
 
         private static void Player_orig_Update(ILContext il)
         {
             var cursor = new ILCursor(il);
 
-            // Platform platform = (Platform) this.CollideFirst<Solid>(this.Position + Vector2.UnitY) ?? (Platform) this.CollideFirstOutside<JumpThru>(this.Position + Vector2.UnitY);
+            /*
+             * else if ((double) this.Speed.Y >= 0.0)
+             * {
+             *   Platform platform = (Platform) this.CollideFirst<Solid>(this.Position + Vector2.UnitY) ?? (Platform) this.CollideFirstOutside<JumpThru>(this.Position + Vector2.UnitY);
+             *   if (platform != null)
+             */
+
+            // ensure we check ground collisions the right direction
             cursor.ReplaceAdditionWithDelegate(2);
 
-            // this.highestAirY = !this.onGround ? Math.Min(this.Y, this.highestAirY) : this.Y;
-            cursor.ReplaceMinWithDelegate();
+            // prevent Madeline from attempting to stand on the underside of jumpthrus
+            cursor.GotoNext(instr => instr.MatchLdloc(1));
+            var platformNotEqualNull = cursor.Next;
+            cursor.GotoPrev(instr => instr.MatchLdarg(0) && instr.Next.MatchLdarg(0));
+            cursor.EmitDelegate<Func<bool>>(() => GravityHelperModule.ShouldInvert);
+            cursor.Emit(OpCodes.Brtrue_S, platformNotEqualNull);
+            cursor.Goto(platformNotEqualNull);
 
-            // else if (this.onGround && (this.CollideCheck<Solid, NegaBlock>(this.Position + Vector2.UnitY) || this.CollideCheckOutside<JumpThru>(this.Position + Vector2.UnitY)) && (!this.CollideCheck<Spikes>(this.Position) || SaveData.Instance.Assists.Invincible))
-            cursor.ReplaceAdditionWithDelegate(2);
+            /*
+             * else if (this.onGround && (this.CollideCheck<Solid, NegaBlock>(this.Position + Vector2.UnitY) || this.CollideCheckOutside<JumpThru>(this.Position + Vector2.UnitY)) && (!this.CollideCheck<Spikes>(this.Position) || SaveData.Instance.Assists.Invincible))
+             */
+
+            // ensure we check ground collisions the right direction for refilling dash
+            cursor.ReplaceAdditionWithDelegate();
+
+            // TODO: ignore jumpthrus if inverted... is crashing?
+            cursor.GotoNextAddition(MoveType.After);
+            // cursor.Index++;
+            // cursor.EmitDelegate<Func<bool, bool>>(b => b && !GravityHelperModule.ShouldInvert);
 
             // (SKIP) else if (!this.CollideCheck<Solid>(this.Position + Vector2.UnitX * (float) Math.Sign(this.wallSpeedRetained)))
             cursor.GotoNextAddition(MoveType.After);
@@ -220,18 +354,25 @@ namespace GravityHelper
             // (SKIP) else if (!this.CollideCheck<Solid>(this.Position + Vector2.UnitX * (float) this.hopWaitX))
             cursor.GotoNextAddition(MoveType.After);
 
-            // if (!this.onGround && this.DashAttacking && (double) this.DashDir.Y == 0.0 && (this.CollideCheck<Solid>(this.Position + Vector2.UnitY * 3f) || this.CollideCheckOutside<JumpThru>(this.Position + Vector2.UnitY * 3f)))
+            /*
+             * if (!this.onGround && this.DashAttacking && (double) this.DashDir.Y == 0.0 && (this.CollideCheck<Solid>(this.Position + Vector2.UnitY * 3f) || this.CollideCheckOutside<JumpThru>(this.Position + Vector2.UnitY * 3f)))
+             */
+
+            // fix inverted ground correction for dashing (may need to ignore jumpthrus later)
             cursor.ReplaceAdditionWithDelegate(2);
 
+            /*
+             * if (water != null && (double) this.Center.Y < (double) water.Center.Y)
+             */
+
             // invert Center.Y check (fixes Madeline slamming into the ground when climbing down into water)
-            // if (water != null && (double) this.Center.Y < (double) water.Center.Y)
             cursor.GotoNext(MoveType.After, instr => instr.MatchCallvirt<Player>("SwimCheck"));
             cursor.GotoNext(MoveType.After, instr => instr.MatchCallvirt<Player>("SwimCheck"));
             cursor.GotoNext(MoveType.After, instr => instr.MatchCallvirt<Player>("SwimCheck"));
             cursor.GotoNext(MoveType.After, instr => instr.MatchLdfld<Vector2>(nameof(Vector2.Y)));
-            cursor.EmitDelegate<Func<float, float>>(f => GravityHelperModule.ShouldInvert ? -f : f);
+            cursor.EmitInvertFloatDelegate();
             cursor.GotoNext(MoveType.After, instr => instr.MatchLdfld<Vector2>(nameof(Vector2.Y)));
-            cursor.EmitDelegate<Func<float, float>>(f => GravityHelperModule.ShouldInvert ? -f : f);
+            cursor.EmitInvertFloatDelegate();
         }
 
         private static void Player_orig_UpdateSprite(ILContext il)

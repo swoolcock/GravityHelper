@@ -29,6 +29,7 @@ namespace GravityHelper
 
         public override void Load()
         {
+            activateHooks(); // TODO: remove when not testing IL changes
             On.Celeste.LevelLoader.ctor += LevelLoader_ctor;
             On.Celeste.OverworldLoader.ctor += OverworldLoader_ctor;
         }
@@ -93,5 +94,11 @@ namespace GravityHelper
         }
 
         public static bool ShouldInvert => Session.Gravity == GravityType.Inverted;
+
+        public static bool ShouldInvertActor(Celeste.Actor actor) => actor is Celeste.Player player
+                                                                     && player.StateMachine.State != Celeste.Player.StDreamDash
+                                                                     && player.CurrentBooster == null
+                                                                     && !SolidMoving && !Transitioning
+                                                                     && ShouldInvert;
     }
 }
