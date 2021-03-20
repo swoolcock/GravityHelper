@@ -29,7 +29,6 @@ namespace GravityHelper
 
         public override void Load()
         {
-            activateHooks(); // TODO: remove when not testing IL changes
             On.Celeste.LevelLoader.ctor += LevelLoader_ctor;
             On.Celeste.OverworldLoader.ctor += OverworldLoader_ctor;
         }
