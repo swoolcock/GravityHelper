@@ -10,7 +10,7 @@ using Session = Celeste.Session;
 namespace GravityHelper
 {
     // ReSharper disable InconsistentNaming
-    public partial class GravityHelperModule : EverestModule
+    public class GravityHelperModule : EverestModule
     {
         public override Type SettingsType => typeof(GravityHelperModuleSettings);
         public static GravityHelperModuleSettings Settings => (GravityHelperModuleSettings) Instance._Settings;
@@ -48,8 +48,8 @@ namespace GravityHelper
             if (hooksActive) return;
             hooksActive = true;
 
-            loadOnHooks();
-            loadILHooks();
+            PlayerHooks.Load();
+            MiscHooks.Load();
         }
 
         private static void deactivateHooks()
@@ -57,8 +57,8 @@ namespace GravityHelper
             if (!hooksActive) return;
             hooksActive = false;
 
-            unloadILHooks();
-            unloadOnHooks();
+            PlayerHooks.Unload();
+            MiscHooks.Unload();
         }
 
         private void OverworldLoader_ctor(OverworldLoader.orig_ctor orig, Celeste.OverworldLoader self, Overworld.StartMode startmode, HiresSnow snow)
@@ -81,8 +81,8 @@ namespace GravityHelper
 
         #endregion
 
-        private static bool transitioning;
-        private static bool solidMoving;
+        internal static bool Transitioning;
+        internal static bool SolidMoving;
 
         public void TriggerGravityListeners()
         {
