@@ -16,9 +16,6 @@ namespace GravityHelper
         private static IDetour hook_Player_orig_Update;
         private static IDetour hook_Player_orig_UpdateSprite;
         private static IDetour hook_Player_DashCoroutine;
-        private static IDetour hook_UpsideDownJumpThru_onPlayerOnCollideV;
-        private static IDetour hook_UpsideDownJumpThru_onActorMoveVExact;
-        private static IDetour hook_UpsideDownJumpThru_onPlayerUpdate;
 
         public static void Load()
         {
@@ -55,58 +52,6 @@ namespace GravityHelper
             hook_Player_orig_Update = new ILHook(ReflectionCache.PlayerOrigUpdateMethodInfo, Player_orig_Update);
             hook_Player_orig_UpdateSprite = new ILHook(ReflectionCache.UpdateSpriteMethodInfo, Player_orig_UpdateSprite);
             hook_Player_DashCoroutine = new ILHook(ReflectionCache.PlayerDashCoroutineMethodInfo.GetStateMachineTarget(), Player_DashCoroutine);
-
-            using (new DetourContext {After = {"MaxHelpingHand"}})
-            {
-                var udjtType = ReflectionCache.GetTypeByName("Celeste.Mod.MaxHelpingHand.Entities.UpsideDownJumpThru");
-                if (udjtType != null)
-                {
-                    // var onPlayerOnCollideV = udjtType.GetMethod("onPlayerOnCollideV", BindingFlags.Static | BindingFlags.NonPublic);
-                    // hook_UpsideDownJumpThru_onPlayerOnCollideV = new ILHook(onPlayerOnCollideV, UpsideDownJumpThru_onPlayerOnCollideV);
-                    //
-                    // var onActorMoveVExact = udjtType.GetMethod("onActorMoveVExact", BindingFlags.Static | BindingFlags.NonPublic);
-                    // hook_UpsideDownJumpThru_onActorMoveVExact = new ILHook(onActorMoveVExact, UpsideDownJumpThru_onActorMoveVExact);
-
-                    // var onPlayerUpdate = udjtType.GetMethod("onPlayerUpdate", BindingFlags.Static | BindingFlags.NonPublic);
-                    // hook_UpsideDownJumpThru_onPlayerUpdate = new ILHook(onPlayerUpdate, UpsideDownJumpThru_onPlayerUpdate);
-                }
-            }
-        }
-
-        private static void UpsideDownJumpThru_onPlayerUpdate(ILContext il)
-        {
-            var cursor = new ILCursor(il);
-        }
-
-        private static void UpsideDownJumpThru_onActorMoveVExact(ILContext il)
-        {
-            var cursor = new ILCursor(il);
-        }
-
-        private static void UpsideDownJumpThru_onPlayerOnCollideV(ILContext il)
-        {
-            /*
-             * if (self.StateMachine.State != StStarFly && self.StateMachine.State != StSwim && (self.StateMachine.State != StDreamDash && (double) self.Speed.Y < 0.0) && self.CollideCheckOutside<UpsideDownJumpThru>(self.Position - Vector2.UnitY))
-             * {
-             *     self.Speed.Y = 0.0f;
-             *     UpsideDownJumpThru.playerVarJumpTimer.SetValue((object) self, (object) 0);
-             * }
-             */
-
-            var cursor = new ILCursor(il);
-
-            cursor.GotoNext(instr => instr.MatchLdarg(0));
-            var orig = cursor.Next;
-            cursor.Goto(0);
-
-            cursor.Emit(OpCodes.Ldarg_1); // player
-            cursor.EmitDelegate<Func<Player, bool>>(p =>
-            {
-                if (!GravityHelperModule.ShouldInvert) return true;
-                // TODO: custom code?
-                return false;
-            });
-            cursor.Emit(OpCodes.Brfalse_S, orig);
         }
 
         public static void Unload()
@@ -149,15 +94,6 @@ namespace GravityHelper
 
             hook_Player_DashCoroutine?.Dispose();
             hook_Player_DashCoroutine = null;
-
-            hook_UpsideDownJumpThru_onPlayerOnCollideV?.Dispose();
-            hook_UpsideDownJumpThru_onPlayerOnCollideV = null;
-
-            hook_UpsideDownJumpThru_onActorMoveVExact?.Dispose();
-            hook_UpsideDownJumpThru_onActorMoveVExact = null;
-
-            hook_UpsideDownJumpThru_onPlayerUpdate?.Dispose();
-            hook_UpsideDownJumpThru_onPlayerUpdate = null;
         }
 
         private static bool Player_JumpThruBoostBlockedCheck(On.Celeste.Player.orig_JumpThruBoostBlockedCheck orig, Player self) =>
