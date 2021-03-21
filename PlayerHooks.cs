@@ -205,7 +205,12 @@ namespace GravityHelper
              */
 
             // ensure the check uses the real dash direction
-            cursor.ReplaceSignWithDelegate();
+            cursor.GotoNext(instr =>
+                instr.MatchLdflda<Player>(nameof(Player.DashDir)) &&
+                instr.Next.MatchLdfld<Vector2>(nameof(Vector2.Y)) &&
+                instr.Next.Next.MatchCall("System.Math", nameof(Math.Sign)));
+            cursor.Index += 3;
+            cursor.EmitInvertIntDelegate();
 
             /*
              * if (!this.CollideCheck<Solid>(this.Position + new Vector2((float) -index, -1f)))
@@ -229,7 +234,7 @@ namespace GravityHelper
 
             // insert code to stop at jumpthrus
             cursor.GotoNext(instr => instr.MatchCallvirt<Player>("DreamDashCheck"));
-            cursor.GotoPrev(instr => instr.MatchLdarg(0));
+            cursor.GotoPrev(instr => instr.MatchLdarg(0) && instr.Next.MatchCall<Vector2>("get_UnitY"));
             var dreamDashCheck = cursor.Next;
             cursor.GotoPrev(instr => instr.MatchCallvirt<Player>("get_DashAttacking"));
             cursor.GotoPrev(instr => instr.MatchLdcI4(4));
