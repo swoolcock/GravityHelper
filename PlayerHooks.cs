@@ -107,6 +107,8 @@ namespace GravityHelper
 
             // this.MoveVExact((int) ((double) fromY - (double) this.Bottom));
             cursor.ReplaceBottomWithDelegate();
+            cursor.GotoNext(instr => instr.MatchLdnull() && instr.Next.MatchLdnull());
+            cursor.EmitInvertIntDelegate();
         }
 
         private static void Player_ClimbCheck(ILContext il)
