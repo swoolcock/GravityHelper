@@ -128,7 +128,7 @@ namespace GravityHelper
 
             var udjtType = ReflectionCache.UpsideDownJumpThruType;
             if (!self.IgnoreJumpThrus && udjtType != null)
-                return self.CollideCheckOutside(udjtType, self.Position - Vector2.UnitY * downCheck);
+                return self.CollideCheckOutside(udjtType, self.Position - Vector2.UnitY * downCheck, true);
 
             return false;
         }

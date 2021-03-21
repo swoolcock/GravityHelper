@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Celeste;
 using Microsoft.Xna.Framework;
@@ -10,18 +11,21 @@ namespace GravityHelper
 {
     internal static class Extensions
     {
-        #region Misc Extensions
-
         public static bool UsesGravityHelper(this Session session) =>
             session.MapData?.Levels?.Any(level => (level.Triggers?.Any(trigger => trigger.Name.StartsWith("GravityHelper")) ?? false) ||
                                                   (level.Entities?.Any(entity => entity.Name.StartsWith("GravityHelper")) ?? false)) ?? false;
 
+        #region Entity Extensions
+
         public static T CollideFirstOrDefault<T>(this Entity entity) where T : Entity =>
             entity.Scene.Tracker.Entities.ContainsKey(typeof(T)) ? entity.CollideFirst<T>() : default;
 
-        public static Entity CollideFirstOutside(this Entity entity, Type type, Vector2 at)
+        public static Entity CollideFirstOutside(this Entity entity, Type type, Vector2 at, bool checkAllEntities = false)
         {
-            foreach (Entity b in entity.Scene.Tracker.Entities[type])
+            IEnumerable<Entity> entities = getEntities(entity.Scene, type, checkAllEntities);
+            if (entities == null) return null;
+
+            foreach (Entity b in entities)
             {
                 if (!Collide.Check(entity, b) && Collide.Check(entity, b, at))
                     return b;
@@ -30,15 +34,34 @@ namespace GravityHelper
             return default;
         }
 
-        public static bool CollideCheckOutside(this Entity entity, Type type, Vector2 at)
-        {
-            foreach (Entity b in entity.Scene.Tracker.Entities[type])
-            {
-                if (!Collide.Check(entity, b) && Collide.Check(entity, b, at))
-                    return true;
-            }
+        public static bool CollideCheckOutside(this Entity entity, Type type, Vector2 at, bool checkAllEntities = false) =>
+            entity.CollideFirstOutside(type, at, checkAllEntities) != null;
 
-            return false;
+        public static Entity CollideFirst(this Entity entity, Type type, Vector2 at, bool checkAllEntities = false)
+        {
+            IEnumerable<Entity> entities = getEntities(entity.Scene, type, checkAllEntities);
+            if (entities == null) return null;
+
+            return Collide.First(entity, entities, at);
+        }
+
+        public static bool CollideCheck(this Entity entity, Type type, Vector2 at, bool checkAllEntities = false)
+        {
+            IEnumerable<Entity> entities = getEntities(entity.Scene, type, checkAllEntities);
+            if (entities == null) return false;
+
+            return Collide.Check(entity, entities, at);
+        }
+
+        private static IEnumerable<Entity> getEntities(Scene scene, Type type, bool checkAllEntities = false)
+        {
+            IEnumerable<Entity> entities = null;
+            if (checkAllEntities)
+                entities = scene.Tracker.Entities.SelectMany(p => p.Value.Where(e => e.GetType() == type));
+            else if (scene.Tracker.Entities.ContainsKey(type))
+                entities = scene.Tracker.Entities[type];
+
+            return entities;
         }
 
         #endregion
@@ -133,6 +156,9 @@ namespace GravityHelper
 
         public static void EmitInvertFloatDelegate(this ILCursor cursor) =>
             cursor.EmitDelegate<Func<float, float>>(f => GravityHelperModule.ShouldInvert ? -f : f);
+
+        public static void EmitInvertIntDelegate(this ILCursor cursor) =>
+            cursor.EmitDelegate<Func<int, int>>(i => GravityHelperModule.ShouldInvert ? -i : i);
 
         #endregion
     }

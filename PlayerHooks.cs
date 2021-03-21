@@ -1,5 +1,4 @@
 using System;
-using System.Reflection;
 using Celeste;
 using GravityHelper.Triggers;
 using Microsoft.Xna.Framework;
@@ -8,6 +7,7 @@ using Monocle;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
 using MonoMod.Utils;
+using Platform = Celeste.Platform;
 
 namespace GravityHelper
 {
@@ -242,8 +242,7 @@ namespace GravityHelper
                 if (!shouldStop)
                 {
                     p.SetVarJumpTimer(0);
-                    FieldInfo field = typeof (Player).GetField("lastClimbMove", BindingFlags.Instance | BindingFlags.NonPublic);
-                    field.SetValue(p, 0);
+                    ReflectionCache.PlayerLastClimbMoveFieldInfo.SetValue(p, 0);
                 }
                 return !shouldStop;
             });
@@ -262,27 +261,59 @@ namespace GravityHelper
              */
 
             // ensure we check ground collisions the right direction
-            cursor.ReplaceAdditionWithDelegate(2);
+            cursor.ReplaceAdditionWithDelegate();
+            cursor.GotoNextAddition();
 
-            // prevent Madeline from attempting to stand on the underside of jumpthrus
+            // prevent Madeline from attempting to stand on the underside of regular jumpthrus
+            // and attempt to handle upside-down jumpthrus if supported
             cursor.GotoNext(instr => instr.MatchLdloc(1));
             var platformNotEqualNull = cursor.Next;
             cursor.GotoPrev(instr => instr.MatchLdarg(0) && instr.Next.MatchLdarg(0));
-            cursor.EmitDelegate<Func<bool>>(() => GravityHelperModule.ShouldInvert);
-            cursor.Emit(OpCodes.Brtrue_S, platformNotEqualNull);
+            cursor.Emit(OpCodes.Ldarg_0); // this
+            cursor.EmitDelegate<Func<Player, Platform>>(self =>
+            {
+                if (!GravityHelperModule.ShouldInvert)
+                    return (Platform) self.CollideFirstOutside<JumpThru>(self.Position + Vector2.UnitY);
+
+                var udjt = ReflectionCache.UpsideDownJumpThruType;
+                if (udjt != null)
+                    return (Platform) self.CollideFirstOutside(udjt, self.Position - Vector2.UnitY, true);
+
+                return null;
+            });
+            cursor.Emit(OpCodes.Stloc_1);
+            cursor.Emit(OpCodes.Br_S, platformNotEqualNull);
             cursor.Goto(platformNotEqualNull);
 
             /*
              * else if (this.onGround && (this.CollideCheck<Solid, NegaBlock>(this.Position + Vector2.UnitY) || this.CollideCheckOutside<JumpThru>(this.Position + Vector2.UnitY)) && (!this.CollideCheck<Spikes>(this.Position) || SaveData.Instance.Assists.Invincible))
              */
 
-            // ensure we check ground collisions the right direction for refilling dash
+            // ensure we check ground collisions the right direction for refilling dash on solid ground
             cursor.ReplaceAdditionWithDelegate();
 
-            // TODO: ignore jumpthrus if inverted... is crashing?
+            // find some instructions
+            cursor.GotoNext(instr => instr.Match(OpCodes.Ldarg_0) && instr.Next.Match(OpCodes.Ldarg_0));
+            var jumpThruCheck = cursor.Next;
             cursor.GotoNextAddition(MoveType.After);
-            // cursor.Index++;
-            // cursor.EmitDelegate<Func<bool, bool>>(b => b && !GravityHelperModule.ShouldInvert);
+            cursor.GotoNext(instr => instr.MatchLdarg(0));
+            var spikesCheck = cursor.Next;
+            cursor.GotoNext(instr => instr.Match(OpCodes.Ldarg_0) && instr.Next.MatchLdfld<Player>("varJumpTimer"));
+            var varJumpTimerCheck  = cursor.Next;
+
+            // replace the JumpThru check with UpsideDownJumpThru if we can and should
+            cursor.Goto(jumpThruCheck);
+            cursor.Emit(OpCodes.Ldarg_0); // this
+            cursor.EmitDelegate<Func<Player, bool>>(self =>
+            {
+                if (!GravityHelperModule.ShouldInvert)
+                    return self.CollideCheckOutside<JumpThru>(self.Position + Vector2.UnitY);
+
+                var udjt = ReflectionCache.UpsideDownJumpThruType;
+                return udjt != null && self.CollideCheckOutside(udjt, self.Position - Vector2.UnitY, true);
+            });
+            cursor.Emit(OpCodes.Brfalse_S, varJumpTimerCheck);
+            cursor.Emit(OpCodes.Br_S, spikesCheck);
 
             // (SKIP) else if (!this.CollideCheck<Solid>(this.Position + Vector2.UnitX * (float) Math.Sign(this.wallSpeedRetained)))
             cursor.GotoNextAddition(MoveType.After);
@@ -316,16 +347,37 @@ namespace GravityHelper
             var cursor = new ILCursor(il);
 
             // fix dangling animation
+            cursor.GotoNext(instr => instr.MatchLdstr("dangling"));
+            cursor.GotoPrev(Extensions.AdditionPredicate);
             cursor.ReplaceAdditionWithDelegate();
 
-            // skip push check
-            cursor.GotoNextAddition(MoveType.After);
-
             // fix edge animation
-            cursor.ReplaceAdditionWithDelegate(3);
+            cursor.GotoNext(instr => instr.MatchLdstr("idle_carry"));
+            cursor.ReplaceAdditionWithDelegate(2);
+            cursor.GotoNextAddition(MoveType.After);
+            cursor.Remove();
+            cursor.EmitDelegate<Func<Player, Vector2, bool>>((self, at) =>
+            {
+                if (!GravityHelperModule.ShouldInvert)
+                    return self.CollideCheck<JumpThru>(at);
+
+                var udjt = ReflectionCache.UpsideDownJumpThruType;
+                return udjt != null && self.CollideCheck(udjt, self.Position + new Vector2((int) self.Facing * 4, -2f), true);
+            });
 
             // fix edgeBack animation
-            cursor.ReplaceAdditionWithDelegate(3);
+            cursor.GotoNext(instr => instr.MatchLdstr("edge"));
+            cursor.ReplaceAdditionWithDelegate(2);
+            cursor.GotoNextAddition(MoveType.After);
+            cursor.Remove();
+            cursor.EmitDelegate<Func<Player, Vector2, bool>>((self, at) =>
+            {
+                if (!GravityHelperModule.ShouldInvert)
+                    return self.CollideCheck<JumpThru>(at);
+
+                var udjt = ReflectionCache.UpsideDownJumpThruType;
+                return udjt != null && self.CollideCheck(udjt, self.Position + new Vector2((int) self.Facing * -4, -2f), true);
+            });
         }
 
         private static void Player_SideBounce(ILContext il)
@@ -427,7 +479,7 @@ namespace GravityHelper
                 self.AutoJump = false;
                 self.SetVarJumpTimer(0.0f);
             }
-            foreach (Entity entity in self.Scene.Tracker.GetEntities<Celeste.Platform>())
+            foreach (Entity entity in self.Scene.Tracker.GetEntities<Platform>())
             {
                 if (!(entity is SolidTiles) && self.CollideCheckOutside(entity, self.Position - Vector2.UnitY * self.Height))
                     entity.Collidable = false;

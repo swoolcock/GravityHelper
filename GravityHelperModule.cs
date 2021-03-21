@@ -50,6 +50,7 @@ namespace GravityHelper
 
             PlayerHooks.Load();
             MiscHooks.Load();
+            ThirdPartyHooks.Load();
         }
 
         private static void deactivateHooks()
@@ -59,6 +60,7 @@ namespace GravityHelper
 
             PlayerHooks.Unload();
             MiscHooks.Unload();
+            ThirdPartyHooks.Unload();
         }
 
         private void OverworldLoader_ctor(OverworldLoader.orig_ctor orig, Celeste.OverworldLoader self, Overworld.StartMode startmode, HiresSnow snow)
