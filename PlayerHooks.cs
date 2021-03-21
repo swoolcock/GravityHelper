@@ -393,6 +393,8 @@ namespace GravityHelper
 
             // this.MoveV(Calc.Clamp(fromY - this.Bottom, -4f, 4f));
             cursor.ReplaceBottomWithDelegate();
+            cursor.GotoNext(instr => instr.MatchLdnull() && instr.Next.MatchLdnull());
+            cursor.EmitInvertFloatDelegate();
         }
 
         private static void Player_StarFlyUpdate(ILContext il)
@@ -411,6 +413,8 @@ namespace GravityHelper
 
             // this.MoveV(fromY - this.Bottom);
             cursor.ReplaceBottomWithDelegate();
+            cursor.GotoNext(instr => instr.MatchLdnull() && instr.Next.MatchLdnull());
+            cursor.EmitInvertFloatDelegate();
         }
 
         private static void Player_SwimCheck(ILContext il)
