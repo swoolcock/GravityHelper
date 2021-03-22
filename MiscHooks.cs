@@ -17,6 +17,7 @@ namespace GravityHelper
             IL.Celeste.PlayerHair.Render += PlayerHair_Render;
             IL.Celeste.Solid.GetPlayerOnTop += Solid_GetPlayerOnTop;
 
+            On.Celeste.Actor.MoveV += Actor_MoveV;
             On.Celeste.Actor.MoveVExact += Actor_MoveVExact;
             On.Celeste.Actor.OnGround_int += Actor_OnGround_int;
             On.Celeste.Level.EnforceBounds += Level_EnforceBounds;
@@ -35,6 +36,7 @@ namespace GravityHelper
             IL.Celeste.PlayerHair.Render -= PlayerHair_Render;
             IL.Celeste.Solid.GetPlayerOnTop -= Solid_GetPlayerOnTop;
 
+            On.Celeste.Actor.MoveV -= Actor_MoveV;
             On.Celeste.Actor.MoveVExact -= Actor_MoveVExact;
             On.Celeste.Actor.OnGround_int -= Actor_OnGround_int;
             On.Celeste.Level.EnforceBounds -= Level_EnforceBounds;
@@ -115,8 +117,29 @@ namespace GravityHelper
 
         #region On Hooks
 
-        private static bool Actor_MoveVExact(On.Celeste.Actor.orig_MoveVExact orig, Actor self, int movev, Collision oncollide, Solid pusher) =>
-            orig(self, GravityHelperModule.ShouldInvertActor(self) ? -movev : movev, oncollide, pusher);
+        private static bool Actor_MoveV(On.Celeste.Actor.orig_MoveV orig, Actor self, float moveV, Collision onCollide, Solid pusher)
+        {
+            if (!GravityHelperModule.ShouldInvertActor(self))
+                return orig(self, moveV, onCollide, pusher);
+
+            var movementCounter = (Vector2)ReflectionCache.ActorMovementCounterFieldInfo.GetValue(self);
+            movementCounter.Y -= moveV;
+
+            int moveV1 = (int) Math.Round(movementCounter.Y, MidpointRounding.ToEven);
+            if (moveV1 == 0)
+            {
+                ReflectionCache.ActorMovementCounterFieldInfo.SetValue(self, movementCounter);
+                return false;
+            }
+
+            movementCounter.Y -= moveV1;
+            ReflectionCache.ActorMovementCounterFieldInfo.SetValue(self, movementCounter);
+
+            return self.MoveVExact(-moveV1, onCollide, pusher);
+        }
+
+        private static bool Actor_MoveVExact(On.Celeste.Actor.orig_MoveVExact orig, Actor self, int moveV, Collision onCollide, Solid pusher) =>
+            orig(self, GravityHelperModule.ShouldInvertActor(self) ? -moveV : moveV, onCollide, pusher);
 
         private static bool Actor_OnGround_int(On.Celeste.Actor.orig_OnGround_int orig, Actor self, int downCheck)
         {

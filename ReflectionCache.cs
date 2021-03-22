@@ -24,6 +24,7 @@ namespace GravityHelper
         public static readonly FieldInfo PlayerCanUseFieldInfo = typeof(Spring).GetField("playerCanUse", BindingFlags.Instance | BindingFlags.NonPublic);
         public static readonly FieldInfo BumperRespawnTimer = typeof(Bumper).GetField("respawnTimer", BindingFlags.Instance | BindingFlags.NonPublic);
         public static readonly FieldInfo PlayerLastClimbMoveFieldInfo = typeof (Player).GetField("lastClimbMove", BindingFlags.Instance | BindingFlags.NonPublic);
+        public static readonly FieldInfo ActorMovementCounterFieldInfo = typeof (Actor).GetField("movementCounter", BindingFlags.Instance | BindingFlags.NonPublic);
 
         public static readonly MethodInfo VirtualJoystickSetValueMethodInfo = typeof(VirtualJoystick).GetProperty("Value")?.GetSetMethod(true);
         public static readonly MethodInfo UpdateSpriteMethodInfo = typeof(Player).GetMethod("orig_UpdateSprite", BindingFlags.Instance | BindingFlags.NonPublic);
