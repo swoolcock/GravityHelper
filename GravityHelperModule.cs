@@ -29,6 +29,10 @@ namespace GravityHelper
 
         public override void Load()
         {
+#if DEBUG
+            // force load hooks in debug builds
+            activateHooks();
+#endif
             On.Celeste.LevelLoader.ctor += LevelLoader_ctor;
             On.Celeste.OverworldLoader.ctor += OverworldLoader_ctor;
         }
