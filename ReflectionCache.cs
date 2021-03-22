@@ -27,9 +27,9 @@ namespace GravityHelper
         public static readonly FieldInfo ActorMovementCounterFieldInfo = typeof (Actor).GetField("movementCounter", BindingFlags.Instance | BindingFlags.NonPublic);
 
         public static readonly MethodInfo VirtualJoystickSetValueMethodInfo = typeof(VirtualJoystick).GetProperty("Value")?.GetSetMethod(true);
-        public static readonly MethodInfo UpdateSpriteMethodInfo = typeof(Player).GetMethod("orig_UpdateSprite", BindingFlags.Instance | BindingFlags.NonPublic);
+        public static readonly MethodInfo PlayerOrigUpdateSpriteMethodInfo = typeof(Player).GetMethod("orig_UpdateSprite", BindingFlags.Instance | BindingFlags.NonPublic);
+        public static readonly MethodInfo PlayerOrigWallJumpMethodInfo = typeof(Player).GetMethod("orig_WallJump", BindingFlags.Instance | BindingFlags.NonPublic);
         public static readonly MethodInfo PlayerOrigUpdateMethodInfo = typeof(Player).GetMethod(nameof(Player.orig_Update));
-        public static readonly MethodInfo LevelOrigTransitionRoutineMethodInfo = typeof(Level).GetMethod("orig_TransitionRoutine", BindingFlags.Instance | BindingFlags.NonPublic);
         public static readonly MethodInfo PlayerDashCoroutineMethodInfo = typeof(Player).GetMethod("DashCoroutine", BindingFlags.Instance | BindingFlags.NonPublic);
         public static readonly MethodInfo LevelNextLevelMethodInfo = typeof(Level).GetMethod("NextLevel", BindingFlags.Instance | BindingFlags.NonPublic);
 

@@ -52,7 +52,10 @@ namespace GravityHelper
         private static void Actor_IsRiding(ILContext il)
         {
             var cursor = new ILCursor(il);
-            cursor.ReplaceAdditionWithDelegate();
+            cursor.GotoNextAddition();
+            cursor.Emit(OpCodes.Ldarg_0);
+            cursor.EmitDelegate<Func<Vector2, Actor, Vector2>>((v, a) =>
+                GravityHelperModule.ShouldInvert && a is Player ? new Vector2(v.X, -v.Y) : v);
         }
 
         private static void Bumper_OnPlayer(ILContext il)

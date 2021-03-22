@@ -13,9 +13,10 @@ namespace GravityHelper
 {
     public static class PlayerHooks
     {
+        private static IDetour hook_Player_DashCoroutine;
         private static IDetour hook_Player_orig_Update;
         private static IDetour hook_Player_orig_UpdateSprite;
-        private static IDetour hook_Player_DashCoroutine;
+        private static IDetour hook_Player_orig_WallJump;
 
         public static void Load()
         {
@@ -25,12 +26,15 @@ namespace GravityHelper
             IL.Celeste.Player.ClimbUpdate += Player_ClimbUpdate;
             IL.Celeste.Player._IsOverWater += Player_IsOverWater;
             IL.Celeste.Player.Jump += Player_Jump;
+            IL.Celeste.Player.LaunchedBoostCheck += Player_LaunchedBoostCheck;
             IL.Celeste.Player.NormalUpdate += Player_NormalUpdate;
             IL.Celeste.Player.OnCollideH += Player_OnCollideH;
             IL.Celeste.Player.OnCollideV += Player_OnCollideV;
             IL.Celeste.Player.SideBounce += Player_SideBounce;
             IL.Celeste.Player.StarFlyUpdate += Player_StarFlyUpdate;
             IL.Celeste.Player.SuperBounce += Player_SuperBounce;
+            IL.Celeste.Player.SuperJump += Player_SuperJump;
+            IL.Celeste.Player.SuperWallJump += Player_SuperWallJump;
             IL.Celeste.Player.SwimCheck += Player_SwimCheck;
             IL.Celeste.Player.SwimJumpCheck += Player_SwimJumpCheck;
             IL.Celeste.Player.SwimRiseCheck += Player_SwimRiseCheck;
@@ -49,9 +53,10 @@ namespace GravityHelper
             On.Celeste.Player.TransitionTo += Player_TransitionTo;
             On.Celeste.Player.Update += Player_Update;
 
-            hook_Player_orig_Update = new ILHook(ReflectionCache.PlayerOrigUpdateMethodInfo, Player_orig_Update);
-            hook_Player_orig_UpdateSprite = new ILHook(ReflectionCache.UpdateSpriteMethodInfo, Player_orig_UpdateSprite);
             hook_Player_DashCoroutine = new ILHook(ReflectionCache.PlayerDashCoroutineMethodInfo.GetStateMachineTarget(), Player_DashCoroutine);
+            hook_Player_orig_Update = new ILHook(ReflectionCache.PlayerOrigUpdateMethodInfo, Player_orig_Update);
+            hook_Player_orig_UpdateSprite = new ILHook(ReflectionCache.PlayerOrigUpdateSpriteMethodInfo, Player_orig_UpdateSprite);
+            hook_Player_orig_WallJump = new ILHook(ReflectionCache.PlayerOrigWallJumpMethodInfo, Player_orig_WallJump);
         }
 
         public static void Unload()
@@ -62,12 +67,15 @@ namespace GravityHelper
             IL.Celeste.Player.ClimbUpdate -= Player_ClimbUpdate;
             IL.Celeste.Player._IsOverWater -= Player_IsOverWater;
             IL.Celeste.Player.Jump -= Player_Jump;
+            IL.Celeste.Player.LaunchedBoostCheck -= Player_LaunchedBoostCheck;
             IL.Celeste.Player.NormalUpdate -= Player_NormalUpdate;
             IL.Celeste.Player.OnCollideH -= Player_OnCollideH;
             IL.Celeste.Player.OnCollideV -= Player_OnCollideV;
             IL.Celeste.Player.SideBounce -= Player_SideBounce;
             IL.Celeste.Player.StarFlyUpdate -= Player_StarFlyUpdate;
             IL.Celeste.Player.SuperBounce -= Player_SuperBounce;
+            IL.Celeste.Player.SuperJump -= Player_SuperJump;
+            IL.Celeste.Player.SuperWallJump -= Player_SuperWallJump;
             IL.Celeste.Player.SwimCheck -= Player_SwimCheck;
             IL.Celeste.Player.SwimJumpCheck -= Player_SwimJumpCheck;
             IL.Celeste.Player.SwimRiseCheck -= Player_SwimRiseCheck;
@@ -86,18 +94,18 @@ namespace GravityHelper
             On.Celeste.Player.TransitionTo -= Player_TransitionTo;
             On.Celeste.Player.Update -= Player_Update;
 
+            hook_Player_DashCoroutine?.Dispose();
+            hook_Player_DashCoroutine = null;
+
             hook_Player_orig_Update?.Dispose();
             hook_Player_orig_Update = null;
 
             hook_Player_orig_UpdateSprite?.Dispose();
             hook_Player_orig_UpdateSprite = null;
 
-            hook_Player_DashCoroutine?.Dispose();
-            hook_Player_DashCoroutine = null;
+            hook_Player_orig_WallJump?.Dispose();
+            hook_Player_orig_WallJump = null;
         }
-
-        private static bool Player_JumpThruBoostBlockedCheck(On.Celeste.Player.orig_JumpThruBoostBlockedCheck orig, Player self) =>
-            GravityHelperModule.ShouldInvert || orig(self);
 
         #region IL Hooks
 
@@ -105,7 +113,6 @@ namespace GravityHelper
         {
             var cursor = new ILCursor(il);
 
-            // this.MoveVExact((int) ((double) fromY - (double) this.Bottom));
             cursor.ReplaceBottomWithDelegate();
             cursor.GotoNext(instr => instr.MatchLdnull() && instr.Next.MatchLdnull());
             cursor.EmitInvertIntDelegate();
@@ -130,6 +137,10 @@ namespace GravityHelper
         private static void Player_ClimbUpdate(ILContext il)
         {
             var cursor = new ILCursor(il);
+
+            // replace all calls to LiftBoost (should be 4)
+            cursor.ReplaceGetLiftBoost(4);
+            cursor.Goto(0);
 
             // if (this.CollideCheck<Solid>(this.Position - Vector2.UnitY) || this.ClimbHopBlockedCheck() && this.SlipCheck(-1f))
             cursor.GotoNext(MoveType.After, instr => Extensions.UnitYPredicate(instr) && Extensions.SubtractionPredicate(instr.Next));
@@ -167,16 +178,30 @@ namespace GravityHelper
         {
             var cursor = new ILCursor(il);
 
+            // this.Speed += this.LiftBoost;
+            cursor.ReplaceGetLiftBoost();
+
             // Platform platformByPriority = SurfaceIndex.GetPlatformByPriority(this.CollideAll<Platform>(this.Position + Vector2.UnitY, this.temp));
+            cursor.GotoNextAddition(MoveType.After);
             cursor.ReplaceAdditionWithDelegate();
 
             // Dust.Burst(this.BottomCenter, -1.5707964f, 4, this.DustParticleFromSurfaceIndex(index));
             cursor.ReplaceBottomCenterWithDelegate();
         }
 
+        private static void Player_LaunchedBoostCheck(ILContext il)
+        {
+            var cursor = new ILCursor(il);
+            // this.Speed += this.LiftBoost;
+            cursor.ReplaceGetLiftBoost();
+        }
+
         private static void Player_NormalUpdate(ILContext il)
         {
             var cursor = new ILCursor(il);
+
+            cursor.ReplaceGetLiftBoost(3);
+            cursor.Goto(0);
 
             // if (!this.CollideCheck<Solid>(this.Position + Vector2.UnitY * (float) -index) && this.ClimbCheck((int) this.Facing, -index))
             cursor.GotoNextUnitY(MoveType.After);
@@ -387,6 +412,13 @@ namespace GravityHelper
             });
         }
 
+        private static void Player_orig_WallJump(ILContext il)
+        {
+            var cursor = new ILCursor(il);
+            // this.Speed += this.LiftBoost;
+            cursor.ReplaceGetLiftBoost();
+        }
+
         private static void Player_SideBounce(ILContext il)
         {
             var cursor = new ILCursor(il);
@@ -415,6 +447,20 @@ namespace GravityHelper
             cursor.ReplaceBottomWithDelegate();
             cursor.GotoNext(instr => instr.MatchLdnull() && instr.Next.MatchLdnull());
             cursor.EmitInvertFloatDelegate();
+        }
+
+        private static void Player_SuperJump(ILContext il)
+        {
+            var cursor = new ILCursor(il);
+            // this.Speed += this.LiftBoost;
+            cursor.ReplaceGetLiftBoost();
+        }
+
+        private static void Player_SuperWallJump(ILContext il)
+        {
+            var cursor = new ILCursor(il);
+            // this.Speed += this.LiftBoost;
+            cursor.ReplaceGetLiftBoost();
         }
 
         private static void Player_SwimCheck(ILContext il)
@@ -540,6 +586,9 @@ namespace GravityHelper
             return rv;
         }
 
+        private static bool Player_JumpThruBoostBlockedCheck(On.Celeste.Player.orig_JumpThruBoostBlockedCheck orig, Player self) =>
+            GravityHelperModule.ShouldInvert || orig(self);
+
         private static void Player_ReflectBounce(On.Celeste.Player.orig_ReflectBounce orig, Player self, Vector2 direction) =>
             orig(self, GravityHelperModule.ShouldInvert ? new Vector2(direction.X, -direction.Y) : direction);
 
@@ -595,5 +644,25 @@ namespace GravityHelper
         }
 
         #endregion
+
+        private static void ReplaceGetLiftBoost(this ILCursor cursor, int count = 1) =>
+            cursor.ReplaceWithDelegate<Func<Player, Vector2>>(instr => instr.MatchCallvirt<Player>("get_LiftBoost"), GetLiftBoost, count);
+
+        private static Vector2 GetLiftBoost(Player player)
+        {
+            Vector2 liftSpeed = player.LiftSpeed;
+            if (GravityHelperModule.ShouldInvert)
+                liftSpeed = new Vector2(liftSpeed.X, -liftSpeed.Y);
+
+            if (Math.Abs(liftSpeed.X) > 250f)
+                liftSpeed.X = 250f * Math.Sign(liftSpeed.X);
+
+            if (liftSpeed.Y > 0f)
+                liftSpeed.Y = 0f;
+            else if (liftSpeed.Y < -130f)
+                liftSpeed.Y = -130f;
+
+            return liftSpeed;
+        }
     }
 }
