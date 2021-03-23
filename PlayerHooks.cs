@@ -53,10 +53,10 @@ namespace GravityHelper
             On.Celeste.Player.TransitionTo += Player_TransitionTo;
             On.Celeste.Player.Update += Player_Update;
 
-            hook_Player_DashCoroutine = new ILHook(ReflectionCache.PlayerDashCoroutineMethodInfo.GetStateMachineTarget(), Player_DashCoroutine);
-            hook_Player_orig_Update = new ILHook(ReflectionCache.PlayerOrigUpdateMethodInfo, Player_orig_Update);
-            hook_Player_orig_UpdateSprite = new ILHook(ReflectionCache.PlayerOrigUpdateSpriteMethodInfo, Player_orig_UpdateSprite);
-            hook_Player_orig_WallJump = new ILHook(ReflectionCache.PlayerOrigWallJumpMethodInfo, Player_orig_WallJump);
+            hook_Player_DashCoroutine = new ILHook(ReflectionCache.Player_DashCoroutine.GetStateMachineTarget(), Player_DashCoroutine);
+            hook_Player_orig_Update = new ILHook(ReflectionCache.Player_OrigUpdate, Player_orig_Update);
+            hook_Player_orig_UpdateSprite = new ILHook(ReflectionCache.Player_OrigUpdateSprite, Player_orig_UpdateSprite);
+            hook_Player_orig_WallJump = new ILHook(ReflectionCache.Player_OrigWallJump, Player_orig_WallJump);
         }
 
         public static void Unload()
@@ -274,7 +274,7 @@ namespace GravityHelper
                 if (!shouldStop)
                 {
                     p.SetVarJumpTimer(0);
-                    ReflectionCache.PlayerLastClimbMoveFieldInfo.SetValue(p, 0);
+                    ReflectionCache.Player_LastClimbMove.SetValue(p, 0);
                 }
                 return !shouldStop;
             });

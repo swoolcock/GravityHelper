@@ -66,29 +66,6 @@ namespace GravityHelper
 
         #endregion
 
-        #region Reflection Extensions
-
-        public static Hitbox GetNormalHitbox(this Player player) => (Hitbox) ReflectionCache.NormalHitboxFieldInfo.GetValue(player);
-        public static Hitbox GetNormalHurtbox(this Player player) => (Hitbox) ReflectionCache.NormalHurtboxFieldInfo.GetValue(player);
-        public static Hitbox GetDuckHitbox(this Player player) => (Hitbox) ReflectionCache.DuckHitboxFieldInfo.GetValue(player);
-        public static Hitbox GetDuckHurtbox(this Player player) => (Hitbox) ReflectionCache.DuckHurtboxFieldInfo.GetValue(player);
-        public static Hitbox GetStarFlyHitbox(this Player player) => (Hitbox) ReflectionCache.StarFlyHitboxFieldInfo.GetValue(player);
-        public static Hitbox GetStarFlyHurtbox(this Player player) => (Hitbox) ReflectionCache.StarFlyHurtboxFieldInfo.GetValue(player);
-        public static void SetVarJumpTimer(this Player player, float value) => ReflectionCache.VarJumpTimerFieldInfo.SetValue(player, value);
-        public static void SetVarJumpSpeed(this Player player, float value) => ReflectionCache.VarJumpSpeedFieldInfo.SetValue(player, value);
-        public static void SetDashCooldownTimer(this Player player, float value) => ReflectionCache.DashCooldownTimerFieldInfo.SetValue(player, value);
-        public static bool GetPlayerCanUse(this Spring spring) => (bool)ReflectionCache.PlayerCanUseFieldInfo.GetValue(spring);
-        public static float GetRespawnTimer(this Bumper bumper) => (float) ReflectionCache.BumperRespawnTimer.GetValue(bumper);
-        public static void CallNextLevel(this Level level, Vector2 at, Vector2 dir) => ReflectionCache.LevelNextLevelMethodInfo.Invoke(level, new object[]{at, dir});
-
-        public static void SetValue(this VirtualJoystick virtualJoystick, Vector2 value)
-        {
-            ReflectionCache.VirtualJoystickSetValueParams[0] = value;
-            ReflectionCache.VirtualJoystickSetValueMethodInfo.Invoke(virtualJoystick, ReflectionCache.VirtualJoystickSetValueParams);
-        }
-
-        #endregion
-
         #region IL Extensions
         public static bool AdditionPredicate(Instruction instr) => instr.MatchCall<Vector2>("op_Addition");
         public static bool SubtractionPredicate(Instruction instr) => instr.MatchCall<Vector2>("op_Subtraction");

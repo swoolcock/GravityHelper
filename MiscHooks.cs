@@ -125,18 +125,18 @@ namespace GravityHelper
             if (!GravityHelperModule.ShouldInvertActor(self))
                 return orig(self, moveV, onCollide, pusher);
 
-            var movementCounter = (Vector2)ReflectionCache.ActorMovementCounterFieldInfo.GetValue(self);
+            var movementCounter = (Vector2)ReflectionCache.Actor_MovementCounter.GetValue(self);
             movementCounter.Y -= moveV;
 
             int moveV1 = (int) Math.Round(movementCounter.Y, MidpointRounding.ToEven);
             if (moveV1 == 0)
             {
-                ReflectionCache.ActorMovementCounterFieldInfo.SetValue(self, movementCounter);
+                ReflectionCache.Actor_MovementCounter.SetValue(self, movementCounter);
                 return false;
             }
 
             movementCounter.Y -= moveV1;
-            ReflectionCache.ActorMovementCounterFieldInfo.SetValue(self, movementCounter);
+            ReflectionCache.Actor_MovementCounter.SetValue(self, movementCounter);
 
             return self.MoveVExact(-moveV1, onCollide, pusher);
         }

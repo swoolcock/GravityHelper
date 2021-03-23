@@ -1,4 +1,5 @@
 using Celeste;
+using Microsoft.Xna.Framework;
 using Monocle;
 
 namespace GravityHelper
@@ -49,6 +50,12 @@ namespace GravityHelper
                     invertHitbox(duckHurtbox);
                     invertHitbox(starFlyHitbox);
                     invertHitbox(starFlyHurtbox);
+
+                    Vector2 normalLightOffset = new Vector2(0.0f, -8f);
+                    Vector2 duckingLightOffset = new Vector2(0.0f, -3f);
+
+                    player.SetNormalLightOffset(type == GravityType.Normal ? normalLightOffset : -normalLightOffset);
+                    player.SetDuckingLightOffset(type == GravityType.Normal ? duckingLightOffset : -duckingLightOffset);
                 }
             }
         }
