@@ -4,11 +4,15 @@ using Microsoft.Xna.Framework;
 using Mono.Cecil.Cil;
 using Monocle;
 using MonoMod.Cil;
+using MonoMod.RuntimeDetour;
+using MonoMod.Utils;
 
 namespace GravityHelper
 {
     public static class MiscHooks
     {
+        private static IDetour hook_Level_orig_TransitionRoutine;
+
         public static void Load()
         {
             IL.Celeste.Actor.IsRiding_JumpThru += Actor_IsRiding;
@@ -26,6 +30,8 @@ namespace GravityHelper
             On.Celeste.Spikes.ctor_Vector2_int_Directions_string += Spikes_ctor_Vector2_int_Directions_string;
             On.Celeste.Spikes.OnCollide += Spikes_OnCollide;
             On.Celeste.Spring.OnCollide += Spring_OnCollide;
+
+            hook_Level_orig_TransitionRoutine = new ILHook(ReflectionCache.Level_OrigTransitionRoutine.GetStateMachineTarget(), Level_orig_TransitionRoutine);
         }
 
         public static void Unload()
@@ -45,6 +51,9 @@ namespace GravityHelper
             On.Celeste.Spikes.ctor_Vector2_int_Directions_string -= Spikes_ctor_Vector2_int_Directions_string;
             On.Celeste.Spikes.OnCollide -= Spikes_OnCollide;
             On.Celeste.Spring.OnCollide -= Spring_OnCollide;
+
+            hook_Level_orig_TransitionRoutine?.Dispose();
+            hook_Level_orig_TransitionRoutine = null;
         }
 
         #region IL Hooks
@@ -70,6 +79,31 @@ namespace GravityHelper
                 if (!GravityHelperModule.ShouldInvert) return v;
                 return new Vector2(v.X,  p.CenterY - (v.Y - p.CenterY));
             });
+        }
+
+        private static void Level_orig_TransitionRoutine(ILContext il)
+        {
+            var cursor = new ILCursor(il);
+
+            //// if (direction == Vector2.UnitY)
+            cursor.GotoNext(instr => instr.MatchCall<Vector2>("get_UnitY") && instr.Next.MatchCall<Vector2>("op_Equality"));
+            cursor.EmitInvertVectorDelegate();
+
+            //// --playerTo.Y;
+            cursor.GotoNext(MoveType.After, instr => instr.MatchLdcR4(1) && instr.Next.MatchSub());
+            cursor.EmitInvertFloatDelegate();
+            cursor.GotoPrev(instr => instr.MatchLdarg(0));
+
+            //// while ((double) direction.X != 0.0 && (double) playerTo.Y >= (double) level.Bounds.Bottom)
+            // to avoid changing the >= comparison, this converts to -playerTo.Y >= -level.Bounds.Top
+            cursor.GotoNext(MoveType.After, instr => instr.MatchLdfld<Vector2>(nameof(Vector2.Y)));
+            cursor.EmitInvertFloatDelegate();
+            cursor.GotoNext(instr => instr.MatchCall<Rectangle>("get_Bottom"));
+            cursor.EmitDelegate<Func<bool>>(() => GravityHelperModule.ShouldInvert);
+            cursor.Emit(OpCodes.Brfalse_S, cursor.Next);
+            cursor.Emit(OpCodes.Call, typeof(Rectangle).GetMethod("get_Top"));
+            cursor.Emit(OpCodes.Neg);
+            cursor.Emit(OpCodes.Br_S, cursor.Next.Next);
         }
 
         private static void PlayerHair_Render(ILContext il)
