@@ -47,6 +47,7 @@ namespace GravityHelper
             On.Celeste.Player.DreamDashCheck += Player_DreamDashCheck;
             On.Celeste.Player.DreamDashUpdate += Player_DreamDashUpdate;
             On.Celeste.Player.JumpThruBoostBlockedCheck += Player_JumpThruBoostBlockedCheck;
+            On.Celeste.Player.OnCollideV += Player_OnCollideV;
             On.Celeste.Player.ReflectBounce += Player_ReflectBounce;
             On.Celeste.Player.Render += Player_Render;
             On.Celeste.Player.SlipCheck += Player_SlipCheck;
@@ -88,6 +89,7 @@ namespace GravityHelper
             On.Celeste.Player.DreamDashCheck -= Player_DreamDashCheck;
             On.Celeste.Player.DreamDashUpdate -= Player_DreamDashUpdate;
             On.Celeste.Player.JumpThruBoostBlockedCheck -= Player_JumpThruBoostBlockedCheck;
+            On.Celeste.Player.OnCollideV -= Player_OnCollideV;
             On.Celeste.Player.ReflectBounce -= Player_ReflectBounce;
             On.Celeste.Player.Render -= Player_Render;
             On.Celeste.Player.SlipCheck -= Player_SlipCheck;
@@ -227,58 +229,43 @@ namespace GravityHelper
         {
             var cursor = new ILCursor(il);
 
-            /*
-             * if (this.DashAttacking && (double) data.Direction.Y == (double) Math.Sign(this.DashDir.Y))
-             */
-
-            // ensure the check uses the real dash direction
-            cursor.GotoNext(instr =>
-                instr.MatchLdflda<Player>(nameof(Player.DashDir)) &&
-                instr.Next.MatchLdfld<Vector2>(nameof(Vector2.Y)) &&
-                instr.Next.Next.MatchCall("System.Math", nameof(Math.Sign)));
-            cursor.Index += 3;
+            // if (this.DashAttacking && (double) data.Direction.Y == (double) Math.Sign(this.DashDir.Y))
+            cursor.GotoNext(instr => instr.MatchCallvirt<Player>("get_DashAttacking"));
+            cursor.GotoNext(MoveType.After, instr => instr.MatchCall("System.Math", nameof(Math.Sign)));
             cursor.EmitInvertIntDelegate();
 
-            /*
-             * if (!this.CollideCheck<Solid>(this.Position + new Vector2((float) -index, -1f)))
-             * {
-             *   this.Position = this.Position + new Vector2((float) -index, -1f);
-             *   return;
-             * }
-             */
+            // this.ReflectBounce(new Vector2(0.0f, (float) -Math.Sign(this.Speed.Y)));
+            cursor.GotoNext(instr => instr.MatchCallvirt<Player>(nameof(Player.ReflectBounce)));
+            cursor.EmitInvertVectorDelegate();
 
-            // ensure ceiling correction works
-            cursor.GotoNext(instr => instr.MatchCall<Entity>(nameof(Entity.CollideCheck)));
-            cursor.Goto(cursor.Index - 2);
-            cursor.ReplaceAdditionWithDelegate(4);
+            // if (!this.OnGround(this.Position + new Vector2((float) moveH, 0.0f)))
+            cursor.GotoNext(instr => instr.MatchCall<Actor>(nameof(Actor.OnGround)));
+            cursor.GotoPrev(Extensions.AdditionPredicate);
+            cursor.EmitInvertVectorDelegate();
 
-            /*
-             * if ((double) this.Speed.Y < 0.0)
-             * {
-             *   int num = 4;
-             *   if (this.DashAttacking && (double) Math.Abs(this.Speed.X) < 0.009999999776482582)
-             */
+            // if (!this.OnGround(this.Position + new Vector2((float) moveH, 0.0f)))
+            cursor.GotoNext(instr => instr.MatchCall<Actor>(nameof(Actor.MoveVExact)));
+            cursor.GotoNext(Extensions.AdditionPredicate);
+            cursor.EmitInvertVectorDelegate();
 
-            // insert code to stop at jumpthrus
-            cursor.GotoNext(instr => instr.MatchCallvirt<Player>("DreamDashCheck"));
-            cursor.GotoPrev(instr => instr.MatchLdarg(0) && instr.Next.MatchCall<Vector2>("get_UnitY"));
-            var dreamDashCheck = cursor.Next;
-            cursor.GotoPrev(instr => instr.MatchCallvirt<Player>("get_DashAttacking"));
-            cursor.GotoPrev(instr => instr.MatchLdcI4(4));
-            cursor.Emit(OpCodes.Ldarg_0);
-            cursor.EmitDelegate<Func<Player, bool>>(p =>
+            // Platform platformByPriority = SurfaceIndex.GetPlatformByPriority(this.CollideAll<Platform>(this.Position + new Vector2(0.0f, 1f), this.temp));
+            cursor.GotoNext(instr => instr.MatchCall<SurfaceIndex>(nameof(SurfaceIndex.GetPlatformByPriority)));
+            cursor.GotoPrev(Extensions.AdditionPredicate);
+            cursor.EmitInvertVectorDelegate();
+
+            // Dust.Burst(this.Position, new Vector2(0.0f, -1f).Angle(), 8, this.DustParticleFromSurfaceIndex(index));
+            cursor.GotoNext(instr => instr.MatchCallvirt<Player>("DustParticleFromSurfaceIndex"));
+            cursor.GotoPrev(instr => instr.MatchLdcR4(-1));
+            cursor.EmitInvertFloatDelegate();
+
+            // ceiling pop correction
+            for (int i = 0; i < 4; i++)
             {
-                if (!GravityHelperModule.ShouldInvert) return true;
-                var jumpthru = p.CollideFirstOutside<JumpThru>(p.Position + Vector2.UnitY);
-                var shouldStop = jumpthru != null && p.Bottom <= jumpthru.Top;
-                if (!shouldStop)
-                {
-                    p.SetVarJumpTimer(0);
-                    ReflectionCache.Player_LastClimbMove.SetValue(p, 0);
-                }
-                return !shouldStop;
-            });
-            cursor.Emit(OpCodes.Brfalse_S, dreamDashCheck);
+                cursor.GotoNext(instr => instr.MatchLdfld<Entity>(nameof(Entity.Position)));
+                cursor.GotoNext(Extensions.AdditionPredicate);
+                cursor.EmitInvertVectorDelegate();
+                cursor.Index += 2;
+            }
         }
 
         private static void Player_orig_Update(ILContext il)
@@ -588,6 +575,19 @@ namespace GravityHelper
 
         private static bool Player_JumpThruBoostBlockedCheck(On.Celeste.Player.orig_JumpThruBoostBlockedCheck orig, Player self) =>
             GravityHelperModule.ShouldInvert || orig(self);
+
+        private static void Player_OnCollideV(On.Celeste.Player.orig_OnCollideV orig, Player self, CollisionData data)
+        {
+            if (GravityHelperModule.ShouldInvert
+                && self.StateMachine.State != Player.StStarFly && self.StateMachine.State != Player.StSwim && self.StateMachine.State != Player.StDreamDash
+                && self.Speed.Y < 0.0 && self.CollideCheckOutside<JumpThru>(self.Position + Vector2.UnitY))
+            {
+                self.Speed.Y = 0.0f;
+                ReflectionCache.Player_VarJumpTimer.SetValue(self, 0);
+            }
+
+            orig(self, data);
+        }
 
         private static void Player_ReflectBounce(On.Celeste.Player.orig_ReflectBounce orig, Player self, Vector2 direction) =>
             orig(self, GravityHelperModule.ShouldInvert ? new Vector2(direction.X, -direction.Y) : direction);
