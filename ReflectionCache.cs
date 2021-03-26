@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Reflection;
 using Celeste;
+using Celeste.Mod;
 using Microsoft.Xna.Framework;
 using Monocle;
 
@@ -11,6 +12,12 @@ namespace GravityHelper
     {
         public static Type GetTypeByName(string name) =>
             AppDomain.CurrentDomain.GetAssemblies().Reverse().Select(a => a.GetType(name)).FirstOrDefault(t => t != null);
+
+        public static Type GetModdedTypeByName(string module, string name)
+        {
+            var mod = Everest.Modules.FirstOrDefault(m => m.Metadata.Name == module);
+            return mod?.GetType().Assembly.GetType(name);
+        }
 
         #region Player
 
@@ -49,7 +56,8 @@ namespace GravityHelper
         #region Optional Dependencies
 
         private static Type upsideDownJumpThruType;
-        public static Type UpsideDownJumpThruType => upsideDownJumpThruType ??= GetTypeByName("Celeste.Mod.MaxHelpingHand.Entities.UpsideDownJumpThru");
+        public static Type UpsideDownJumpThruType => upsideDownJumpThruType ??=
+            GetModdedTypeByName("MaxHelpingHand", "Celeste.Mod.MaxHelpingHand.Entities.UpsideDownJumpThru");
 
         #endregion
 
