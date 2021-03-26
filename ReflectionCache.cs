@@ -60,6 +60,10 @@ namespace GravityHelper
         public static Type UpsideDownJumpThruType => upsideDownJumpThruType ??=
             GetModdedTypeByName("MaxHelpingHand", "Celeste.Mod.MaxHelpingHand.Entities.UpsideDownJumpThru");
 
+        private static FieldInfo upsideDownJumpThru_overrideTexture;
+        public static FieldInfo UpsideDownJumpThru_OverrideTexture => upsideDownJumpThru_overrideTexture ??=
+            UpsideDownJumpThruType?.GetField("overrideTexture", BindingFlags.Instance | BindingFlags.NonPublic);
+
         #endregion
 
         #region Reflection Extensions
