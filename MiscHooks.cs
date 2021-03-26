@@ -6,6 +6,7 @@ using Monocle;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
 using MonoMod.Utils;
+using SolidTiles = On.Celeste.SolidTiles;
 
 namespace GravityHelper
 {
@@ -27,6 +28,8 @@ namespace GravityHelper
             On.Celeste.Level.EnforceBounds += Level_EnforceBounds;
             On.Celeste.Level.Update += Level_Update;
             On.Celeste.Solid.MoveVExact += Solid_MoveVExact;
+            On.Celeste.SolidTiles.GetLandSoundIndex += SolidTiles_GetLandSoundIndex;
+            On.Celeste.SolidTiles.GetStepSoundIndex += SolidTiles_GetStepSoundIndex;
             On.Celeste.Spikes.ctor_Vector2_int_Directions_string += Spikes_ctor_Vector2_int_Directions_string;
             On.Celeste.Spikes.OnCollide += Spikes_OnCollide;
             On.Celeste.Spring.OnCollide += Spring_OnCollide;
@@ -48,6 +51,8 @@ namespace GravityHelper
             On.Celeste.Level.EnforceBounds -= Level_EnforceBounds;
             On.Celeste.Level.Update -= Level_Update;
             On.Celeste.Solid.MoveVExact -= Solid_MoveVExact;
+            On.Celeste.SolidTiles.GetLandSoundIndex -= SolidTiles_GetLandSoundIndex;
+            On.Celeste.SolidTiles.GetStepSoundIndex -= SolidTiles_GetStepSoundIndex;
             On.Celeste.Spikes.ctor_Vector2_int_Directions_string -= Spikes_ctor_Vector2_int_Directions_string;
             On.Celeste.Spikes.OnCollide -= Spikes_OnCollide;
             On.Celeste.Spring.OnCollide -= Spring_OnCollide;
@@ -319,6 +324,28 @@ namespace GravityHelper
             GravityHelperModule.SolidMoving = true;
             orig(self, move);
             GravityHelperModule.SolidMoving = false;
+        }
+
+        private static int SolidTiles_GetLandSoundIndex(SolidTiles.orig_GetLandSoundIndex orig, Celeste.SolidTiles self, Entity entity)
+        {
+            if (!GravityHelperModule.ShouldInvert)
+                return orig(self, entity);
+
+            int num = self.CallSurfaceSoundIndexAt(entity.TopCenter - Vector2.UnitY * 4f);
+            if (num == -1) num = self.CallSurfaceSoundIndexAt(entity.TopLeft - Vector2.UnitY * 4f);
+            if (num == -1) num = self.CallSurfaceSoundIndexAt(entity.TopRight - Vector2.UnitY * 4f);
+            return num;
+        }
+
+        private static int SolidTiles_GetStepSoundIndex(SolidTiles.orig_GetStepSoundIndex orig, Celeste.SolidTiles self, Entity entity)
+        {
+            if (!GravityHelperModule.ShouldInvert)
+                return orig(self, entity);
+
+            int num = self.CallSurfaceSoundIndexAt(entity.TopCenter - Vector2.UnitY * 4f);
+            if (num == -1) num = self.CallSurfaceSoundIndexAt(entity.TopLeft - Vector2.UnitY * 4f);
+            if (num == -1) num = self.CallSurfaceSoundIndexAt(entity.TopRight - Vector2.UnitY * 4f);
+            return num;
         }
 
         private static void Spikes_ctor_Vector2_int_Directions_string(On.Celeste.Spikes.orig_ctor_Vector2_int_Directions_string orig, Spikes self, Vector2 position, int size, Spikes.Directions direction, string type)

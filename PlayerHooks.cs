@@ -1,4 +1,6 @@
 using System;
+using System.Linq;
+using System.Reflection;
 using Celeste;
 using GravityHelper.Triggers;
 using Microsoft.Xna.Framework;
@@ -17,6 +19,7 @@ namespace GravityHelper
         private static IDetour hook_Player_orig_Update;
         private static IDetour hook_Player_orig_UpdateSprite;
         private static IDetour hook_Player_orig_WallJump;
+        private static IDetour hook_Player_ctor_OnFrameChange;
 
         public static void Load()
         {
@@ -58,6 +61,18 @@ namespace GravityHelper
             hook_Player_orig_Update = new ILHook(ReflectionCache.Player_OrigUpdate, Player_orig_Update);
             hook_Player_orig_UpdateSprite = new ILHook(ReflectionCache.Player_OrigUpdateSprite, Player_orig_UpdateSprite);
             hook_Player_orig_WallJump = new ILHook(ReflectionCache.Player_OrigWallJump, Player_orig_WallJump);
+
+            // we assume the first .ctor method that accepts (string) is Sprite.OnFrameChange +=
+            var spriteOnFrameChange = typeof(Player).GetRuntimeMethods().FirstOrDefault(m =>
+            {
+                if (!m.Name.Contains(".ctor")) return false;
+                var parameters = m.GetParameters();
+                return parameters.Length == 1 && parameters[0].ParameterType == typeof(string);
+            });
+
+            if (spriteOnFrameChange != null)
+                hook_Player_ctor_OnFrameChange = new ILHook(spriteOnFrameChange, Player_ctor_OnFrameChange);
+
         }
 
         public static void Unload()
@@ -107,6 +122,9 @@ namespace GravityHelper
 
             hook_Player_orig_WallJump?.Dispose();
             hook_Player_orig_WallJump = null;
+
+            hook_Player_ctor_OnFrameChange?.Dispose();
+            hook_Player_ctor_OnFrameChange = null;
         }
 
         #region IL Hooks
@@ -150,6 +168,22 @@ namespace GravityHelper
 
             // if (Input.MoveY.Value != 1 && (double) this.Speed.Y > 0.0 && !this.CollideCheck<Solid>(this.Position + new Vector2((float) this.Facing, 1f)))
             cursor.ReplaceAdditionWithDelegate();
+        }
+
+        private static void Player_ctor_OnFrameChange(ILContext il)
+        {
+            var cursor = new ILCursor(il);
+
+            // Platform platformByPriority = SurfaceIndex.GetPlatformByPriority(this.CollideAll<Platform>(this.Position + Vector2.UnitY, this.temp));
+            cursor.GotoNext(MoveType.After, instr => instr.MatchCall<Vector2>("get_UnitY"));
+            cursor.EmitInvertVectorDelegate();
+
+            // Dust.BurstFG(this.Position + new Vector2((float) (-(int) this.Facing * 5), -1f), new Vector2((float) -(int) this.Facing, -0.5f).Angle(), range: 0.0f);
+            cursor.GotoNext(instr => instr.MatchLdstr("push"));
+            cursor.GotoNext(MoveType.After, instr => instr.MatchLdcR4(-1f));
+            cursor.EmitInvertFloatDelegate();
+            cursor.GotoNext(MoveType.After, instr => instr.MatchLdcR4(-0.5f));
+            cursor.EmitInvertFloatDelegate();
         }
 
         private static void Player_DashCoroutine(ILContext il)
