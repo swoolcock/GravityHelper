@@ -105,5 +105,35 @@ namespace GravityHelper
                                                                      && player.CurrentBooster == null
                                                                      && !SolidMoving && !Transitioning
                                                                      && ShouldInvert;
+
+        [Command("gravity", "Changes the current gravity (0 = normal, 1 = inverted, 2 = toggle)")]
+        private static void CmdSetGravity(int gravityType = -1)
+        {
+            if (gravityType == -1)
+            {
+                Engine.Commands.Log($"Current gravity state: {Session.Gravity}");
+                return;
+            }
+
+            if (gravityType < 0 || gravityType > 2) return;
+
+            Session.Gravity = (GravityType) gravityType;
+            Engine.Commands.Log($"Current gravity is now: {Session.Gravity}");
+        }
+
+        [Command("initial_gravity", "Changes the room entry/spawn gravity (0 = normal, 1 = inverted)")]
+        private static void CmdSetInitialGravity(int gravityType = -1)
+        {
+            if (gravityType == -1)
+            {
+                Engine.Commands.Log($"Initial gravity state: {Session.PreviousGravity}");
+                return;
+            }
+
+            if (gravityType < 0 || gravityType > 1) return;
+
+            Session.PreviousGravity = (GravityType) gravityType;
+            Engine.Commands.Log($"Initial gravity is now: {Session.PreviousGravity}");
+        }
     }
 }
