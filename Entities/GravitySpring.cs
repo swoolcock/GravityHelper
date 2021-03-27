@@ -86,8 +86,20 @@ namespace GravityHelper.Entities
             Add(staticMover = new StaticMover
             {
                 OnAttach = p => Depth = p.Depth + 1,
-                SolidChecker = s => CollideCheck(s, Position - Vector2.UnitY),
-                JumpThruChecker = jt => CollideCheck(jt, Position - Vector2.UnitY),
+                SolidChecker = Orientation switch
+                {
+                    Orientations.WallLeft => s => CollideCheck(s, Position - Vector2.UnitX),
+                    Orientations.WallRight => s => CollideCheck(s, Position + Vector2.UnitX),
+                    Orientations.Ceiling => s => CollideCheck(s, Position - Vector2.UnitY),
+                    _ => s => CollideCheck(s, Position + Vector2.UnitY)
+                },
+                JumpThruChecker = Orientation switch
+                {
+                    Orientations.WallLeft => jt => CollideCheck(jt, Position - Vector2.UnitX),
+                    Orientations.WallRight => jt => CollideCheck(jt, Position + Vector2.UnitX),
+                    Orientations.Ceiling => jt => CollideCheck(jt, Position - Vector2.UnitY),
+                    _ => jt => CollideCheck(jt, Position + Vector2.UnitY)
+                },
                 OnEnable = OnEnable,
                 OnDisable = OnDisable,
             });
