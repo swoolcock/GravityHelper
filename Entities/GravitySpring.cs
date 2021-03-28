@@ -3,6 +3,7 @@ using Celeste;
 using Celeste.Mod.Entities;
 using Microsoft.Xna.Framework;
 using Monocle;
+using MonoMod.Utils;
 
 namespace GravityHelper.Entities
 {
@@ -168,12 +169,18 @@ namespace GravityHelper.Entities
             // bounce player away
             switch (Orientation)
             {
-                case Orientations.Floor when !GravityHelperModule.ShouldInvert:
-                    player.SuperBounce(Top);
+                case Orientations.Floor:
+                    if (GravityHelperModule.ShouldInvert)
+                        InvertedSuperBounce(player, Top);
+                    else
+                        player.SuperBounce(Top);
                     break;
 
-                case Orientations.Ceiling when GravityHelperModule.ShouldInvert:
-                    player.SuperBounce(Bottom);
+                case Orientations.Ceiling:
+                    if (!GravityHelperModule.ShouldInvert)
+                        InvertedSuperBounce(player, Bottom);
+                    else
+                        player.SuperBounce(Bottom);
                     break;
 
                 case Orientations.WallLeft:
@@ -207,6 +214,46 @@ namespace GravityHelper.Entities
             WallLeft,
             WallRight,
             Ceiling,
+        }
+
+        public static void InvertedSuperBounce(Player self, float fromY)
+        {
+            if (self.StateMachine.State == Player.StBoost && self.CurrentBooster != null)
+            {
+                self.CurrentBooster.PlayerReleased();
+                self.CurrentBooster = null;
+            }
+
+            Collider collider = self.Collider;
+            self.Collider = self.GetNormalHitbox();
+            self.MoveV(fromY - (GravityHelperModule.ShouldInvert ? self.Bottom : self.Top));
+            if (!self.Inventory.NoRefills)
+                self.RefillDash();
+            self.RefillStamina();
+
+            using (var data = new DynData<Player>(self))
+            {
+                data["jumpGraceTimer"] = 0f;
+                data["varJumpTimer"] = 0f;
+                data["dashAttackTimer"] = 0.0f;
+                data["gliderBoostTimer"] = 0.0f;
+                data["wallSlideTimer"] = 1.2f;
+                data["wallBoostTimer"] = 0.0f;
+                data["varJumpSpeed"] = 0f;
+                data["launched"] = false;
+            }
+
+            self.StateMachine.State = Player.StNormal;
+            self.AutoJump = false;
+            self.AutoJumpTimer = 0.0f;
+            self.Speed.X = 0.0f;
+            self.Speed.Y = 185f;
+
+            var level = self.SceneAs<Level>();
+            level?.DirectionalShake(GravityHelperModule.ShouldInvert ? -Vector2.UnitY : Vector2.UnitY, 0.1f);
+            Input.Rumble(RumbleStrength.Medium, RumbleLength.Medium);
+            self.Sprite.Scale = new Vector2(0.5f, 1.5f);
+            self.Collider = collider;
         }
     }
 }
