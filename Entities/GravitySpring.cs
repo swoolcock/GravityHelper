@@ -149,8 +149,8 @@ namespace GravityHelper.Entities
             {
                 case Orientations.Floor when realY < 0:
                 case Orientations.Ceiling when realY > 0:
-                case Orientations.WallLeft when player.Speed.X > 0:
-                case Orientations.WallRight when player.Speed.X < 0:
+                case Orientations.WallLeft when player.Speed.X > 240:
+                case Orientations.WallRight when player.Speed.X < 240:
                     return;
             }
 
