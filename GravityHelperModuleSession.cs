@@ -16,5 +16,7 @@ namespace GravityHelper
         }
 
         public GravityType PreviousGravity { get; set; } = GravityType.Normal;
+
+        public int GravityRefillCharges { get; set; }
     }
 }

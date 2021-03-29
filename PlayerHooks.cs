@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Reflection;
 using Celeste;
+using GravityHelper.Entities;
 using GravityHelper.Triggers;
 using Microsoft.Xna.Framework;
 using Mono.Cecil.Cil;
@@ -518,6 +519,7 @@ namespace GravityHelper
 
             SpawnGravityTrigger trigger = self.CollideFirstOrDefault<SpawnGravityTrigger>();
             GravityHelperModule.Session.Gravity = trigger?.GravityType ?? GravityHelperModule.Session.PreviousGravity;
+            GravityHelperModule.Session.GravityRefillCharges = 0;
         }
 
         private static void Player_BeforeDownTransition(On.Celeste.Player.orig_BeforeDownTransition orig, Player self)
@@ -570,9 +572,20 @@ namespace GravityHelper
             orig(self, position, spriteMode);
 
             self.Add(new TransitionListener
-            {
-                OnOutBegin = () => GravityHelperModule.Session.PreviousGravity = GravityHelperModule.Session.Gravity,
-            }, new GravityListener());
+                {
+                    OnOutBegin = () => GravityHelperModule.Session.PreviousGravity = GravityHelperModule.Session.Gravity,
+                },
+                new GravityListener(),
+                new DashListener
+                {
+                    OnDash = _ =>
+                    {
+                        if (GravityHelperModule.Session.GravityRefillCharges == 0)
+                            return;
+                        GravityHelperModule.Session.GravityRefillCharges--;
+                        GravityHelperModule.Session.Gravity = GravityType.Toggle;
+                    }
+                });
         }
 
         private static bool Player_DreamDashCheck(On.Celeste.Player.orig_DreamDashCheck orig, Player self, Vector2 dir)
