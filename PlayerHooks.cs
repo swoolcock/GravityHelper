@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Reflection;
 using Celeste;
+using Celeste.Mod;
 using GravityHelper.Entities;
 using GravityHelper.Triggers;
 using Microsoft.Xna.Framework;
@@ -518,8 +519,9 @@ namespace GravityHelper
             orig(self, scene);
 
             SpawnGravityTrigger trigger = self.CollideFirstOrDefault<SpawnGravityTrigger>();
-            GravityHelperModule.Instance.Gravity = trigger?.GravityType ?? GravityHelperModule.Session.InitialGravity;
+            GravityHelperModule.Instance.Gravity = GravityHelperModule.Instance.GravityBeforeReload ?? trigger?.GravityType ?? GravityHelperModule.Session.InitialGravity;
             GravityHelperModule.Instance.GravityRefillCharges = 0;
+            GravityHelperModule.Instance.GravityBeforeReload = null;
         }
 
         private static void Player_BeforeDownTransition(On.Celeste.Player.orig_BeforeDownTransition orig, Player self)

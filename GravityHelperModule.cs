@@ -22,6 +22,8 @@ namespace GravityHelper
             Instance = this;
         }
 
+        public GravityType? GravityBeforeReload;
+
         private GravityType gravity = GravityType.Normal;
         public GravityType Gravity
         {
@@ -62,8 +64,7 @@ namespace GravityHelper
             if (hooksActive) return;
             hooksActive = true;
 
-            // On.Celeste.Mod.AssetReloadHelper.ReloadLevel += AssetReloadHelper_ReloadLevel;
-            On.Celeste.Level.Begin += Level_Begin;
+            On.Celeste.Mod.AssetReloadHelper.ReloadLevel += AssetReloadHelper_ReloadLevel;
 
             PlayerHooks.Load();
             MiscHooks.Load();
@@ -75,18 +76,17 @@ namespace GravityHelper
             if (!hooksActive) return;
             hooksActive = false;
 
-            // On.Celeste.Mod.AssetReloadHelper.ReloadLevel -= AssetReloadHelper_ReloadLevel;
-            On.Celeste.Level.Begin -= Level_Begin;
+            On.Celeste.Mod.AssetReloadHelper.ReloadLevel -= AssetReloadHelper_ReloadLevel;
 
             PlayerHooks.Unload();
             MiscHooks.Unload();
             ThirdPartyHooks.Unload();
         }
 
-        private static void Level_Begin(On.Celeste.Level.orig_Begin orig, Level self)
+        private static void AssetReloadHelper_ReloadLevel(On.Celeste.Mod.AssetReloadHelper.orig_ReloadLevel orig)
         {
-            orig(self);
-            Instance.TriggerGravityListeners();
+            Instance.GravityBeforeReload = Instance.Gravity;
+            orig();
         }
 
         private void OverworldLoader_ctor(On.Celeste.OverworldLoader.orig_ctor orig, OverworldLoader self, Overworld.StartMode startmode, HiresSnow snow)
