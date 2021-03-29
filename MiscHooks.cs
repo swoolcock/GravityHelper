@@ -307,7 +307,7 @@ namespace GravityHelper
             if (GravityHelperModule.Settings.ToggleInvertGravity.Pressed)
             {
                 GravityHelperModule.Settings.ToggleInvertGravity.ConsumePress();
-                GravityHelperModule.Session.Gravity = GravityType.Toggle;
+                GravityHelperModule.Instance.Gravity = GravityType.Toggle;
             }
 
             orig(self);
@@ -387,7 +387,7 @@ namespace GravityHelper
 
             // if we hit a floor spring while inverted, flip gravity back to normal
             if (self.Orientation == Spring.Orientations.Floor)
-                GravityHelperModule.Session.Gravity = GravityType.Normal;
+                GravityHelperModule.Instance.Gravity = GravityType.Normal;
 
             orig(self, player);
         }

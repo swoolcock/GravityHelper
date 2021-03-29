@@ -12,7 +12,7 @@ namespace GravityHelper
         {
         }
 
-        public override void EntityAwake() => GravityChanged(GravityHelperModule.Session.Gravity);
+        public override void EntityAwake() => GravityChanged(GravityHelperModule.Instance.Gravity);
 
         public void GravityChanged(GravityType type)
         {

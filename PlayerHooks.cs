@@ -518,8 +518,8 @@ namespace GravityHelper
             orig(self, scene);
 
             SpawnGravityTrigger trigger = self.CollideFirstOrDefault<SpawnGravityTrigger>();
-            GravityHelperModule.Session.Gravity = trigger?.GravityType ?? GravityHelperModule.Session.PreviousGravity;
-            GravityHelperModule.Session.GravityRefillCharges = 0;
+            GravityHelperModule.Instance.Gravity = trigger?.GravityType ?? GravityHelperModule.Session.InitialGravity;
+            GravityHelperModule.Instance.GravityRefillCharges = 0;
         }
 
         private static void Player_BeforeDownTransition(On.Celeste.Player.orig_BeforeDownTransition orig, Player self)
@@ -573,17 +573,17 @@ namespace GravityHelper
 
             self.Add(new TransitionListener
                 {
-                    OnOutBegin = () => GravityHelperModule.Session.PreviousGravity = GravityHelperModule.Session.Gravity,
+                    OnOutBegin = () => GravityHelperModule.Session.InitialGravity = GravityHelperModule.Instance.Gravity,
                 },
                 new GravityListener(),
                 new DashListener
                 {
                     OnDash = _ =>
                     {
-                        if (GravityHelperModule.Session.GravityRefillCharges == 0)
+                        if (GravityHelperModule.Instance.GravityRefillCharges == 0)
                             return;
-                        GravityHelperModule.Session.GravityRefillCharges--;
-                        GravityHelperModule.Session.Gravity = GravityType.Toggle;
+                        GravityHelperModule.Instance.GravityRefillCharges--;
+                        GravityHelperModule.Instance.Gravity = GravityType.Toggle;
                     }
                 });
         }

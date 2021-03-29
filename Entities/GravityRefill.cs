@@ -137,13 +137,13 @@ namespace GravityHelper.Entities
         {
             bool canUse = RefillsDash && player.Dashes < player.MaxDashes ||
                           RefillsStamina && player.Stamina < 20 ||
-                          GravityHelperModule.Session.GravityRefillCharges < Charges;
+                          GravityHelperModule.Instance.GravityRefillCharges < Charges;
 
             if (!canUse) return;
 
             if (RefillsDash) player.RefillDash();
             if (RefillsStamina) player.RefillStamina();
-            GravityHelperModule.Session.GravityRefillCharges = Charges;
+            GravityHelperModule.Instance.GravityRefillCharges = Charges;
 
             Audio.Play("event:/game/general/diamond_touch", Position);
             Input.Rumble(RumbleStrength.Medium, RumbleLength.Medium);

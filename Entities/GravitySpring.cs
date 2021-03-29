@@ -158,7 +158,7 @@ namespace GravityHelper.Entities
             // set gravity and cooldown if not on cooldown
             if (cooldownRemaining == 0f)
             {
-                GravityHelperModule.Session.Gravity = GravityType;
+                GravityHelperModule.Instance.Gravity = GravityType;
                 cooldownRemaining = Cooldown;
                 // TODO: update sprite to show cooldown
             }

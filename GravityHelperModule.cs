@@ -1,11 +1,8 @@
-﻿using Celeste.Mod;
+﻿using Celeste;
+using Celeste.Mod;
+using Microsoft.Xna.Framework;
 using Monocle;
 using System;
-using Microsoft.Xna.Framework;
-using On.Celeste;
-using HiresSnow = Celeste.HiresSnow;
-using Overworld = Celeste.Overworld;
-using Session = Celeste.Session;
 
 namespace GravityHelper
 {
@@ -25,13 +22,26 @@ namespace GravityHelper
             Instance = this;
         }
 
+        private GravityType gravity = GravityType.Normal;
+        public GravityType Gravity
+        {
+            get => gravity;
+            set
+            {
+                gravity = value == GravityType.Toggle ? gravity.Opposite() : value;
+                TriggerGravityListeners();
+            }
+        }
+
+        public int GravityRefillCharges { get; set; }
+
         #region Hook Activation
 
         public override void Load()
         {
 #if DEBUG
             // force load hooks in debug builds
-            activateHooks();
+            // activateHooks();
 #endif
             On.Celeste.LevelLoader.ctor += LevelLoader_ctor;
             On.Celeste.OverworldLoader.ctor += OverworldLoader_ctor;
@@ -52,6 +62,9 @@ namespace GravityHelper
             if (hooksActive) return;
             hooksActive = true;
 
+            // On.Celeste.Mod.AssetReloadHelper.ReloadLevel += AssetReloadHelper_ReloadLevel;
+            On.Celeste.Level.Begin += Level_Begin;
+
             PlayerHooks.Load();
             MiscHooks.Load();
             ThirdPartyHooks.Load();
@@ -62,12 +75,21 @@ namespace GravityHelper
             if (!hooksActive) return;
             hooksActive = false;
 
+            // On.Celeste.Mod.AssetReloadHelper.ReloadLevel -= AssetReloadHelper_ReloadLevel;
+            On.Celeste.Level.Begin -= Level_Begin;
+
             PlayerHooks.Unload();
             MiscHooks.Unload();
             ThirdPartyHooks.Unload();
         }
 
-        private void OverworldLoader_ctor(OverworldLoader.orig_ctor orig, Celeste.OverworldLoader self, Overworld.StartMode startmode, HiresSnow snow)
+        private static void Level_Begin(On.Celeste.Level.orig_Begin orig, Level self)
+        {
+            orig(self);
+            Instance.TriggerGravityListeners();
+        }
+
+        private void OverworldLoader_ctor(On.Celeste.OverworldLoader.orig_ctor orig, OverworldLoader self, Overworld.StartMode startmode, HiresSnow snow)
         {
             orig(self, startmode, snow);
 
@@ -75,7 +97,7 @@ namespace GravityHelper
                 deactivateHooks();
         }
 
-        private void LevelLoader_ctor(LevelLoader.orig_ctor orig, Celeste.LevelLoader self, Session session, Vector2? startposition)
+        private void LevelLoader_ctor(On.Celeste.LevelLoader.orig_ctor orig, LevelLoader self, Session session, Vector2? startposition)
         {
             orig(self, session, startposition);
 
@@ -93,32 +115,32 @@ namespace GravityHelper
         public void TriggerGravityListeners()
         {
             var gravityListeners = Engine.Scene.Tracker.GetComponents<GravityListener>().ToArray();
-            var gravity = Session.Gravity;
+            var gravity = Instance.Gravity;
             foreach (Component component in gravityListeners)
                 (component as GravityListener)?.GravityChanged(gravity);
         }
 
-        public static bool ShouldInvert => Session.Gravity == GravityType.Inverted;
+        public static bool ShouldInvert => Instance.Gravity == GravityType.Inverted;
 
-        public static bool ShouldInvertActor(Celeste.Actor actor) => actor is Celeste.Player player
-                                                                     && player.StateMachine.State != Celeste.Player.StDreamDash
-                                                                     && player.CurrentBooster == null
-                                                                     && !SolidMoving && !Transitioning
-                                                                     && ShouldInvert;
+        public static bool ShouldInvertActor(Actor actor) => actor is Player player
+                                                             && player.StateMachine.State != Player.StDreamDash
+                                                             && player.CurrentBooster == null
+                                                             && !SolidMoving && !Transitioning
+                                                             && ShouldInvert;
 
         [Command("gravity", "Changes the current gravity (0 = normal, 1 = inverted, 2 = toggle)")]
         private static void CmdSetGravity(int gravityType = -1)
         {
             if (gravityType == -1)
             {
-                Engine.Commands.Log($"Current gravity state: {Session.Gravity}");
+                Engine.Commands.Log($"Current gravity state: {Instance.Gravity}");
                 return;
             }
 
             if (gravityType < 0 || gravityType > 2) return;
 
-            Session.Gravity = (GravityType) gravityType;
-            Engine.Commands.Log($"Current gravity is now: {Session.Gravity}");
+            Instance.Gravity = (GravityType) gravityType;
+            Engine.Commands.Log($"Current gravity is now: {Instance.Gravity}");
         }
 
         [Command("initial_gravity", "Changes the room entry/spawn gravity (0 = normal, 1 = inverted)")]
@@ -126,14 +148,14 @@ namespace GravityHelper
         {
             if (gravityType == -1)
             {
-                Engine.Commands.Log($"Initial gravity state: {Session.PreviousGravity}");
+                Engine.Commands.Log($"Initial gravity state: {Session.InitialGravity}");
                 return;
             }
 
             if (gravityType < 0 || gravityType > 1) return;
 
-            Session.PreviousGravity = (GravityType) gravityType;
-            Engine.Commands.Log($"Initial gravity is now: {Session.PreviousGravity}");
+            Session.InitialGravity = (GravityType) gravityType;
+            Engine.Commands.Log($"Initial gravity is now: {Session.InitialGravity}");
         }
     }
 }
