@@ -6,7 +6,6 @@ using Monocle;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
 using MonoMod.Utils;
-using SolidTiles = On.Celeste.SolidTiles;
 
 namespace GravityHelper
 {
@@ -153,7 +152,12 @@ namespace GravityHelper
             cursor.EmitInvertVectorDelegate();
         }
 
-        private static void Solid_GetPlayerOnTop(ILContext il) => new ILCursor(il).ReplaceSubtractionWithDelegate();
+        private static void Solid_GetPlayerOnTop(ILContext il)
+        {
+            var cursor = new ILCursor(il);
+            cursor.GotoNextSubtraction();
+            cursor.EmitInvertVectorDelegate();
+        }
 
         #endregion
 
@@ -298,8 +302,8 @@ namespace GravityHelper
                 player.BeforeUpTransition();
                 self.CallNextLevel(player.Center - Vector2.UnitY * 12f, -Vector2.UnitY);
             }
-            else if (player.Bottom < bounds.Top)
-                tryToDie(bounds.Top);
+            else if (player.Bottom < bounds.Top - 4)
+                player.Die(Vector2.Zero);
         }
 
         private static void Level_Update(On.Celeste.Level.orig_Update orig, Level self)
@@ -326,7 +330,7 @@ namespace GravityHelper
             GravityHelperModule.SolidMoving = false;
         }
 
-        private static int SolidTiles_GetLandSoundIndex(SolidTiles.orig_GetLandSoundIndex orig, Celeste.SolidTiles self, Entity entity)
+        private static int SolidTiles_GetLandSoundIndex(On.Celeste.SolidTiles.orig_GetLandSoundIndex orig, SolidTiles self, Entity entity)
         {
             if (!GravityHelperModule.ShouldInvert)
                 return orig(self, entity);
@@ -337,7 +341,7 @@ namespace GravityHelper
             return num;
         }
 
-        private static int SolidTiles_GetStepSoundIndex(SolidTiles.orig_GetStepSoundIndex orig, Celeste.SolidTiles self, Entity entity)
+        private static int SolidTiles_GetStepSoundIndex(On.Celeste.SolidTiles.orig_GetStepSoundIndex orig, SolidTiles self, Entity entity)
         {
             if (!GravityHelperModule.ShouldInvert)
                 return orig(self, entity);

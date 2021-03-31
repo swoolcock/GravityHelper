@@ -2,8 +2,6 @@ using System;
 using System.Linq;
 using System.Reflection;
 using Celeste;
-using Celeste.Mod;
-using GravityHelper.Entities;
 using GravityHelper.Triggers;
 using Microsoft.Xna.Framework;
 using Mono.Cecil.Cil;
@@ -26,7 +24,6 @@ namespace GravityHelper
         public static void Load()
         {
             IL.Celeste.Player.Bounce += Player_Bounce;
-            IL.Celeste.Player.ClimbCheck += Player_ClimbCheck;
             IL.Celeste.Player.ClimbHopBlockedCheck += Player_ClimbHopBlockedCheck;
             IL.Celeste.Player.ClimbUpdate += Player_ClimbUpdate;
             IL.Celeste.Player._IsOverWater += Player_IsOverWater;
@@ -49,6 +46,7 @@ namespace GravityHelper
             On.Celeste.Player.Added += Player_Added;
             On.Celeste.Player.BeforeUpTransition += Player_BeforeUpTransition;
             On.Celeste.Player.BeforeDownTransition += Player_BeforeDownTransition;
+            On.Celeste.Player.ClimbCheck += Player_ClimbCheck;
             On.Celeste.Player.DreamDashCheck += Player_DreamDashCheck;
             On.Celeste.Player.DreamDashUpdate += Player_DreamDashUpdate;
             On.Celeste.Player.JumpThruBoostBlockedCheck += Player_JumpThruBoostBlockedCheck;
@@ -80,7 +78,6 @@ namespace GravityHelper
         public static void Unload()
         {
             IL.Celeste.Player.Bounce -= Player_Bounce;
-            IL.Celeste.Player.ClimbCheck -= Player_ClimbCheck;
             IL.Celeste.Player.ClimbHopBlockedCheck -= Player_ClimbHopBlockedCheck;
             IL.Celeste.Player.ClimbUpdate -= Player_ClimbUpdate;
             IL.Celeste.Player._IsOverWater -= Player_IsOverWater;
@@ -103,6 +100,7 @@ namespace GravityHelper
             On.Celeste.Player.Added -= Player_Added;
             On.Celeste.Player.BeforeUpTransition -= Player_BeforeUpTransition;
             On.Celeste.Player.BeforeDownTransition -= Player_BeforeDownTransition;
+            On.Celeste.Player.ClimbCheck -= Player_ClimbCheck;
             On.Celeste.Player.DreamDashCheck -= Player_DreamDashCheck;
             On.Celeste.Player.DreamDashUpdate -= Player_DreamDashUpdate;
             On.Celeste.Player.JumpThruBoostBlockedCheck -= Player_JumpThruBoostBlockedCheck;
@@ -140,21 +138,12 @@ namespace GravityHelper
             cursor.EmitInvertIntDelegate();
         }
 
-        private static void Player_ClimbCheck(ILContext il)
+        private static void Player_ClimbHopBlockedCheck(ILContext il)
         {
             var cursor = new ILCursor(il);
-
-            // replace Y
-            cursor.ReplaceAdditionWithDelegate();
-
-            // skip X
-            cursor.GotoNextAddition(MoveType.After);
-
-            // replace Y
-            cursor.ReplaceAdditionWithDelegate();
+            cursor.GotoNext(MoveType.After, instr => instr.MatchLdcR4(6));
+            cursor.EmitInvertFloatDelegate();
         }
-
-        private static void Player_ClimbHopBlockedCheck(ILContext il) => new ILCursor(il).ReplaceSubtractionWithDelegate();
 
         private static void Player_ClimbUpdate(ILContext il)
         {
@@ -166,10 +155,11 @@ namespace GravityHelper
 
             // if (this.CollideCheck<Solid>(this.Position - Vector2.UnitY) || this.ClimbHopBlockedCheck() && this.SlipCheck(-1f))
             cursor.GotoNext(MoveType.After, instr => Extensions.UnitYPredicate(instr) && Extensions.SubtractionPredicate(instr.Next));
-            cursor.ReplaceSubtractionWithDelegate();
+            cursor.EmitInvertVectorDelegate();
 
             // if (Input.MoveY.Value != 1 && (double) this.Speed.Y > 0.0 && !this.CollideCheck<Solid>(this.Position + new Vector2((float) this.Facing, 1f)))
-            cursor.ReplaceAdditionWithDelegate();
+            cursor.GotoNextAddition();
+            cursor.EmitInvertVectorDelegate();
         }
 
         private static void Player_ctor_OnFrameChange(ILContext il)
@@ -192,10 +182,17 @@ namespace GravityHelper
         {
             var cursor = new ILCursor(il);
 
-            // if (player.onGround && (double) player.DashDir.X != 0.0 && ((double) player.DashDir.Y > 0.0 && (double) player.Speed.Y > 0.0) && (!player.Inventory.DreamDash || !player.CollideCheck<DreamBlock>(player.Position + Vector2.UnitY)))
-            cursor.ReplaceAdditionWithDelegate();
+            /*
+             * if (player.onGround && (double) player.DashDir.X != 0.0 && ((double) player.DashDir.Y > 0.0 && (double) player.Speed.Y > 0.0) && (!player.Inventory.DreamDash || !player.CollideCheck<DreamBlock>(player.Position + Vector2.UnitY)))
+             */
+            // Ensure dream block check is the correct direction, otherwise we can't hyper on top of dream blocks
+            cursor.GotoNextAddition();
+            cursor.EmitInvertVectorDelegate();
 
-            // SlashFx.Burst(player.Center, player.DashDir.Angle());
+            /*
+             * SlashFx.Burst(player.Center, player.DashDir.Angle());
+             */
+            // Fix dash effect direction
             cursor.GotoNext(instr => instr.MatchCall<SlashFx>(nameof(SlashFx.Burst)));
             cursor.Index--;
             cursor.EmitInvertVectorDelegate();
@@ -220,8 +217,8 @@ namespace GravityHelper
             cursor.ReplaceGetLiftBoost();
 
             // Platform platformByPriority = SurfaceIndex.GetPlatformByPriority(this.CollideAll<Platform>(this.Position + Vector2.UnitY, this.temp));
-            cursor.GotoNextAddition(MoveType.After);
-            cursor.ReplaceAdditionWithDelegate();
+            cursor.GotoNext(instr => instr.MatchCall<Vector2>("get_UnitY"));
+            cursor.EmitInvertVectorDelegate();
 
             // Dust.Burst(this.BottomCenter, -1.5707964f, 4, this.DustParticleFromSurfaceIndex(index));
             cursor.ReplaceBottomCenterWithDelegate();
@@ -243,11 +240,11 @@ namespace GravityHelper
 
             // if (!this.CollideCheck<Solid>(this.Position + Vector2.UnitY * (float) -index) && this.ClimbCheck((int) this.Facing, -index))
             cursor.GotoNextUnitY(MoveType.After);
-            cursor.ReplaceAdditionWithDelegate();
+            cursor.EmitInvertVectorDelegate();
 
             // if ((water = this.CollideFirst<Water>(this.Position + Vector2.UnitY * 2f)) != null)
             cursor.GotoNextUnitY(MoveType.After);
-            cursor.ReplaceAdditionWithDelegate();
+            cursor.EmitInvertVectorDelegate();
         }
 
         private static void Player_OnCollideH(ILContext il)
@@ -257,8 +254,13 @@ namespace GravityHelper
             // (SKIP) if (this.onGround && this.DuckFreeAt(this.Position + Vector2.UnitX * (float) Math.Sign(this.Speed.X)))
             cursor.GotoNext(MoveType.After, instr => instr.MatchCallvirt<Player>(nameof(Player.DuckFreeAt)));
 
-            // if (!this.CollideCheck<Solid>(this.Position + new Vector2((float) Math.Sign(this.Speed.X), (float) (index1 * index2))))
-            cursor.ReplaceAdditionWithDelegate();
+            // if (!this.CollideCheck<Solid>(at) && this.CollideCheck<Solid>(at - Vector2.UnitY * (float) index2) && !this.DashCorrectCheck(add))
+            cursor.GotoNext(MoveType.After, instr => instr.MatchCall<Vector2>("get_UnitY"));
+            cursor.EmitInvertVectorDelegate();
+
+            // Vector2 at = this.Position + add;
+            cursor.GotoPrev(Extensions.AdditionPredicate);
+            cursor.EmitInvertVectorDelegate();
         }
 
         private static void Player_OnCollideV(ILContext il)
@@ -272,16 +274,6 @@ namespace GravityHelper
 
             // this.ReflectBounce(new Vector2(0.0f, (float) -Math.Sign(this.Speed.Y)));
             cursor.GotoNext(instr => instr.MatchCallvirt<Player>(nameof(Player.ReflectBounce)));
-            cursor.EmitInvertVectorDelegate();
-
-            // if (!this.OnGround(this.Position + new Vector2((float) moveH, 0.0f)))
-            cursor.GotoNext(instr => instr.MatchCall<Actor>(nameof(Actor.OnGround)));
-            cursor.GotoPrev(Extensions.AdditionPredicate);
-            cursor.EmitInvertVectorDelegate();
-
-            // if (!this.OnGround(this.Position + new Vector2((float) moveH, 0.0f)))
-            cursor.GotoNext(instr => instr.MatchCall<Actor>(nameof(Actor.MoveVExact)));
-            cursor.GotoNext(Extensions.AdditionPredicate);
             cursor.EmitInvertVectorDelegate();
 
             // Platform platformByPriority = SurfaceIndex.GetPlatformByPriority(this.CollideAll<Platform>(this.Position + new Vector2(0.0f, 1f), this.temp));
@@ -316,12 +308,14 @@ namespace GravityHelper
              */
 
             // ensure we check ground collisions the right direction
-            cursor.ReplaceAdditionWithDelegate();
+            cursor.GotoNext(MoveType.After, instr => instr.MatchCall<Vector2>("get_UnitY"));
+            cursor.EmitInvertVectorDelegate();
+            // cursor.ReplaceAdditionWithDelegate();
             cursor.GotoNextAddition();
 
             // prevent Madeline from attempting to stand on the underside of regular jumpthrus
             // and attempt to handle upside-down jumpthrus if supported
-            cursor.GotoNext(instr => instr.MatchLdloc(1));
+            cursor.GotoNext(instr => instr.MatchLdloc(1) && instr.Next.MatchBrfalse(out _));
             var platformNotEqualNull = cursor.Next;
             cursor.GotoPrev(instr => instr.MatchLdarg(0) && instr.Next.MatchLdarg(0));
             cursor.Emit(OpCodes.Ldarg_0); // this
@@ -345,7 +339,8 @@ namespace GravityHelper
              */
 
             // ensure we check ground collisions the right direction for refilling dash on solid ground
-            cursor.ReplaceAdditionWithDelegate();
+            cursor.GotoNextAddition();
+            cursor.EmitInvertVectorDelegate();
 
             // find some instructions
             cursor.GotoNext(instr => instr.Match(OpCodes.Ldarg_0) && instr.Next.Match(OpCodes.Ldarg_0));
@@ -381,7 +376,12 @@ namespace GravityHelper
              */
 
             // fix inverted ground correction for dashing (may need to ignore jumpthrus later)
-            cursor.ReplaceAdditionWithDelegate(2);
+            cursor.GotoNext(instr => instr.MatchCallvirt<Player>("get_DashAttacking"));
+            cursor.GotoNextAddition();
+            cursor.EmitInvertVectorDelegate();
+            cursor.Index += 2;
+            cursor.GotoNextAddition();
+            cursor.EmitInvertVectorDelegate();
 
             /*
              * if (water != null && (double) this.Center.Y < (double) water.Center.Y)
@@ -403,36 +403,29 @@ namespace GravityHelper
 
             // fix dangling animation
             cursor.GotoNext(instr => instr.MatchLdstr("dangling"));
-            cursor.GotoPrev(Extensions.AdditionPredicate);
-            cursor.ReplaceAdditionWithDelegate();
+            cursor.GotoPrev(MoveType.After, instr => instr.MatchLdcR4(6));
+            cursor.EmitInvertFloatDelegate();
 
-            // fix edge animation
-            cursor.GotoNext(instr => instr.MatchLdstr("idle_carry"));
-            cursor.ReplaceAdditionWithDelegate(2);
-            cursor.GotoNextAddition(MoveType.After);
-            cursor.Remove();
-            cursor.EmitDelegate<Func<Player, Vector2, bool>>((self, at) =>
-            {
-                if (!GravityHelperModule.ShouldInvert)
-                    return self.CollideCheck<JumpThru>(at);
-
-                var udjt = ReflectionCache.UpsideDownJumpThruType;
-                return udjt != null && self.CollideCheck(udjt, self.Position + new Vector2((int) self.Facing * 4, -2f), true);
-            });
-
-            // fix edgeBack animation
-            cursor.GotoNext(instr => instr.MatchLdstr("edge"));
-            cursor.ReplaceAdditionWithDelegate(2);
-            cursor.GotoNextAddition(MoveType.After);
-            cursor.Remove();
-            cursor.EmitDelegate<Func<Player, Vector2, bool>>((self, at) =>
-            {
-                if (!GravityHelperModule.ShouldInvert)
-                    return self.CollideCheck<JumpThru>(at);
-
-                var udjt = ReflectionCache.UpsideDownJumpThruType;
-                return udjt != null && self.CollideCheck(udjt, self.Position + new Vector2((int) self.Facing * -4, -2f), true);
-            });
+            // TODO: fix edge and edgeBack animations
+            // cursor.GotoNext(instr => instr.MatchLdstr("idle_carry"));
+            // for (int i = 0; i < 2; i++)
+            // {
+            //     cursor.GotoNext(MoveType.After, instr => instr.MatchLdcR4(2));
+            //     cursor.EmitInvertFloatDelegate();
+            //     cursor.GotoNext(MoveType.After, instr => instr.MatchLdcR4(2));
+            //     cursor.EmitInvertFloatDelegate();
+            //
+            //     cursor.GotoNextAddition(MoveType.After);
+            //     cursor.Remove(); // TODO: not remove instructions
+            //     cursor.EmitDelegate<Func<Player, Vector2, bool>>((self, at) =>
+            //     {
+            //         if (!GravityHelperModule.ShouldInvert)
+            //             return self.CollideCheck<JumpThru>(at);
+            //
+            //         var udjt = ReflectionCache.UpsideDownJumpThruType;
+            //         return udjt != null && self.CollideCheck(udjt, self.Position + new Vector2((int) self.Facing * 4, -2f), true);
+            //     });
+            // }
         }
 
         private static void Player_orig_WallJump(ILContext il)
@@ -477,6 +470,13 @@ namespace GravityHelper
             var cursor = new ILCursor(il);
             // this.Speed += this.LiftBoost;
             cursor.ReplaceGetLiftBoost();
+
+            // Platform platformByPriority = SurfaceIndex.GetPlatformByPriority(this.CollideAll<Platform>(this.Position + Vector2.UnitY, this.temp));
+            cursor.GotoNext(instr => instr.MatchCall<SurfaceIndex>(nameof(SurfaceIndex.GetPlatformByPriority)));
+            cursor.GotoPrev(MoveType.After, instr => instr.MatchCall<Vector2>("get_UnitY"));
+            cursor.EmitInvertVectorDelegate();
+
+            // TODO: Dust.Burst(this.BottomCenter, -1.5707964f, 4, this.DustParticleFromSurfaceIndex(index));
         }
 
         private static void Player_SuperWallJump(ILContext il)
@@ -489,25 +489,29 @@ namespace GravityHelper
         private static void Player_SwimCheck(ILContext il)
         {
             var cursor = new ILCursor(il);
-            cursor.ReplaceAdditionWithDelegate();
+            cursor.GotoNext(MoveType.After, instr => instr.MatchLdcR4(out _));
+            cursor.EmitInvertFloatDelegate();
         }
 
         private static void Player_SwimJumpCheck(ILContext il)
         {
             var cursor = new ILCursor(il);
-            cursor.ReplaceAdditionWithDelegate();
+            cursor.GotoNext(MoveType.After, instr => instr.MatchLdcR4(out _));
+            cursor.EmitInvertFloatDelegate();
         }
 
         private static void Player_SwimRiseCheck(ILContext il)
         {
             var cursor = new ILCursor(il);
-            cursor.ReplaceAdditionWithDelegate();
+            cursor.GotoNext(MoveType.After, instr => instr.MatchLdcR4(out _));
+            cursor.EmitInvertFloatDelegate();
         }
 
         private static void Player_SwimUnderwaterCheck(ILContext il)
         {
             var cursor = new ILCursor(il);
-            cursor.ReplaceAdditionWithDelegate();
+            cursor.GotoNext(MoveType.After, instr => instr.MatchLdcR4(out _));
+            cursor.EmitInvertFloatDelegate();
         }
 
         #endregion
@@ -567,6 +571,9 @@ namespace GravityHelper
                     entity.Collidable = false;
             }
         }
+
+        private static bool Player_ClimbCheck(On.Celeste.Player.orig_ClimbCheck orig, Player self, int dir, int yAdd) =>
+            orig(self, dir, GravityHelperModule.ShouldInvert ? -yAdd : yAdd);
 
         private static void Player_ctor(On.Celeste.Player.orig_ctor orig, Player self, Vector2 position,
             PlayerSpriteMode spriteMode)
@@ -680,15 +687,18 @@ namespace GravityHelper
                 return;
             }
 
+            var featherY = Input.Feather.Value.Y;
             var aimY = Input.Aim.Value.Y;
             var moveY = Input.MoveY.Value;
 
             Input.Aim.SetValue(new Vector2(Input.Aim.Value.X, -aimY));
+            Input.Feather.SetValue(new Vector2(Input.Feather.Value.X, -featherY));
             Input.MoveY.Value = -moveY;
 
             orig(self);
 
             Input.MoveY.Value = moveY;
+            Input.Feather.SetValue(new Vector2(Input.Feather.Value.X, -featherY));
             Input.Aim.SetValue(new Vector2(Input.Aim.Value.X, aimY));
         }
 
