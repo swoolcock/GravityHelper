@@ -22,7 +22,7 @@
         </Reference>
         <Reference Include="MMHOOK_Celeste">
             <Private>false</Private>
-            <HintPath>MMHOOK_Celeste.dll</HintPath>
+            <HintPath>lib-stripped\MMHOOK_Celeste.dll</HintPath>
         </Reference>
     </ItemGroup>
 
