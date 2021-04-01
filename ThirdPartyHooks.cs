@@ -2,6 +2,7 @@ using System;
 using System.Reflection;
 using Celeste;
 using Microsoft.Xna.Framework;
+using Mono.Cecil.Cil;
 using Monocle;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
@@ -24,6 +25,8 @@ namespace GravityHelper
 
         private static IDetour hook_UpsideDownJumpThru_playerMovingUp;
         private static IDetour hook_UpsideDownJumpThru_updateClimbMove;
+        private static IDetour hook_UpsideDownJumpThru_onJumpthruHasPlayerRider;
+        private static IDetour hook_UpsideDownJumpThru_MoveVExact;
         private static IDetour hook_UpsideDownJumpThru_Awake;
 
         private static void loadMaxHelpingHand()
@@ -31,6 +34,8 @@ namespace GravityHelper
             var udjt = ReflectionCache.UpsideDownJumpThruType;
             var udjtPlayerMovingUpMethod = udjt?.GetMethod("playerMovingUp", BindingFlags.Static | BindingFlags.NonPublic);
             var udjtUpdateClimbMoveMethod = udjt?.GetMethod("updateClimbMove", BindingFlags.Static | BindingFlags.NonPublic);
+            var udjtOnJumpthruHasPlayerRiderMethod = udjt?.GetMethod("onJumpthruHasPlayerRider", BindingFlags.Static | BindingFlags.NonPublic);
+            var udjtMoveVExactMethod = udjt?.GetMethod("MoveVExact", BindingFlags.Instance | BindingFlags.Public);
             var udjtAwakeMethod = udjt?.GetMethod("Awake", BindingFlags.Instance | BindingFlags.Public);
 
             if (udjtPlayerMovingUpMethod != null)
@@ -39,11 +44,27 @@ namespace GravityHelper
             if (udjtUpdateClimbMoveMethod != null)
                 hook_UpsideDownJumpThru_updateClimbMove = new ILHook(udjtUpdateClimbMoveMethod, UpsideDownJumpThru_updateClimbMove);
 
+            if (udjtOnJumpthruHasPlayerRiderMethod != null)
+                hook_UpsideDownJumpThru_onJumpthruHasPlayerRider = new ILHook(udjtOnJumpthruHasPlayerRiderMethod, UpsideDownJumpThru_onJumpthruHasPlayerRider);
+
+            if (udjtMoveVExactMethod != null)
+                hook_UpsideDownJumpThru_MoveVExact = new ILHook(udjtMoveVExactMethod, UpsideDownJumpThru_MoveVExact);
+
             if (udjtAwakeMethod != null)
             {
                 var target = typeof(ThirdPartyHooks).GetMethod(nameof(UpsideDownJumpThru_Awake), BindingFlags.Static | BindingFlags.NonPublic);
                 hook_UpsideDownJumpThru_Awake = new Hook(udjtAwakeMethod, target);
             }
+        }
+
+        private static void UpsideDownJumpThru_onJumpthruHasPlayerRider(ILContext il)
+        {
+            var cursor = new ILCursor(il);
+            cursor.GotoNext(instr => instr.MatchLdarg(0));
+            var target = cursor.Next;
+            cursor.GotoPrev(instr => instr.MatchLdarg(1));
+            cursor.EmitDelegate<Func<bool>>(() => GravityHelperModule.ShouldInvert);
+            cursor.Emit(OpCodes.Brtrue_S, target);
         }
 
         private static void unloadMaxHelpingHand()
@@ -53,6 +74,12 @@ namespace GravityHelper
 
             hook_UpsideDownJumpThru_updateClimbMove?.Dispose();
             hook_UpsideDownJumpThru_updateClimbMove = null;
+
+            hook_UpsideDownJumpThru_onJumpthruHasPlayerRider?.Dispose();
+            hook_UpsideDownJumpThru_onJumpthruHasPlayerRider = null;
+
+            hook_UpsideDownJumpThru_MoveVExact?.Dispose();
+            hook_UpsideDownJumpThru_MoveVExact = null;
 
             hook_UpsideDownJumpThru_Awake?.Dispose();
             hook_UpsideDownJumpThru_Awake = null;
@@ -86,6 +113,17 @@ namespace GravityHelper
                 "core" => SurfaceIndex.Dirt,
                 _ => SurfaceIndex.Wood,
             };
+        }
+
+        private static void UpsideDownJumpThru_MoveVExact(ILContext il)
+        {
+            var cursor = new ILCursor(il);
+            cursor.GotoNext(instr => instr.MatchCall<JumpThru>(nameof(JumpThru.MoveVExact)));
+            cursor.Index -= 2;
+            var target = cursor.Next;
+            cursor.Index = 0;
+            cursor.EmitDelegate<Func<bool>>(() => GravityHelperModule.ShouldInvert);
+            cursor.Emit(OpCodes.Brtrue_S, target);
         }
 
         #endregion
