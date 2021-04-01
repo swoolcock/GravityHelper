@@ -406,26 +406,27 @@ namespace GravityHelper
             cursor.GotoPrev(MoveType.After, instr => instr.MatchLdcR4(6));
             cursor.EmitInvertFloatDelegate();
 
-            // TODO: fix edge and edgeBack animations
-            // cursor.GotoNext(instr => instr.MatchLdstr("idle_carry"));
-            // for (int i = 0; i < 2; i++)
-            // {
-            //     cursor.GotoNext(MoveType.After, instr => instr.MatchLdcR4(2));
-            //     cursor.EmitInvertFloatDelegate();
-            //     cursor.GotoNext(MoveType.After, instr => instr.MatchLdcR4(2));
-            //     cursor.EmitInvertFloatDelegate();
-            //
-            //     cursor.GotoNextAddition(MoveType.After);
-            //     cursor.Remove(); // TODO: not remove instructions
-            //     cursor.EmitDelegate<Func<Player, Vector2, bool>>((self, at) =>
-            //     {
-            //         if (!GravityHelperModule.ShouldInvert)
-            //             return self.CollideCheck<JumpThru>(at);
-            //
-            //         var udjt = ReflectionCache.UpsideDownJumpThruType;
-            //         return udjt != null && self.CollideCheck(udjt, self.Position + new Vector2((int) self.Facing * 4, -2f), true);
-            //     });
-            // }
+            cursor.GotoNext(instr => instr.MatchLdstr("idle_carry"));
+            for (int i = 0; i < 2; i++)
+            {
+                cursor.GotoNext(MoveType.After, instr => instr.MatchLdcR4(2));
+                cursor.EmitInvertFloatDelegate();
+                cursor.GotoNext(MoveType.After, instr => instr.MatchLdcR4(2));
+                cursor.EmitInvertFloatDelegate();
+
+                cursor.GotoNextAddition(MoveType.After);
+                cursor.GotoNextAddition(MoveType.After);
+
+                cursor.Remove(); // TODO: not remove instructions
+                cursor.EmitDelegate<Func<Player, Vector2, bool>>((self, at) =>
+                {
+                    if (!GravityHelperModule.ShouldInvert)
+                        return self.CollideCheck<JumpThru>(at);
+
+                    var udjt = ReflectionCache.UpsideDownJumpThruType;
+                    return udjt != null && self.CollideCheck(udjt, self.Position + new Vector2((int) self.Facing * 4, -2f), true);
+                });
+            }
         }
 
         private static void Player_orig_WallJump(ILContext il)
