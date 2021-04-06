@@ -23,6 +23,8 @@ namespace GravityHelper
 
         public static void Load()
         {
+            IL.Celeste.Player.BeforeUpTransition += Player_BeforeUpTransition;
+            IL.Celeste.Player.BeforeDownTransition += Player_BeforeDownTransition;
             IL.Celeste.Player.Bounce += Player_Bounce;
             IL.Celeste.Player.ClimbHopBlockedCheck += Player_ClimbHopBlockedCheck;
             IL.Celeste.Player.ClimbUpdate += Player_ClimbUpdate;
@@ -44,8 +46,6 @@ namespace GravityHelper
 
             On.Celeste.Player.ctor += Player_ctor;
             On.Celeste.Player.Added += Player_Added;
-            On.Celeste.Player.BeforeUpTransition += Player_BeforeUpTransition;
-            On.Celeste.Player.BeforeDownTransition += Player_BeforeDownTransition;
             On.Celeste.Player.ClimbCheck += Player_ClimbCheck;
             On.Celeste.Player.DreamDashCheck += Player_DreamDashCheck;
             On.Celeste.Player.DreamDashUpdate += Player_DreamDashUpdate;
@@ -77,6 +77,8 @@ namespace GravityHelper
 
         public static void Unload()
         {
+            IL.Celeste.Player.BeforeUpTransition -= Player_BeforeUpTransition;
+            IL.Celeste.Player.BeforeDownTransition -= Player_BeforeDownTransition;
             IL.Celeste.Player.Bounce -= Player_Bounce;
             IL.Celeste.Player.ClimbHopBlockedCheck -= Player_ClimbHopBlockedCheck;
             IL.Celeste.Player.ClimbUpdate -= Player_ClimbUpdate;
@@ -98,8 +100,6 @@ namespace GravityHelper
 
             On.Celeste.Player.ctor -= Player_ctor;
             On.Celeste.Player.Added -= Player_Added;
-            On.Celeste.Player.BeforeUpTransition -= Player_BeforeUpTransition;
-            On.Celeste.Player.BeforeDownTransition -= Player_BeforeDownTransition;
             On.Celeste.Player.ClimbCheck -= Player_ClimbCheck;
             On.Celeste.Player.DreamDashCheck -= Player_DreamDashCheck;
             On.Celeste.Player.DreamDashUpdate -= Player_DreamDashUpdate;
@@ -128,6 +128,64 @@ namespace GravityHelper
         }
 
         #region IL Hooks
+
+        private static void Player_BeforeDownTransition(ILContext il)
+        {
+            var cursor = new ILCursor(il);
+            var target = cursor.Next;
+            cursor.Emit(OpCodes.Ldarg_0);
+            cursor.EmitDelegate<Func<Player, bool>>(self =>
+            {
+                if (!GravityHelperModule.ShouldInvert)
+                    return false;
+
+                // copied from Player.BeforeUpTransition
+                self.Speed.X = 0.0f;
+                if (self.StateMachine.State != Player.StRedDash && self.StateMachine.State != Player.StReflectionFall && self.StateMachine.State != Player.StStarFly)
+                {
+                    self.SetVarJumpSpeed(self.Speed.Y = -105f);
+                    self.StateMachine.State = self.StateMachine.State != Player.StSummitLaunch ? Player.StNormal : Player.StIntroJump;
+                    self.AutoJump = true;
+                    self.AutoJumpTimer = 0.0f;
+                    self.SetVarJumpTimer(0.2f);
+                }
+                self.SetDashCooldownTimer(0.2f);
+
+                return true;
+            });
+            cursor.Emit(OpCodes.Brfalse_S, target);
+            cursor.Emit(OpCodes.Ret);
+        }
+
+        private static void Player_BeforeUpTransition(ILContext il)
+        {
+            var cursor = new ILCursor(il);
+            var target = cursor.Next;
+            cursor.Emit(OpCodes.Ldarg_0);
+            cursor.EmitDelegate<Func<Player, bool>>(self =>
+            {
+                if (!GravityHelperModule.ShouldInvert)
+                    return false;
+
+                // copied from Player.BeforeDownTransition
+                if (self.StateMachine.State != Player.StRedDash && self.StateMachine.State != Player.StReflectionFall && self.StateMachine.State != Player.StStarFly)
+                {
+                    self.StateMachine.State = Player.StNormal;
+                    self.Speed.Y = Math.Max(0.0f, self.Speed.Y);
+                    self.AutoJump = false;
+                    self.SetVarJumpTimer(0.0f);
+                }
+                foreach (Entity entity in self.Scene.Tracker.GetEntities<Platform>())
+                {
+                    if (!(entity is SolidTiles) && self.CollideCheckOutside(entity, self.Position - Vector2.UnitY * self.Height))
+                        entity.Collidable = false;
+                }
+
+                return true;
+            });
+            cursor.Emit(OpCodes.Brfalse_S, target);
+            cursor.Emit(OpCodes.Ret);
+        }
 
         private static void Player_Bounce(ILContext il)
         {
@@ -527,50 +585,6 @@ namespace GravityHelper
             GravityHelperModule.Instance.Gravity = GravityHelperModule.Instance.GravityBeforeReload ?? trigger?.GravityType ?? GravityHelperModule.Session.InitialGravity;
             GravityHelperModule.Instance.GravityRefillCharges = 0;
             GravityHelperModule.Instance.GravityBeforeReload = null;
-        }
-
-        private static void Player_BeforeDownTransition(On.Celeste.Player.orig_BeforeDownTransition orig, Player self)
-        {
-            if (!GravityHelperModule.ShouldInvert)
-            {
-                orig(self);
-                return;
-            }
-
-            // FIXME: copied from Player.BeforeUpTransition - we never call orig!
-            self.Speed.X = 0.0f;
-            if (self.StateMachine.State != Player.StRedDash && self.StateMachine.State != Player.StReflectionFall && self.StateMachine.State != Player.StStarFly)
-            {
-                self.SetVarJumpSpeed(self.Speed.Y = -105f);
-                self.StateMachine.State = self.StateMachine.State != Player.StSummitLaunch ? Player.StNormal : Player.StIntroJump;
-                self.AutoJump = true;
-                self.AutoJumpTimer = 0.0f;
-                self.SetVarJumpTimer(0.2f);
-            }
-            self.SetDashCooldownTimer(0.2f);
-        }
-
-        private static void Player_BeforeUpTransition(On.Celeste.Player.orig_BeforeUpTransition orig, Player self)
-        {
-            if (!GravityHelperModule.ShouldInvert)
-            {
-                orig(self);
-                return;
-            }
-
-            // FIXME: copied from Player.BeforeDownTransition - we never call orig!
-            if (self.StateMachine.State != Player.StRedDash && self.StateMachine.State != Player.StReflectionFall && self.StateMachine.State != Player.StStarFly)
-            {
-                self.StateMachine.State = Player.StNormal;
-                self.Speed.Y = Math.Max(0.0f, self.Speed.Y);
-                self.AutoJump = false;
-                self.SetVarJumpTimer(0.0f);
-            }
-            foreach (Entity entity in self.Scene.Tracker.GetEntities<Platform>())
-            {
-                if (!(entity is SolidTiles) && self.CollideCheckOutside(entity, self.Position - Vector2.UnitY * self.Height))
-                    entity.Collidable = false;
-            }
         }
 
         private static bool Player_ClimbCheck(On.Celeste.Player.orig_ClimbCheck orig, Player self, int dir, int yAdd) =>
