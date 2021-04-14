@@ -205,11 +205,12 @@ namespace GravityHelper
                 cursor.Emit(OpCodes.Ldarg_0);
                 cursor.EmitDelegate<Func<Vector2, PlayerHair, Vector2>>((v, hair) =>
                 {
-                    if (GravityHelperModule.ShouldInvert && hair.Entity is Player player)
+                    if (GravityHelperModule.ShouldInvert && (hair.Entity is Player || hair.Entity is PlayerDeadBody))
                     {
-                        return player.StateMachine.State != Player.StStarFly
-                            ? new Vector2(v.X, 2 * player.Position.Y - v.Y)
-                            : new Vector2(v.X, v.Y + 2 * player.GetNormalHitbox().CenterY);
+                        if (hair.Entity is Player player && player.StateMachine.State == Player.StStarFly)
+                            return new Vector2(v.X, v.Y + 2 * player.GetNormalHitbox().CenterY);
+
+                        return new Vector2(v.X, 2 * hair.Entity.Position.Y - v.Y);
                     }
                     return v;
                 });
