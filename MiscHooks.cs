@@ -19,6 +19,7 @@ namespace GravityHelper
             IL.Celeste.Actor.IsRiding_Solid += Actor_IsRiding;
             IL.Celeste.Bumper.OnPlayer += Bumper_OnPlayer;
             IL.Celeste.Level.EnforceBounds += Level_EnforceBounds;
+            IL.Celeste.PlayerDeadBody.Render += PlayerDeadBody_Render;
             IL.Celeste.PlayerHair.Render += PlayerHair_Render;
             IL.Celeste.Solid.GetPlayerOnTop += Solid_GetPlayerOnTop;
 
@@ -42,6 +43,7 @@ namespace GravityHelper
             IL.Celeste.Actor.IsRiding_Solid -= Actor_IsRiding;
             IL.Celeste.Bumper.OnPlayer -= Bumper_OnPlayer;
             IL.Celeste.Level.EnforceBounds -= Level_EnforceBounds;
+            IL.Celeste.PlayerDeadBody.Render -= PlayerDeadBody_Render;
             IL.Celeste.PlayerHair.Render -= PlayerHair_Render;
             IL.Celeste.Solid.GetPlayerOnTop -= Solid_GetPlayerOnTop;
 
@@ -183,6 +185,15 @@ namespace GravityHelper
 
             cursor.Emit(OpCodes.Brfalse_S, target);
             cursor.Emit(OpCodes.Ret);
+        }
+
+        private static void PlayerDeadBody_Render(ILContext il)
+        {
+            var cursor = new ILCursor(il);
+
+            // this.sprite.Scale.Y = this.scale;
+            cursor.GotoNext(instr => instr.MatchStfld<Vector2>(nameof(Vector2.Y)));
+            cursor.EmitInvertFloatDelegate();
         }
 
         private static void PlayerHair_Render(ILContext il)
