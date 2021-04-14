@@ -10,11 +10,13 @@ namespace GravityHelper.Triggers
     public class SpawnGravityTrigger : Entity
     {
         public GravityType GravityType { get; }
+        public bool FireOnBubbleReturn { get; }
 
         public SpawnGravityTrigger(EntityData data, Vector2 offset)
             : base(data.Position + offset)
         {
             GravityType = (GravityType)data.Int("gravityType");
+            FireOnBubbleReturn = data.Bool("fireOnBubbleReturn");
             Collider = new Hitbox(data.Width, data.Height);
             Visible = Active = false;
         }

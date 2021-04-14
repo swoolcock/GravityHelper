@@ -5,7 +5,7 @@ using ..Ahorn, Maple
 @mapdef Trigger "GravityHelper/SpawnGravityTrigger" SpawnGravityTrigger(
     x::Integer, y::Integer,
     width::Integer=Maple.defaultTriggerWidth, height::Integer=Maple.defaultTriggerHeight,
-    gravityType::Integer=0
+    gravityType::Integer=0, fireOnBubbleReturn::Bool=true
 )
 
 const gravityTypes = Dict{String, Integer}(

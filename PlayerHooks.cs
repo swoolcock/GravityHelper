@@ -47,6 +47,7 @@ namespace GravityHelper
             On.Celeste.Player.ctor += Player_ctor;
             On.Celeste.Player.Added += Player_Added;
             On.Celeste.Player.ClimbCheck += Player_ClimbCheck;
+            On.Celeste.Player.CassetteFlyEnd += Player_CassetteFlyEnd;
             On.Celeste.Player.DreamDashCheck += Player_DreamDashCheck;
             On.Celeste.Player.DreamDashUpdate += Player_DreamDashUpdate;
             On.Celeste.Player.JumpThruBoostBlockedCheck += Player_JumpThruBoostBlockedCheck;
@@ -54,6 +55,7 @@ namespace GravityHelper
             On.Celeste.Player.ReflectBounce += Player_ReflectBounce;
             On.Celeste.Player.Render += Player_Render;
             On.Celeste.Player.SlipCheck += Player_SlipCheck;
+            On.Celeste.Player.StartCassetteFly += Player_StartCassetteFly;
             On.Celeste.Player.TransitionTo += Player_TransitionTo;
             On.Celeste.Player.Update += Player_Update;
 
@@ -100,6 +102,7 @@ namespace GravityHelper
 
             On.Celeste.Player.ctor -= Player_ctor;
             On.Celeste.Player.Added -= Player_Added;
+            On.Celeste.Player.CassetteFlyEnd -= Player_CassetteFlyEnd;
             On.Celeste.Player.ClimbCheck -= Player_ClimbCheck;
             On.Celeste.Player.DreamDashCheck -= Player_DreamDashCheck;
             On.Celeste.Player.DreamDashUpdate -= Player_DreamDashUpdate;
@@ -108,6 +111,7 @@ namespace GravityHelper
             On.Celeste.Player.ReflectBounce -= Player_ReflectBounce;
             On.Celeste.Player.Render -= Player_Render;
             On.Celeste.Player.SlipCheck -= Player_SlipCheck;
+            On.Celeste.Player.StartCassetteFly -= Player_StartCassetteFly;
             On.Celeste.Player.TransitionTo -= Player_TransitionTo;
             On.Celeste.Player.Update -= Player_Update;
 
@@ -587,6 +591,15 @@ namespace GravityHelper
             GravityHelperModule.Instance.GravityBeforeReload = null;
         }
 
+        private static void Player_CassetteFlyEnd(On.Celeste.Player.orig_CassetteFlyEnd orig, Player self)
+        {
+            orig(self);
+
+            SpawnGravityTrigger trigger = self.CollideFirstOrDefault<SpawnGravityTrigger>();
+            if (trigger?.FireOnBubbleReturn ?? false)
+                GravityHelperModule.Instance.Gravity = trigger.GravityType;
+        }
+
         private static bool Player_ClimbCheck(On.Celeste.Player.orig_ClimbCheck orig, Player self, int dir, int yAdd) =>
             orig(self, dir, GravityHelperModule.ShouldInvert ? -yAdd : yAdd);
 
@@ -683,6 +696,12 @@ namespace GravityHelper
 
             Vector2 point = self.Facing != Facings.Right ? self.BottomLeft - Vector2.UnitX - Vector2.UnitY * (4f + addY) : self.BottomRight - Vector2.UnitY * (4f + addY);
             return !self.Scene.CollideCheck<Solid>(point) && !self.Scene.CollideCheck<Solid>(point - Vector2.UnitY * (addY - 4f));
+        }
+
+        private static void Player_StartCassetteFly(On.Celeste.Player.orig_StartCassetteFly orig, Player self, Vector2 targetPosition, Vector2 control)
+        {
+            GravityHelperModule.Instance.Gravity = GravityType.Normal;
+            orig(self, targetPosition, control);
         }
 
         private static bool Player_TransitionTo(On.Celeste.Player.orig_TransitionTo orig, Player self, Vector2 target,
