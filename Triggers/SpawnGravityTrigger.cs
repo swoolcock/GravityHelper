@@ -16,7 +16,7 @@ namespace GravityHelper.Triggers
             : base(data.Position + offset)
         {
             GravityType = (GravityType)data.Int("gravityType");
-            FireOnBubbleReturn = data.Bool("fireOnBubbleReturn");
+            FireOnBubbleReturn = data.Bool("fireOnBubbleReturn", true);
             Collider = new Hitbox(data.Width, data.Height);
             Visible = Active = false;
         }
