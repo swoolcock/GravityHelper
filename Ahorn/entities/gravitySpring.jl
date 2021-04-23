@@ -8,6 +8,7 @@ using ..Ahorn, Maple
 @mapdef Entity "GravityHelper/GravitySpringCeiling" GravitySpringCeiling(x::Integer, y::Integer, playerCanUse::Bool=true, gravityType::Integer=1, cooldown::Float64=1.0)
 
 const gravityTypes = Dict{String, Integer}(
+    "None" => -1,
     "Normal" => 0,
     "Inverted" => 1,
     "Toggle" => 2,

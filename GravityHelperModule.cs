@@ -30,6 +30,7 @@ namespace GravityHelper
             get => gravity;
             set
             {
+                if (value == GravityType.None) return;
                 gravity = value == GravityType.Toggle ? gravity.Opposite() : value;
                 TriggerGravityListeners();
             }

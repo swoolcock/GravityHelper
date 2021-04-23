@@ -156,7 +156,7 @@ namespace GravityHelper.Entities
             }
 
             // set gravity and cooldown if not on cooldown
-            if (cooldownRemaining == 0f)
+            if (GravityType != GravityType.None && cooldownRemaining == 0f)
             {
                 GravityHelperModule.Instance.Gravity = GravityType;
                 cooldownRemaining = Cooldown;
