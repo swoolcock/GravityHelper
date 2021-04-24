@@ -226,7 +226,7 @@ namespace GravityHelper.Entities
 
             Collider collider = self.Collider;
             self.Collider = self.GetNormalHitbox();
-            self.MoveV(fromY - (GravityHelperModule.ShouldInvert ? self.Bottom : self.Top));
+            self.MoveV(GravityHelperModule.ShouldInvert ? self.Bottom - fromY : fromY - self.Top);
             if (!self.Inventory.NoRefills)
                 self.RefillDash();
             self.RefillStamina();
