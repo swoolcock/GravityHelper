@@ -26,3 +26,4 @@ jobs:
           everest.yaml
           bin/GravityHelper.dll
           Ahorn/**/*
+          Graphics/**/*
