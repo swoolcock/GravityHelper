@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Sprites>
+    <gravitySpring path="objects/GravityHelper/gravitySpring/" start="none_idle">
+        <Justify x="0.5" y="1" />
+        <Anim id="none_idle" path="none" delay="0.0" frames="0" />
+        <Anim id="none_bounce" path="none" goto="none_idle" delay="0.07" frames="0,1,2,2,2,2,2,2,2,2,2,3,4,5" />
+        <Anim id="normal_idle" path="normal" delay="0.0" frames="0" />
+        <Anim id="normal_bounce" path="normal" goto="normal_idle" delay="0.07" frames="0,1,2,2,2,2,2,2,2,2,2,3,4,5" />
+        <Anim id="invert_idle" path="invert" delay="0.0" frames="0" />
+        <Anim id="invert_bounce" path="invert" goto="invert_idle" delay="0.07" frames="0,1,2,2,2,2,2,2,2,2,2,3,4,5" />
+        <Anim id="toggle_idle" path="toggle" delay="0.0" frames="0" />
+        <Anim id="toggle_bounce" path="toggle" goto="toggle_idle" delay="0.07" frames="0,1,2,2,2,2,2,2,2,2,2,3,4,5" />
+        <Anim id="disabled" path="white" delay="0.07" />
+    </gravitySpring>
+</Sprites>

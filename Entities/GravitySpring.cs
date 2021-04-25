@@ -22,6 +22,15 @@ namespace GravityHelper.Entities
         public GravityType GravityType { get; }
         public float Cooldown { get; }
 
+        private string getAnimId(string id) => GravityType switch
+        {
+            GravityType.None => $"none_{id}",
+            GravityType.Normal => $"normal_{id}",
+            GravityType.Inverted => $"invert_{id}",
+            GravityType.Toggle => $"toggle_{id}",
+            _ => id
+        };
+
         private Sprite sprite;
         private Wiggler wiggler;
         private StaticMover staticMover;
@@ -49,15 +58,8 @@ namespace GravityHelper.Entities
             Orientation = orientation;
 
             Add(new PlayerCollider(OnCollide));
-
-            Add(sprite = new Sprite(GFX.Game, "objects/spring/"));
-            sprite.Add("idle", "", 0.0f, new int[1]);
-            sprite.Add("bounce", "", 0.07f, "idle", 0, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 4, 5);
-            sprite.Add("disabled", "white", 0.07f);
-            sprite.Play("idle");
-
-            sprite.Origin.X = sprite.Width / 2f;
-            sprite.Origin.Y = sprite.Height;
+            Add(sprite = GFX.SpriteBank.Create("gravitySpring"));
+            sprite.Play(getAnimId("idle"));
 
             switch (Orientation)
             {
@@ -112,7 +114,7 @@ namespace GravityHelper.Entities
         {
             Visible = Collidable = true;
             sprite.Color = Color.White;
-            sprite.Play("idle");
+            sprite.Play(getAnimId("idle"));
         }
 
         private void OnDisable()
@@ -197,7 +199,7 @@ namespace GravityHelper.Entities
         {
             Audio.Play("event:/game/general/spring", BottomCenter);
             staticMover.TriggerPlatform();
-            sprite.Play("bounce", true);
+            sprite.Play(getAnimId("bounce"), true);
             wiggler.Start();
         }
 
