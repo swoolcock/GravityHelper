@@ -42,7 +42,7 @@ namespace GravityHelper.Entities
             else
             {
                 Handler.HoverUI.Texture.DrawJustified(vector, new Vector2(0.5f, 1f), value2 * alpha, new Vector2(num, -num));
-                Vector2 position = vector - Handler.HoverUI.InputPosition * num;
+                Vector2 position = vector - Handler.HoverUI.InputPosition * num + Vector2.UnitY;
                 if (Input.GuiInputController(Input.PrefixMode.Latest))
                     Input.GuiButton(Input.Talk, "controls/keyboard/oemquestion").DrawJustified(position, new Vector2(0.5f), Color.White * scale, num);
                 else
