@@ -14,11 +14,13 @@ namespace GravityHelper
         public static void Load()
         {
             loadMaxHelpingHand();
+            loadFancyTileEntities();
         }
 
         public static void Unload()
         {
             unloadMaxHelpingHand();
+            unloadFancyTileEntities();
         }
 
         #region MaxHelpingHand
@@ -57,16 +59,6 @@ namespace GravityHelper
             }
         }
 
-        private static void UpsideDownJumpThru_onJumpthruHasPlayerRider(ILContext il)
-        {
-            var cursor = new ILCursor(il);
-            cursor.GotoNext(instr => instr.MatchLdarg(0));
-            var target = cursor.Next;
-            cursor.GotoPrev(instr => instr.MatchLdarg(1));
-            cursor.EmitDelegate<Func<bool>>(() => GravityHelperModule.ShouldInvert);
-            cursor.Emit(OpCodes.Brtrue_S, target);
-        }
-
         private static void unloadMaxHelpingHand()
         {
             hook_UpsideDownJumpThru_playerMovingUp?.Dispose();
@@ -83,6 +75,16 @@ namespace GravityHelper
 
             hook_UpsideDownJumpThru_Awake?.Dispose();
             hook_UpsideDownJumpThru_Awake = null;
+        }
+
+        private static void UpsideDownJumpThru_onJumpthruHasPlayerRider(ILContext il)
+        {
+            var cursor = new ILCursor(il);
+            cursor.GotoNext(instr => instr.MatchLdarg(0));
+            var target = cursor.Next;
+            cursor.GotoPrev(instr => instr.MatchLdarg(1));
+            cursor.EmitDelegate<Func<bool>>(() => GravityHelperModule.ShouldInvert);
+            cursor.Emit(OpCodes.Brtrue_S, target);
         }
 
         private static void UpsideDownJumpThru_playerMovingUp(ILContext il)
@@ -124,6 +126,87 @@ namespace GravityHelper
             cursor.Index = 0;
             cursor.EmitDelegate<Func<bool>>(() => GravityHelperModule.ShouldInvert);
             cursor.Emit(OpCodes.Brtrue_S, target);
+        }
+
+        #endregion
+
+        #region FancyTileEntities
+
+        private static IDetour hook_FancyFallingBlock_MoveVExact;
+        private static IDetour hook_FancyFallingBlock_GetLandSoundIndex;
+        private static IDetour hook_FancyFallingBlock_GetStepSoundIndex;
+
+        private static void loadFancyTileEntities()
+        {
+            var ffbt = ReflectionCache.FancyFallingBlockType;
+            var ffbtMoveVExactMethod = ffbt?.GetMethod("MoveVExact", BindingFlags.Instance | BindingFlags.Public);
+            var ffbtGetLandSoundIndexMethod = ffbt?.GetMethod("GetLandSoundIndex", BindingFlags.Instance | BindingFlags.Public);
+            var ffbtGetStepSoundIndexMethod = ffbt?.GetMethod("GetStepSoundIndex", BindingFlags.Instance | BindingFlags.Public);
+
+            if (ffbtMoveVExactMethod != null)
+            {
+                var target = typeof(ThirdPartyHooks).GetMethod(nameof(FancyFallingBlock_MoveVExact), BindingFlags.Static | BindingFlags.NonPublic);
+                hook_FancyFallingBlock_MoveVExact = new Hook(ffbtMoveVExactMethod, target);
+            }
+
+            if (ffbtGetLandSoundIndexMethod != null)
+            {
+                var target = typeof(ThirdPartyHooks).GetMethod(nameof(FancyFallingBlock_GetLandSoundIndex), BindingFlags.Static | BindingFlags.NonPublic);
+                hook_FancyFallingBlock_GetLandSoundIndex = new Hook(ffbtGetLandSoundIndexMethod, target);
+            }
+
+            if (ffbtGetStepSoundIndexMethod != null)
+            {
+                var target = typeof(ThirdPartyHooks).GetMethod(nameof(FancyFallingBlock_GetStepSoundIndex), BindingFlags.Static | BindingFlags.NonPublic);
+                hook_FancyFallingBlock_GetStepSoundIndex = new Hook(ffbtGetStepSoundIndexMethod, target);
+            }
+        }
+
+        private static void unloadFancyTileEntities()
+        {
+            hook_FancyFallingBlock_MoveVExact?.Dispose();
+            hook_FancyFallingBlock_MoveVExact = null;
+
+            hook_FancyFallingBlock_GetLandSoundIndex?.Dispose();
+            hook_FancyFallingBlock_GetLandSoundIndex = null;
+
+            hook_FancyFallingBlock_GetStepSoundIndex?.Dispose();
+            hook_FancyFallingBlock_GetStepSoundIndex = null;
+        }
+
+        private static void FancyFallingBlock_MoveVExact(Action<FallingBlock, int> orig, FallingBlock self, int move)
+        {
+            if (!GravityHelperModule.ShouldInvert)
+            {
+                orig(self, move);
+                return;
+            }
+
+            GravityHelperModule.SolidMoving = true;
+            orig(self, move);
+            GravityHelperModule.SolidMoving = false;
+        }
+
+        private static int FancyFallingBlock_GetLandSoundIndex(Func<FallingBlock, Entity, int> orig, FallingBlock self, Entity entity)
+        {
+            if (!GravityHelperModule.ShouldInvert)
+                return orig(self, entity);
+
+            int num = self.CallFancyFallingBlockSurfaceSoundIndexAt(entity.TopCenter - Vector2.UnitY * 4f);
+            if (num == -1) num = self.CallFancyFallingBlockSurfaceSoundIndexAt(entity.TopLeft - Vector2.UnitY * 4f);
+            if (num == -1) num = self.CallFancyFallingBlockSurfaceSoundIndexAt(entity.TopRight - Vector2.UnitY * 4f);
+            return num;
+        }
+
+        private static int FancyFallingBlock_GetStepSoundIndex(Func<FallingBlock, Entity, int> orig, FallingBlock self, Entity entity)
+        {
+            if (!GravityHelperModule.ShouldInvert)
+                return orig(self, entity);
+
+            int num = self.CallFancyFallingBlockSurfaceSoundIndexAt(entity.TopCenter - Vector2.UnitY * 4f);
+            if (num == -1) num = self.CallFancyFallingBlockSurfaceSoundIndexAt(entity.TopLeft - Vector2.UnitY * 4f);
+            if (num == -1) num = self.CallFancyFallingBlockSurfaceSoundIndexAt(entity.TopRight - Vector2.UnitY * 4f);
+            return num;
         }
 
         #endregion

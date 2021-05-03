@@ -67,6 +67,16 @@ namespace GravityHelper
         public static FieldInfo UpsideDownJumpThru_OverrideTexture => upsideDownJumpThru_overrideTexture ??=
             UpsideDownJumpThruType?.GetField("overrideTexture", BindingFlags.Instance | BindingFlags.NonPublic);
 
+        private static Type fancyFallingBlockType;
+
+        public static Type FancyFallingBlockType => fancyFallingBlockType ??=
+            GetModdedTypeByName("FancyTileEntities", "Celeste.Mod.FancyTileEntities.FancyFallingBlock");
+
+        private static MethodInfo fancyFallingBlock_SurfaceSoundIndexAt;
+
+        public static MethodInfo FancyFallingBlock_SurfaceSoundIndexAt => fancyFallingBlock_SurfaceSoundIndexAt ??=
+            FancyFallingBlockType?.GetMethod("SurfaceSoundIndexAt", BindingFlags.Instance | BindingFlags.NonPublic);
+
         #endregion
 
         #region Reflection Extensions
@@ -86,6 +96,12 @@ namespace GravityHelper
         public static bool GetPlayerCanUse(this Spring spring) => (bool) Spring_PlayerCanUse.GetValue(spring);
         public static void CallNextLevel(this Level level, Vector2 at, Vector2 dir) => Level_NextLevel.Invoke(level, new object[]{at, dir});
         public static int CallSurfaceSoundIndexAt(this SolidTiles solidTiles, Vector2 readPosition) => (int) SolidTiles_SurfaceSoundIndexAt.Invoke(solidTiles, new object[] {readPosition});
+
+        public static int CallFancyFallingBlockSurfaceSoundIndexAt(this FallingBlock fallingBlock, Vector2 readPosition)
+        {
+            if (FancyFallingBlock_SurfaceSoundIndexAt == null) return -1;
+            return (int) FancyFallingBlock_SurfaceSoundIndexAt.Invoke(fallingBlock, new object[] {readPosition});
+        }
 
         public static void SetValue(this VirtualJoystick virtualJoystick, Vector2 value)
         {
