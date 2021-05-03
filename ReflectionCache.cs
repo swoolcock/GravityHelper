@@ -9,6 +9,7 @@ using Monocle;
 
 namespace GravityHelper
 {
+    // ReSharper disable InconsistentNaming
     internal static class ReflectionCache
     {
         public static Type GetTypeByName(string name) =>
@@ -52,7 +53,6 @@ namespace GravityHelper
         public static readonly MethodInfo Lookout_LookRoutine = typeof(Lookout).GetMethod("Lookout_LookRoutine", BindingFlags.Instance | BindingFlags.NonPublic);
         public static readonly MethodInfo SolidTiles_SurfaceSoundIndexAt = typeof(SolidTiles).GetMethod("SurfaceSoundIndexAt", BindingFlags.Instance | BindingFlags.NonPublic);
         public static readonly MethodInfo VirtualJoystick_SetValue = typeof(VirtualJoystick).GetProperty("Value")?.GetSetMethod(true);
-
         public static readonly object[] VirtualJoystick_SetValue_Params = { Vector2.Zero };
 
         #endregion

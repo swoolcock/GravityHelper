@@ -15,11 +15,13 @@ namespace GravityHelper
 {
     public static class PlayerHooks
     {
+        // ReSharper disable InconsistentNaming
         private static IDetour hook_Player_DashCoroutine;
         private static IDetour hook_Player_orig_Update;
         private static IDetour hook_Player_orig_UpdateSprite;
         private static IDetour hook_Player_orig_WallJump;
         private static IDetour hook_Player_ctor_OnFrameChange;
+        // ReSharper restore InconsistentNaming
 
         public static void Load()
         {
@@ -74,7 +76,6 @@ namespace GravityHelper
 
             if (spriteOnFrameChange != null)
                 hook_Player_ctor_OnFrameChange = new ILHook(spriteOnFrameChange, Player_ctor_OnFrameChange);
-
         }
 
         public static void Unload()
@@ -212,7 +213,7 @@ namespace GravityHelper
             var cursor = new ILCursor(il);
 
             // replace all calls to LiftBoost (should be 4)
-            cursor.ReplaceGetLiftBoost(4);
+            cursor.replaceGetLiftBoost(4);
             cursor.Goto(0);
 
             // if (this.CollideCheck<Solid>(this.Position - Vector2.UnitY) || this.ClimbHopBlockedCheck() && this.SlipCheck(-1f))
@@ -276,7 +277,7 @@ namespace GravityHelper
             var cursor = new ILCursor(il);
 
             // this.Speed += this.LiftBoost;
-            cursor.ReplaceGetLiftBoost();
+            cursor.replaceGetLiftBoost();
 
             // Platform platformByPriority = SurfaceIndex.GetPlatformByPriority(this.CollideAll<Platform>(this.Position + Vector2.UnitY, this.temp));
             cursor.GotoNext(instr => instr.MatchCall<Vector2>("get_UnitY"));
@@ -290,14 +291,14 @@ namespace GravityHelper
         {
             var cursor = new ILCursor(il);
             // this.Speed += this.LiftBoost;
-            cursor.ReplaceGetLiftBoost();
+            cursor.replaceGetLiftBoost();
         }
 
         private static void Player_NormalUpdate(ILContext il)
         {
             var cursor = new ILCursor(il);
 
-            cursor.ReplaceGetLiftBoost(3);
+            cursor.replaceGetLiftBoost(3);
             cursor.Goto(0);
 
             // if (!this.CollideCheck<Solid>(this.Position + Vector2.UnitY * (float) -index) && this.ClimbCheck((int) this.Facing, -index))
@@ -384,11 +385,11 @@ namespace GravityHelper
             cursor.EmitDelegate<Func<Player, Platform>>(self =>
             {
                 if (!GravityHelperModule.ShouldInvert)
-                    return (Platform) self.CollideFirstOutside<JumpThru>(self.Position + Vector2.UnitY);
+                    return self.CollideFirstOutside<JumpThru>(self.Position + Vector2.UnitY);
 
                 var udjt = ReflectionCache.UpsideDownJumpThruType;
                 if (udjt != null)
-                    return (Platform) self.CollideFirstOutside(udjt, self.Position - Vector2.UnitY, true);
+                    return (Platform)self.CollideFirstOutside(udjt, self.Position - Vector2.UnitY, true);
 
                 return null;
             });
@@ -411,7 +412,7 @@ namespace GravityHelper
             cursor.GotoNext(instr => instr.MatchLdarg(0));
             var spikesCheck = cursor.Next;
             cursor.GotoNext(instr => instr.Match(OpCodes.Ldarg_0) && instr.Next.MatchLdfld<Player>("varJumpTimer"));
-            var varJumpTimerCheck  = cursor.Next;
+            var varJumpTimerCheck = cursor.Next;
 
             // replace the JumpThru check with UpsideDownJumpThru if we can and should
             cursor.Goto(jumpThruCheck);
@@ -495,7 +496,7 @@ namespace GravityHelper
         {
             var cursor = new ILCursor(il);
             // this.Speed += this.LiftBoost;
-            cursor.ReplaceGetLiftBoost();
+            cursor.replaceGetLiftBoost();
         }
 
         private static void Player_SideBounce(ILContext il)
@@ -532,7 +533,7 @@ namespace GravityHelper
         {
             var cursor = new ILCursor(il);
             // this.Speed += this.LiftBoost;
-            cursor.ReplaceGetLiftBoost();
+            cursor.replaceGetLiftBoost();
 
             // Platform platformByPriority = SurfaceIndex.GetPlatformByPriority(this.CollideAll<Platform>(this.Position + Vector2.UnitY, this.temp));
             cursor.GotoNext(instr => instr.MatchCall<SurfaceIndex>(nameof(SurfaceIndex.GetPlatformByPriority)));
@@ -546,7 +547,7 @@ namespace GravityHelper
         {
             var cursor = new ILCursor(il);
             // this.Speed += this.LiftBoost;
-            cursor.ReplaceGetLiftBoost();
+            cursor.replaceGetLiftBoost();
         }
 
         private static void Player_SwimCheck(ILContext il)
@@ -673,7 +674,8 @@ namespace GravityHelper
             orig(self, data);
         }
 
-        private static void Player_ReflectBounce(On.Celeste.Player.orig_ReflectBounce orig, Player self, Vector2 direction) =>
+        private static void Player_ReflectBounce(On.Celeste.Player.orig_ReflectBounce orig, Player self,
+            Vector2 direction) =>
             orig(self, GravityHelperModule.ShouldInvert ? new Vector2(direction.X, -direction.Y) : direction);
 
         private static void Player_Render(On.Celeste.Player.orig_Render orig, Player self)
@@ -738,10 +740,10 @@ namespace GravityHelper
 
         #endregion
 
-        private static void ReplaceGetLiftBoost(this ILCursor cursor, int count = 1) =>
-            cursor.ReplaceWithDelegate<Func<Player, Vector2>>(instr => instr.MatchCallvirt<Player>("get_LiftBoost"), GetLiftBoost, count);
+        private static void replaceGetLiftBoost(this ILCursor cursor, int count = 1) =>
+            cursor.ReplaceWithDelegate<Func<Player, Vector2>>(instr => instr.MatchCallvirt<Player>("get_LiftBoost"), getLiftBoost, count);
 
-        private static Vector2 GetLiftBoost(Player player)
+        private static Vector2 getLiftBoost(Player player)
         {
             Vector2 liftSpeed = player.LiftSpeed;
             if (GravityHelperModule.ShouldInvert)

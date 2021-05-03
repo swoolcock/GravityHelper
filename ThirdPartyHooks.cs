@@ -25,11 +25,13 @@ namespace GravityHelper
 
         #region MaxHelpingHand
 
+        // ReSharper disable InconsistentNaming
         private static IDetour hook_UpsideDownJumpThru_playerMovingUp;
         private static IDetour hook_UpsideDownJumpThru_updateClimbMove;
         private static IDetour hook_UpsideDownJumpThru_onJumpthruHasPlayerRider;
         private static IDetour hook_UpsideDownJumpThru_MoveVExact;
         private static IDetour hook_UpsideDownJumpThru_Awake;
+        // ReSharper restore InconsistentNaming
 
         private static void loadMaxHelpingHand()
         {
@@ -132,9 +134,11 @@ namespace GravityHelper
 
         #region FancyTileEntities
 
+        // ReSharper disable InconsistentNaming
         private static IDetour hook_FancyFallingBlock_MoveVExact;
         private static IDetour hook_FancyFallingBlock_GetLandSoundIndex;
         private static IDetour hook_FancyFallingBlock_GetStepSoundIndex;
+        // ReSharper restore InconsistentNaming
 
         private static void loadFancyTileEntities()
         {
