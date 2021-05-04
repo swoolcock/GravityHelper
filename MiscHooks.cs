@@ -35,6 +35,7 @@ namespace GravityHelper
             On.Celeste.Spikes.ctor_Vector2_int_Directions_string += Spikes_ctor_Vector2_int_Directions_string;
             On.Celeste.Spikes.OnCollide += Spikes_OnCollide;
             On.Celeste.Spring.OnCollide += Spring_OnCollide;
+            On.Celeste.TrailManager.Add_Vector2_Image_PlayerHair_Vector2_Color_int_float_bool_bool += TrailManager_Add;
 
             hook_Level_orig_TransitionRoutine = new ILHook(ReflectionCache.Level_OrigTransitionRoutine.GetStateMachineTarget(), Level_orig_TransitionRoutine);
         }
@@ -60,6 +61,7 @@ namespace GravityHelper
             On.Celeste.Spikes.ctor_Vector2_int_Directions_string -= Spikes_ctor_Vector2_int_Directions_string;
             On.Celeste.Spikes.OnCollide -= Spikes_OnCollide;
             On.Celeste.Spring.OnCollide -= Spring_OnCollide;
+            On.Celeste.TrailManager.Add_Vector2_Image_PlayerHair_Vector2_Color_int_float_bool_bool -= TrailManager_Add;
 
             hook_Level_orig_TransitionRoutine?.Dispose();
             hook_Level_orig_TransitionRoutine = null;
@@ -403,6 +405,24 @@ namespace GravityHelper
                 GravityHelperModule.Instance.Gravity = GravityType.Normal;
 
             orig(self, player);
+        }
+
+        private static TrailManager.Snapshot TrailManager_Add(
+            On.Celeste.TrailManager.orig_Add_Vector2_Image_PlayerHair_Vector2_Color_int_float_bool_bool orig,
+            Vector2 position,
+            Image sprite,
+            PlayerHair hair,
+            Vector2 scale,
+            Color color,
+            int depth,
+            float duration,
+            bool frozenUpdate,
+            bool useRawDeltaTime)
+        {
+            if (GravityHelperModule.ShouldInvert)
+                scale = new Vector2(scale.X, -scale.Y);
+
+            return orig(position, sprite, hair, scale, color, depth, duration, frozenUpdate, useRawDeltaTime);
         }
 
         #endregion
