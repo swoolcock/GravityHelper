@@ -20,6 +20,7 @@ namespace GravityHelper
             IL.Celeste.Actor.IsRiding_Solid += Actor_IsRiding;
             IL.Celeste.Bumper.OnPlayer += Bumper_OnPlayer;
             IL.Celeste.PlayerDeadBody.Render += PlayerDeadBody_Render;
+            IL.Celeste.PlayerHair.AfterUpdate += PlayerHair_AfterUpdate;
             IL.Celeste.PlayerHair.Render += PlayerHair_Render;
             IL.Celeste.Solid.GetPlayerOnTop += Solid_GetPlayerOnTop;
 
@@ -44,6 +45,7 @@ namespace GravityHelper
             IL.Celeste.Actor.IsRiding_Solid -= Actor_IsRiding;
             IL.Celeste.Bumper.OnPlayer -= Bumper_OnPlayer;
             IL.Celeste.PlayerDeadBody.Render -= PlayerDeadBody_Render;
+            IL.Celeste.PlayerHair.AfterUpdate -= PlayerHair_AfterUpdate;
             IL.Celeste.PlayerHair.Render -= PlayerHair_Render;
             IL.Celeste.Solid.GetPlayerOnTop -= Solid_GetPlayerOnTop;
 
@@ -122,46 +124,40 @@ namespace GravityHelper
             cursor.EmitInvertFloatDelegate();
         }
 
+        private static void PlayerHair_AfterUpdate(ILContext il)
+        {
+            var cursor = new ILCursor(il);
+
+            void invertAdditions()
+            {
+                cursor.GotoNextAddition();
+                cursor.EmitInvertVectorDelegate();
+                cursor.Index += 2;
+                cursor.GotoNextAddition();
+                cursor.EmitInvertVectorDelegate();
+            }
+
+            // this.Nodes[0] = this.Sprite.RenderPosition + new Vector2(0.0f, -9f * this.Sprite.Scale.Y) + this.Sprite.HairOffset * new Vector2((float) this.Facing, 1f);
+            invertAdditions();
+
+            // Vector2 target = this.Nodes[0] + new Vector2((float) ((double) -(int) this.Facing * (double) this.StepInFacingPerSegment * 2.0), (float) Math.Sin((double) this.wave) * this.StepYSinePerSegment) + this.StepPerSegment;
+            cursor.GotoNext(instr => instr.MatchLdfld<PlayerHair>(nameof(PlayerHair.StepYSinePerSegment)));
+            invertAdditions();
+
+            // target = this.Nodes[index] + new Vector2((float) -(int) this.Facing * this.StepInFacingPerSegment, (float) Math.Sin((double) this.wave + (double) index * 0.800000011920929) * this.StepYSinePerSegment) + this.StepPerSegment;
+            cursor.GotoNext(instr => instr.MatchLdfld<PlayerHair>(nameof(PlayerHair.StepYSinePerSegment)));
+            invertAdditions();
+        }
+
         private static void PlayerHair_Render(ILContext il)
         {
             var cursor = new ILCursor(il);
 
-            void emitChangePositionDelegate()
-            {
-                cursor.Emit(OpCodes.Ldarg_0);
-                cursor.EmitDelegate<Func<Vector2, PlayerHair, Vector2>>((v, hair) =>
-                {
-                    if (GravityHelperModule.ShouldInvert && (hair.Entity is Player || hair.Entity is PlayerDeadBody))
-                    {
-                        if (hair.Entity is Player player && player.StateMachine.State == Player.StStarFly)
-                            return new Vector2(v.X, v.Y + 2 * player.GetNormalHitbox().CenterY);
-
-                        return new Vector2(v.X, 2 * hair.Entity.Position.Y - v.Y);
-                    }
-
-                    return v;
-                });
-            }
-
-            // invert this.GetHairScale(index);
+            // Vector2 hairScale = this.GetHairScale(index);
             cursor.GotoNext(MoveType.After, instr => instr.MatchCallvirt<PlayerHair>("GetHairScale"));
             cursor.EmitInvertVectorDelegate();
 
-            for (int i = 0; i < 4; i++)
-            {
-                // match hairTexture.Draw
-                cursor.GotoNext(instr => instr.MatchCallvirt<MTexture>(nameof(MTexture.Draw)));
-                cursor.GotoPrev(instr => instr.MatchLdcR4(out _));
-                cursor.Index--;
-                // adjust this.Nodes[index]
-                emitChangePositionDelegate();
-                cursor.GotoNext(MoveType.After, instr => instr.MatchCallvirt<MTexture>(nameof(MTexture.Draw)));
-            }
-
             // this.GetHairTexture(index).Draw(this.Nodes[index], origin, this.GetHairColor(index), this.GetHairScale(index));
-            cursor.GotoNext(instr => instr.MatchCallvirt<PlayerHair>(nameof(PlayerHair.GetHairColor)));
-            cursor.GotoPrev(instr => instr.MatchLdloc(1));
-            emitChangePositionDelegate();
             cursor.GotoNext(MoveType.After, instr => instr.MatchCallvirt<PlayerHair>("GetHairScale"));
             cursor.EmitInvertVectorDelegate();
         }
