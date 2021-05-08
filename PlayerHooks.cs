@@ -428,6 +428,19 @@ namespace GravityHelper
             cursor.Emit(OpCodes.Brfalse_S, varJumpTimerCheck);
             cursor.Emit(OpCodes.Br_S, spikesCheck);
 
+            /*
+             * else if (climbHopSolid != null && climbHopSolid.Position != climbHopSolidPosition)
+	         * {
+		     *     Vector2 vector = climbHopSolid.Position - climbHopSolidPosition;
+		     *     climbHopSolidPosition = climbHopSolid.Position;
+		     *     MoveHExact((int)vector.X);
+		     *     MoveVExact((int)vector.Y);
+	         * }
+             */
+            // ensure we correctly hop on the underside of moving blocks (kevins, etc.)
+            cursor.GotoNext(MoveType.After, instr => instr.MatchLdfld<Vector2>(nameof(Vector2.Y)));
+            cursor.EmitInvertFloatDelegate();
+
             // (SKIP) else if (!this.CollideCheck<Solid>(this.Position + Vector2.UnitX * (float) Math.Sign(this.wallSpeedRetained)))
             cursor.GotoNextAddition(MoveType.After);
 
