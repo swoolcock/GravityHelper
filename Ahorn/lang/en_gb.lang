@@ -1,2 +1,37 @@
 # Gravity Trigger
-placements.triggers.GravityHelper/GravityTrigger.tooltips.gravityType=The target gravity type.
+placements.triggers.GravityHelper/GravityTrigger.tooltips.gravityType=The gravity type to set when Madeline enters the trigger.
+
+# Spawn Gravity Trigger
+placements.triggers.GravityHelper/SpawnGravityTrigger.tooltips.gravityType=The gravity type to set when Madeline spawns inside the trigger.
+placements.triggers.GravityHelper/SpawnGravityTrigger.tooltips.fireOnBubbleReturn=Whether this trigger should also activate at the end of a cassette bubble.
+
+# Gravity Refill
+placements.entities.GravityHelper/GravityRefill.tooltips.charges=The number of gravity charges that this refill will provide.
+placements.entities.GravityHelper/GravityRefill.tooltips.oneUse=Whether the gravity refill has a single use and will not respawn.
+placements.entities.GravityHelper/GravityRefill.tooltips.refillsDash=Whether the gravity refill will also refill Madeline's dash.
+placements.entities.GravityHelper/GravityRefill.tooltips.refillsStamina=Whether the gravity refill will also refill Madeline's stamina.
+placements.entities.GravityHelper/GravityRefill.tooltips.respawnTime=Time in seconds before the crystal will respawn (unless oneUse is enabled).
+
+# Gravity Spring (Floor)
+placements.entities.GravityHelper/GravitySpringFloor.tooltips.playerCanUse=Whether the spring will activate for the player.
+placements.entities.GravityHelper/GravitySpringFloor.tooltips.gravityType=The gravity type to set when Madeline activates the spring.
+placements.entities.GravityHelper/GravitySpringFloor.tooltips.cooldown=Time in seconds before the spring will change Madeline's gravity again (the bouncing component has no cooldown).
+
+# Gravity Spring (Wall Left)
+placements.entities.GravityHelper/GravitySpringWallLeft.tooltips.playerCanUse=Whether the spring will activate for the player.
+placements.entities.GravityHelper/GravitySpringWallLeft.tooltips.gravityType=The gravity type to set when Madeline activates the spring.
+placements.entities.GravityHelper/GravitySpringWallLeft.tooltips.cooldown=Time in seconds before the spring will change Madeline's gravity again (the bouncing component has no cooldown).
+
+# Gravity Spring (Wall Right)
+placements.entities.GravityHelper/GravitySpringWallRight.tooltips.playerCanUse=Whether the spring will activate for the player.
+placements.entities.GravityHelper/GravitySpringWallRight.tooltips.gravityType=The gravity type to set when Madeline activates the spring.
+placements.entities.GravityHelper/GravitySpringWallRight.tooltips.cooldown=Time in seconds before the spring will change Madeline's gravity again (the bouncing component has no cooldown).
+
+# Gravity Spring (Ceiling)
+placements.entities.GravityHelper/GravitySpringCeiling.tooltips.playerCanUse=Whether the spring will activate for the player.
+placements.entities.GravityHelper/GravitySpringCeiling.tooltips.gravityType=The gravity type to set when Madeline activates the spring.
+placements.entities.GravityHelper/GravitySpringCeiling.tooltips.cooldown=Time in seconds before the spring will change Madeline's gravity again (the bouncing component has no cooldown).
+ 
+# Upside Down Watch Tower
+placements.entities.GravityHelper/UpsideDownWatchTower.tooltips.summit=Whether the watch tower should zoom on the final node or not. Requires nodes to function, otherwise game will crash.
+placements.entities.GravityHelper/UpsideDownWatchTower.tooltips.onlyY=Whether the watch tower can only move vertically. If the watch tower has nodes it will still follow them.
