@@ -13,6 +13,13 @@ module GravityHelperGravitySpring
         "Inverted" => 1,
         "Toggle" => 2,
     )
+    
+    const sprites = Dict{Integer, String}(
+        -1 => "objects/GravityHelper/gravitySpring/none00.png",
+        0 => "objects/GravityHelper/gravitySpring/normal00.png",
+        1 => "objects/GravityHelper/gravitySpring/invert00.png",
+        2 => "objects/GravityHelper/gravitySpring/toggle00.png",
+    )
 
     const placements = Ahorn.PlacementDict(
         "Gravity Spring (Up) (GravityHelper)" => Ahorn.EntityPlacement(
@@ -54,11 +61,9 @@ module GravityHelperGravitySpring
     Ahorn.editingOptions(entity::GravitySpringWallLeft) = Dict{String, Any}( "gravityType" => gravityTypes )
     Ahorn.editingOptions(entity::GravitySpringWallRight) = Dict{String, Any}( "gravityType" => gravityTypes )
 
-    sprite = "objects/spring/00.png"
-
-    Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::GravitySpringFloor, room::Maple.Room) = Ahorn.drawSprite(ctx, sprite, 0, -8, rot=0)
-    Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::GravitySpringCeiling, room::Maple.Room) = Ahorn.drawSprite(ctx, sprite, 12, -2, rot=pi)
-    Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::GravitySpringWallLeft, room::Maple.Room) = Ahorn.drawSprite(ctx, sprite, 9, -11, rot=pi/2)
-    Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::GravitySpringWallRight, room::Maple.Room) = Ahorn.drawSprite(ctx, sprite, 3, 1, rot=-pi/2)
+    Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::GravitySpringFloor, room::Maple.Room) = Ahorn.drawSprite(ctx, sprites[get(entity.data, "gravityType", -1)], 0, 0, rot=0, jx=0.5, jy=1.0)
+    Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::GravitySpringCeiling, room::Maple.Room) = Ahorn.drawSprite(ctx, sprites[get(entity.data, "gravityType", -1)], 0, 0, rot=0, sy=-1.0, jx=0.5, jy=1.0)
+    Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::GravitySpringWallLeft, room::Maple.Room) = Ahorn.drawSprite(ctx, sprites[get(entity.data, "gravityType", -1)], 8, 24, rot=-pi/2, sx=-1.0, jx=0.5, jy=1.0)
+    Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::GravitySpringWallRight, room::Maple.Room) = Ahorn.drawSprite(ctx, sprites[get(entity.data, "gravityType", -1)], -8, 24, rot=-pi/2, jx=0.5, jy=1.0)
 
 end
