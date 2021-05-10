@@ -17,6 +17,22 @@ namespace GravityHelper
 
         #region Entity Extensions
 
+        public static T GetEntityOrDefault<T>(this Tracker tracker, Func<T, bool> predicate = null) where T : Entity
+        {
+            if (!tracker.Entities.TryGetValue(typeof(T), out var list))
+                return default;
+            var ofType = list.OfType<T>();
+            return predicate == null ? ofType.FirstOrDefault() : ofType.FirstOrDefault(predicate);
+        }
+
+        public static IEnumerable<T> GetEntitiesOrEmpty<T>(this Tracker tracker, Func<T, bool> predicate = null) where T : Entity
+        {
+            if (!tracker.Entities.TryGetValue(typeof(T), out var list))
+                return Enumerable.Empty<T>();
+            var ofType = list.OfType<T>();
+            return predicate == null ? ofType : ofType.Where(predicate);
+        }
+
         public static T CollideFirstOrDefault<T>(this Entity entity) where T : Entity =>
             entity.Scene.Tracker.Entities.ContainsKey(typeof(T)) ? entity.CollideFirst<T>() : default;
 
