@@ -600,7 +600,7 @@ namespace GravityHelper
             orig(self, scene);
 
             SpawnGravityTrigger trigger = self.CollideFirstOrDefault<SpawnGravityTrigger>();
-            GravityHelperModule.Instance.Gravity = GravityHelperModule.Instance.GravityBeforeReload ?? trigger?.GravityType ?? GravityHelperModule.Session.InitialGravity;
+            GravityHelperModule.Instance.SetGravity(GravityHelperModule.Instance.GravityBeforeReload ?? trigger?.GravityType ?? GravityHelperModule.Session.InitialGravity);
             GravityHelperModule.Instance.GravityRefillCharges = 0;
             GravityHelperModule.Instance.GravityBeforeReload = null;
         }
@@ -611,7 +611,7 @@ namespace GravityHelper
 
             SpawnGravityTrigger trigger = self.CollideFirstOrDefault<SpawnGravityTrigger>();
             if (trigger?.FireOnBubbleReturn ?? false)
-                GravityHelperModule.Instance.Gravity = trigger.GravityType;
+                GravityHelperModule.Instance.SetGravity(trigger.GravityType);
         }
 
         private static bool Player_ClimbCheck(On.Celeste.Player.orig_ClimbCheck orig, Player self, int dir, int yAdd) =>
@@ -634,7 +634,7 @@ namespace GravityHelper
                         if (GravityHelperModule.Instance.GravityRefillCharges == 0)
                             return;
                         GravityHelperModule.Instance.GravityRefillCharges--;
-                        GravityHelperModule.Instance.Gravity = GravityType.Toggle;
+                        GravityHelperModule.Instance.SetGravity(GravityType.Toggle);
                     }
                 });
         }
@@ -715,7 +715,7 @@ namespace GravityHelper
 
         private static void Player_StartCassetteFly(On.Celeste.Player.orig_StartCassetteFly orig, Player self, Vector2 targetPosition, Vector2 control)
         {
-            GravityHelperModule.Instance.Gravity = GravityType.Normal;
+            GravityHelperModule.Instance.SetGravity(GravityType.Normal);
             orig(self, targetPosition, control);
         }
 

@@ -24,17 +24,7 @@ namespace GravityHelper
 
         public GravityType? GravityBeforeReload;
 
-        private GravityType gravity = GravityType.Normal;
-        public GravityType Gravity
-        {
-            get => gravity;
-            set
-            {
-                if (value == GravityType.None) return;
-                gravity = value == GravityType.Toggle ? gravity.Opposite() : value;
-                TriggerGravityListeners();
-            }
-        }
+        public GravityType Gravity { get; private set; }
 
         public int GravityRefillCharges { get; set; }
 
@@ -113,12 +103,26 @@ namespace GravityHelper
         internal static bool Transitioning;
         internal static bool SolidMoving;
 
-        public void TriggerGravityListeners()
+        public void SetGravity(GravityType gravityType, float momentumMultiplier = 1f)
+        {
+            if (gravityType == GravityType.None)
+                return;
+
+            if (gravityType == GravityType.Toggle)
+            {
+                SetGravity(Gravity.Opposite(), momentumMultiplier);
+                return;
+            }
+
+            Gravity = gravityType;
+            TriggerGravityListeners(gravityType, momentumMultiplier);
+        }
+
+        public void TriggerGravityListeners(GravityType gravityType, float momentumMultiplier = 1f)
         {
             var gravityListeners = Engine.Scene.Tracker.GetComponents<GravityListener>().ToArray();
-            var gravity = Instance.Gravity;
             foreach (Component component in gravityListeners)
-                (component as GravityListener)?.GravityChanged(gravity);
+                (component as GravityListener)?.GravityChanged(gravityType, momentumMultiplier);
         }
 
         public static bool ShouldInvert => Instance.Gravity == GravityType.Inverted;
@@ -140,7 +144,7 @@ namespace GravityHelper
 
             if (gravityType < 0 || gravityType > 2) return;
 
-            Instance.Gravity = (GravityType) gravityType;
+            Instance.SetGravity((GravityType) gravityType);
             Engine.Commands.Log($"Current gravity is now: {Instance.Gravity}");
         }
 

@@ -8,18 +8,20 @@ namespace GravityHelper.Triggers
     public class GravityTrigger : Trigger
     {
         public GravityType GravityType { get; }
+        public float MomentumMultiplier { get; }
 
         public GravityTrigger(EntityData data, Vector2 offset)
             : base(data, offset)
         {
             GravityType = (GravityType)data.Int("gravityType");
+            MomentumMultiplier = data.Float("momentumMultiplier", 1f);
         }
 
         public override void OnEnter(Player player)
         {
             base.OnEnter(player);
 
-            GravityHelperModule.Instance.Gravity = GravityType;
+            GravityHelperModule.Instance.SetGravity(GravityType, MomentumMultiplier);
         }
     }
 }

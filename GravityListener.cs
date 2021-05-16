@@ -14,7 +14,7 @@ namespace GravityHelper
 
         public override void EntityAwake() => GravityChanged(GravityHelperModule.Instance.Gravity);
 
-        public void GravityChanged(GravityType type)
+        public void GravityChanged(GravityType type, float momentumMultiplier = 1f)
         {
             if (Entity is Spikes spikes && (spikes.Direction == Spikes.Directions.Down || spikes.Direction == Spikes.Directions.Up))
             {
@@ -40,7 +40,7 @@ namespace GravityHelper
                     var starFlyHurtbox = player.GetStarFlyHurtbox();
 
                     player.Position.Y = type == GravityType.Inverted ? collider.AbsoluteTop : collider.AbsoluteBottom;
-                    player.Speed.Y *= -1;
+                    player.Speed.Y *= -momentumMultiplier;
                     player.DashDir.Y *= -1;
                     player.SetVarJumpTimer(0f);
 
