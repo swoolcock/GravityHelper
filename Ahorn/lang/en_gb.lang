@@ -5,6 +5,12 @@ placements.triggers.GravityHelper/GravityTrigger.tooltips.gravityType=The gravit
 placements.triggers.GravityHelper/SpawnGravityTrigger.tooltips.gravityType=The gravity type to set when Madeline spawns inside the trigger.
 placements.triggers.GravityHelper/SpawnGravityTrigger.tooltips.fireOnBubbleReturn=Whether this trigger should also activate at the end of a cassette bubble.
 
+# Gravity Field
+placements.entities.GravityHelper/GravityField.tooltips.gravityType=The gravity type to set when Madeline enters the field.
+placements.entities.GravityHelper/GravityField.tooltips.arrowType=The gravity type to use when rendering arrows. "None" disables arrows, and "Default" will use the current value of gravityType.
+placements.entities.GravityHelper/GravityField.tooltips.fieldType=The gravity type to use when rendering the field. "None" disables field rendering, and "Default" will use the current value of gravityType.
+placements.entities.GravityHelper/GravityField.tooltips.attachToSolids=Whether this and connected fields should attach to solids.
+
 # Gravity Refill
 placements.entities.GravityHelper/GravityRefill.tooltips.charges=The number of gravity charges that this refill will provide.
 placements.entities.GravityHelper/GravityRefill.tooltips.oneUse=Whether the gravity refill has a single use and will not respawn.

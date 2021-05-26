@@ -6,7 +6,7 @@ using ..Ahorn, Maple
     x::Integer, y::Integer,
     width::Integer=Maple.defaultBlockWidth, height::Integer=Maple.defaultBlockHeight,
     gravityType::Integer=0, attachToSolids::Bool=false,
-    drawArrows::Bool=true, drawField::Bool=true, visualOnly::Bool=false
+    arrowType::Integer=-2, fieldType::Integer=-2
 )
 
 const gravityColors = Dict{Integer, Tuple{Real, Real, Real, Real}}(
@@ -17,6 +17,14 @@ const gravityColors = Dict{Integer, Tuple{Real, Real, Real, Real}}(
 )
 
 const gravityTypes = Dict{String, Integer}(
+    "None" => -1,
+    "Normal" => 0,
+    "Inverted" => 1,
+    "Toggle" => 2,
+)
+
+const visualTypes = Dict{String, Integer}(
+    "Default" => -2,
     "None" => -1,
     "Normal" => 0,
     "Inverted" => 1,
@@ -51,7 +59,9 @@ const placements = Ahorn.PlacementDict(
 )
 
 Ahorn.editingOptions(trigger::GravityField) = Dict{String, Any}(
-    "gravityType" => gravityTypes
+    "gravityType" => gravityTypes,
+    "arrowType" => visualTypes,
+    "fieldType" => visualTypes
 )
 
 Ahorn.minimumSize(entity::GravityField) = 8, 8

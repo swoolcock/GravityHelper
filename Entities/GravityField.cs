@@ -20,12 +20,16 @@ namespace GravityHelper.Entities
         private static readonly Color gravity_toggle_color = Color.Purple;
 
         public GravityType GravityType { get; }
-        public bool DrawArrows { get; }
-        public bool DrawField { get; }
+        public VisualType ArrowType { get; }
+        public VisualType FieldType { get; }
         public bool AttachToSolids { get; }
-        public bool VisualOnly { get; }
 
-        private Color gravityColor => GravityType switch
+        private bool ShouldDrawArrows => !(ArrowType == VisualType.None || ArrowType == VisualType.Default && GravityType == GravityType.None); 
+        private bool ShouldDrawField => !(FieldType == VisualType.None || FieldType == VisualType.Default && GravityType == GravityType.None);
+        
+        public Color FieldColor => colorForGravityType(FieldType == VisualType.Default ? GravityType : (GravityType) FieldType);
+
+        private static Color colorForGravityType(GravityType type) => type switch
         {
             GravityType.Normal => gravity_normal_color,
             GravityType.Inverted => gravity_invert_color,
@@ -40,18 +44,17 @@ namespace GravityHelper.Entities
         private float[] speeds = { 12f, 20f, 40f };
         private GravityFieldGroup fieldGroup;
 
-        public float Flashing => fieldGroup?.Flashing ?? 0f;
+        // public float Flashing => fieldGroup?.Flashing ?? 0f;
 
         public GravityField(EntityData data, Vector2 offset)
             : base(data, offset)
         {
             GravityType = (GravityType)data.Int("gravityType");
-            VisualOnly = data.Bool("visualOnly");
             AttachToSolids = data.Bool("attachToSolids");
-            DrawArrows = data.Bool("drawArrows", true);
-            DrawField = data.Bool("drawField", true);
+            ArrowType = (VisualType)data.Int("arrowType", (int) VisualType.Default);
+            FieldType = (VisualType)data.Int("fieldType", (int) VisualType.Default);
 
-            Visible = DrawArrows || DrawField;
+            Visible = ShouldDrawArrows || ShouldDrawField;
             Collider = normalHitbox = new Hitbox(data.Width, data.Height);
 
             staticMoverHitbox = new Hitbox(data.Width + 2, data.Height + 2, -1, -1);
@@ -63,12 +66,12 @@ namespace GravityHelper.Entities
                     SolidChecker = staticMoverCollideCheck
                 });
 
-            if (DrawArrows)
+            if (ShouldDrawArrows)
             {
 
             }
 
-            if (DrawField)
+            if (ShouldDrawField)
             {
                 for (int index = 0; index < Width * (double) Height / 16.0; ++index)
                     particles.Add(new Vector2(Calc.Random.NextFloat(Width - 1f), Calc.Random.NextFloat(Height - 1f)));
@@ -79,26 +82,23 @@ namespace GravityHelper.Entities
         {
             base.OnEnter(player);
 
-            if (VisualOnly || GravityType == GravityType.None || fieldGroup == null) return;
+            if (GravityType == GravityType.None || fieldGroup == null) return;
 
             fieldGroup.Semaphore++;
 
             if (fieldGroup.Semaphore == 1)
-            {
-                GravityHelperModule.Instance.Gravity = GravityType;
-                fieldGroup.Flashing = 1f;
-            }
+                GravityHelperModule.Instance.SetGravity(GravityType);
         }
 
         public override void OnStay(Player player)
         {
             base.OnStay(player);
 
-            if (VisualOnly || GravityType == GravityType.None || GravityType == GravityType.Toggle)
+            if (GravityType == GravityType.None || GravityType == GravityType.Toggle)
                 return;
 
             if (GravityType != GravityHelperModule.Instance.Gravity)
-                GravityHelperModule.Instance.Gravity = GravityType;
+                GravityHelperModule.Instance.SetGravity(GravityType);
         }
 
         public override void OnLeave(Player player)
@@ -109,23 +109,22 @@ namespace GravityHelper.Entities
             fieldGroup.Semaphore--;
         }
 
-        private GravityFieldRenderer getRenderer(Scene scene, Color color, bool create = false)
+        private GravityFieldRenderer getRenderer(Scene scene, bool create = false)
         {
             if (scene == null) return null;
-            bool isCorrectRenderer(Entity e) => e is GravityFieldRenderer gfr && gfr.Color == color;
-            var renderer = scene.Entities.FirstOrDefault(isCorrectRenderer) ?? scene.Entities.ToAdd.FirstOrDefault(isCorrectRenderer);
+            var renderer = scene.Entities.OfType<GravityFieldRenderer>().FirstOrDefault() ?? scene.Entities.ToAdd.OfType<GravityFieldRenderer>().FirstOrDefault();
             if (create && renderer == null)
-                scene.Add(renderer = new GravityFieldRenderer(color));
-            return renderer as GravityFieldRenderer;
+                scene.Add(renderer = new GravityFieldRenderer());
+            return renderer;
         }
 
         public override void Added(Scene scene)
         {
             base.Added(scene);
 
-            if (DrawField)
+            if (ShouldDrawField)
             {
-                var renderer = getRenderer(scene, gravityColor, true);
+                var renderer = getRenderer(scene, true);
                 renderer?.Track(this);
             }
 
@@ -136,15 +135,10 @@ namespace GravityHelper.Entities
         {
             base.Removed(scene);
 
-            if (DrawField)
+            if (ShouldDrawField)
             {
-                var renderer = getRenderer(scene, gravityColor);
-                if (renderer != null)
-                {
-                    renderer.Untrack(this);
-                    if (renderer.TrackedCount == 0)
-                        renderer.RemoveSelf();
-                }
+                var renderer = getRenderer(scene);
+                renderer?.Untrack(this, true);
             }
 
             fieldGroup = null;
@@ -154,7 +148,7 @@ namespace GravityHelper.Entities
         {
             base.Awake(scene);
 
-            if (!VisualOnly)
+            if (ShouldDrawField)
                 buildFieldGroup();
         }
 
@@ -187,31 +181,21 @@ namespace GravityHelper.Entities
             Color color = Color.White * 0.5f;
             foreach (Vector2 particle in particles)
                 Draw.Pixel.Draw(Position + particle, Vector2.Zero, color);
-
-            if (Flashing > 0f)
-                Draw.Rect(Collider, gravityColor * Flashing * 0.5f);
-        }
-
-        public override void DebugRender(Camera camera)
-        {
-            base.DebugRender(camera);
-            Draw.TextJustified(Draw.DefaultFont, $"{fieldGroup.ID}", Center, Color.White, 0.5f, new Vector2(0.5f));
         }
 
         private bool staticMoverCollideCheck(Solid solid)
         {
-            Collider = staticMoverHitbox;
+            if (solid is SolidTiles) return false;
+            // TODO: allow the mapper to specify the static mover collision hitbox
+            // Collider = staticMoverHitbox;
             var collides = CollideCheck(solid);
-            Collider = normalHitbox;
+            // Collider = normalHitbox;
             return collides;
         }
 
         private bool canConnectTo(GravityField other) =>
             other.GravityType == GravityType &&
-            other.DrawArrows == DrawArrows &&
-            other.DrawField == DrawField &&
-            other.AttachToSolids == AttachToSolids &&
-            other.VisualOnly == VisualOnly;
+            other.AttachToSolids == AttachToSolids;
 
         private IEnumerable<GravityField> getAdjacent()
         {
@@ -237,34 +221,23 @@ namespace GravityHelper.Entities
                 field.buildFieldGroup(fieldGroup);
         }
 
-        [Flags]
-        public enum SolidAttachDirection
-        {
-            None = 0,
-
-            Inside = 1 << 0,
-
-            Up = 1 << 1,
-            Down = 1 << 2,
-            Left = 1 << 3,
-            Right = 1 << 4,
-
-            All = Inside | Up | Down | Left | Right,
-        }
-
         [Tracked]
         internal class GravityFieldRenderer : ConnectedFieldRenderer<GravityField>
         {
-            public GravityFieldRenderer(Color color) : base(color, 0.2f)
-            {
-            }
         }
 
         private class GravityFieldGroup
         {
-
             public int Semaphore;
-            public float Flashing;
+        }
+
+        public enum VisualType
+        {
+            Default = -2,
+            None = -1,
+            Normal = 0,
+            Inverted,
+            Toggle,
         }
     }
 }
