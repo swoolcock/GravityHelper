@@ -38,14 +38,14 @@ namespace GravityHelper.Entities
             _ => Color.White
         };
 
-        private readonly bool shouldDrawArrows; 
+        private readonly bool shouldDrawArrows;
         private readonly bool shouldDrawField;
         private readonly MTexture arrowTexture;
         private readonly MTexture arrowSmallTexture;
         private readonly SpriteEffects arrowSpriteEffects;
         private readonly Vector2 arrowOrigin;
         private readonly Vector2 arrowSmallOrigin;
-        
+
         private readonly Hitbox normalHitbox;
         private readonly Hitbox staticMoverHitbox;
 
@@ -79,7 +79,8 @@ namespace GravityHelper.Entities
                 Add(new StaticMover
                 {
                     OnAttach = p => Depth = p.Depth - 1,
-                    SolidChecker = staticMoverCollideCheck
+                    SolidChecker = staticMoverCollideCheck,
+                    OnShake = amount => Position += amount,
                 });
             }
 
@@ -92,20 +93,20 @@ namespace GravityHelper.Entities
                         arrowSmallTexture = GFX.Game["objects/GravityHelper/gravityField/arrowSmall"];
                         arrowSpriteEffects = SpriteEffects.FlipVertically;
                         break;
-                    
+
                     case GravityType.Inverted:
                         arrowTexture = GFX.Game["objects/GravityHelper/gravityField/arrow"];
                         arrowSmallTexture = GFX.Game["objects/GravityHelper/gravityField/arrowSmall"];
                         arrowSpriteEffects = SpriteEffects.None;
                         break;
-                    
+
                     case GravityType.Toggle:
                         arrowTexture = GFX.Game["objects/GravityHelper/gravityField/doubleArrow"];
                         arrowSmallTexture = GFX.Game["objects/GravityHelper/gravityField/doubleArrowSmall"];
                         arrowSpriteEffects = SpriteEffects.None;
                         break;
                 }
-                
+
                 arrowOrigin = new Vector2(arrowTexture.Width / 2f, arrowTexture.Height / 2f);
                 arrowSmallOrigin = new Vector2(arrowSmallTexture.Width / 2f, arrowSmallTexture.Height / 2f);
             }
@@ -226,16 +227,16 @@ namespace GravityHelper.Entities
             {
                 int widthInTiles = (int) (Width / 8);
                 int heightInTiles = (int) (Height / 8);
-                
+
                 // one arrow every 2 tiles, rounded down, but at least one
                 int arrowsX = Math.Max(widthInTiles / 2, 1);
                 int arrowsY = Math.Max(heightInTiles / 2, 1);
-                
+
                 // if width or height is 1, scale down the arrows
                 var texture = widthInTiles == 1 || heightInTiles == 1 ? arrowSmallTexture : arrowTexture;
                 var origin = widthInTiles == 1 || heightInTiles == 1 ? arrowSmallOrigin : arrowOrigin;
                 var color = shouldDrawField ? Color.White * 0.5f : Color.White;
-                
+
                 // arrows should be centre aligned in each 2x2 box
                 // offset by half a tile if the width or height is odd
                 for (int y = 0; y < arrowsY; y++)
