@@ -29,7 +29,9 @@ namespace GravityHelper
             IL.Celeste.Player.BeforeDownTransition += Player_BeforeDownTransition;
             IL.Celeste.Player.Bounce += Player_Bounce;
             IL.Celeste.Player.ClimbHopBlockedCheck += Player_ClimbHopBlockedCheck;
+            IL.Celeste.Player.ClimbJump += Player_ClimbJump;
             IL.Celeste.Player.ClimbUpdate += Player_ClimbUpdate;
+            IL.Celeste.Player.CreateWallSlideParticles += Player_CreateWallSlideParticles;
             IL.Celeste.Player._IsOverWater += Player_IsOverWater;
             IL.Celeste.Player.Jump += Player_Jump;
             IL.Celeste.Player.LaunchedBoostCheck += Player_LaunchedBoostCheck;
@@ -52,6 +54,7 @@ namespace GravityHelper
             On.Celeste.Player.CassetteFlyEnd += Player_CassetteFlyEnd;
             On.Celeste.Player.DreamDashCheck += Player_DreamDashCheck;
             On.Celeste.Player.DreamDashUpdate += Player_DreamDashUpdate;
+            On.Celeste.Player.DustParticleFromSurfaceIndex += Player_DustParticleFromSurfaceIndex;
             On.Celeste.Player.JumpThruBoostBlockedCheck += Player_JumpThruBoostBlockedCheck;
             On.Celeste.Player.OnCollideV += Player_OnCollideV;
             On.Celeste.Player.ReflectBounce += Player_ReflectBounce;
@@ -84,7 +87,9 @@ namespace GravityHelper
             IL.Celeste.Player.BeforeDownTransition -= Player_BeforeDownTransition;
             IL.Celeste.Player.Bounce -= Player_Bounce;
             IL.Celeste.Player.ClimbHopBlockedCheck -= Player_ClimbHopBlockedCheck;
+            IL.Celeste.Player.ClimbJump -= Player_ClimbJump;
             IL.Celeste.Player.ClimbUpdate -= Player_ClimbUpdate;
+            IL.Celeste.Player.CreateWallSlideParticles -= Player_CreateWallSlideParticles;
             IL.Celeste.Player._IsOverWater -= Player_IsOverWater;
             IL.Celeste.Player.Jump -= Player_Jump;
             IL.Celeste.Player.LaunchedBoostCheck -= Player_LaunchedBoostCheck;
@@ -107,6 +112,7 @@ namespace GravityHelper
             On.Celeste.Player.ClimbCheck -= Player_ClimbCheck;
             On.Celeste.Player.DreamDashCheck -= Player_DreamDashCheck;
             On.Celeste.Player.DreamDashUpdate -= Player_DreamDashUpdate;
+            On.Celeste.Player.DustParticleFromSurfaceIndex -= Player_DustParticleFromSurfaceIndex;
             On.Celeste.Player.JumpThruBoostBlockedCheck -= Player_JumpThruBoostBlockedCheck;
             On.Celeste.Player.OnCollideV -= Player_OnCollideV;
             On.Celeste.Player.ReflectBounce -= Player_ReflectBounce;
@@ -208,6 +214,21 @@ namespace GravityHelper
             cursor.EmitInvertFloatDelegate();
         }
 
+        private static void Player_ClimbJump(ILContext il)
+        {
+            var cursor = new ILCursor(il);
+
+            // Dust.Burst(this.Center + Vector2.UnitX * 2f, -2.3561945f, 4, this.DustParticleFromSurfaceIndex(index));
+            cursor.GotoNext(instr => instr.MatchLdstr("event:/char/madeline/jump_climb_right"));
+            cursor.GotoNext(instr => instr.MatchLdcI4(4));
+            cursor.EmitInvertFloatDelegate();
+
+            // Dust.Burst(this.Center + Vector2.UnitX * -2f, -0.7853982f, 4, this.DustParticleFromSurfaceIndex(index));
+            cursor.GotoNext(instr => instr.MatchLdstr("event:/char/madeline/jump_climb_left"));
+            cursor.GotoNext(instr => instr.MatchLdcI4(4));
+            cursor.EmitInvertFloatDelegate();
+        }
+
         private static void Player_ClimbUpdate(ILContext il)
         {
             var cursor = new ILCursor(il);
@@ -223,6 +244,16 @@ namespace GravityHelper
             // if (Input.MoveY.Value != 1 && (double) this.Speed.Y > 0.0 && !this.CollideCheck<Solid>(this.Position + new Vector2((float) this.Facing, 1f)))
             cursor.GotoNextAddition();
             cursor.EmitInvertVectorDelegate();
+        }
+
+        private static void Player_CreateWallSlideParticles(ILContext il)
+        {
+            var cursor = new ILCursor(il);
+
+            // Dust.Burst(dir != 1 ? center + new Vector2(-x, 4f) : center + new Vector2(x, 4f), -1.5707964f, particleType: particleType);
+            cursor.GotoNext(instr => instr.MatchCall(typeof(Dust), nameof(Dust.Burst)));
+            cursor.GotoPrev(instr => instr.MatchLdcI4(1));
+            cursor.EmitInvertFloatDelegate();
         }
 
         private static void Player_ctor_OnFrameChange(ILContext il)
@@ -285,6 +316,8 @@ namespace GravityHelper
 
             // Dust.Burst(this.BottomCenter, -1.5707964f, 4, this.DustParticleFromSurfaceIndex(index));
             cursor.ReplaceBottomCenterWithDelegate();
+            cursor.GotoNext(instr => instr.MatchLdcI4(4));
+            cursor.EmitInvertFloatDelegate();
         }
 
         private static void Player_LaunchedBoostCheck(ILContext il)
@@ -346,7 +379,7 @@ namespace GravityHelper
 
             // Dust.Burst(this.Position, new Vector2(0.0f, -1f).Angle(), 8, this.DustParticleFromSurfaceIndex(index));
             cursor.GotoNext(instr => instr.MatchCallvirt<Player>("DustParticleFromSurfaceIndex"));
-            cursor.GotoPrev(instr => instr.MatchLdcR4(-1));
+            cursor.GotoPrev(MoveType.After, instr => instr.MatchLdcR4(-1));
             cursor.EmitInvertFloatDelegate();
 
             // ceiling pop correction
@@ -553,7 +586,10 @@ namespace GravityHelper
             cursor.GotoPrev(MoveType.After, instr => instr.MatchCall<Vector2>("get_UnitY"));
             cursor.EmitInvertVectorDelegate();
 
-            // TODO: Dust.Burst(this.BottomCenter, -1.5707964f, 4, this.DustParticleFromSurfaceIndex(index));
+            // Dust.Burst(this.BottomCenter, -1.5707964f, 4, this.DustParticleFromSurfaceIndex(index));
+            cursor.ReplaceBottomCenterWithDelegate();
+            cursor.GotoNext(instr => instr.MatchLdcI4(4));
+            cursor.EmitInvertFloatDelegate();
         }
 
         private static void Player_SuperWallJump(ILContext il)
@@ -561,6 +597,16 @@ namespace GravityHelper
             var cursor = new ILCursor(il);
             // this.Speed += this.LiftBoost;
             cursor.replaceGetLiftBoost();
+
+            // Dust.Burst(this.Center + Vector2.UnitX * 2f, -2.3561945f, 4, this.DustParticleFromSurfaceIndex(index));
+            cursor.GotoNext(instr => instr.MatchCallvirt<Player>("DustParticleFromSurfaceIndex"));
+            cursor.GotoPrev(instr => instr.MatchLdcI4(4));
+            cursor.EmitInvertFloatDelegate();
+
+            // Dust.Burst(this.Center + Vector2.UnitX * -2f, -0.7853982f, 4, this.DustParticleFromSurfaceIndex(index));
+            cursor.GotoNext(instr => instr.MatchLdcR4(-2));
+            cursor.GotoNext(instr => instr.MatchLdcI4(4));
+            cursor.EmitInvertFloatDelegate();
         }
 
         private static void Player_SwimCheck(ILContext il)
@@ -671,6 +717,13 @@ namespace GravityHelper
             return rv;
         }
 
+        private static ParticleType Player_DustParticleFromSurfaceIndex(On.Celeste.Player.orig_DustParticleFromSurfaceIndex orig, Player self, int index)
+        {
+            if (!GravityHelperModule.ShouldInvert)
+                return orig(self, index);
+            return index == 40 ? invertedSparkyDustParticle.Value : invertedDustParticle.Value;
+        }
+
         private static bool Player_JumpThruBoostBlockedCheck(On.Celeste.Player.orig_JumpThruBoostBlockedCheck orig, Player self) =>
             GravityHelperModule.ShouldInvert || orig(self);
 
@@ -772,5 +825,17 @@ namespace GravityHelper
 
             return liftSpeed;
         }
+
+        private static Lazy<ParticleType> invertedDustParticle = new Lazy<ParticleType>(() => new ParticleType(ParticleTypes.Dust)
+        {
+            Acceleration = new Vector2(0.0f, -4f),
+            Direction = -(float)Math.PI / 2f,
+        });
+
+        private static Lazy<ParticleType> invertedSparkyDustParticle = new Lazy<ParticleType>(() => new ParticleType(ParticleTypes.SparkyDust)
+        {
+            Acceleration = new Vector2(0.0f, -4f),
+            Direction = -(float)Math.PI / 2f,
+        });
     }
 }
