@@ -3,6 +3,7 @@ using Celeste.Mod;
 using Microsoft.Xna.Framework;
 using Monocle;
 using System;
+using System.Collections.Generic;
 
 namespace GravityHelper
 {
@@ -102,6 +103,26 @@ namespace GravityHelper
 
         internal static bool Transitioning;
         internal static bool SolidMoving;
+
+        public static void SaveState(Dictionary<string, object> state)
+        {
+            state[nameof(Transitioning)] = Transitioning;
+            state[nameof(SolidMoving)] = SolidMoving;
+            state[nameof(GravityRefillCharges)] = Instance.GravityRefillCharges;
+            state[nameof(Gravity)] = Instance.Gravity;
+        }
+
+        public static void LoadState(Dictionary<string, object> state)
+        {
+            if (state[nameof(Transitioning)] is bool transitioning)
+                Transitioning = transitioning;
+            if (state[nameof(SolidMoving)] is bool solidMoving)
+                SolidMoving = solidMoving;
+            if (state[nameof(GravityRefillCharges)] is int gravityRefillCharges)
+                Instance.GravityRefillCharges = gravityRefillCharges;
+            if (state[nameof(Gravity)] is GravityType gravity)
+                Instance.SetGravity(gravity);
+        }
 
         public void SetGravity(GravityType gravityType, float momentumMultiplier = 1f)
         {

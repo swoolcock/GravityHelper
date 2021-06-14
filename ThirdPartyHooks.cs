@@ -1,4 +1,7 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using Celeste;
 using Microsoft.Xna.Framework;
@@ -13,12 +16,14 @@ namespace GravityHelper
     {
         public static void Load()
         {
+            loadSpeedrunTool();
             loadMaxHelpingHand();
             loadFancyTileEntities();
         }
 
         public static void Unload()
         {
+            unloadSpeedrunTool();
             unloadMaxHelpingHand();
             unloadFancyTileEntities();
         }
@@ -211,6 +216,47 @@ namespace GravityHelper
             if (num == -1) num = self.CallFancyFallingBlockSurfaceSoundIndexAt(entity.TopLeft - Vector2.UnitY * 4f);
             if (num == -1) num = self.CallFancyFallingBlockSurfaceSoundIndexAt(entity.TopRight - Vector2.UnitY * 4f);
             return num;
+        }
+
+        #endregion
+
+        #region SpeedrunTool
+
+        private static bool speedrunToolLoaded;
+
+        private static void loadSpeedrunTool()
+        {
+            // we only ever load this exactly once
+            if (speedrunToolLoaded) return;
+            speedrunToolLoaded = true;
+
+            var slat = ReflectionCache.GetModdedTypeByName("SpeedrunTool", "Celeste.Mod.SpeedrunTool.SaveLoad.SaveLoadAction");
+            var allFieldInfo = slat?.GetField("All", BindingFlags.Static | BindingFlags.NonPublic);
+            if (allFieldInfo?.GetValue(null) is not IList all) return;
+
+            Action<Dictionary<Type, Dictionary<string, object>>, Level> saveState = (savedValues, _) =>
+            {
+                if (!savedValues.TryGetValue(typeof(GravityHelperModule), out var dict))
+                    dict = savedValues[typeof(GravityHelperModule)] = new Dictionary<string, object>();
+                GravityHelperModule.SaveState(dict);
+            };
+
+            Action<Dictionary<Type, Dictionary<string, object>>, Level> loadState = (savedValues, _) =>
+            {
+                if (!savedValues.TryGetValue(typeof(GravityHelperModule), out var dict))
+                    return;
+                GravityHelperModule.LoadState(dict);
+            };
+
+            var cons = slat.GetConstructors().First(c => c.GetParameters().Length == 2);
+            var saveLoadAction = cons.Invoke(new object[] {saveState, loadState});
+
+            all.Add(saveLoadAction);
+        }
+
+        private static void unloadSpeedrunTool()
+        {
+            // at the moment it's just too hard to unload
         }
 
         #endregion
