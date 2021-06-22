@@ -7,12 +7,14 @@ using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
 using MonoMod.Utils;
 
+// ReSharper disable InconsistentNaming
+
 namespace Celeste.Mod.GravityHelper
 {
     public static class MiscHooks
     {
-        // ReSharper disable once InconsistentNaming
         private static IDetour hook_Level_orig_TransitionRoutine;
+        private static IDetour hook_PlayerDeadBody_DeathRoutine;
 
         public static void Load()
         {
@@ -40,6 +42,7 @@ namespace Celeste.Mod.GravityHelper
             On.Celeste.TrailManager.Add_Vector2_Image_PlayerHair_Vector2_Color_int_float_bool_bool += TrailManager_Add;
 
             hook_Level_orig_TransitionRoutine = new ILHook(ReflectionCache.Level_OrigTransitionRoutine.GetStateMachineTarget(), Level_orig_TransitionRoutine);
+            hook_PlayerDeadBody_DeathRoutine = new ILHook(ReflectionCache.PlayerDeadBody_DeathRoutine.GetStateMachineTarget(), PlayerDeadBody_DeathRoutine);
         }
 
         public static void Unload()
@@ -69,6 +72,9 @@ namespace Celeste.Mod.GravityHelper
 
             hook_Level_orig_TransitionRoutine?.Dispose();
             hook_Level_orig_TransitionRoutine = null;
+
+            hook_PlayerDeadBody_DeathRoutine?.Dispose();
+            hook_PlayerDeadBody_DeathRoutine = null;
         }
 
         #region IL Hooks
@@ -125,6 +131,22 @@ namespace Celeste.Mod.GravityHelper
             cursor.Emit(OpCodes.Call, typeof(Rectangle).GetMethod("get_Top"));
             cursor.Emit(OpCodes.Neg);
             cursor.Emit(OpCodes.Br_S, cursor.Next.Next);
+        }
+
+        private static void PlayerDeadBody_DeathRoutine(ILContext il)
+        {
+            logCurrentMethod();
+
+            var cursor = new ILCursor(il);
+
+            // playerDeadBody1.deathEffect = new DeathEffect(playerDeadBody1.initialHairColor, new Vector2?(playerDeadBody1.Center - playerDeadBody1.Position));
+            cursor.GotoNext(instr => instr.MatchLdfld<PlayerDeadBody>("initialHairColor"));
+            cursor.GotoNextSubtraction(MoveType.After);
+            cursor.EmitInvertVectorDelegate();
+
+            // playerDeadBody1.Position = playerDeadBody1.Position + Vector2.UnitY * -5f;
+            cursor.GotoPrev(MoveType.After, instr => instr.MatchLdcR4(-5));
+            cursor.EmitInvertFloatDelegate();
         }
 
         private static void PlayerDeadBody_Render(ILContext il)
