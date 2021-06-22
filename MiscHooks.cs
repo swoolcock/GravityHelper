@@ -1,5 +1,7 @@
 using System;
+using System.Runtime.CompilerServices;
 using Celeste;
+using Celeste.Mod;
 using Microsoft.Xna.Framework;
 using Mono.Cecil.Cil;
 using Monocle;
@@ -16,6 +18,8 @@ namespace GravityHelper
 
         public static void Load()
         {
+            Logger.Log(nameof(GravityHelperModule), $"Loading miscellaneous hooks...");
+
             IL.Celeste.Actor.IsRiding_JumpThru += Actor_IsRiding;
             IL.Celeste.Actor.IsRiding_Solid += Actor_IsRiding;
             IL.Celeste.Bumper.OnPlayer += Bumper_OnPlayer;
@@ -42,6 +46,8 @@ namespace GravityHelper
 
         public static void Unload()
         {
+            Logger.Log(nameof(GravityHelperModule), $"Unloading miscellaneous hooks...");
+
             IL.Celeste.Actor.IsRiding_JumpThru -= Actor_IsRiding;
             IL.Celeste.Actor.IsRiding_Solid -= Actor_IsRiding;
             IL.Celeste.Bumper.OnPlayer -= Bumper_OnPlayer;
@@ -71,6 +77,8 @@ namespace GravityHelper
 
         private static void Actor_IsRiding(ILContext il)
         {
+            logCurrentMethod();
+
             var cursor = new ILCursor(il);
             cursor.GotoNextAddition();
             cursor.Emit(OpCodes.Ldarg_0);
@@ -80,6 +88,8 @@ namespace GravityHelper
 
         private static void Bumper_OnPlayer(ILContext il)
         {
+            logCurrentMethod();
+
             var cursor = new ILCursor(il);
             cursor.GotoNext(instr => instr.MatchCallvirt<Player>(nameof(Player.ExplodeLaunch)));
             cursor.GotoPrev(MoveType.After, instr => instr.MatchLdfld<Entity>(nameof(Entity.Position)));
@@ -94,6 +104,8 @@ namespace GravityHelper
 
         private static void Level_orig_TransitionRoutine(ILContext il)
         {
+            logCurrentMethod();
+
             var cursor = new ILCursor(il);
 
             //// if (direction == Vector2.UnitY)
@@ -119,6 +131,8 @@ namespace GravityHelper
 
         private static void PlayerDeadBody_Render(ILContext il)
         {
+            logCurrentMethod();
+
             var cursor = new ILCursor(il);
 
             // this.sprite.Scale.Y = this.scale;
@@ -128,6 +142,8 @@ namespace GravityHelper
 
         private static void PlayerHair_AfterUpdate(ILContext il)
         {
+            logCurrentMethod();
+
             var cursor = new ILCursor(il);
 
             void invertAdditions()
@@ -153,6 +169,8 @@ namespace GravityHelper
 
         private static void PlayerHair_Render(ILContext il)
         {
+            logCurrentMethod();
+
             var cursor = new ILCursor(il);
 
             // Vector2 hairScale = this.GetHairScale(index);
@@ -166,6 +184,8 @@ namespace GravityHelper
 
         private static void Solid_GetPlayerOnTop(ILContext il)
         {
+            logCurrentMethod();
+
             var cursor = new ILCursor(il);
             cursor.GotoNextSubtraction();
             cursor.EmitInvertVectorDelegate();
@@ -426,5 +446,8 @@ namespace GravityHelper
         }
 
         #endregion
+
+        private static void logCurrentMethod([CallerMemberName] string caller = null) =>
+            Logger.Log(nameof(GravityHelperModule), $"Hooking IL {caller}");
     }
 }

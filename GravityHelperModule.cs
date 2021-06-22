@@ -36,14 +36,18 @@ namespace GravityHelper
         {
 #if DEBUG
             // force load hooks in debug builds
+            Logger.Log(nameof(GravityHelperModule), "Force loading hooks due to debug build...");
             activateHooks();
 #endif
+
+            Logger.Log(nameof(GravityHelperModule), $"Loading bootstrap hooks...");
             On.Celeste.LevelLoader.ctor += LevelLoader_ctor;
             On.Celeste.OverworldLoader.ctor += OverworldLoader_ctor;
         }
 
         public override void Unload()
         {
+            Logger.Log(nameof(GravityHelperModule), $"Unloading bootstrap hooks...");
             On.Celeste.LevelLoader.ctor -= LevelLoader_ctor;
             On.Celeste.OverworldLoader.ctor -= OverworldLoader_ctor;
 

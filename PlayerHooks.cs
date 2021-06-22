@@ -1,7 +1,9 @@
 using System;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using Celeste;
+using Celeste.Mod;
 using GravityHelper.Triggers;
 using Microsoft.Xna.Framework;
 using Mono.Cecil.Cil;
@@ -25,6 +27,8 @@ namespace GravityHelper
 
         public static void Load()
         {
+            Logger.Log(nameof(GravityHelperModule), $"Loading Player hooks...");
+
             IL.Celeste.Player.BeforeUpTransition += Player_BeforeUpTransition;
             IL.Celeste.Player.BeforeDownTransition += Player_BeforeDownTransition;
             IL.Celeste.Player.Bounce += Player_Bounce;
@@ -83,6 +87,8 @@ namespace GravityHelper
 
         public static void Unload()
         {
+            Logger.Log(nameof(GravityHelperModule), $"Unloading Player hooks...");
+
             IL.Celeste.Player.BeforeUpTransition -= Player_BeforeUpTransition;
             IL.Celeste.Player.BeforeDownTransition -= Player_BeforeDownTransition;
             IL.Celeste.Player.Bounce -= Player_Bounce;
@@ -142,6 +148,8 @@ namespace GravityHelper
 
         private static void Player_BeforeDownTransition(ILContext il)
         {
+            logCurrentMethod();
+
             var cursor = new ILCursor(il);
             var target = cursor.Next;
             cursor.Emit(OpCodes.Ldarg_0);
@@ -170,6 +178,8 @@ namespace GravityHelper
 
         private static void Player_BeforeUpTransition(ILContext il)
         {
+            logCurrentMethod();
+
             var cursor = new ILCursor(il);
             var target = cursor.Next;
             cursor.Emit(OpCodes.Ldarg_0);
@@ -200,6 +210,8 @@ namespace GravityHelper
 
         private static void Player_Bounce(ILContext il)
         {
+            logCurrentMethod();
+
             var cursor = new ILCursor(il);
 
             cursor.ReplaceBottomWithDelegate();
@@ -209,6 +221,8 @@ namespace GravityHelper
 
         private static void Player_ClimbHopBlockedCheck(ILContext il)
         {
+            logCurrentMethod();
+
             var cursor = new ILCursor(il);
             cursor.GotoNext(MoveType.After, instr => instr.MatchLdcR4(6));
             cursor.EmitInvertFloatDelegate();
@@ -216,6 +230,8 @@ namespace GravityHelper
 
         private static void Player_ClimbJump(ILContext il)
         {
+            logCurrentMethod();
+
             var cursor = new ILCursor(il);
 
             // Dust.Burst(this.Center + Vector2.UnitX * 2f, -2.3561945f, 4, this.DustParticleFromSurfaceIndex(index));
@@ -231,6 +247,8 @@ namespace GravityHelper
 
         private static void Player_ClimbUpdate(ILContext il)
         {
+            logCurrentMethod();
+
             var cursor = new ILCursor(il);
 
             // replace all calls to LiftBoost (should be 4)
@@ -248,6 +266,8 @@ namespace GravityHelper
 
         private static void Player_CreateWallSlideParticles(ILContext il)
         {
+            logCurrentMethod();
+
             var cursor = new ILCursor(il);
 
             // Dust.Burst(dir != 1 ? center + new Vector2(-x, 4f) : center + new Vector2(x, 4f), -1.5707964f, particleType: particleType);
@@ -258,6 +278,8 @@ namespace GravityHelper
 
         private static void Player_ctor_OnFrameChange(ILContext il)
         {
+            logCurrentMethod();
+
             var cursor = new ILCursor(il);
 
             // Platform platformByPriority = SurfaceIndex.GetPlatformByPriority(this.CollideAll<Platform>(this.Position + Vector2.UnitY, this.temp));
@@ -274,6 +296,8 @@ namespace GravityHelper
 
         private static void Player_DashCoroutine(ILContext il)
         {
+            logCurrentMethod();
+
             var cursor = new ILCursor(il);
 
             /*
@@ -294,6 +318,8 @@ namespace GravityHelper
 
         private static void Player_IsOverWater(ILContext il)
         {
+            logCurrentMethod();
+
             var cursor = new ILCursor(il);
             cursor.GotoNext(MoveType.After, instr => instr.MatchLdloc(0));
             cursor.EmitDelegate<Func<Rectangle, Rectangle>>(r =>
@@ -305,6 +331,8 @@ namespace GravityHelper
 
         private static void Player_Jump(ILContext il)
         {
+            logCurrentMethod();
+
             var cursor = new ILCursor(il);
 
             // this.Speed += this.LiftBoost;
@@ -322,6 +350,8 @@ namespace GravityHelper
 
         private static void Player_LaunchedBoostCheck(ILContext il)
         {
+            logCurrentMethod();
+
             var cursor = new ILCursor(il);
             // this.Speed += this.LiftBoost;
             cursor.replaceGetLiftBoost();
@@ -329,6 +359,8 @@ namespace GravityHelper
 
         private static void Player_NormalUpdate(ILContext il)
         {
+            logCurrentMethod();
+
             var cursor = new ILCursor(il);
 
             cursor.replaceGetLiftBoost(3);
@@ -345,6 +377,8 @@ namespace GravityHelper
 
         private static void Player_OnCollideH(ILContext il)
         {
+            logCurrentMethod();
+
             var cursor = new ILCursor(il);
 
             // (SKIP) if (this.onGround && this.DuckFreeAt(this.Position + Vector2.UnitX * (float) Math.Sign(this.Speed.X)))
@@ -361,6 +395,8 @@ namespace GravityHelper
 
         private static void Player_OnCollideV(ILContext il)
         {
+            logCurrentMethod();
+
             var cursor = new ILCursor(il);
 
             // if (this.DashAttacking && (double) data.Direction.Y == (double) Math.Sign(this.DashDir.Y))
@@ -394,6 +430,8 @@ namespace GravityHelper
 
         private static void Player_orig_Update(ILContext il)
         {
+            logCurrentMethod();
+
             var cursor = new ILCursor(il);
 
             /*
@@ -508,6 +546,8 @@ namespace GravityHelper
 
         private static void Player_orig_UpdateSprite(ILContext il)
         {
+            logCurrentMethod();
+
             var cursor = new ILCursor(il);
 
             // fix dangling animation
@@ -540,6 +580,8 @@ namespace GravityHelper
 
         private static void Player_orig_WallJump(ILContext il)
         {
+            logCurrentMethod();
+
             var cursor = new ILCursor(il);
             // this.Speed += this.LiftBoost;
             cursor.replaceGetLiftBoost();
@@ -547,6 +589,8 @@ namespace GravityHelper
 
         private static void Player_SideBounce(ILContext il)
         {
+            logCurrentMethod();
+
             var cursor = new ILCursor(il);
 
             // this.MoveV(Calc.Clamp(fromY - this.Bottom, -4f, 4f));
@@ -557,6 +601,8 @@ namespace GravityHelper
 
         private static void Player_StarFlyUpdate(ILContext il)
         {
+            logCurrentMethod();
+
             var cursor = new ILCursor(il);
 
             // this.level.Particles.Emit(FlyFeather.P_Flying, 1, this.Center, Vector2.One * 2f, (-this.Speed).Angle());
@@ -567,6 +613,8 @@ namespace GravityHelper
 
         private static void Player_SuperBounce(ILContext il)
         {
+            logCurrentMethod();
+
             var cursor = new ILCursor(il);
 
             // this.MoveV(fromY - this.Bottom);
@@ -577,6 +625,8 @@ namespace GravityHelper
 
         private static void Player_SuperJump(ILContext il)
         {
+            logCurrentMethod();
+
             var cursor = new ILCursor(il);
             // this.Speed += this.LiftBoost;
             cursor.replaceGetLiftBoost();
@@ -594,6 +644,8 @@ namespace GravityHelper
 
         private static void Player_SuperWallJump(ILContext il)
         {
+            logCurrentMethod();
+
             var cursor = new ILCursor(il);
             // this.Speed += this.LiftBoost;
             cursor.replaceGetLiftBoost();
@@ -611,6 +663,8 @@ namespace GravityHelper
 
         private static void Player_SwimCheck(ILContext il)
         {
+            logCurrentMethod();
+
             var cursor = new ILCursor(il);
             cursor.GotoNext(MoveType.After, instr => instr.MatchLdcR4(out _));
             cursor.EmitInvertFloatDelegate();
@@ -618,6 +672,8 @@ namespace GravityHelper
 
         private static void Player_SwimJumpCheck(ILContext il)
         {
+            logCurrentMethod();
+
             var cursor = new ILCursor(il);
             cursor.GotoNext(MoveType.After, instr => instr.MatchLdcR4(out _));
             cursor.EmitInvertFloatDelegate();
@@ -625,6 +681,8 @@ namespace GravityHelper
 
         private static void Player_SwimRiseCheck(ILContext il)
         {
+            logCurrentMethod();
+
             var cursor = new ILCursor(il);
             cursor.GotoNext(MoveType.After, instr => instr.MatchLdcR4(out _));
             cursor.EmitInvertFloatDelegate();
@@ -632,6 +690,8 @@ namespace GravityHelper
 
         private static void Player_SwimUnderwaterCheck(ILContext il)
         {
+            logCurrentMethod();
+
             var cursor = new ILCursor(il);
             cursor.GotoNext(MoveType.After, instr => instr.MatchLdcR4(out _));
             cursor.EmitInvertFloatDelegate();
@@ -837,5 +897,8 @@ namespace GravityHelper
             Acceleration = new Vector2(0.0f, -4f),
             Direction = -(float)Math.PI / 2f,
         });
+
+        private static void logCurrentMethod([CallerMemberName] string caller = null) =>
+            Logger.Log(nameof(GravityHelperModule), $"Hooking IL {caller}");
     }
 }

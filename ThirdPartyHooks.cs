@@ -3,7 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using Celeste;
+using Celeste.Mod;
 using Microsoft.Xna.Framework;
 using Mono.Cecil.Cil;
 using Monocle;
@@ -16,16 +18,18 @@ namespace GravityHelper
     {
         public static void Load()
         {
-            loadSpeedrunTool();
-            loadMaxHelpingHand();
-            loadFancyTileEntities();
+            Logger.Log(nameof(GravityHelperModule), $"Loading third party hooks...");
+            executeIfAvailable("SpeedrunTool", true, loadSpeedrunTool);
+            executeIfAvailable("MaxHelpingHand", true, loadMaxHelpingHand);
+            executeIfAvailable("FancyTileEntities", true, loadFancyTileEntities);
         }
 
         public static void Unload()
         {
-            unloadSpeedrunTool();
-            unloadMaxHelpingHand();
-            unloadFancyTileEntities();
+            Logger.Log(nameof(GravityHelperModule), $"Unloading third party hooks...");
+            executeIfAvailable("SpeedrunTool", false, unloadSpeedrunTool);
+            executeIfAvailable("MaxHelpingHand", false, unloadMaxHelpingHand);
+            executeIfAvailable("FancyTileEntities", false, unloadFancyTileEntities);
         }
 
         #region MaxHelpingHand
@@ -86,6 +90,8 @@ namespace GravityHelper
 
         private static void UpsideDownJumpThru_onJumpthruHasPlayerRider(ILContext il)
         {
+            logCurrentMethod();
+
             var cursor = new ILCursor(il);
             cursor.GotoNext(instr => instr.MatchLdarg(0));
             var target = cursor.Next;
@@ -96,6 +102,8 @@ namespace GravityHelper
 
         private static void UpsideDownJumpThru_playerMovingUp(ILContext il)
         {
+            logCurrentMethod();
+
             var cursor = new ILCursor(il);
             cursor.GotoNext(MoveType.After, instr => instr.MatchLdfld<Vector2>(nameof(Vector2.Y)));
             cursor.EmitInvertFloatDelegate();
@@ -103,9 +111,24 @@ namespace GravityHelper
 
         private static void UpsideDownJumpThru_updateClimbMove(ILContext il)
         {
+            logCurrentMethod();
+
             var cursor = new ILCursor(il);
             cursor.GotoNext(MoveType.After, instr => instr.MatchLdfld<VirtualIntegerAxis>(nameof(VirtualIntegerAxis.Value)));
             cursor.EmitInvertIntDelegate();
+        }
+
+        private static void UpsideDownJumpThru_MoveVExact(ILContext il)
+        {
+            logCurrentMethod();
+
+            var cursor = new ILCursor(il);
+            cursor.GotoNext(instr => instr.MatchCall<JumpThru>(nameof(JumpThru.MoveVExact)));
+            cursor.Index -= 2;
+            var target = cursor.Next;
+            cursor.Index = 0;
+            cursor.EmitDelegate<Func<bool>>(() => GravityHelperModule.ShouldInvert);
+            cursor.Emit(OpCodes.Brtrue_S, target);
         }
 
         private static void UpsideDownJumpThru_Awake(Action<JumpThru, Scene> orig, JumpThru self, Scene scene)
@@ -122,17 +145,6 @@ namespace GravityHelper
                 "core" => SurfaceIndex.Dirt,
                 _ => SurfaceIndex.Wood,
             };
-        }
-
-        private static void UpsideDownJumpThru_MoveVExact(ILContext il)
-        {
-            var cursor = new ILCursor(il);
-            cursor.GotoNext(instr => instr.MatchCall<JumpThru>(nameof(JumpThru.MoveVExact)));
-            cursor.Index -= 2;
-            var target = cursor.Next;
-            cursor.Index = 0;
-            cursor.EmitDelegate<Func<bool>>(() => GravityHelperModule.ShouldInvert);
-            cursor.Emit(OpCodes.Brtrue_S, target);
         }
 
         #endregion
@@ -260,5 +272,17 @@ namespace GravityHelper
         }
 
         #endregion
+
+        private static void logCurrentMethod([CallerMemberName] string caller = null) =>
+            Logger.Log(nameof(GravityHelperModule), $"Hooking IL {caller}");
+
+        private static void executeIfAvailable(string name, bool loading, Action loader)
+        {
+            if (!Everest.Modules.Any(m => m.Metadata.Name == name))
+                return;
+
+            Logger.Log(nameof(GravityHelperModule), $"{(loading ? "Loading" : "Unloading")} {name} hooks...");
+            loader();
+        }
     }
 }
