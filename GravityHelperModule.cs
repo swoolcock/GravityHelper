@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework;
 using Monocle;
 using System;
 using System.Collections.Generic;
+using GravityHelper.Entities;
 
 namespace GravityHelper
 {
@@ -93,7 +94,7 @@ namespace GravityHelper
         {
             orig(self, session, startposition);
 
-            if (Settings.AllowInAllMaps || session.UsesGravityHelper())
+            if (Settings.AllowInAllMaps || EntityHookChecker.IsHookRequiredForSession(session))
                 activateHooks();
             else
                 deactivateHooks();

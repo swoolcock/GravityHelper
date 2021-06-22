@@ -16,5 +16,8 @@ namespace GravityHelper
             GravityType.Inverted => GravityType.Normal,
             _ => type
         };
+
+        public static bool RequiresHooks(this GravityType type) =>
+            type == GravityType.Inverted || type == GravityType.Toggle;
     }
 }

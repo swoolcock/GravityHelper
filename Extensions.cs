@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Celeste;
 using Microsoft.Xna.Framework;
 using Mono.Cecil.Cil;
 using Monocle;
@@ -11,10 +10,6 @@ namespace GravityHelper
 {
     internal static class Extensions
     {
-        public static bool UsesGravityHelper(this Session session) =>
-            session.MapData?.Levels?.Any(level => (level.Triggers?.Any(trigger => trigger.Name.StartsWith("GravityHelper")) ?? false) ||
-                                                  (level.Entities?.Any(entity => entity.Name.StartsWith("GravityHelper")) ?? false)) ?? false;
-
         #region Entity Extensions
 
         public static T GetEntityOrDefault<T>(this Tracker tracker, Func<T, bool> predicate = null) where T : Entity

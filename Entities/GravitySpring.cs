@@ -14,6 +14,9 @@ namespace GravityHelper.Entities
         "GravityHelper/GravitySpringWallRight = LoadWallRight")]
     public class GravitySpring : Entity
     {
+        // ReSharper disable once UnusedMember.Global
+        public static bool RequiresHooks(EntityData data) => data.Enum<GravityType>("gravityType").RequiresHooks();
+
         public Color DisabledColor = Color.White;
         public bool VisibleWhenDisabled;
 
