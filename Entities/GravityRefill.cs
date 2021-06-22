@@ -1,11 +1,10 @@
 using System;
 using System.Collections;
-using Celeste;
 using Celeste.Mod.Entities;
 using Microsoft.Xna.Framework;
 using Monocle;
 
-namespace GravityHelper.Entities
+namespace Celeste.Mod.GravityHelper.Entities
 {
     [CustomEntity("GravityHelper/GravityRefill")]
     public class GravityRefill : Entity
@@ -155,7 +154,7 @@ namespace GravityHelper.Entities
         private IEnumerator RefillRoutine(Player player)
         {
             GravityRefill refill = this;
-            Celeste.Celeste.Freeze(0.05f);
+            Celeste.Freeze(0.05f);
             yield return null;
 
             refill.level.Shake();

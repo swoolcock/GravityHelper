@@ -2,18 +2,15 @@ using System;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using Celeste;
-using Celeste.Mod;
-using GravityHelper.Triggers;
+using Celeste.Mod.GravityHelper.Triggers;
 using Microsoft.Xna.Framework;
 using Mono.Cecil.Cil;
 using Monocle;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
 using MonoMod.Utils;
-using Platform = Celeste.Platform;
 
-namespace GravityHelper
+namespace Celeste.Mod.GravityHelper
 {
     public static class PlayerHooks
     {

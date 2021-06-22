@@ -1,7 +1,5 @@
 using System;
 using System.Runtime.CompilerServices;
-using Celeste;
-using Celeste.Mod;
 using Microsoft.Xna.Framework;
 using Mono.Cecil.Cil;
 using Monocle;
@@ -9,7 +7,7 @@ using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
 using MonoMod.Utils;
 
-namespace GravityHelper
+namespace Celeste.Mod.GravityHelper
 {
     public static class MiscHooks
     {

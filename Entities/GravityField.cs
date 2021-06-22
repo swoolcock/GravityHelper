@@ -4,13 +4,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Celeste;
 using Celeste.Mod.Entities;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Monocle;
 
-namespace GravityHelper.Entities
+namespace Celeste.Mod.GravityHelper.Entities
 {
     [CustomEntity("GravityHelper/GravityField")]
     [Tracked]

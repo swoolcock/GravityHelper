@@ -4,15 +4,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using Celeste;
-using Celeste.Mod;
 using Microsoft.Xna.Framework;
 using Mono.Cecil.Cil;
 using Monocle;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
 
-namespace GravityHelper
+namespace Celeste.Mod.GravityHelper
 {
     public static class ThirdPartyHooks
     {

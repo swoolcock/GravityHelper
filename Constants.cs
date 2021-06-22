@@ -1,4 +1,4 @@
-namespace GravityHelper
+namespace Celeste.Mod.GravityHelper
 {
     // ReSharper disable InconsistentNaming
     public static class Constants

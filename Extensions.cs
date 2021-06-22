@@ -6,7 +6,7 @@ using Mono.Cecil.Cil;
 using Monocle;
 using MonoMod.Cil;
 
-namespace GravityHelper
+namespace Celeste.Mod.GravityHelper
 {
     internal static class Extensions
     {

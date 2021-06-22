@@ -4,11 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Celeste;
 using Microsoft.Xna.Framework;
 using Monocle;
 
-namespace GravityHelper.Entities
+namespace Celeste.Mod.GravityHelper.Entities
 {
     public class ConnectedFieldRenderer<TEntity> : Entity
         where TEntity : Entity, IConnectableField

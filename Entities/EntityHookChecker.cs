@@ -4,10 +4,9 @@
 using System;
 using System.Linq;
 using System.Reflection;
-using Celeste;
-using GravityHelper.Triggers;
+using Celeste.Mod.GravityHelper.Triggers;
 
-namespace GravityHelper.Entities
+namespace Celeste.Mod.GravityHelper.Entities
 {
     public static class EntityHookChecker
     {

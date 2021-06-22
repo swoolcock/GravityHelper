@@ -3,7 +3,7 @@
     <PropertyGroup>
         <TargetFramework>net452</TargetFramework>
         <AssemblyName>GravityHelper</AssemblyName>
-        <RootNamespace>GravityHelper</RootNamespace>
+        <RootNamespace>Celeste.Mod.GravityHelper</RootNamespace>
         <LangVersion>preview</LangVersion>
         <CelestePrefix Condition="'$(CelestePrefix)' == '' And Exists('..\..\Celeste.exe')">..\..</CelestePrefix>
         <CelestePrefix Condition="'$(CelestePrefix)' == ''">lib-stripped</CelestePrefix>

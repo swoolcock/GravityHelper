@@ -1,12 +1,10 @@
-﻿using Celeste;
-using Celeste.Mod;
+﻿using System;
+using System.Collections.Generic;
+using Celeste.Mod.GravityHelper.Entities;
 using Microsoft.Xna.Framework;
 using Monocle;
-using System;
-using System.Collections.Generic;
-using GravityHelper.Entities;
 
-namespace GravityHelper
+namespace Celeste.Mod.GravityHelper
 {
     // ReSharper disable InconsistentNaming
     public class GravityHelperModule : EverestModule

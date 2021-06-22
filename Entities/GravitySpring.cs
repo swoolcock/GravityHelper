@@ -1,11 +1,10 @@
 using System;
-using Celeste;
 using Celeste.Mod.Entities;
 using Microsoft.Xna.Framework;
 using Monocle;
 using MonoMod.Utils;
 
-namespace GravityHelper.Entities
+namespace Celeste.Mod.GravityHelper.Entities
 {
     [CustomEntity(
         "GravityHelper/GravitySpringFloor = LoadFloor",

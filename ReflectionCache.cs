@@ -2,12 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Celeste;
-using Celeste.Mod;
 using Microsoft.Xna.Framework;
 using Monocle;
 
-namespace GravityHelper
+namespace Celeste.Mod.GravityHelper
 {
     // ReSharper disable InconsistentNaming
     internal static class ReflectionCache

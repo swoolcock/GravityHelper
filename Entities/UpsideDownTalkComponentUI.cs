@@ -1,10 +1,9 @@
 using System;
-using Celeste;
 using Microsoft.Xna.Framework;
 using Monocle;
 using MonoMod.Utils;
 
-namespace GravityHelper.Entities
+namespace Celeste.Mod.GravityHelper.Entities
 {
     public class UpsideDownTalkComponentUI : TalkComponent.TalkComponentUI
     {

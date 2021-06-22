@@ -1,6 +1,4 @@
-using Celeste.Mod;
-
-namespace GravityHelper
+namespace Celeste.Mod.GravityHelper
 {
     public class GravityHelperModuleSession : EverestModuleSession
     {

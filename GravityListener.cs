@@ -1,8 +1,7 @@
-using Celeste;
 using Microsoft.Xna.Framework;
 using Monocle;
 
-namespace GravityHelper
+namespace Celeste.Mod.GravityHelper
 {
     [Tracked]
     public class GravityListener : Component

@@ -3,7 +3,7 @@
 
 using Microsoft.Xna.Framework;
 
-namespace GravityHelper.Entities
+namespace Celeste.Mod.GravityHelper.Entities
 {
     public interface IConnectableField
     {

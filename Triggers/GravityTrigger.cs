@@ -1,8 +1,7 @@
-using Celeste;
 using Celeste.Mod.Entities;
 using Microsoft.Xna.Framework;
 
-namespace GravityHelper.Triggers
+namespace Celeste.Mod.GravityHelper.Triggers
 {
     [CustomEntity("GravityHelper/GravityTrigger")]
     public class GravityTrigger : Trigger

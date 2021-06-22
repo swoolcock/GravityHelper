@@ -1,9 +1,8 @@
-using Celeste;
 using Celeste.Mod.Entities;
 using Microsoft.Xna.Framework;
 using Monocle;
 
-namespace GravityHelper.Triggers
+namespace Celeste.Mod.GravityHelper.Triggers
 {
     [CustomEntity("GravityHelper/SpawnGravityTrigger")]
     [Tracked]

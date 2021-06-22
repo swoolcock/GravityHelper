@@ -1,9 +1,8 @@
-using Celeste;
 using Celeste.Mod.Entities;
 using Microsoft.Xna.Framework;
 using Monocle;
 
-namespace GravityHelper.Entities
+namespace Celeste.Mod.GravityHelper.Entities
 {
     [CustomEntity("GravityHelper/UpsideDownWatchTower")]
     public class UpsideDownWatchTower : Lookout
