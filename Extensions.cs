@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
+using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Monocle;
 using MonoMod.Cil;
@@ -26,6 +27,13 @@ namespace Celeste.Mod.GravityHelper
                 return Enumerable.Empty<T>();
             var ofType = list.OfType<T>();
             return predicate == null ? ofType : ofType.Where(predicate);
+        }
+
+        public static IEnumerable<Entity> GetEntitiesOrEmpty(this Tracker tracker, Type entityType, Func<Entity, bool> predicate = null)
+        {
+            if (!tracker.Entities.TryGetValue(entityType, out var list))
+                return Enumerable.Empty<Entity>();
+            return predicate == null ? list : list.Where(predicate);
         }
 
         public static T CollideFirstOrDefault<T>(this Entity entity) where T : Entity =>
@@ -64,6 +72,14 @@ namespace Celeste.Mod.GravityHelper
             return Collide.Check(entity, entities, at);
         }
 
+        public static bool CollideCheck(this Entity entity, Type type, bool checkAllEntities = false)
+        {
+            IEnumerable<Entity> entities = getEntities(entity.Scene, type, checkAllEntities);
+            if (entities == null) return false;
+
+            return Collide.Check(entity, entities);
+        }
+
         private static IEnumerable<Entity> getEntities(Scene scene, Type type, bool checkAllEntities = false)
         {
             IEnumerable<Entity> entities = null;
@@ -85,6 +101,7 @@ namespace Celeste.Mod.GravityHelper
         public static bool MaxPredicate(Instruction instr) => instr.MatchCall("System.Math", "Max");
         public static bool SignPredicate(Instruction instr) => instr.MatchCall("System.Math", "Sign");
         public static bool BottomPredicate(Instruction instr) => instr.MatchCallOrCallvirt<Entity>("get_Bottom");
+        public static bool TopPredicate(Instruction instr) => instr.MatchCallOrCallvirt<Entity>("get_Top");
         public static bool BottomCenterPredicate(Instruction instr) => instr.MatchCallOrCallvirt<Entity>("get_BottomCenter");
 
         public static readonly Func<Vector2, Vector2, Vector2> AdditionDelegate = (lhs, rhs) =>
@@ -104,6 +121,9 @@ namespace Celeste.Mod.GravityHelper
 
         public static readonly Func<Entity, float> BottomDelegate = e =>
             GravityHelperModule.ShouldInvert ? e.Top : e.Bottom;
+
+        public static readonly Func<Entity, float> TopDelegate = e =>
+            GravityHelperModule.ShouldInvert ? e.Bottom : e.Top;
 
         public static readonly Func<Entity, Vector2> BottomCenterDelegate = e =>
             GravityHelperModule.ShouldInvert ? e.TopCenter : e.BottomCenter;
@@ -128,6 +148,7 @@ namespace Celeste.Mod.GravityHelper
         public static void ReplaceMaxWithDelegate(this ILCursor cursor, int count = 1) => cursor.ReplaceWithDelegate(MaxPredicate, MaxDelegate, count);
         public static void ReplaceSignWithDelegate(this ILCursor cursor, int count = 1) => cursor.ReplaceWithDelegate(SignPredicate, SignDelegate, count);
         public static void ReplaceBottomWithDelegate(this ILCursor cursor, int count = 1) => cursor.ReplaceWithDelegate(BottomPredicate, BottomDelegate, count);
+        public static void ReplaceTopWithDelegate(this ILCursor cursor, int count = 1) => cursor.ReplaceWithDelegate(TopPredicate, TopDelegate, count);
         public static void ReplaceBottomCenterWithDelegate(this ILCursor cursor, int count = 1) => cursor.ReplaceWithDelegate(BottomCenterPredicate, BottomCenterDelegate, count);
 
         public static void GotoNextAddition(this ILCursor cursor, MoveType moveType = MoveType.Before) => cursor.GotoNext(moveType, AdditionPredicate);
