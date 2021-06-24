@@ -33,12 +33,14 @@ namespace Celeste.Mod.GravityHelper
             IL.Celeste.Player.ClimbJump += Player_ClimbJump;
             IL.Celeste.Player.ClimbUpdate += Player_ClimbUpdate;
             IL.Celeste.Player.CreateWallSlideParticles += Player_CreateWallSlideParticles;
+            IL.Celeste.Player.DashUpdate += Player_DashUpdate;
             IL.Celeste.Player._IsOverWater += Player_IsOverWater;
             IL.Celeste.Player.Jump += Player_Jump;
             IL.Celeste.Player.LaunchedBoostCheck += Player_LaunchedBoostCheck;
             IL.Celeste.Player.NormalUpdate += Player_NormalUpdate;
             IL.Celeste.Player.OnCollideH += Player_OnCollideH;
             IL.Celeste.Player.OnCollideV += Player_OnCollideV;
+            IL.Celeste.Player.RedDashUpdate += Player_RedDashUpdate;
             IL.Celeste.Player.SideBounce += Player_SideBounce;
             IL.Celeste.Player.StarFlyUpdate += Player_StarFlyUpdate;
             IL.Celeste.Player.SuperBounce += Player_SuperBounce;
@@ -93,12 +95,14 @@ namespace Celeste.Mod.GravityHelper
             IL.Celeste.Player.ClimbJump -= Player_ClimbJump;
             IL.Celeste.Player.ClimbUpdate -= Player_ClimbUpdate;
             IL.Celeste.Player.CreateWallSlideParticles -= Player_CreateWallSlideParticles;
+            IL.Celeste.Player.DashUpdate -= Player_DashUpdate;
             IL.Celeste.Player._IsOverWater -= Player_IsOverWater;
             IL.Celeste.Player.Jump -= Player_Jump;
             IL.Celeste.Player.LaunchedBoostCheck -= Player_LaunchedBoostCheck;
             IL.Celeste.Player.NormalUpdate -= Player_NormalUpdate;
             IL.Celeste.Player.OnCollideH -= Player_OnCollideH;
             IL.Celeste.Player.OnCollideV -= Player_OnCollideV;
+            IL.Celeste.Player.RedDashUpdate -= Player_RedDashUpdate;
             IL.Celeste.Player.SideBounce -= Player_SideBounce;
             IL.Celeste.Player.StarFlyUpdate -= Player_StarFlyUpdate;
             IL.Celeste.Player.SuperBounce -= Player_SuperBounce;
@@ -311,6 +315,12 @@ namespace Celeste.Mod.GravityHelper
             cursor.GotoNext(instr => instr.MatchCall<SlashFx>(nameof(SlashFx.Burst)));
             cursor.Index--;
             cursor.EmitInvertVectorDelegate();
+        }
+
+        private static void Player_DashUpdate(ILContext il)
+        {
+            logCurrentMethod();
+            emitDashUpdateFixes(il);
         }
 
         private static void Player_IsOverWater(ILContext il)
@@ -582,6 +592,12 @@ namespace Celeste.Mod.GravityHelper
             var cursor = new ILCursor(il);
             // this.Speed += this.LiftBoost;
             cursor.replaceGetLiftBoost();
+        }
+
+        private static void Player_RedDashUpdate(ILContext il)
+        {
+            logCurrentMethod();
+            emitDashUpdateFixes(il);
         }
 
         private static void Player_SideBounce(ILContext il)
@@ -862,6 +878,32 @@ namespace Celeste.Mod.GravityHelper
         }
 
         #endregion
+
+        private static void emitDashUpdateFixes(ILContext il)
+        {
+            var cursor = new ILCursor(il);
+
+            cursor.GotoNext(instr => instr.MatchLdflda<Player>(nameof(Player.DashDir)),
+                instr => instr.MatchLdfld<Vector2>(nameof(Vector2.Y)));
+            cursor.GotoNext(instr => instr.MatchLdarg(0));
+
+            cursor.Emit(OpCodes.Ldarg_0);
+            cursor.EmitDelegate<Action<Player>>(self =>
+            {
+                if (!GravityHelperModule.ShouldInvert)
+                    return;
+
+                var entities = self.Scene.Tracker.GetEntitiesOrEmpty(ReflectionCache.UpsideDownJumpThruType).Cast<JumpThru>();
+                foreach (JumpThru entity in entities)
+                {
+                    if (self.CollideCheck(entity) && entity.Bottom - self.Top <= 6f &&
+                        !self.CallDashCorrectCheck(Vector2.UnitY * (entity.Bottom - self.Top)))
+                    {
+                        self.MoveVExact((int)(self.Top - entity.Bottom));
+                    }
+                }
+            });
+        }
 
         private static void replaceGetLiftBoost(this ILCursor cursor, int count = 1) =>
             cursor.ReplaceWithDelegate<Func<Player, Vector2>>(instr => instr.MatchCallvirt<Player>("get_LiftBoost"), getLiftBoost, count);
