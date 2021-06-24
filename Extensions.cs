@@ -148,6 +148,20 @@ namespace Celeste.Mod.GravityHelper
         public static void EmitInvertIntDelegate(this ILCursor cursor) =>
             cursor.EmitDelegate<Func<int, int>>(i => GravityHelperModule.ShouldInvert ? -i : i);
 
+        public static bool MatchCallGeneric<T>(this Instruction instr, string name, out GenericInstanceMethod method)
+        {
+            method = instr.Operand as GenericInstanceMethod;
+            if (method == null || instr.OpCode != OpCodes.Call) return false;
+            return method.Name == name;
+        }
+
+        public static bool MatchCallvirtGeneric<T>(this Instruction instr, string name, out GenericInstanceMethod method)
+        {
+            method = instr.Operand as GenericInstanceMethod;
+            if (method == null || instr.OpCode != OpCodes.Callvirt) return false;
+            return method.Name == name;
+        }
+
         #endregion
     }
 }
