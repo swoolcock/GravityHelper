@@ -525,17 +525,66 @@ namespace Celeste.Mod.GravityHelper
             // (SKIP) else if (!this.CollideCheck<Solid>(this.Position + Vector2.UnitX * (float) this.hopWaitX))
             cursor.GotoNextAddition(MoveType.After);
 
+            // apply upside-down jumpthru correction
+            if (cursor.TryGotoNext(instr => instr.MatchLdarg(0), instr => instr.MatchLdfld<Player>("onGround")))
+            {
+                cursor.Emit(OpCodes.Ldarg_0);
+                cursor.EmitDelegate<Action<Player>>(self =>
+                {
+                    if (!GravityHelperModule.ShouldInvert)
+                        return;
+
+                    var udjtType = ReflectionCache.UpsideDownJumpThruType;
+                    if (udjtType == null)
+                        return;
+
+                    bool udjtBoostBlockedCheck()
+                    {
+                        foreach (var component in self.Scene.Tracker.GetComponents<LedgeBlocker>())
+                        {
+                            var ledgeBlocker = (LedgeBlocker)component;
+                            if (!ledgeBlocker.Blocking ||
+                                !self.CollideCheck(component.Entity, self.Position + Vector2.UnitY * 2f))
+                                continue;
+
+                            if (ledgeBlocker.BlockChecker == null || ledgeBlocker.BlockChecker(self))
+                                return true;
+                        }
+
+                        return false;
+                    }
+
+                    if (!self.GetOnGround() && self.Speed.Y <= 0.0 &&
+                        (self.StateMachine.State != Player.StClimb || self.GetLastClimbMove() == -1) &&
+                        self.CollideCheck(udjtType) && !udjtBoostBlockedCheck())
+                    {
+                        self.MoveV(-40f * Engine.DeltaTime);
+                    }
+                });
+            }
+            else
+            {
+                Logger.Log(nameof(GravityHelperModule), "Couldn't apply UpsideDownJumpThru correction.");
+            }
+
             /*
              * if (!this.onGround && this.DashAttacking && (double) this.DashDir.Y == 0.0 && (this.CollideCheck<Solid>(this.Position + Vector2.UnitY * 3f) || this.CollideCheckOutside<JumpThru>(this.Position + Vector2.UnitY * 3f)))
+             *     this.MoveVExact(3);
              */
 
             // fix inverted ground correction for dashing (may need to ignore jumpthrus later)
-            cursor.GotoNext(instr => instr.MatchCallvirt<Player>("get_DashAttacking"));
-            cursor.GotoNextAddition();
-            cursor.EmitInvertVectorDelegate();
-            cursor.Index += 2;
-            cursor.GotoNextAddition();
-            cursor.EmitInvertVectorDelegate();
+            if (cursor.TryGotoNext(instr => instr.MatchCallvirt<Player>("get_DashAttacking")))
+            {
+                cursor.GotoNextAddition();
+                cursor.EmitInvertVectorDelegate();
+                cursor.Index += 2;
+                cursor.GotoNextAddition();
+                cursor.EmitInvertVectorDelegate();
+            }
+            else
+            {
+                Logger.Log(nameof(GravityHelperModule), "Couldn't find get_DashAttacking");
+            }
 
             /*
              * if (water != null && (double) this.Center.Y < (double) water.Center.Y)
