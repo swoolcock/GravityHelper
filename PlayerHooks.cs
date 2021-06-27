@@ -21,6 +21,8 @@ namespace Celeste.Mod.GravityHelper
         private static IDetour hook_Player_orig_UpdateSprite;
         private static IDetour hook_Player_orig_WallJump;
         private static IDetour hook_Player_ctor_OnFrameChange;
+        private static IDetour hook_Player_get_CanUnDuck;
+        private delegate bool orig_get_CanUnDuck(Player self);
         // ReSharper restore InconsistentNaming
 
         public static void Load()
@@ -72,6 +74,7 @@ namespace Celeste.Mod.GravityHelper
             hook_Player_orig_Update = new ILHook(ReflectionCache.Player_OrigUpdate, Player_orig_Update);
             hook_Player_orig_UpdateSprite = new ILHook(ReflectionCache.Player_OrigUpdateSprite, Player_orig_UpdateSprite);
             hook_Player_orig_WallJump = new ILHook(ReflectionCache.Player_OrigWallJump, Player_orig_WallJump);
+            hook_Player_get_CanUnDuck = new ILHook(ReflectionCache.Player_CanUnDuck, Player_get_CanUnDuck);
 
             // we assume the first .ctor method that accepts (string) is Sprite.OnFrameChange +=
             var spriteOnFrameChange = typeof(Player).GetRuntimeMethods().FirstOrDefault(m =>
@@ -144,6 +147,9 @@ namespace Celeste.Mod.GravityHelper
 
             hook_Player_ctor_OnFrameChange?.Dispose();
             hook_Player_ctor_OnFrameChange = null;
+
+            hook_Player_get_CanUnDuck?.Dispose();
+            hook_Player_get_CanUnDuck = null;
         }
 
         #region IL Hooks
@@ -322,6 +328,25 @@ namespace Celeste.Mod.GravityHelper
         {
             logCurrentMethod();
             emitDashUpdateFixes(il);
+        }
+
+        private static void Player_get_CanUnDuck(ILContext il)
+        {
+            logCurrentMethod();
+
+            var cursor = new ILCursor(il);
+            if (cursor.TryGotoNext(instr => instr.MatchCallGeneric<Entity>(nameof(Entity.CollideCheck), out _)))
+            {
+                cursor.Remove();
+                cursor.EmitDelegate<Func<Player, bool>>(self =>
+                    self.CollideCheck<Solid>() ||
+                    !GravityHelperModule.ShouldInvert && self.CollideCheck<UpsideDownJumpThru>() ||
+                    GravityHelperModule.ShouldInvert && self.CollideCheck<JumpThru>());
+            }
+            else
+            {
+                throw new Exception("Couldn't hook jumpthru checks in Player.CanUnDuck");
+            }
         }
 
         private static void Player_IsOverWater(ILContext il)
