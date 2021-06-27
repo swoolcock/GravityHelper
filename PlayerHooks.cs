@@ -541,41 +541,18 @@ namespace Celeste.Mod.GravityHelper
             cursor.GotoNextAddition(MoveType.After);
 
             // apply upside-down jumpthru correction
-            if (cursor.TryGotoNext(instr => instr.MatchLdarg(0), instr => instr.MatchLdfld<Player>("onGround")))
+            if (cursor.TryGotoNext(instr => instr.MatchLdarg(0), instr => instr.MatchLdfld<Player>("onGround")) &&
+                cursor.TryGotoNext(instr => instr.MatchCallGeneric<Entity>(nameof(Entity.CollideCheck), out _),
+                    instr => instr.MatchBrfalse(out _)))
             {
-                cursor.Emit(OpCodes.Ldarg_0);
-                cursor.EmitDelegate<Action<Player>>(self =>
-                {
-                    if (!GravityHelperModule.ShouldInvert)
-                        return;
-
-                    bool udjtBoostBlockedCheck()
-                    {
-                        foreach (var component in self.Scene.Tracker.GetComponents<LedgeBlocker>())
-                        {
-                            var ledgeBlocker = (LedgeBlocker)component;
-                            if (!ledgeBlocker.Blocking ||
-                                !self.CollideCheck(component.Entity, self.Position + Vector2.UnitY * 2f))
-                                continue;
-
-                            if (ledgeBlocker.BlockChecker == null || ledgeBlocker.BlockChecker(self))
-                                return true;
-                        }
-
-                        return false;
-                    }
-
-                    if (!self.GetOnGround() && self.Speed.Y <= 0.0 &&
-                        (self.StateMachine.State != Player.StClimb || self.GetLastClimbMove() == -1) &&
-                        self.CollideCheck<UpsideDownJumpThru>() && !udjtBoostBlockedCheck())
-                    {
-                        self.MoveV(-40f * Engine.DeltaTime);
-                    }
-                });
+                cursor.Remove();
+                cursor.EmitDelegate<Func<Player, bool>>(self => GravityHelperModule.ShouldInvert
+                    ? self.CollideCheck<UpsideDownJumpThru>()
+                    : self.CollideCheck<JumpThru>());
             }
             else
             {
-                Logger.Log(nameof(GravityHelperModule), "Couldn't apply UpsideDownJumpThru correction.");
+                throw new Exception("Couldn't apply UpsideDownJumpThru correction.");
             }
 
             /*
@@ -583,14 +560,17 @@ namespace Celeste.Mod.GravityHelper
              *     this.MoveVExact(3);
              */
 
-            // fix inverted ground correction for dashing (may need to ignore jumpthrus later)
+            // fix inverted ground correction for dashing
             if (cursor.TryGotoNext(instr => instr.MatchCallvirt<Player>("get_DashAttacking")))
             {
                 cursor.GotoNextAddition();
                 cursor.EmitInvertVectorDelegate();
-                cursor.Index += 2;
-                cursor.GotoNextAddition();
-                cursor.EmitInvertVectorDelegate();
+                cursor.GotoNext(instr => instr.MatchCallGeneric<Entity>(nameof(Entity.CollideCheckOutside), out _));
+                cursor.Remove();
+                cursor.EmitDelegate<Func<Entity, Vector2, bool>>((self, at) =>
+                    !GravityHelperModule.ShouldInvert
+                        ? self.CollideCheckOutside<JumpThru>(at)
+                        : self.CollideCheckOutside<UpsideDownJumpThru>(self.Position - Vector2.UnitY * 3f));
             }
             else
             {
@@ -853,8 +833,24 @@ namespace Celeste.Mod.GravityHelper
             return index == 40 ? invertedSparkyDustParticle.Value : invertedDustParticle.Value;
         }
 
-        private static bool Player_JumpThruBoostBlockedCheck(On.Celeste.Player.orig_JumpThruBoostBlockedCheck orig, Player self) =>
-            GravityHelperModule.ShouldInvert || orig(self);
+        private static bool Player_JumpThruBoostBlockedCheck(On.Celeste.Player.orig_JumpThruBoostBlockedCheck orig, Player self)
+        {
+            if (!GravityHelperModule.ShouldInvert)
+                return orig(self);
+
+            foreach (var component in self.Scene.Tracker.GetComponents<LedgeBlocker>())
+            {
+                var ledgeBlocker = (LedgeBlocker)component;
+                if (!ledgeBlocker.Blocking ||
+                    !self.CollideCheck(component.Entity, self.Position + Vector2.UnitY * 2f))
+                    continue;
+
+                if (ledgeBlocker.BlockChecker == null || ledgeBlocker.BlockChecker(self))
+                    return true;
+            }
+
+            return false;
+        }
 
         private static void Player_OnCollideV(On.Celeste.Player.orig_OnCollideV orig, Player self, CollisionData data)
         {
