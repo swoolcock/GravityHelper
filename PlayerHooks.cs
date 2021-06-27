@@ -945,15 +945,28 @@ namespace Celeste.Mod.GravityHelper
         {
             var cursor = new ILCursor(il);
 
+            // find DashDir.Y < 0.1 check
             cursor.GotoNext(instr => instr.MatchLdflda<Player>(nameof(Player.DashDir)),
                 instr => instr.MatchLdfld<Vector2>(nameof(Vector2.Y)));
-            cursor.GotoNext(instr => instr.MatchLdarg(0));
 
-            cursor.Emit(OpCodes.Ldarg_0);
-            cursor.EmitDelegate<Action<Player>>(self =>
+            // find this.CanUnDuck check
+            cursor.GotoNext(instr => instr.MatchLdarg(0),
+                instr => instr.MatchCallvirt<Player>("get_CanUnDuck"));
+
+            // mark it
+            var target = cursor.Next;
+
+            // jump back to before foreach
+            cursor.GotoPrev(instr => instr.MatchLdarg(0),
+                instr => instr.MatchCall<Entity>("get_Scene"),
+                instr => instr.MatchCallvirt<Scene>("get_Tracker"));
+
+            // emit a delegate to check UDJT
+            cursor.Emit(OpCodes.Ldarg_0); // this
+            cursor.EmitDelegate<Func<Player, bool>>(self =>
             {
                 if (!GravityHelperModule.ShouldInvert)
-                    return;
+                    return false;
 
                 var entities = self.Scene.Tracker.GetEntitiesOrEmpty<UpsideDownJumpThru>();
                 foreach (var entity in entities)
@@ -964,7 +977,12 @@ namespace Celeste.Mod.GravityHelper
                         self.MoveVExact((int)(self.Top - entity.Bottom));
                     }
                 }
+
+                return true;
             });
+
+            // if gravity is inverted we should skip regular jumpthrus
+            cursor.Emit(OpCodes.Brtrue_S, target);
         }
 
         private static void replaceGetLiftBoost(this ILCursor cursor, int count = 1) =>
