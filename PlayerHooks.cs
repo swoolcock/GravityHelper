@@ -935,7 +935,7 @@ namespace Celeste.Mod.GravityHelper
             orig(self);
 
             Input.MoveY.Value = moveY;
-            Input.Feather.SetValue(new Vector2(Input.Feather.Value.X, -featherY));
+            Input.Feather.SetValue(new Vector2(Input.Feather.Value.X, featherY));
             Input.Aim.SetValue(new Vector2(Input.Aim.Value.X, aimY));
         }
 
