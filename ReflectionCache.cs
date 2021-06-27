@@ -61,14 +61,6 @@ namespace Celeste.Mod.GravityHelper
 
         #region Optional Dependencies
 
-        private static Type upsideDownJumpThruType;
-        public static Type UpsideDownJumpThruType => upsideDownJumpThruType ??=
-            GetModdedTypeByName("MaxHelpingHand", "Celeste.Mod.MaxHelpingHand.Entities.UpsideDownJumpThru");
-
-        private static FieldInfo upsideDownJumpThru_overrideTexture;
-        public static FieldInfo UpsideDownJumpThru_OverrideTexture => upsideDownJumpThru_overrideTexture ??=
-            UpsideDownJumpThruType?.GetField("overrideTexture", BindingFlags.Instance | BindingFlags.NonPublic);
-
         private static Type fancyFallingBlockType;
 
         public static Type FancyFallingBlockType => fancyFallingBlockType ??=
@@ -85,6 +77,7 @@ namespace Celeste.Mod.GravityHelper
 
         public static bool GetOnGround(this Player player) => (bool)Player_OnGround.GetValue(player);
         public static int GetLastClimbMove(this Player player) => (int)Player_LastClimbMove.GetValue(player);
+        public static void SetLastClimbMove(this Player player, int value) => Player_LastClimbMove.SetValue(player, value);
         public static Hitbox GetNormalHitbox(this Player player) => (Hitbox) Player_NormalHitbox.GetValue(player);
         public static Hitbox GetNormalHurtbox(this Player player) => (Hitbox) Player_NormalHurtbox.GetValue(player);
         public static Hitbox GetDuckHitbox(this Player player) => (Hitbox) Player_DuckHitbox.GetValue(player);
@@ -102,7 +95,8 @@ namespace Celeste.Mod.GravityHelper
         public static int CallSurfaceSoundIndexAt(this SolidTiles solidTiles, Vector2 readPosition) => (int) SolidTiles_SurfaceSoundIndexAt.Invoke(solidTiles, new object[] {readPosition});
         public static bool CallDashCorrectCheck(this Player player, Vector2 add) => (bool)Player_DashCorrectCheck.Invoke(player, new object[] {add});
         public static bool CallJumpThruBoostBlockedCheck(this Player player) => (bool)Player_JumpThruBoostBlockedCheck.Invoke(player, new object[0]);
-        public static bool IsUpsideDownJumpThru(this JumpThru jumpThru) => jumpThru.GetType() == UpsideDownJumpThruType;
+        public static void SetMovementCounter(this Actor actor, Vector2 value) => Actor_MovementCounter.SetValue(actor, value);
+        public static Vector2 GetMovementCounter(this Actor actor) => (Vector2) Actor_MovementCounter.GetValue(actor);
 
         public static int CallFancyFallingBlockSurfaceSoundIndexAt(this FallingBlock fallingBlock, Vector2 readPosition)
         {

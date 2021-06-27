@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.CompilerServices;
+using Celeste.Mod.GravityHelper.Entities;
 using Microsoft.Xna.Framework;
 using Mono.Cecil.Cil;
 using Monocle;
@@ -20,8 +21,9 @@ namespace Celeste.Mod.GravityHelper
         {
             Logger.Log(nameof(GravityHelperModule), $"Loading miscellaneous hooks...");
 
-            IL.Celeste.Actor.IsRiding_JumpThru += Actor_IsRiding;
-            IL.Celeste.Actor.IsRiding_Solid += Actor_IsRiding;
+            IL.Celeste.Actor.IsRiding_JumpThru += Actor_IsRiding_JumpThru;
+            IL.Celeste.Actor.IsRiding_Solid += Actor_IsRiding_Solid;
+            IL.Celeste.Actor.MoveVExact += Actor_MoveVExact;
             IL.Celeste.Bumper.OnPlayer += Bumper_OnPlayer;
             IL.Celeste.PlayerDeadBody.Render += PlayerDeadBody_Render;
             IL.Celeste.PlayerHair.AfterUpdate += PlayerHair_AfterUpdate;
@@ -33,6 +35,7 @@ namespace Celeste.Mod.GravityHelper
             On.Celeste.Actor.OnGround_int += Actor_OnGround_int;
             On.Celeste.Level.EnforceBounds += Level_EnforceBounds;
             On.Celeste.Level.Update += Level_Update;
+            On.Celeste.JumpThru.HasPlayerRider += JumpThru_HasPlayerRider;
             On.Celeste.Solid.MoveVExact += Solid_MoveVExact;
             On.Celeste.SolidTiles.GetLandSoundIndex += SolidTiles_GetLandSoundIndex;
             On.Celeste.SolidTiles.GetStepSoundIndex += SolidTiles_GetStepSoundIndex;
@@ -49,8 +52,9 @@ namespace Celeste.Mod.GravityHelper
         {
             Logger.Log(nameof(GravityHelperModule), $"Unloading miscellaneous hooks...");
 
-            IL.Celeste.Actor.IsRiding_JumpThru -= Actor_IsRiding;
-            IL.Celeste.Actor.IsRiding_Solid -= Actor_IsRiding;
+            IL.Celeste.Actor.IsRiding_JumpThru -= Actor_IsRiding_JumpThru;
+            IL.Celeste.Actor.IsRiding_Solid -= Actor_IsRiding_Solid;
+            IL.Celeste.Actor.MoveVExact -= Actor_MoveVExact;
             IL.Celeste.Bumper.OnPlayer -= Bumper_OnPlayer;
             IL.Celeste.PlayerDeadBody.Render -= PlayerDeadBody_Render;
             IL.Celeste.PlayerHair.AfterUpdate -= PlayerHair_AfterUpdate;
@@ -62,6 +66,7 @@ namespace Celeste.Mod.GravityHelper
             On.Celeste.Actor.OnGround_int -= Actor_OnGround_int;
             On.Celeste.Level.EnforceBounds -= Level_EnforceBounds;
             On.Celeste.Level.Update -= Level_Update;
+            On.Celeste.JumpThru.HasPlayerRider -= JumpThru_HasPlayerRider;
             On.Celeste.Solid.MoveVExact -= Solid_MoveVExact;
             On.Celeste.SolidTiles.GetLandSoundIndex -= SolidTiles_GetLandSoundIndex;
             On.Celeste.SolidTiles.GetStepSoundIndex -= SolidTiles_GetStepSoundIndex;
@@ -79,15 +84,75 @@ namespace Celeste.Mod.GravityHelper
 
         #region IL Hooks
 
-        private static void Actor_IsRiding(ILContext il)
+        private static void Actor_IsRiding_JumpThru(ILContext il)
         {
             logCurrentMethod();
 
             var cursor = new ILCursor(il);
-            cursor.GotoNextAddition();
-            cursor.Emit(OpCodes.Ldarg_0);
-            cursor.EmitDelegate<Func<Vector2, Actor, Vector2>>((v, a) =>
-                GravityHelperModule.ShouldInvert && a is Player ? new Vector2(v.X, -v.Y) : v);
+
+            if (cursor.TryGotoNext(instr => instr.MatchLdarg(0),
+                instr => instr.MatchLdarg(1),
+                instr => instr.MatchLdarg(0)))
+            {
+                cursor.Emit(OpCodes.Ldarg_0);
+                cursor.Emit(OpCodes.Ldarg_1);
+                cursor.EmitDelegate<Func<Actor, JumpThru, bool>>((self, jumpThru) =>
+                    GravityHelperModule.ShouldInvert && jumpThru is UpsideDownJumpThru && self is Player &&
+                    self.CollideCheckOutside(jumpThru, self.Position - Vector2.UnitY) ||
+                    !GravityHelperModule.ShouldInvert && jumpThru is not UpsideDownJumpThru &&
+                    self.CollideCheckOutside(jumpThru, self.Position + Vector2.UnitY));
+                cursor.Emit(OpCodes.Ret);
+            }
+            else
+            {
+                throw new Exception("Couldn't patch Actor.IsRiding for jumpthrus");
+            }
+        }
+
+        private static void Actor_IsRiding_Solid(ILContext il)
+        {
+            logCurrentMethod();
+
+            var cursor = new ILCursor(il);
+
+            if (cursor.TryGotoNext(MoveType.After, instr => instr.MatchCall<Vector2>("get_UnitY")))
+                cursor.EmitInvertVectorDelegate();
+            else
+                throw new Exception("Couldn't patch Actor.IsRiding for solids");
+        }
+
+        private static void Actor_MoveVExact(ILContext il)
+        {
+            logCurrentMethod();
+
+            var cursor = new ILCursor(il);
+
+            if (cursor.TryGotoNext(MoveType.After, instr => instr.MatchLdarg(1),
+                instr => instr.MatchLdcI4(0) && instr.Next.MatchBle(out _)))
+            {
+                cursor.Next.MatchBle(out var label);
+                cursor.Remove();
+                cursor.Emit(OpCodes.Beq_S, label);
+            }
+            else
+            {
+                throw new Exception("Couldn't patch ble to beq.");
+            }
+
+            if (cursor.TryGotoNext(instr => instr.MatchCallGeneric<Entity>(nameof(Entity.CollideFirstOutside), out _)))
+            {
+                cursor.Remove();
+                cursor.Emit(OpCodes.Ldloc_1); // num1
+                cursor.Emit(OpCodes.Ldarg_1); // moveV
+                cursor.EmitDelegate<Func<Actor, Vector2, int, int, JumpThru>>((self, at, num1, moveV) =>
+                    moveV > 0
+                        ? self.CollideFirstOutside<JumpThru>(at)
+                        : self.CollideFirstOutside<UpsideDownJumpThru>(self.Position + Vector2.UnitY * num1));
+            }
+            else
+            {
+                throw new Exception("Couldn't replace CollideFirstOutside<JumpThru>.");
+            }
         }
 
         private static void Bumper_OnPlayer(ILContext il)
@@ -241,15 +306,14 @@ namespace Celeste.Mod.GravityHelper
 
         private static bool Actor_OnGround_int(On.Celeste.Actor.orig_OnGround_int orig, Actor self, int downCheck)
         {
-            if (!GravityHelperModule.ShouldInvert || !(self is Player))
+            if (!GravityHelperModule.ShouldInvert || self is not Player)
                 return orig(self, downCheck);
 
             if (self.CollideCheck<Solid>(self.Position - Vector2.UnitY * downCheck))
                 return true;
 
-            var udjtType = ReflectionCache.UpsideDownJumpThruType;
-            if (!self.IgnoreJumpThrus && udjtType != null)
-                return self.CollideCheckOutside(udjtType, self.Position - Vector2.UnitY * downCheck, true);
+            if (!self.IgnoreJumpThrus)
+                return self.CollideCheckOutside<UpsideDownJumpThru>(self.Position - Vector2.UnitY * downCheck);
 
             return false;
         }
@@ -367,6 +431,9 @@ namespace Celeste.Mod.GravityHelper
 
             orig(self);
         }
+
+        private static bool JumpThru_HasPlayerRider(On.Celeste.JumpThru.orig_HasPlayerRider orig, JumpThru self) =>
+            GravityHelperModule.ShouldInvert == self is UpsideDownJumpThru && orig(self);
 
         private static void Solid_MoveVExact(On.Celeste.Solid.orig_MoveVExact orig, Solid self, int move)
         {
