@@ -150,9 +150,6 @@ namespace Celeste.Mod.GravityHelper
 
         #endregion
 
-        private static void logCurrentMethod([CallerMemberName] string caller = null) =>
-            Logger.Log(nameof(GravityHelperModule), $"Hooking IL {caller}");
-
         private static void executeIfAvailable(string name, bool loading, Action loader)
         {
             if (!Everest.Modules.Any(m => m.Metadata.Name == name))

@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using Celeste.Mod.GravityHelper.Entities;
 using Celeste.Mod.GravityHelper.Triggers;
 using Microsoft.Xna.Framework;
@@ -153,10 +152,8 @@ namespace Celeste.Mod.GravityHelper
 
         #region IL Hooks
 
-        private static void Player_BeforeDownTransition(ILContext il)
+        private static void Player_BeforeDownTransition(ILContext il) => HookUtils.SafeHook(() =>
         {
-            logCurrentMethod();
-
             var cursor = new ILCursor(il);
             var target = cursor.Next;
             cursor.Emit(OpCodes.Ldarg_0);
@@ -167,26 +164,28 @@ namespace Celeste.Mod.GravityHelper
 
                 // copied from Player.BeforeUpTransition
                 self.Speed.X = 0.0f;
-                if (self.StateMachine.State != Player.StRedDash && self.StateMachine.State != Player.StReflectionFall && self.StateMachine.State != Player.StStarFly)
+                if (self.StateMachine.State != Player.StRedDash && self.StateMachine.State != Player.StReflectionFall &&
+                    self.StateMachine.State != Player.StStarFly)
                 {
                     self.SetVarJumpSpeed(self.Speed.Y = -105f);
-                    self.StateMachine.State = self.StateMachine.State != Player.StSummitLaunch ? Player.StNormal : Player.StIntroJump;
+                    self.StateMachine.State = self.StateMachine.State != Player.StSummitLaunch
+                        ? Player.StNormal
+                        : Player.StIntroJump;
                     self.AutoJump = true;
                     self.AutoJumpTimer = 0.0f;
                     self.SetVarJumpTimer(0.2f);
                 }
+
                 self.SetDashCooldownTimer(0.2f);
 
                 return true;
             });
             cursor.Emit(OpCodes.Brfalse_S, target);
             cursor.Emit(OpCodes.Ret);
-        }
+        });
 
-        private static void Player_BeforeUpTransition(ILContext il)
+        private static void Player_BeforeUpTransition(ILContext il) => HookUtils.SafeHook(() =>
         {
-            logCurrentMethod();
-
             var cursor = new ILCursor(il);
             var target = cursor.Next;
             cursor.Emit(OpCodes.Ldarg_0);
@@ -196,16 +195,19 @@ namespace Celeste.Mod.GravityHelper
                     return false;
 
                 // copied from Player.BeforeDownTransition
-                if (self.StateMachine.State != Player.StRedDash && self.StateMachine.State != Player.StReflectionFall && self.StateMachine.State != Player.StStarFly)
+                if (self.StateMachine.State != Player.StRedDash && self.StateMachine.State != Player.StReflectionFall &&
+                    self.StateMachine.State != Player.StStarFly)
                 {
                     self.StateMachine.State = Player.StNormal;
                     self.Speed.Y = Math.Max(0.0f, self.Speed.Y);
                     self.AutoJump = false;
                     self.SetVarJumpTimer(0.0f);
                 }
+
                 foreach (Entity entity in self.Scene.Tracker.GetEntities<Platform>())
                 {
-                    if (!(entity is SolidTiles) && self.CollideCheckOutside(entity, self.Position - Vector2.UnitY * self.Height))
+                    if (!(entity is SolidTiles) &&
+                        self.CollideCheckOutside(entity, self.Position - Vector2.UnitY * self.Height))
                         entity.Collidable = false;
                 }
 
@@ -213,32 +215,26 @@ namespace Celeste.Mod.GravityHelper
             });
             cursor.Emit(OpCodes.Brfalse_S, target);
             cursor.Emit(OpCodes.Ret);
-        }
+        });
 
-        private static void Player_Bounce(ILContext il)
+        private static void Player_Bounce(ILContext il) => HookUtils.SafeHook(() =>
         {
-            logCurrentMethod();
-
             var cursor = new ILCursor(il);
 
             cursor.ReplaceBottomWithDelegate();
             cursor.GotoNext(instr => instr.MatchLdnull() && instr.Next.MatchLdnull());
             cursor.EmitInvertIntDelegate();
-        }
+        });
 
-        private static void Player_ClimbHopBlockedCheck(ILContext il)
+        private static void Player_ClimbHopBlockedCheck(ILContext il) => HookUtils.SafeHook(() =>
         {
-            logCurrentMethod();
-
             var cursor = new ILCursor(il);
             cursor.GotoNext(MoveType.After, instr => instr.MatchLdcR4(6));
             cursor.EmitInvertFloatDelegate();
-        }
+        });
 
-        private static void Player_ClimbJump(ILContext il)
+        private static void Player_ClimbJump(ILContext il) => HookUtils.SafeHook(() =>
         {
-            logCurrentMethod();
-
             var cursor = new ILCursor(il);
 
             // Dust.Burst(this.Center + Vector2.UnitX * 2f, -2.3561945f, 4, this.DustParticleFromSurfaceIndex(index));
@@ -250,12 +246,10 @@ namespace Celeste.Mod.GravityHelper
             cursor.GotoNext(instr => instr.MatchLdstr("event:/char/madeline/jump_climb_left"));
             cursor.GotoNext(instr => instr.MatchLdcI4(4));
             cursor.EmitInvertFloatDelegate();
-        }
+        });
 
-        private static void Player_ClimbUpdate(ILContext il)
+        private static void Player_ClimbUpdate(ILContext il) => HookUtils.SafeHook(() =>
         {
-            logCurrentMethod();
-
             var cursor = new ILCursor(il);
 
             // replace all calls to LiftBoost (should be 4)
@@ -263,30 +257,27 @@ namespace Celeste.Mod.GravityHelper
             cursor.Goto(0);
 
             // if (this.CollideCheck<Solid>(this.Position - Vector2.UnitY) || this.ClimbHopBlockedCheck() && this.SlipCheck(-1f))
-            cursor.GotoNext(MoveType.After, instr => Extensions.UnitYPredicate(instr) && Extensions.SubtractionPredicate(instr.Next));
+            cursor.GotoNext(MoveType.After,
+                instr => Extensions.UnitYPredicate(instr) && Extensions.SubtractionPredicate(instr.Next));
             cursor.EmitInvertVectorDelegate();
 
             // if (Input.MoveY.Value != 1 && (double) this.Speed.Y > 0.0 && !this.CollideCheck<Solid>(this.Position + new Vector2((float) this.Facing, 1f)))
             cursor.GotoNextAddition();
             cursor.EmitInvertVectorDelegate();
-        }
+        });
 
-        private static void Player_CreateWallSlideParticles(ILContext il)
+        private static void Player_CreateWallSlideParticles(ILContext il) => HookUtils.SafeHook(() =>
         {
-            logCurrentMethod();
-
             var cursor = new ILCursor(il);
 
             // Dust.Burst(dir != 1 ? center + new Vector2(-x, 4f) : center + new Vector2(x, 4f), -1.5707964f, particleType: particleType);
             cursor.GotoNext(instr => instr.MatchCall(typeof(Dust), nameof(Dust.Burst)));
             cursor.GotoPrev(instr => instr.MatchLdcI4(1));
             cursor.EmitInvertFloatDelegate();
-        }
+        });
 
-        private static void Player_ctor_OnFrameChange(ILContext il)
+        private static void Player_ctor_OnFrameChange(ILContext il) => HookUtils.SafeHook(() =>
         {
-            logCurrentMethod();
-
             var cursor = new ILCursor(il);
 
             // Platform platformByPriority = SurfaceIndex.GetPlatformByPriority(this.CollideAll<Platform>(this.Position + Vector2.UnitY, this.temp));
@@ -299,12 +290,10 @@ namespace Celeste.Mod.GravityHelper
             cursor.EmitInvertFloatDelegate();
             cursor.GotoNext(MoveType.After, instr => instr.MatchLdcR4(-0.5f));
             cursor.EmitInvertFloatDelegate();
-        }
+        });
 
-        private static void Player_DashCoroutine(ILContext il)
+        private static void Player_DashCoroutine(ILContext il) => HookUtils.SafeHook(() =>
         {
-            logCurrentMethod();
-
             var cursor = new ILCursor(il);
 
             /*
@@ -321,37 +310,28 @@ namespace Celeste.Mod.GravityHelper
             cursor.GotoNext(instr => instr.MatchCall<SlashFx>(nameof(SlashFx.Burst)));
             cursor.Index--;
             cursor.EmitInvertVectorDelegate();
-        }
+        });
 
-        private static void Player_DashUpdate(ILContext il)
+        private static void Player_DashUpdate(ILContext il) => HookUtils.SafeHook(() =>
         {
-            logCurrentMethod();
             emitDashUpdateFixes(il);
-        }
+        });
 
-        private static void Player_get_CanUnDuck(ILContext il)
+        private static void Player_get_CanUnDuck(ILContext il) => HookUtils.SafeHook(() =>
         {
-            logCurrentMethod();
-
             var cursor = new ILCursor(il);
-            if (cursor.TryGotoNext(instr => instr.MatchCallGeneric<Entity>(nameof(Entity.CollideCheck), out _)))
-            {
-                cursor.Remove();
-                cursor.EmitDelegate<Func<Player, bool>>(self =>
-                    self.CollideCheck<Solid>() ||
-                    !GravityHelperModule.ShouldInvert && self.CollideCheck<UpsideDownJumpThru>() ||
-                    GravityHelperModule.ShouldInvert && self.CollideCheck<JumpThru>());
-            }
-            else
-            {
-                throw exceptionFromCurrentMethod("Couldn't hook jumpthru checks in Player.CanUnDuck");
-            }
-        }
+            if (!cursor.TryGotoNext(instr => instr.MatchCallGeneric<Entity>(nameof(Entity.CollideCheck), out _)))
+                throw new HookException("Couldn't hook jumpthru checks in Player.CanUnDuck");
 
-        private static void Player_IsOverWater(ILContext il)
+            cursor.Remove();
+            cursor.EmitDelegate<Func<Player, bool>>(self =>
+                self.CollideCheck<Solid>() ||
+                !GravityHelperModule.ShouldInvert && self.CollideCheck<UpsideDownJumpThru>() ||
+                GravityHelperModule.ShouldInvert && self.CollideCheck<JumpThru>());
+        });
+
+        private static void Player_IsOverWater(ILContext il) => HookUtils.SafeHook(() =>
         {
-            logCurrentMethod();
-
             var cursor = new ILCursor(il);
             cursor.GotoNext(MoveType.After, instr => instr.MatchLdloc(0));
             cursor.EmitDelegate<Func<Rectangle, Rectangle>>(r =>
@@ -359,12 +339,10 @@ namespace Celeste.Mod.GravityHelper
                 if (GravityHelperModule.ShouldInvert) r.Y -= 2;
                 return r;
             });
-        }
+        });
 
-        private static void Player_Jump(ILContext il)
+        private static void Player_Jump(ILContext il) => HookUtils.SafeHook(() =>
         {
-            logCurrentMethod();
-
             var cursor = new ILCursor(il);
 
             // this.Speed += this.LiftBoost;
@@ -378,21 +356,17 @@ namespace Celeste.Mod.GravityHelper
             cursor.ReplaceBottomCenterWithDelegate();
             cursor.GotoNext(instr => instr.MatchLdcI4(4));
             cursor.EmitInvertFloatDelegate();
-        }
+        });
 
-        private static void Player_LaunchedBoostCheck(ILContext il)
+        private static void Player_LaunchedBoostCheck(ILContext il) => HookUtils.SafeHook(() =>
         {
-            logCurrentMethod();
-
             var cursor = new ILCursor(il);
             // this.Speed += this.LiftBoost;
             cursor.replaceGetLiftBoost();
-        }
+        });
 
-        private static void Player_NormalUpdate(ILContext il)
+        private static void Player_NormalUpdate(ILContext il) => HookUtils.SafeHook(() =>
         {
-            logCurrentMethod();
-
             var cursor = new ILCursor(il);
 
             cursor.replaceGetLiftBoost(3);
@@ -405,12 +379,10 @@ namespace Celeste.Mod.GravityHelper
             // if ((water = this.CollideFirst<Water>(this.Position + Vector2.UnitY * 2f)) != null)
             cursor.GotoNextUnitY(MoveType.After);
             cursor.EmitInvertVectorDelegate();
-        }
+        });
 
-        private static void Player_OnCollideH(ILContext il)
+        private static void Player_OnCollideH(ILContext il) => HookUtils.SafeHook(() =>
         {
-            logCurrentMethod();
-
             var cursor = new ILCursor(il);
 
             // (SKIP) if (this.onGround && this.DuckFreeAt(this.Position + Vector2.UnitX * (float) Math.Sign(this.Speed.X)))
@@ -423,12 +395,10 @@ namespace Celeste.Mod.GravityHelper
             // Vector2 at = this.Position + add;
             cursor.GotoPrev(Extensions.AdditionPredicate);
             cursor.EmitInvertVectorDelegate();
-        }
+        });
 
-        private static void Player_OnCollideV(ILContext il)
+        private static void Player_OnCollideV(ILContext il) => HookUtils.SafeHook(() =>
         {
-            logCurrentMethod();
-
             var cursor = new ILCursor(il);
 
             // if (this.DashAttacking && (double) data.Direction.Y == (double) Math.Sign(this.DashDir.Y))
@@ -458,12 +428,10 @@ namespace Celeste.Mod.GravityHelper
                 cursor.EmitInvertVectorDelegate();
                 cursor.Index += 2;
             }
-        }
+        });
 
-        private static void Player_orig_Update(ILContext il)
+        private static void Player_orig_Update(ILContext il) => HookUtils.SafeHook(() =>
         {
-            logCurrentMethod();
-
             var cursor = new ILCursor(il);
 
             /*
@@ -475,7 +443,7 @@ namespace Celeste.Mod.GravityHelper
 
             // ensure we check ground collisions the right direction
             if (!cursor.TryGotoNext(MoveType.After, instr => instr.MatchCall<Vector2>("get_UnitY")))
-                throw exceptionFromCurrentMethod("Couldn't apply patch to check ground collisions.");
+                throw new HookException("Couldn't apply patch to check ground collisions.");
 
             cursor.EmitInvertVectorDelegate();
 
@@ -483,11 +451,11 @@ namespace Celeste.Mod.GravityHelper
             // or the topside of upside down jumpthrus
             if (!cursor.TryGotoNext(Extensions.AdditionPredicate) ||
                 !cursor.TryGotoNext(instr => instr.MatchLdloc(1) && instr.Next.MatchBrfalse(out _)))
-                throw exceptionFromCurrentMethod("Couldn't find platform != null check.");
+                throw new HookException("Couldn't find platform != null check.");
 
             var platformNotEqualNull = cursor.Next;
             if (!cursor.TryGotoPrev(instr => instr.MatchLdarg(0) && instr.Next.MatchLdarg(0)))
-                throw exceptionFromCurrentMethod("Couldn't apply patch for jumpthrus.");
+                throw new HookException("Couldn't apply patch for jumpthrus.");
 
             cursor.Emit(OpCodes.Ldarg_0); // this
             cursor.EmitDelegate<Func<Player, Platform>>(self =>
@@ -504,25 +472,25 @@ namespace Celeste.Mod.GravityHelper
 
             // ensure we check ground collisions the right direction for refilling dash on solid ground
             if (!cursor.TryGotoNext(Extensions.AdditionPredicate))
-                throw exceptionFromCurrentMethod("Couldn't apply patch for dash refill.");
+                throw new HookException("Couldn't apply patch for dash refill.");
 
             cursor.EmitInvertVectorDelegate();
 
             // find some instructions
             if (!cursor.TryGotoNext(instr => instr.Match(OpCodes.Ldarg_0) && instr.Next.Match(OpCodes.Ldarg_0)))
-                throw exceptionFromCurrentMethod("Couldn't find jumpthru check.");
+                throw new HookException("Couldn't find jumpthru check.");
 
             var jumpThruCheck = cursor.Next;
 
             if (!cursor.TryGotoNext(MoveType.After, Extensions.AdditionPredicate) ||
                 !cursor.TryGotoNext(instr => instr.MatchLdarg(0)))
-                throw exceptionFromCurrentMethod("Couldn't find spikes check.");
+                throw new HookException("Couldn't find spikes check.");
 
             var spikesCheck = cursor.Next;
 
             if (!cursor.TryGotoNext(instr =>
                 instr.Match(OpCodes.Ldarg_0) && instr.Next.MatchLdfld<Player>("varJumpTimer")))
-                throw exceptionFromCurrentMethod("Couldn't find varJumpTimer check");
+                throw new HookException("Couldn't find varJumpTimer check");
 
             var varJumpTimerCheck = cursor.Next;
 
@@ -547,7 +515,7 @@ namespace Celeste.Mod.GravityHelper
              */
             // ensure we correctly hop on the underside of moving blocks (kevins, etc.)
             if (!cursor.TryGotoNext(MoveType.After, instr => instr.MatchLdfld<Vector2>(nameof(Vector2.Y))))
-                throw exceptionFromCurrentMethod("Couldn't apply moving block check.");
+                throw new HookException("Couldn't apply moving block check.");
 
             cursor.EmitInvertFloatDelegate();
 
@@ -555,13 +523,13 @@ namespace Celeste.Mod.GravityHelper
             // (SKIP) else if (!this.CollideCheck<Solid>(this.Position + Vector2.UnitX * (float) this.hopWaitX))
             if (!cursor.TryGotoNext(MoveType.After, Extensions.AdditionPredicate) ||
                 !cursor.TryGotoNext(MoveType.After, Extensions.AdditionPredicate))
-                throw exceptionFromCurrentMethod("Couldn't skip two additions.");
+                throw new HookException("Couldn't skip two additions.");
 
             // apply upside-down jumpthru correction
             if (!cursor.TryGotoNext(instr => instr.MatchLdarg(0), instr => instr.MatchLdfld<Player>("onGround")) ||
                 !cursor.TryGotoNext(instr => instr.MatchCallGeneric<Entity>(nameof(Entity.CollideCheck), out _),
                     instr => instr.MatchBrfalse(out _)))
-                throw exceptionFromCurrentMethod("Couldn't apply UpsideDownJumpThru dash correction.");
+                throw new HookException("Couldn't apply UpsideDownJumpThru dash correction.");
 
             cursor.Remove();
             cursor.EmitDelegate<Func<Player, bool>>(self => GravityHelperModule.ShouldInvert
@@ -575,15 +543,15 @@ namespace Celeste.Mod.GravityHelper
 
             // fix inverted ground correction for dashing
             if (!cursor.TryGotoNext(instr => instr.MatchCallvirt<Player>("get_DashAttacking")))
-                throw exceptionFromCurrentMethod("Couldn't find get_DashAttacking");
+                throw new HookException("Couldn't find get_DashAttacking");
 
             if (!cursor.TryGotoNext(Extensions.AdditionPredicate))
-                throw exceptionFromCurrentMethod("Couldn't find addition.");
+                throw new HookException("Couldn't find addition.");
 
             cursor.EmitInvertVectorDelegate();
 
             if (!cursor.TryGotoNext(instr => instr.MatchCallGeneric<Entity>(nameof(Entity.CollideCheckOutside), out _)))
-                throw exceptionFromCurrentMethod("Couldn't find generic CollideCheckOutside.");
+                throw new HookException("Couldn't find generic CollideCheckOutside.");
 
             cursor.Remove();
             cursor.EmitDelegate<Func<Entity, Vector2, bool>>((self, at) =>
@@ -599,23 +567,21 @@ namespace Celeste.Mod.GravityHelper
             if (!cursor.TryGotoNext(MoveType.After, instr => instr.MatchCallvirt<Player>("SwimCheck")) ||
                 !cursor.TryGotoNext(MoveType.After, instr => instr.MatchCallvirt<Player>("SwimCheck")) ||
                 !cursor.TryGotoNext(MoveType.After, instr => instr.MatchCallvirt<Player>("SwimCheck")))
-                throw exceptionFromCurrentMethod("Couldn't skip three SwimChecks.");
+                throw new HookException("Couldn't skip three SwimChecks.");
 
             if (!cursor.TryGotoNext(MoveType.After, instr => instr.MatchLdfld<Vector2>(nameof(Vector2.Y))))
-                throw exceptionFromCurrentMethod("Couldn't find first Vector2.Y");
+                throw new HookException("Couldn't find first Vector2.Y");
 
             cursor.EmitInvertFloatDelegate();
 
             if (!cursor.TryGotoNext(MoveType.After, instr => instr.MatchLdfld<Vector2>(nameof(Vector2.Y))))
-                throw exceptionFromCurrentMethod("Couldn't find second Vector2.Y");
+                throw new HookException("Couldn't find second Vector2.Y");
 
             cursor.EmitInvertFloatDelegate();
-        }
+        });
 
-        private static void Player_orig_UpdateSprite(ILContext il)
+        private static void Player_orig_UpdateSprite(ILContext il) => HookUtils.SafeHook(() =>
         {
-            logCurrentMethod();
-
             var cursor = new ILCursor(il);
 
             // fix dangling animation
@@ -638,65 +604,55 @@ namespace Celeste.Mod.GravityHelper
                 cursor.EmitDelegate<Func<Player, Vector2, bool>>((self, at) =>
                     !GravityHelperModule.ShouldInvert
                         ? self.CollideCheck<JumpThru>(at)
-                        : self.CollideCheck<UpsideDownJumpThru>(self.Position + new Vector2((int) self.Facing * 4, -2f)));
+                        : self.CollideCheck<UpsideDownJumpThru>(self.Position +
+                                                                new Vector2((int)self.Facing * 4, -2f)));
             }
-        }
+        });
 
-        private static void Player_orig_WallJump(ILContext il)
+        private static void Player_orig_WallJump(ILContext il) => HookUtils.SafeHook(() =>
         {
-            logCurrentMethod();
-
             var cursor = new ILCursor(il);
             // this.Speed += this.LiftBoost;
             cursor.replaceGetLiftBoost();
-        }
+        });
 
-        private static void Player_RedDashUpdate(ILContext il)
+        private static void Player_RedDashUpdate(ILContext il) => HookUtils.SafeHook(() =>
         {
-            logCurrentMethod();
             emitDashUpdateFixes(il);
-        }
+        });
 
-        private static void Player_SideBounce(ILContext il)
+        private static void Player_SideBounce(ILContext il) => HookUtils.SafeHook(() =>
         {
-            logCurrentMethod();
-
             var cursor = new ILCursor(il);
 
             // this.MoveV(Calc.Clamp(fromY - this.Bottom, -4f, 4f));
             cursor.ReplaceBottomWithDelegate();
             cursor.GotoNext(instr => instr.MatchLdnull() && instr.Next.MatchLdnull());
             cursor.EmitInvertFloatDelegate();
-        }
+        });
 
-        private static void Player_StarFlyUpdate(ILContext il)
+        private static void Player_StarFlyUpdate(ILContext il) => HookUtils.SafeHook(() =>
         {
-            logCurrentMethod();
-
             var cursor = new ILCursor(il);
 
             // this.level.Particles.Emit(FlyFeather.P_Flying, 1, this.Center, Vector2.One * 2f, (-this.Speed).Angle());
             cursor.GotoNext(instr => instr.MatchCallvirt<ParticleSystem>(nameof(ParticleSystem.Emit)));
             cursor.Index--;
             cursor.EmitInvertVectorDelegate();
-        }
+        });
 
-        private static void Player_SuperBounce(ILContext il)
+        private static void Player_SuperBounce(ILContext il) => HookUtils.SafeHook(() =>
         {
-            logCurrentMethod();
-
             var cursor = new ILCursor(il);
 
             // this.MoveV(fromY - this.Bottom);
             cursor.ReplaceBottomWithDelegate();
             cursor.GotoNext(instr => instr.MatchLdnull() && instr.Next.MatchLdnull());
             cursor.EmitInvertFloatDelegate();
-        }
+        });
 
-        private static void Player_SuperJump(ILContext il)
+        private static void Player_SuperJump(ILContext il) => HookUtils.SafeHook(() =>
         {
-            logCurrentMethod();
-
             var cursor = new ILCursor(il);
             // this.Speed += this.LiftBoost;
             cursor.replaceGetLiftBoost();
@@ -710,12 +666,10 @@ namespace Celeste.Mod.GravityHelper
             cursor.ReplaceBottomCenterWithDelegate();
             cursor.GotoNext(instr => instr.MatchLdcI4(4));
             cursor.EmitInvertFloatDelegate();
-        }
+        });
 
-        private static void Player_SuperWallJump(ILContext il)
+        private static void Player_SuperWallJump(ILContext il) => HookUtils.SafeHook(() =>
         {
-            logCurrentMethod();
-
             var cursor = new ILCursor(il);
             // this.Speed += this.LiftBoost;
             cursor.replaceGetLiftBoost();
@@ -729,43 +683,35 @@ namespace Celeste.Mod.GravityHelper
             cursor.GotoNext(instr => instr.MatchLdcR4(-2));
             cursor.GotoNext(instr => instr.MatchLdcI4(4));
             cursor.EmitInvertFloatDelegate();
-        }
+        });
 
-        private static void Player_SwimCheck(ILContext il)
+        private static void Player_SwimCheck(ILContext il) => HookUtils.SafeHook(() =>
         {
-            logCurrentMethod();
-
             var cursor = new ILCursor(il);
             cursor.GotoNext(MoveType.After, instr => instr.MatchLdcR4(out _));
             cursor.EmitInvertFloatDelegate();
-        }
+        });
 
-        private static void Player_SwimJumpCheck(ILContext il)
+        private static void Player_SwimJumpCheck(ILContext il) => HookUtils.SafeHook(() =>
         {
-            logCurrentMethod();
-
             var cursor = new ILCursor(il);
             cursor.GotoNext(MoveType.After, instr => instr.MatchLdcR4(out _));
             cursor.EmitInvertFloatDelegate();
-        }
+        });
 
-        private static void Player_SwimRiseCheck(ILContext il)
+        private static void Player_SwimRiseCheck(ILContext il) => HookUtils.SafeHook(() =>
         {
-            logCurrentMethod();
-
             var cursor = new ILCursor(il);
             cursor.GotoNext(MoveType.After, instr => instr.MatchLdcR4(out _));
             cursor.EmitInvertFloatDelegate();
-        }
+        });
 
-        private static void Player_SwimUnderwaterCheck(ILContext il)
+        private static void Player_SwimUnderwaterCheck(ILContext il) => HookUtils.SafeHook(() =>
         {
-            logCurrentMethod();
-
             var cursor = new ILCursor(il);
             cursor.GotoNext(MoveType.After, instr => instr.MatchLdcR4(out _));
             cursor.EmitInvertFloatDelegate();
-        }
+        });
 
         #endregion
 
@@ -1038,11 +984,6 @@ namespace Celeste.Mod.GravityHelper
             Direction = -(float)Math.PI / 2f,
         });
 
-        private static void logCurrentMethod([CallerMemberName] string caller = null) =>
-            Logger.Log(nameof(GravityHelperModule), $"Hooking IL {caller}");
 
-        private static Exception exceptionFromCurrentMethod(string message, [CallerMemberName] string caller = null) =>
-            // ReSharper disable once ObjectCreationAsStatement
-            new Exception($"{caller}: {message}");
     }
 }

@@ -84,10 +84,8 @@ namespace Celeste.Mod.GravityHelper
 
         #region IL Hooks
 
-        private static void Actor_IsRiding_JumpThru(ILContext il)
+        private static void Actor_IsRiding_JumpThru(ILContext il) => HookUtils.SafeHook(() =>
         {
-            logCurrentMethod();
-
             var cursor = new ILCursor(il);
 
             if (cursor.TryGotoNext(instr => instr.MatchLdarg(0),
@@ -107,24 +105,20 @@ namespace Celeste.Mod.GravityHelper
             {
                 throw new Exception("Couldn't patch Actor.IsRiding for jumpthrus");
             }
-        }
+        });
 
-        private static void Actor_IsRiding_Solid(ILContext il)
+        private static void Actor_IsRiding_Solid(ILContext il) => HookUtils.SafeHook(() =>
         {
-            logCurrentMethod();
-
             var cursor = new ILCursor(il);
 
             if (cursor.TryGotoNext(MoveType.After, instr => instr.MatchCall<Vector2>("get_UnitY")))
                 cursor.EmitInvertVectorDelegate();
             else
                 throw new Exception("Couldn't patch Actor.IsRiding for solids");
-        }
+        });
 
-        private static void Actor_MoveVExact(ILContext il)
+        private static void Actor_MoveVExact(ILContext il) => HookUtils.SafeHook(() =>
         {
-            logCurrentMethod();
-
             var cursor = new ILCursor(il);
 
             if (cursor.TryGotoNext(MoveType.After, instr => instr.MatchLdarg(1),
@@ -153,12 +147,10 @@ namespace Celeste.Mod.GravityHelper
             {
                 throw new Exception("Couldn't replace CollideFirstOutside<JumpThru>.");
             }
-        }
+        });
 
-        private static void Bumper_OnPlayer(ILContext il)
+        private static void Bumper_OnPlayer(ILContext il) => HookUtils.SafeHook(() =>
         {
-            logCurrentMethod();
-
             var cursor = new ILCursor(il);
             cursor.GotoNext(instr => instr.MatchCallvirt<Player>(nameof(Player.ExplodeLaunch)));
             cursor.GotoPrev(MoveType.After, instr => instr.MatchLdfld<Entity>(nameof(Entity.Position)));
@@ -169,16 +161,15 @@ namespace Celeste.Mod.GravityHelper
                 if (!GravityHelperModule.ShouldInvert) return v;
                 return new Vector2(v.X, p.CenterY - (v.Y - p.CenterY));
             });
-        }
+        });
 
-        private static void Level_orig_TransitionRoutine(ILContext il)
+        private static void Level_orig_TransitionRoutine(ILContext il) => HookUtils.SafeHook(() =>
         {
-            logCurrentMethod();
-
             var cursor = new ILCursor(il);
 
             //// if (direction == Vector2.UnitY)
-            cursor.GotoNext(instr => instr.MatchCall<Vector2>("get_UnitY") && instr.Next.MatchCall<Vector2>("op_Equality"));
+            cursor.GotoNext(instr =>
+                instr.MatchCall<Vector2>("get_UnitY") && instr.Next.MatchCall<Vector2>("op_Equality"));
             cursor.EmitInvertVectorDelegate();
 
             //// --playerTo.Y;
@@ -196,12 +187,10 @@ namespace Celeste.Mod.GravityHelper
             cursor.Emit(OpCodes.Call, typeof(Rectangle).GetMethod("get_Top"));
             cursor.Emit(OpCodes.Neg);
             cursor.Emit(OpCodes.Br_S, cursor.Next.Next);
-        }
+        });
 
-        private static void PlayerDeadBody_DeathRoutine(ILContext il)
+        private static void PlayerDeadBody_DeathRoutine(ILContext il) => HookUtils.SafeHook(() =>
         {
-            logCurrentMethod();
-
             var cursor = new ILCursor(il);
 
             // playerDeadBody1.deathEffect = new DeathEffect(playerDeadBody1.initialHairColor, new Vector2?(playerDeadBody1.Center - playerDeadBody1.Position));
@@ -212,23 +201,19 @@ namespace Celeste.Mod.GravityHelper
             // playerDeadBody1.Position = playerDeadBody1.Position + Vector2.UnitY * -5f;
             cursor.GotoPrev(MoveType.After, instr => instr.MatchLdcR4(-5));
             cursor.EmitInvertFloatDelegate();
-        }
+        });
 
-        private static void PlayerDeadBody_Render(ILContext il)
+        private static void PlayerDeadBody_Render(ILContext il) => HookUtils.SafeHook(() =>
         {
-            logCurrentMethod();
-
             var cursor = new ILCursor(il);
 
             // this.sprite.Scale.Y = this.scale;
             cursor.GotoNext(instr => instr.MatchStfld<Vector2>(nameof(Vector2.Y)));
             cursor.EmitInvertFloatDelegate();
-        }
+        });
 
-        private static void PlayerHair_AfterUpdate(ILContext il)
+        private static void PlayerHair_AfterUpdate(ILContext il) => HookUtils.SafeHook(() =>
         {
-            logCurrentMethod();
-
             var cursor = new ILCursor(il);
 
             void invertAdditions()
@@ -250,12 +235,10 @@ namespace Celeste.Mod.GravityHelper
             // target = this.Nodes[index] + new Vector2((float) -(int) this.Facing * this.StepInFacingPerSegment, (float) Math.Sin((double) this.wave + (double) index * 0.800000011920929) * this.StepYSinePerSegment) + this.StepPerSegment;
             cursor.GotoNext(instr => instr.MatchLdfld<PlayerHair>(nameof(PlayerHair.StepYSinePerSegment)));
             invertAdditions();
-        }
+        });
 
-        private static void PlayerHair_Render(ILContext il)
+        private static void PlayerHair_Render(ILContext il) => HookUtils.SafeHook(() =>
         {
-            logCurrentMethod();
-
             var cursor = new ILCursor(il);
 
             // Vector2 hairScale = this.GetHairScale(index);
@@ -265,16 +248,14 @@ namespace Celeste.Mod.GravityHelper
             // this.GetHairTexture(index).Draw(this.Nodes[index], origin, this.GetHairColor(index), this.GetHairScale(index));
             cursor.GotoNext(MoveType.After, instr => instr.MatchCallvirt<PlayerHair>("GetHairScale"));
             cursor.EmitInvertVectorDelegate();
-        }
+        });
 
-        private static void Solid_GetPlayerOnTop(ILContext il)
+        private static void Solid_GetPlayerOnTop(ILContext il) => HookUtils.SafeHook(() =>
         {
-            logCurrentMethod();
-
             var cursor = new ILCursor(il);
             cursor.GotoNextSubtraction();
             cursor.EmitInvertVectorDelegate();
-        }
+        });
 
         #endregion
 
@@ -533,8 +514,5 @@ namespace Celeste.Mod.GravityHelper
         }
 
         #endregion
-
-        private static void logCurrentMethod([CallerMemberName] string caller = null) =>
-            Logger.Log(nameof(GravityHelperModule), $"Hooking IL {caller}");
     }
 }
