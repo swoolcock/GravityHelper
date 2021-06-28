@@ -22,7 +22,6 @@ namespace Celeste.Mod.GravityHelper
         private static IDetour hook_Player_orig_WallJump;
         private static IDetour hook_Player_ctor_OnFrameChange;
         private static IDetour hook_Player_get_CanUnDuck;
-        private delegate bool orig_get_CanUnDuck(Player self);
         // ReSharper restore InconsistentNaming
 
         public static void Load()
@@ -345,7 +344,7 @@ namespace Celeste.Mod.GravityHelper
             }
             else
             {
-                throw new Exception("Couldn't hook jumpthru checks in Player.CanUnDuck");
+                throw exceptionFromCurrentMethod("Couldn't hook jumpthru checks in Player.CanUnDuck");
             }
         }
 
@@ -475,16 +474,21 @@ namespace Celeste.Mod.GravityHelper
              */
 
             // ensure we check ground collisions the right direction
-            cursor.GotoNext(MoveType.After, instr => instr.MatchCall<Vector2>("get_UnitY"));
+            if (!cursor.TryGotoNext(MoveType.After, instr => instr.MatchCall<Vector2>("get_UnitY")))
+                throw exceptionFromCurrentMethod("Couldn't apply patch to check ground collisions.");
+
             cursor.EmitInvertVectorDelegate();
-            // cursor.ReplaceAdditionWithDelegate();
-            cursor.GotoNextAddition();
 
             // prevent Madeline from attempting to stand on the underside of regular jumpthrus
             // or the topside of upside down jumpthrus
-            cursor.GotoNext(instr => instr.MatchLdloc(1) && instr.Next.MatchBrfalse(out _));
+            if (!cursor.TryGotoNext(Extensions.AdditionPredicate) ||
+                !cursor.TryGotoNext(instr => instr.MatchLdloc(1) && instr.Next.MatchBrfalse(out _)))
+                throw exceptionFromCurrentMethod("Couldn't find platform != null check.");
+
             var platformNotEqualNull = cursor.Next;
-            cursor.GotoPrev(instr => instr.MatchLdarg(0) && instr.Next.MatchLdarg(0));
+            if (!cursor.TryGotoPrev(instr => instr.MatchLdarg(0) && instr.Next.MatchLdarg(0)))
+                throw exceptionFromCurrentMethod("Couldn't apply patch for jumpthrus.");
+
             cursor.Emit(OpCodes.Ldarg_0); // this
             cursor.EmitDelegate<Func<Player, Platform>>(self =>
                 !GravityHelperModule.ShouldInvert
@@ -499,16 +503,27 @@ namespace Celeste.Mod.GravityHelper
              */
 
             // ensure we check ground collisions the right direction for refilling dash on solid ground
-            cursor.GotoNextAddition();
+            if (!cursor.TryGotoNext(Extensions.AdditionPredicate))
+                throw exceptionFromCurrentMethod("Couldn't apply patch for dash refill.");
+
             cursor.EmitInvertVectorDelegate();
 
             // find some instructions
-            cursor.GotoNext(instr => instr.Match(OpCodes.Ldarg_0) && instr.Next.Match(OpCodes.Ldarg_0));
+            if (!cursor.TryGotoNext(instr => instr.Match(OpCodes.Ldarg_0) && instr.Next.Match(OpCodes.Ldarg_0)))
+                throw exceptionFromCurrentMethod("Couldn't find jumpthru check.");
+
             var jumpThruCheck = cursor.Next;
-            cursor.GotoNextAddition(MoveType.After);
-            cursor.GotoNext(instr => instr.MatchLdarg(0));
+
+            if (!cursor.TryGotoNext(MoveType.After, Extensions.AdditionPredicate) ||
+                !cursor.TryGotoNext(instr => instr.MatchLdarg(0)))
+                throw exceptionFromCurrentMethod("Couldn't find spikes check.");
+
             var spikesCheck = cursor.Next;
-            cursor.GotoNext(instr => instr.Match(OpCodes.Ldarg_0) && instr.Next.MatchLdfld<Player>("varJumpTimer"));
+
+            if (!cursor.TryGotoNext(instr =>
+                instr.Match(OpCodes.Ldarg_0) && instr.Next.MatchLdfld<Player>("varJumpTimer")))
+                throw exceptionFromCurrentMethod("Couldn't find varJumpTimer check");
+
             var varJumpTimerCheck = cursor.Next;
 
             // replace the JumpThru check with UpsideDownJumpThru if we can and should
@@ -531,29 +546,27 @@ namespace Celeste.Mod.GravityHelper
 	         * }
              */
             // ensure we correctly hop on the underside of moving blocks (kevins, etc.)
-            cursor.GotoNext(MoveType.After, instr => instr.MatchLdfld<Vector2>(nameof(Vector2.Y)));
+            if (!cursor.TryGotoNext(MoveType.After, instr => instr.MatchLdfld<Vector2>(nameof(Vector2.Y))))
+                throw exceptionFromCurrentMethod("Couldn't apply moving block check.");
+
             cursor.EmitInvertFloatDelegate();
 
             // (SKIP) else if (!this.CollideCheck<Solid>(this.Position + Vector2.UnitX * (float) Math.Sign(this.wallSpeedRetained)))
-            cursor.GotoNextAddition(MoveType.After);
-
             // (SKIP) else if (!this.CollideCheck<Solid>(this.Position + Vector2.UnitX * (float) this.hopWaitX))
-            cursor.GotoNextAddition(MoveType.After);
+            if (!cursor.TryGotoNext(MoveType.After, Extensions.AdditionPredicate) ||
+                !cursor.TryGotoNext(MoveType.After, Extensions.AdditionPredicate))
+                throw exceptionFromCurrentMethod("Couldn't skip two additions.");
 
             // apply upside-down jumpthru correction
-            if (cursor.TryGotoNext(instr => instr.MatchLdarg(0), instr => instr.MatchLdfld<Player>("onGround")) &&
-                cursor.TryGotoNext(instr => instr.MatchCallGeneric<Entity>(nameof(Entity.CollideCheck), out _),
+            if (!cursor.TryGotoNext(instr => instr.MatchLdarg(0), instr => instr.MatchLdfld<Player>("onGround")) ||
+                !cursor.TryGotoNext(instr => instr.MatchCallGeneric<Entity>(nameof(Entity.CollideCheck), out _),
                     instr => instr.MatchBrfalse(out _)))
-            {
-                cursor.Remove();
-                cursor.EmitDelegate<Func<Player, bool>>(self => GravityHelperModule.ShouldInvert
-                    ? self.CollideCheck<UpsideDownJumpThru>()
-                    : self.CollideCheck<JumpThru>());
-            }
-            else
-            {
-                throw new Exception("Couldn't apply UpsideDownJumpThru correction.");
-            }
+                throw exceptionFromCurrentMethod("Couldn't apply UpsideDownJumpThru dash correction.");
+
+            cursor.Remove();
+            cursor.EmitDelegate<Func<Player, bool>>(self => GravityHelperModule.ShouldInvert
+                ? self.CollideCheck<UpsideDownJumpThru>()
+                : self.CollideCheck<JumpThru>());
 
             /*
              * if (!this.onGround && this.DashAttacking && (double) this.DashDir.Y == 0.0 && (this.CollideCheck<Solid>(this.Position + Vector2.UnitY * 3f) || this.CollideCheckOutside<JumpThru>(this.Position + Vector2.UnitY * 3f)))
@@ -561,33 +574,41 @@ namespace Celeste.Mod.GravityHelper
              */
 
             // fix inverted ground correction for dashing
-            if (cursor.TryGotoNext(instr => instr.MatchCallvirt<Player>("get_DashAttacking")))
-            {
-                cursor.GotoNextAddition();
-                cursor.EmitInvertVectorDelegate();
-                cursor.GotoNext(instr => instr.MatchCallGeneric<Entity>(nameof(Entity.CollideCheckOutside), out _));
-                cursor.Remove();
-                cursor.EmitDelegate<Func<Entity, Vector2, bool>>((self, at) =>
-                    !GravityHelperModule.ShouldInvert
-                        ? self.CollideCheckOutside<JumpThru>(at)
-                        : self.CollideCheckOutside<UpsideDownJumpThru>(self.Position - Vector2.UnitY * 3f));
-            }
-            else
-            {
-                Logger.Log(nameof(GravityHelperModule), "Couldn't find get_DashAttacking");
-            }
+            if (!cursor.TryGotoNext(instr => instr.MatchCallvirt<Player>("get_DashAttacking")))
+                throw exceptionFromCurrentMethod("Couldn't find get_DashAttacking");
+
+            if (!cursor.TryGotoNext(Extensions.AdditionPredicate))
+                throw exceptionFromCurrentMethod("Couldn't find addition.");
+
+            cursor.EmitInvertVectorDelegate();
+
+            if (!cursor.TryGotoNext(instr => instr.MatchCallGeneric<Entity>(nameof(Entity.CollideCheckOutside), out _)))
+                throw exceptionFromCurrentMethod("Couldn't find generic CollideCheckOutside.");
+
+            cursor.Remove();
+            cursor.EmitDelegate<Func<Entity, Vector2, bool>>((self, at) =>
+                !GravityHelperModule.ShouldInvert
+                    ? self.CollideCheckOutside<JumpThru>(at)
+                    : self.CollideCheckOutside<UpsideDownJumpThru>(self.Position - Vector2.UnitY * 3f));
 
             /*
              * if (water != null && (double) this.Center.Y < (double) water.Center.Y)
              */
 
             // invert Center.Y check (fixes Madeline slamming into the ground when climbing down into water)
-            cursor.GotoNext(MoveType.After, instr => instr.MatchCallvirt<Player>("SwimCheck"));
-            cursor.GotoNext(MoveType.After, instr => instr.MatchCallvirt<Player>("SwimCheck"));
-            cursor.GotoNext(MoveType.After, instr => instr.MatchCallvirt<Player>("SwimCheck"));
-            cursor.GotoNext(MoveType.After, instr => instr.MatchLdfld<Vector2>(nameof(Vector2.Y)));
+            if (!cursor.TryGotoNext(MoveType.After, instr => instr.MatchCallvirt<Player>("SwimCheck")) ||
+                !cursor.TryGotoNext(MoveType.After, instr => instr.MatchCallvirt<Player>("SwimCheck")) ||
+                !cursor.TryGotoNext(MoveType.After, instr => instr.MatchCallvirt<Player>("SwimCheck")))
+                throw exceptionFromCurrentMethod("Couldn't skip three SwimChecks.");
+
+            if (!cursor.TryGotoNext(MoveType.After, instr => instr.MatchLdfld<Vector2>(nameof(Vector2.Y))))
+                throw exceptionFromCurrentMethod("Couldn't find first Vector2.Y");
+
             cursor.EmitInvertFloatDelegate();
-            cursor.GotoNext(MoveType.After, instr => instr.MatchLdfld<Vector2>(nameof(Vector2.Y)));
+
+            if (!cursor.TryGotoNext(MoveType.After, instr => instr.MatchLdfld<Vector2>(nameof(Vector2.Y))))
+                throw exceptionFromCurrentMethod("Couldn't find second Vector2.Y");
+
             cursor.EmitInvertFloatDelegate();
         }
 
@@ -1019,5 +1040,9 @@ namespace Celeste.Mod.GravityHelper
 
         private static void logCurrentMethod([CallerMemberName] string caller = null) =>
             Logger.Log(nameof(GravityHelperModule), $"Hooking IL {caller}");
+
+        private static Exception exceptionFromCurrentMethod(string message, [CallerMemberName] string caller = null) =>
+            // ReSharper disable once ObjectCreationAsStatement
+            new Exception($"{caller}: {message}");
     }
 }
