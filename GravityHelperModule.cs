@@ -4,6 +4,10 @@ using Celeste.Mod.GravityHelper.Entities;
 using Microsoft.Xna.Framework;
 using Monocle;
 
+#if DEBUG
+#define FORCE_LOAD_HOOKS
+#endif
+
 namespace Celeste.Mod.GravityHelper
 {
     // ReSharper disable InconsistentNaming
@@ -32,7 +36,7 @@ namespace Celeste.Mod.GravityHelper
 
         public override void Load()
         {
-#if DEBUG
+#if FORCE_LOAD_HOOKS
             // force load hooks in debug builds
             Logger.Log(nameof(GravityHelperModule), "Force loading hooks due to debug build...");
             activateHooks();
@@ -45,7 +49,7 @@ namespace Celeste.Mod.GravityHelper
 
         public override void Unload()
         {
-#if !DEBUG
+#if !FORCE_LOAD_HOOKS
             Logger.Log(nameof(GravityHelperModule), $"Unloading bootstrap hooks...");
             On.Celeste.LevelLoader.ctor -= LevelLoader_ctor;
             On.Celeste.OverworldLoader.ctor -= OverworldLoader_ctor;
