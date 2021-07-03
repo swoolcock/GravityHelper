@@ -1,12 +1,12 @@
-﻿using System;
+﻿#if DEBUG
+#define FORCE_LOAD_HOOKS
+#endif
+
+using System;
 using System.Collections.Generic;
 using Celeste.Mod.GravityHelper.Entities;
 using Microsoft.Xna.Framework;
 using Monocle;
-
-#if DEBUG
-#define FORCE_LOAD_HOOKS
-#endif
 
 namespace Celeste.Mod.GravityHelper
 {
