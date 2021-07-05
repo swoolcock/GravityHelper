@@ -101,12 +101,7 @@ namespace Celeste.Mod.GravityHelper
         {
             orig(self, session, startposition);
 
-            if (EntityHookChecker.IsMaxHelpingHandUpsideDownJumpThruPresent(session))
-            {
-                Logger.Log(nameof(GravityHelperModule), "Detected MaxHelpingHand UpsideDownJumpThrus. There is currently a compatibility issue, so GravityHelper hooks have been disabled.");
-                deactivateHooks();
-            }
-            else if (Settings.AllowInAllMaps || EntityHookChecker.IsHookRequiredForSession(session))
+            if (Settings.AllowInAllMaps || EntityHookChecker.IsHookRequiredForSession(session))
                 activateHooks();
             else
                 deactivateHooks();

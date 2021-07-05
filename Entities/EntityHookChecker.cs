@@ -48,9 +48,5 @@ namespace Celeste.Mod.GravityHelper.Entities
                 return method != null && (bool)method.Invoke(null, new object[] {data});
             });
         }
-
-        public static bool IsMaxHelpingHandUpsideDownJumpThruPresent(Session session) =>
-            session.MapData?.Levels?.Any(level =>
-                level.Entities?.Any(data => data.Name == "MaxHelpingHand/UpsideDownJumpThru") ?? false) ?? false;
     }
 }
