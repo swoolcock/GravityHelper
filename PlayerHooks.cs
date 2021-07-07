@@ -898,25 +898,32 @@ namespace Celeste.Mod.GravityHelper
 
         private static void Player_Update(On.Celeste.Player.orig_Update orig, Player self)
         {
-            if (!GravityHelperModule.ShouldInvert)
-            {
-                orig(self);
-                return;
-            }
-
             var featherY = Input.Feather.Value.Y;
             var aimY = Input.Aim.Value.Y;
             var moveY = Input.MoveY.Value;
 
-            Input.Aim.SetValue(new Vector2(Input.Aim.Value.X, -aimY));
-            Input.Feather.SetValue(new Vector2(Input.Feather.Value.X, -featherY));
-            Input.MoveY.Value = -moveY;
+            if (GravityHelperModule.ShouldInvert)
+            {
+                Input.Aim.SetValue(new Vector2(Input.Aim.Value.X, -aimY));
+                Input.Feather.SetValue(new Vector2(Input.Feather.Value.X, -featherY));
+                Input.MoveY.Value = -moveY;
+            }
 
             orig(self);
 
-            Input.MoveY.Value = moveY;
-            Input.Feather.SetValue(new Vector2(Input.Feather.Value.X, featherY));
-            Input.Aim.SetValue(new Vector2(Input.Aim.Value.X, aimY));
+            if (GravityHelperModule.ShouldInvert)
+            {
+                Input.MoveY.Value = moveY;
+                Input.Feather.SetValue(new Vector2(Input.Feather.Value.X, featherY));
+                Input.Aim.SetValue(new Vector2(Input.Aim.Value.X, aimY));
+            }
+
+            // flip crown in MaddyCrown if loaded
+            if (ReflectionCache.GetMaddyCrownModuleSprite() is { } mcs)
+            {
+                mcs.Position.Y = Math.Abs(mcs.Position.Y) * (GravityHelperModule.ShouldInvert ? 1 : -1);
+                mcs.Scale.Y = GravityHelperModule.ShouldInvert ? -1 : 1;
+            }
         }
 
         #endregion

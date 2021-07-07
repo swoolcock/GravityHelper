@@ -62,15 +62,18 @@ namespace Celeste.Mod.GravityHelper
 
         #region Optional Dependencies
 
-        private static Type fancyFallingBlockType;
+        public static Type FancyFallingBlockType { get; private set; }
+        public static MethodInfo FancyFallingBlock_SurfaceSoundIndexAt { get; private set; }
+        public static Type MaddyCrownModuleType { get; private set; }
+        public static FieldInfo MaddyCrownModule_sprite { get; private set; }
 
-        public static Type FancyFallingBlockType => fancyFallingBlockType ??=
-            GetModdedTypeByName("FancyTileEntities", "Celeste.Mod.FancyTileEntities.FancyFallingBlock");
-
-        private static MethodInfo fancyFallingBlock_SurfaceSoundIndexAt;
-
-        public static MethodInfo FancyFallingBlock_SurfaceSoundIndexAt => fancyFallingBlock_SurfaceSoundIndexAt ??=
-            FancyFallingBlockType?.GetMethod("SurfaceSoundIndexAt", BindingFlags.Instance | BindingFlags.NonPublic);
+        public static void LoadThirdPartyTypes()
+        {
+            FancyFallingBlockType = GetModdedTypeByName("FancyTileEntities", "Celeste.Mod.FancyTileEntities.FancyFallingBlock");
+            FancyFallingBlock_SurfaceSoundIndexAt = FancyFallingBlockType?.GetMethod("SurfaceSoundIndexAt", BindingFlags.Instance | BindingFlags.NonPublic);
+            MaddyCrownModuleType = GetModdedTypeByName("MaddyCrown", "Celeste.Mod.MaddyCrown.MaddyCrownModule");
+            MaddyCrownModule_sprite = MaddyCrownModuleType?.GetField("sprite", BindingFlags.Static | BindingFlags.NonPublic);
+        }
 
         #endregion
 
@@ -104,6 +107,8 @@ namespace Celeste.Mod.GravityHelper
             if (FancyFallingBlock_SurfaceSoundIndexAt == null) return -1;
             return (int) FancyFallingBlock_SurfaceSoundIndexAt.Invoke(fallingBlock, new object[] {readPosition});
         }
+
+        public static Sprite GetMaddyCrownModuleSprite() => MaddyCrownModule_sprite?.GetValue(null) as Sprite;
 
         public static void SetValue(this VirtualJoystick virtualJoystick, Vector2 value)
         {

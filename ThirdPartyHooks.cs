@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using Microsoft.Xna.Framework;
 using Monocle;
 using MonoMod.RuntimeDetour;
@@ -15,6 +14,7 @@ namespace Celeste.Mod.GravityHelper
         public static void Load()
         {
             Logger.Log(nameof(GravityHelperModule), $"Loading third party hooks...");
+            ReflectionCache.LoadThirdPartyTypes();
             executeIfAvailable("SpeedrunTool", true, loadSpeedrunTool);
             executeIfAvailable("FancyTileEntities", true, loadFancyTileEntities);
         }
