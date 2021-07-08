@@ -36,13 +36,7 @@ namespace Celeste.Mod.GravityHelper.Entities
 
         public override void Awake(Scene scene)
         {
-            // ensure we're only tracked as UpsideDownJumpThru
-            if (scene.Tracker.Entities.TryGetValue(typeof(JumpThru), out var jumpthrus) && jumpthrus.Contains(this))
-                jumpthrus.Remove(this);
-            if (!scene.Tracker.Entities.TryGetValue(typeof(UpsideDownJumpThru), out var upsidedown))
-                upsidedown = scene.Tracker.Entities[typeof(UpsideDownJumpThru)] = new List<Entity>();
-            if (!upsidedown.Contains(this))
-                upsidedown.Add(this);
+            EnsureCorrectTracking(scene);
 
             string str = AreaData.Get(scene).Jumpthru;
             if (!string.IsNullOrEmpty(overrideTexture) && !overrideTexture.Equals("default"))
@@ -88,6 +82,20 @@ namespace Celeste.Mod.GravityHelper.Entities
                     Scale = {Y = -1},
                 });
             }
+        }
+
+        public void EnsureCorrectTracking(Scene scene = null)
+        {
+            scene ??= Scene;
+            if (scene == null) return;
+
+            // ensure we're only tracked as UpsideDownJumpThru
+            if (scene.Tracker.Entities.TryGetValue(typeof(JumpThru), out var jumpthrus) && jumpthrus.Contains(this))
+                jumpthrus.Remove(this);
+            if (!scene.Tracker.Entities.TryGetValue(typeof(UpsideDownJumpThru), out var upsidedown))
+                upsidedown = scene.Tracker.Entities[typeof(UpsideDownJumpThru)] = new List<Entity>();
+            if (!upsidedown.Contains(this))
+                upsidedown.Add(this);
         }
     }
 }

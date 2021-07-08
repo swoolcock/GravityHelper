@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Celeste.Mod.GravityHelper.Entities;
 using Microsoft.Xna.Framework;
 using Monocle;
@@ -130,6 +131,10 @@ namespace Celeste.Mod.GravityHelper
                 Instance.GravityRefillCharges = gravityRefillCharges;
             if (state[nameof(Gravity)] is GravityType gravity)
                 Instance.SetGravity(gravity);
+
+            // fix upside down jumpthru tracking
+            foreach (var udjt in Engine.Scene.Entities.Where(e => e is UpsideDownJumpThru))
+                ((UpsideDownJumpThru)udjt).EnsureCorrectTracking();
         }
 
         public void SetGravity(GravityType gravityType, float momentumMultiplier = 1f)
