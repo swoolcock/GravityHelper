@@ -43,6 +43,7 @@ namespace Celeste.Mod.GravityHelper
             IL.Celeste.Player.OnCollideV += Player_OnCollideV;
             IL.Celeste.Player.RedDashUpdate += Player_RedDashUpdate;
             IL.Celeste.Player.SideBounce += Player_SideBounce;
+            IL.Celeste.Player.SlipCheck += Player_SlipCheck;
             IL.Celeste.Player.StarFlyUpdate += Player_StarFlyUpdate;
             IL.Celeste.Player.SuperBounce += Player_SuperBounce;
             IL.Celeste.Player.SuperJump += Player_SuperJump;
@@ -63,7 +64,6 @@ namespace Celeste.Mod.GravityHelper
             On.Celeste.Player.OnCollideV += Player_OnCollideV;
             On.Celeste.Player.ReflectBounce += Player_ReflectBounce;
             On.Celeste.Player.Render += Player_Render;
-            On.Celeste.Player.SlipCheck += Player_SlipCheck;
             On.Celeste.Player.StartCassetteFly += Player_StartCassetteFly;
             On.Celeste.Player.TransitionTo += Player_TransitionTo;
             On.Celeste.Player.Update += Player_Update;
@@ -108,6 +108,7 @@ namespace Celeste.Mod.GravityHelper
             IL.Celeste.Player.OnCollideV -= Player_OnCollideV;
             IL.Celeste.Player.RedDashUpdate -= Player_RedDashUpdate;
             IL.Celeste.Player.SideBounce -= Player_SideBounce;
+            IL.Celeste.Player.SlipCheck -= Player_SlipCheck;
             IL.Celeste.Player.StarFlyUpdate -= Player_StarFlyUpdate;
             IL.Celeste.Player.SuperBounce -= Player_SuperBounce;
             IL.Celeste.Player.SuperJump -= Player_SuperJump;
@@ -128,7 +129,6 @@ namespace Celeste.Mod.GravityHelper
             On.Celeste.Player.OnCollideV -= Player_OnCollideV;
             On.Celeste.Player.ReflectBounce -= Player_ReflectBounce;
             On.Celeste.Player.Render -= Player_Render;
-            On.Celeste.Player.SlipCheck -= Player_SlipCheck;
             On.Celeste.Player.StartCassetteFly -= Player_StartCassetteFly;
             On.Celeste.Player.TransitionTo -= Player_TransitionTo;
             On.Celeste.Player.Update -= Player_Update;
@@ -644,6 +644,45 @@ namespace Celeste.Mod.GravityHelper
             cursor.EmitInvertFloatDelegate();
         });
 
+        private static void Player_SlipCheck(ILContext il) => HookUtils.SafeHook(() =>
+        {
+            var cursor = new ILCursor(il);
+
+            if (!cursor.TryGotoNext(instr => instr.MatchCall<Entity>("get_TopRight")))
+                throw new HookException("Couldn't replace TopRight with BottomRight while inverted");
+            cursor.Remove();
+            cursor.EmitDelegate<Func<Entity, Vector2>>(e => GravityHelperModule.ShouldInvert ? e.BottomRight : e.TopRight);
+
+            if (!cursor.TryGotoNext(MoveType.After, instr => instr.MatchLdcR4(4)))
+                throw new HookException("Couldn't replace 4 with 5 while inverted");
+            cursor.EmitDelegate<Func<float, float>>(f => GravityHelperModule.ShouldInvert ? f + 1 : f);
+
+            if (!cursor.TryGotoNext(Extensions.AdditionPredicate))
+                throw new HookException("Couldn't replace vector addition with subtraction");
+            cursor.EmitInvertVectorDelegate();
+
+            if (!cursor.TryGotoNext(instr => instr.MatchCall<Entity>("get_TopLeft")))
+                throw new HookException("Couldn't replace TopLeft with BottomLeft while inverted");
+            cursor.Remove();
+            cursor.EmitDelegate<Func<Entity, Vector2>>(e => GravityHelperModule.ShouldInvert ? e.BottomLeft : e.TopLeft);
+
+            if (!cursor.TryGotoNext(MoveType.After, instr => instr.MatchLdcR4(4)))
+                throw new HookException("Couldn't replace 4 with 5 while inverted");
+            cursor.EmitDelegate<Func<float, float>>(f => GravityHelperModule.ShouldInvert ? f + 1 : f);
+
+            if (!cursor.TryGotoNext(Extensions.AdditionPredicate))
+                throw new HookException("Couldn't replace vector addition with subtraction");
+            cursor.EmitInvertVectorDelegate();
+
+            if (!cursor.TryGotoNext(MoveType.After, instr => instr.MatchLdcR4(-4)))
+                throw new HookException("Couldn't replace -4 with -5 while inverted");
+            cursor.EmitDelegate<Func<float, float>>(f => GravityHelperModule.ShouldInvert ? f - 1 : f);
+
+            if (!cursor.TryGotoNext(Extensions.AdditionPredicate))
+                throw new HookException("Couldn't replace vector addition with subtraction");
+            cursor.EmitInvertVectorDelegate();
+        });
+
         private static void Player_StarFlyUpdate(ILContext il) => HookUtils.SafeHook(() =>
         {
             var cursor = new ILCursor(il);
@@ -870,15 +909,6 @@ namespace Celeste.Mod.GravityHelper
 
             if (GravityHelperModule.ShouldInvert)
                 self.Sprite.Scale.Y = scaleY;
-        }
-
-        private static bool Player_SlipCheck(On.Celeste.Player.orig_SlipCheck orig, Player self, float addY)
-        {
-            if (!GravityHelperModule.ShouldInvert)
-                return orig(self, addY);
-
-            Vector2 point = self.Facing != Facings.Right ? self.BottomLeft - Vector2.UnitX - Vector2.UnitY * (5f + addY) : self.BottomRight - Vector2.UnitY * (5f + addY);
-            return !self.Scene.CollideCheck<Solid>(point) && !self.Scene.CollideCheck<Solid>(point - Vector2.UnitY * (addY - 5f));
         }
 
         private static void Player_StartCassetteFly(On.Celeste.Player.orig_StartCassetteFly orig, Player self, Vector2 targetPosition, Vector2 control)
