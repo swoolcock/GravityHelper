@@ -67,6 +67,7 @@ namespace Celeste.Mod.GravityHelper
             On.Celeste.Player.StartCassetteFly += Player_StartCassetteFly;
             On.Celeste.Player.TransitionTo += Player_TransitionTo;
             On.Celeste.Player.Update += Player_Update;
+            On.Celeste.Player.WindMove += Player_WindMove;
 
             using (new DetourContext { Before = { "MaxHelpingHand", "SpringCollab2020" }})
                 hook_Player_orig_Update = new ILHook(ReflectionCache.Player_OrigUpdate, Player_orig_Update);
@@ -132,6 +133,7 @@ namespace Celeste.Mod.GravityHelper
             On.Celeste.Player.StartCassetteFly -= Player_StartCassetteFly;
             On.Celeste.Player.TransitionTo -= Player_TransitionTo;
             On.Celeste.Player.Update -= Player_Update;
+            On.Celeste.Player.WindMove -= Player_WindMove;
 
             hook_Player_DashCoroutine?.Dispose();
             hook_Player_DashCoroutine = null;
@@ -955,6 +957,9 @@ namespace Celeste.Mod.GravityHelper
                 mcs.Scale.Y = GravityHelperModule.ShouldInvert ? -1 : 1;
             }
         }
+
+        private static void Player_WindMove(On.Celeste.Player.orig_WindMove orig, Player self, Vector2 move) =>
+            orig(self, GravityHelperModule.ShouldInvert ? new Vector2(move.X, -move.Y) : move);
 
         #endregion
 
