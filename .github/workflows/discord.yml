@@ -18,7 +18,7 @@ jobs:
     - name: Build
       run: dotnet build GravityHelper.csproj --configuration Release --no-restore
     - name: Package and upload
-      if: github.ref == 'refs/heads/discordtest' || github.ref == 'refs/heads/gh-actions'
+      if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/gh-actions'
       env:
         ZIPNAME: GravityHelper
         GITHUB_SHA: ${{ github.sha }}
