@@ -35,6 +35,7 @@ namespace Celeste.Mod.GravityHelper
             IL.Celeste.Player.ClimbUpdate += Player_ClimbUpdate;
             IL.Celeste.Player.CreateWallSlideParticles += Player_CreateWallSlideParticles;
             IL.Celeste.Player.DashUpdate += Player_DashUpdate;
+            IL.Celeste.Player.ExplodeLaunch_Vector2_bool_bool += Player_ExplodeLaunch_Vector2_bool_bool;
             IL.Celeste.Player._IsOverWater += Player_IsOverWater;
             IL.Celeste.Player.Jump += Player_Jump;
             IL.Celeste.Player.LaunchedBoostCheck += Player_LaunchedBoostCheck;
@@ -101,6 +102,7 @@ namespace Celeste.Mod.GravityHelper
             IL.Celeste.Player.ClimbUpdate -= Player_ClimbUpdate;
             IL.Celeste.Player.CreateWallSlideParticles -= Player_CreateWallSlideParticles;
             IL.Celeste.Player.DashUpdate -= Player_DashUpdate;
+            IL.Celeste.Player.ExplodeLaunch_Vector2_bool_bool -= Player_ExplodeLaunch_Vector2_bool_bool;
             IL.Celeste.Player._IsOverWater -= Player_IsOverWater;
             IL.Celeste.Player.Jump -= Player_Jump;
             IL.Celeste.Player.LaunchedBoostCheck -= Player_LaunchedBoostCheck;
@@ -343,6 +345,20 @@ namespace Celeste.Mod.GravityHelper
                 self.CollideCheck<Solid>() ||
                 !GravityHelperModule.ShouldInvert && self.CollideCheck<UpsideDownJumpThru>() ||
                 GravityHelperModule.ShouldInvert && self.CollideCheck<JumpThru>());
+        });
+
+        private static void Player_ExplodeLaunch_Vector2_bool_bool(ILContext il) => HookUtils.SafeHook(() => {
+            var cursor = new ILCursor(il);
+            if (!cursor.TryGotoNext(instr => instr.MatchLdfld<PlayerInventory>(nameof(PlayerInventory.NoRefills))) ||
+                !cursor.TryGotoPrev(MoveType.After, instr => instr.MatchLdfld<Player>(nameof(Player.Speed))))
+                throw new HookException("Couldn't invert SlashFx.Burst direction.");
+
+            cursor.EmitInvertVectorDelegate();
+
+            if (!cursor.TryGotoNext(instr => instr.MatchRet()))
+                throw new HookException("Couldn't find return.");
+
+            cursor.EmitInvertVectorDelegate();
         });
 
         private static void Player_IsOverWater(ILContext il) => HookUtils.SafeHook(() =>
