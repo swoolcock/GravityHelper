@@ -611,16 +611,15 @@ namespace Celeste.Mod.GravityHelper
                 cursor.EmitInvertFloatDelegate();
                 cursor.GotoNext(MoveType.After, instr => instr.MatchLdcR4(2));
                 cursor.EmitInvertFloatDelegate();
+                cursor.GotoNext(MoveType.After, instr => instr.MatchLdcR4(2));
+                cursor.EmitInvertFloatDelegate();
 
-                cursor.GotoNextAddition(MoveType.After);
-                cursor.GotoNextAddition(MoveType.After);
-
-                cursor.Remove(); // TODO: not remove instructions
+                cursor.GotoNext(instr => instr.MatchCallGeneric<Entity>(nameof(Entity.CollideCheck), out _));
+                cursor.Remove();
                 cursor.EmitDelegate<Func<Player, Vector2, bool>>((self, at) =>
                     !GravityHelperModule.ShouldInvert
                         ? self.CollideCheck<JumpThru>(at)
-                        : self.CollideCheck<UpsideDownJumpThru>(self.Position +
-                                                                new Vector2((int)self.Facing * 4, -2f)));
+                        : self.CollideCheck<UpsideDownJumpThru>(at));
             }
         });
 
