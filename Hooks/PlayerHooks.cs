@@ -66,6 +66,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             On.Celeste.Player.OnCollideV += Player_OnCollideV;
             On.Celeste.Player.ReflectBounce += Player_ReflectBounce;
             On.Celeste.Player.Render += Player_Render;
+            On.Celeste.Player.StarFlyBegin += Player_StarFlyBegin;
             On.Celeste.Player.StartCassetteFly += Player_StartCassetteFly;
             On.Celeste.Player.TransitionTo += Player_TransitionTo;
             On.Celeste.Player.Update += Player_Update;
@@ -134,6 +135,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             On.Celeste.Player.OnCollideV -= Player_OnCollideV;
             On.Celeste.Player.ReflectBounce -= Player_ReflectBounce;
             On.Celeste.Player.Render -= Player_Render;
+            On.Celeste.Player.StarFlyBegin -= Player_StarFlyBegin;
             On.Celeste.Player.StartCassetteFly -= Player_StartCassetteFly;
             On.Celeste.Player.TransitionTo -= Player_TransitionTo;
             On.Celeste.Player.Update -= Player_Update;
@@ -937,6 +939,18 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
             if (GravityHelperModule.ShouldInvert)
                 self.Sprite.Scale.Y = scaleY;
+        }
+
+        private static void Player_StarFlyBegin(On.Celeste.Player.orig_StarFlyBegin orig, Player self)
+        {
+            orig(self);
+
+            if (GravityHelperModule.ShouldInvert)
+            {
+                var bloom = self.GetStarFlyBloom();
+                if (bloom != null)
+                    bloom.Y = Math.Abs(bloom.Y);
+            }
         }
 
         private static void Player_StartCassetteFly(On.Celeste.Player.orig_StartCassetteFly orig, Player self, Vector2 targetPosition, Vector2 control)

@@ -1,3 +1,4 @@
+using System;
 using Microsoft.Xna.Framework;
 using Monocle;
 
@@ -55,6 +56,10 @@ namespace Celeste.Mod.GravityHelper
 
                     player.SetNormalLightOffset(type == GravityType.Normal ? normalLightOffset : -normalLightOffset);
                     player.SetDuckingLightOffset(type == GravityType.Normal ? duckingLightOffset : -duckingLightOffset);
+
+                    var starFlyBloom = player.GetStarFlyBloom();
+                    if (starFlyBloom != null)
+                        starFlyBloom.Y = Math.Abs(starFlyBloom.Y) * (type == GravityType.Inverted ? 1 : -1);
                 }
             }
         }
