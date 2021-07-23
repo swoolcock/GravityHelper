@@ -77,6 +77,7 @@ namespace Celeste.Mod.GravityHelper
             On.Celeste.Mod.AssetReloadHelper.ReloadLevel += AssetReloadHelper_ReloadLevel;
 
             ActorHooks.Load();
+            BounceBlockHooks.Load();
             BumperHooks.Load();
             FlyFeatherHooks.Load();
             JumpThruHooks.Load();
@@ -100,6 +101,7 @@ namespace Celeste.Mod.GravityHelper
             On.Celeste.Mod.AssetReloadHelper.ReloadLevel -= AssetReloadHelper_ReloadLevel;
 
             ActorHooks.Unload();
+            BounceBlockHooks.Unload();
             BumperHooks.Unload();
             FlyFeatherHooks.Unload();
             JumpThruHooks.Unload();
