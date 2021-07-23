@@ -4,7 +4,7 @@
 using System;
 using System.Runtime.CompilerServices;
 
-namespace Celeste.Mod.GravityHelper
+namespace Celeste.Mod.GravityHelper.Hooks
 {
     public static class HookUtils
     {

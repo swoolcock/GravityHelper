@@ -7,6 +7,8 @@ using Mono.Cecil.Cil;
 using Monocle;
 using MonoMod.Cil;
 
+// ReSharper disable InconsistentNaming
+
 namespace Celeste.Mod.GravityHelper
 {
     internal static class Extensions

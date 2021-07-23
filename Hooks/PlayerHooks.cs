@@ -10,7 +10,7 @@ using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
 using MonoMod.Utils;
 
-namespace Celeste.Mod.GravityHelper
+namespace Celeste.Mod.GravityHelper.Hooks
 {
     public static class PlayerHooks
     {
@@ -25,7 +25,7 @@ namespace Celeste.Mod.GravityHelper
 
         public static void Load()
         {
-            Logger.Log(nameof(GravityHelperModule), $"Loading Player hooks...");
+            Logger.Log(nameof(GravityHelperModule), $"Loading {nameof(Player)} hooks...");
 
             IL.Celeste.Player.BeforeUpTransition += Player_BeforeUpTransition;
             IL.Celeste.Player.BeforeDownTransition += Player_BeforeDownTransition;
@@ -92,7 +92,7 @@ namespace Celeste.Mod.GravityHelper
 
         public static void Unload()
         {
-            Logger.Log(nameof(GravityHelperModule), $"Unloading Player hooks...");
+            Logger.Log(nameof(GravityHelperModule), $"Unloading {nameof(Player)} hooks...");
 
             IL.Celeste.Player.BeforeUpTransition -= Player_BeforeUpTransition;
             IL.Celeste.Player.BeforeDownTransition -= Player_BeforeDownTransition;

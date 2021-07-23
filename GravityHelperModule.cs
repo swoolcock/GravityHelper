@@ -6,8 +6,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Celeste.Mod.GravityHelper.Entities;
-using Microsoft.Xna.Framework;
+using Celeste.Mod.GravityHelper.Hooks;
 using Monocle;
+
+#if !FORCE_LOAD_HOOKS
+using Microsoft.Xna.Framework;
+#endif
 
 namespace Celeste.Mod.GravityHelper
 {
@@ -67,8 +71,18 @@ namespace Celeste.Mod.GravityHelper
 
             On.Celeste.Mod.AssetReloadHelper.ReloadLevel += AssetReloadHelper_ReloadLevel;
 
+            ActorHooks.Load();
+            BumperHooks.Load();
+            JumpThruHooks.Load();
+            LevelHooks.Load();
+            PlayerDeadBodyHooks.Load();
+            PlayerHairHooks.Load();
             PlayerHooks.Load();
-            MiscHooks.Load();
+            SolidHooks.Load();
+            SolidTilesHooks.Load();
+            SpikesHooks.Load();
+            SpringHooks.Load();
+            TrailManagerHooks.Load();
             ThirdPartyHooks.Load();
         }
 
@@ -79,8 +93,18 @@ namespace Celeste.Mod.GravityHelper
 
             On.Celeste.Mod.AssetReloadHelper.ReloadLevel -= AssetReloadHelper_ReloadLevel;
 
+            ActorHooks.Unload();
+            BumperHooks.Unload();
+            JumpThruHooks.Unload();
+            LevelHooks.Unload();
+            PlayerDeadBodyHooks.Unload();
+            PlayerHairHooks.Unload();
             PlayerHooks.Unload();
-            MiscHooks.Unload();
+            SolidHooks.Unload();
+            SolidTilesHooks.Unload();
+            SpikesHooks.Unload();
+            SpringHooks.Unload();
+            TrailManagerHooks.Unload();
             ThirdPartyHooks.Unload();
         }
 
@@ -90,6 +114,7 @@ namespace Celeste.Mod.GravityHelper
             orig();
         }
 
+#if !FORCE_LOAD_HOOKS
         private void OverworldLoader_ctor(On.Celeste.OverworldLoader.orig_ctor orig, OverworldLoader self, Overworld.StartMode startmode, HiresSnow snow)
         {
             orig(self, startmode, snow);
@@ -107,6 +132,7 @@ namespace Celeste.Mod.GravityHelper
             else
                 deactivateHooks();
         }
+#endif
 
         #endregion
 

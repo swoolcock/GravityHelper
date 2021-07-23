@@ -7,13 +7,13 @@ using Microsoft.Xna.Framework;
 using Monocle;
 using MonoMod.RuntimeDetour;
 
-namespace Celeste.Mod.GravityHelper
+namespace Celeste.Mod.GravityHelper.Hooks
 {
     public static class ThirdPartyHooks
     {
         public static void Load()
         {
-            Logger.Log(nameof(GravityHelperModule), $"Loading third party hooks...");
+            Logger.Log(nameof(GravityHelperModule), "Loading third party hooks...");
             ReflectionCache.LoadThirdPartyTypes();
             executeIfAvailable("SpeedrunTool", true, loadSpeedrunTool);
             executeIfAvailable("FancyTileEntities", true, loadFancyTileEntities);
@@ -21,7 +21,7 @@ namespace Celeste.Mod.GravityHelper
 
         public static void Unload()
         {
-            Logger.Log(nameof(GravityHelperModule), $"Unloading third party hooks...");
+            Logger.Log(nameof(GravityHelperModule), "Unloading third party hooks...");
             executeIfAvailable("SpeedrunTool", false, unloadSpeedrunTool);
             executeIfAvailable("FancyTileEntities", false, unloadFancyTileEntities);
         }

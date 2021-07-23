@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Celeste.Mod.GravityHelper
+namespace Celeste.Mod.GravityHelper.Hooks
 {
     public class HookException : Exception
     {
