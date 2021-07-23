@@ -42,6 +42,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             IL.Celeste.Player.NormalUpdate += Player_NormalUpdate;
             IL.Celeste.Player.OnCollideH += Player_OnCollideH;
             IL.Celeste.Player.OnCollideV += Player_OnCollideV;
+            IL.Celeste.Player.PointBounce += Player_PointBounce;
             IL.Celeste.Player.RedDashUpdate += Player_RedDashUpdate;
             IL.Celeste.Player.SideBounce += Player_SideBounce;
             IL.Celeste.Player.SlipCheck += Player_SlipCheck;
@@ -109,6 +110,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             IL.Celeste.Player.NormalUpdate -= Player_NormalUpdate;
             IL.Celeste.Player.OnCollideH -= Player_OnCollideH;
             IL.Celeste.Player.OnCollideV -= Player_OnCollideV;
+            IL.Celeste.Player.PointBounce -= Player_PointBounce;
             IL.Celeste.Player.RedDashUpdate -= Player_RedDashUpdate;
             IL.Celeste.Player.SideBounce -= Player_SideBounce;
             IL.Celeste.Player.SlipCheck -= Player_SlipCheck;
@@ -644,6 +646,15 @@ namespace Celeste.Mod.GravityHelper.Hooks
             var cursor = new ILCursor(il);
             // this.Speed += this.LiftBoost;
             cursor.replaceGetLiftBoost();
+        });
+
+        private static void Player_PointBounce(ILContext il) => HookUtils.SafeHook(() =>
+        {
+            var cursor = new ILCursor(il);
+            if (!cursor.TryGotoNext(MoveType.After, Extensions.SubtractionPredicate))
+                throw new HookException("Couldn't invert bounce direction.");
+
+            cursor.EmitInvertVectorDelegate();
         });
 
         private static void Player_RedDashUpdate(ILContext il) => HookUtils.SafeHook(() =>
