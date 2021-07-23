@@ -73,6 +73,7 @@ namespace Celeste.Mod.GravityHelper
 
             ActorHooks.Load();
             BumperHooks.Load();
+            FlyFeatherHooks.Load();
             JumpThruHooks.Load();
             LevelHooks.Load();
             PlayerDeadBodyHooks.Load();
@@ -95,6 +96,7 @@ namespace Celeste.Mod.GravityHelper
 
             ActorHooks.Unload();
             BumperHooks.Unload();
+            FlyFeatherHooks.Unload();
             JumpThruHooks.Unload();
             LevelHooks.Unload();
             PlayerDeadBodyHooks.Unload();
