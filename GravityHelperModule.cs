@@ -29,6 +29,11 @@ namespace Celeste.Mod.GravityHelper
         public GravityHelperModule()
         {
             Instance = this;
+#if DEBUG
+            Logger.SetLogLevel(nameof(GravityHelperModule), LogLevel.Verbose);
+#else
+            Logger.SetLogLevel(nameof(GravityHelperModule), LogLevel.Info);
+#endif
         }
 
         public GravityType? GravityBeforeReload;
