@@ -533,50 +533,98 @@ namespace Celeste.Mod.GravityHelper.Hooks
 	         * }
              */
             // ensure we correctly hop on the underside of moving blocks (kevins, etc.)
-            if (!cursor.TryGotoNext(MoveType.After, instr => instr.MatchLdfld<Vector2>(nameof(Vector2.Y))))
+            if (!cursor.TryGotoNext(instr => instr.MatchLdfld<Player>("climbHopSolid")) ||
+                !cursor.TryGotoNext(instr => instr.MatchCall<Actor>(nameof(Actor.MoveVExact))) ||
+                !cursor.TryGotoPrev(MoveType.After, instr => instr.MatchConvI4()))
                 throw new HookException("Couldn't apply moving block check.");
 
-            cursor.EmitInvertFloatDelegate();
+            cursor.EmitInvertIntDelegate();
 
-            // (SKIP) else if (!this.CollideCheck<Solid>(this.Position + Vector2.UnitX * (float) Math.Sign(this.wallSpeedRetained)))
-            // (SKIP) else if (!this.CollideCheck<Solid>(this.Position + Vector2.UnitX * (float) this.hopWaitX))
-            if (!cursor.TryGotoNext(MoveType.After, Extensions.AdditionPredicate) ||
-                !cursor.TryGotoNext(MoveType.After, Extensions.AdditionPredicate))
-                throw new HookException("Couldn't skip two additions.");
+            // skip to base.Update();
+            if (!cursor.TryGotoNext(instr => instr.MatchLdarg(0),
+                instr => instr.MatchCall<Actor>(nameof(Actor.Update))))
+                throw new HookException("Couldn't find base.Update()");
 
-            // apply upside-down jumpthru correction
-            if (!cursor.TryGotoNext(instr => instr.MatchLdarg(0), instr => instr.MatchLdfld<Player>("onGround")) ||
-                !cursor.TryGotoNext(instr => instr.MatchCallGeneric<Entity>(nameof(Entity.CollideCheck), out _),
-                    instr => instr.MatchBrfalse(out _)))
-                throw new HookException("Couldn't apply UpsideDownJumpThru dash correction.");
+            /*
+             * if (!this.onGround && (double) this.Speed.Y <= 0.0 && (this.StateMachine.State != 1 || this.lastClimbMove == -1) && (this.CollideCheck<JumpThru>() && !this.JumpThruBoostBlockedCheck()))
+             *     this.MoveV(-40f * Engine.DeltaTime);
+             */
+            if (!cursor.TryGotoNext(instr => instr.MatchLdarg(0),
+                instr => instr.MatchLdfld<Player>("onGround")))
+                throw new HookException("Couldn't find this.onGround (1)");
 
-            cursor.Remove();
-            cursor.EmitDelegate<Func<Player, bool>>(self => GravityHelperModule.ShouldInvert
-                ? self.CollideCheck<UpsideDownJumpThru>()
-                : self.CollideCheck<JumpThru>());
+            var onGroundOne = cursor.Next;
+
+            if (!cursor.TryGotoNext(instr => instr.MatchLdarg(0),
+                instr => instr.MatchLdcR4(-40)))
+                throw new HookException("Couldn't find -40");
 
             /*
              * if (!this.onGround && this.DashAttacking && (double) this.DashDir.Y == 0.0 && (this.CollideCheck<Solid>(this.Position + Vector2.UnitY * 3f) || this.CollideCheckOutside<JumpThru>(this.Position + Vector2.UnitY * 3f)))
              *     this.MoveVExact(3);
              */
 
-            // fix inverted ground correction for dashing
-            if (!cursor.TryGotoNext(instr => instr.MatchCallvirt<Player>("get_DashAttacking")))
-                throw new HookException("Couldn't find get_DashAttacking");
+            var loadMinus40 = cursor.Next;
 
-            if (!cursor.TryGotoNext(Extensions.AdditionPredicate))
-                throw new HookException("Couldn't find addition.");
+            if (!cursor.TryGotoNext(instr => instr.MatchLdarg(0),
+                instr => instr.MatchLdfld<Player>("onGround")))
+                throw new HookException("Couldn't find this.onGround (2)");
 
-            cursor.EmitInvertVectorDelegate();
+            var onGroundTwo = cursor.Next;
 
-            if (!cursor.TryGotoNext(instr => instr.MatchCallGeneric<Entity>(nameof(Entity.CollideCheckOutside), out _)))
-                throw new HookException("Couldn't find generic CollideCheckOutside.");
+            if (!cursor.TryGotoNext(instr => instr.MatchLdarg(0),
+                instr => instr.MatchLdcI4(3)))
+                throw new HookException("Couldn't find 3");
 
-            cursor.Remove();
-            cursor.EmitDelegate<Func<Entity, Vector2, bool>>((self, at) =>
-                !GravityHelperModule.ShouldInvert
-                    ? self.CollideCheckOutside<JumpThru>(at)
-                    : self.CollideCheckOutside<UpsideDownJumpThru>(self.Position - Vector2.UnitY * 3f));
+            var load3 = cursor.Next;
+
+            /*
+             * if ((double) this.Speed.Y > 0.0 && this.CanUnDuck && (this.Collider != this.starFlyHitbox && !this.onGround) && (double) this.jumpGraceTimer <= 0.0)
+             *     this.Ducking = false;
+             */
+            if (!cursor.TryGotoNext(instr => instr.MatchLdarg(0),
+                instr => instr.MatchLdflda<Player>(nameof(Player.Speed))))
+                throw new HookException("Couldn't find Player.Speed");
+
+            var playerSpeed = cursor.Next;
+
+            // emit replacement if statement for jumpthru correction
+            cursor.Goto(onGroundOne);
+            // cursor.EmitDelegate<Func<bool>>(() => GravityHelperModule.ShouldInvert);
+            // cursor.Emit(OpCodes.Brfalse_S, onGroundOne);
+            cursor.Emit(OpCodes.Ldarg_0);
+            cursor.EmitDelegate<Func<Player, bool>>(self =>
+            {
+                bool checkJumpthru() => GravityHelperModule.ShouldInvert
+                    ? self.CollideCheck<UpsideDownJumpThru>()
+                    : self.CollideCheck<JumpThru>();
+
+                return !self.GetOnGround() && self.Speed.Y <= 0 &&
+                       (self.StateMachine.State != Player.StClimb || self.GetLastClimbMove() == -1) &&
+                       checkJumpthru() && !self.CallJumpThruBoostBlockedCheck();
+            });
+            cursor.Emit(OpCodes.Brfalse_S, onGroundTwo);
+            cursor.Emit(OpCodes.Br_S, loadMinus40);
+
+            // emit replacement if statement for dash correction
+            cursor.Goto(onGroundTwo);
+            // cursor.EmitDelegate<Func<bool>>(() => GravityHelperModule.ShouldInvert);
+            // cursor.Emit(OpCodes.Brfalse_S, onGroundTwo);
+            cursor.Emit(OpCodes.Ldarg_0);
+            cursor.EmitDelegate<Func<Player, bool>>(self =>
+            {
+                var dashCorrect = GravityHelperModule.ShouldInvert ? -3f : 3f;
+                bool checkJumpThru(Vector2 at) => GravityHelperModule.ShouldInvert
+                    ? self.CollideCheckOutside<UpsideDownJumpThru>(at)
+                    : self.CollideCheckOutside<JumpThru>(at);
+
+                return !self.GetOnGround() && self.DashAttacking && self.DashDir.Y == 0 &&
+                       (self.CollideCheck<Solid>(self.Position + Vector2.UnitY * dashCorrect) ||
+                        checkJumpThru(self.Position + Vector2.UnitY * dashCorrect)) &&
+                       !self.CallDashCorrectCheck(Vector2.UnitY * dashCorrect);
+            });
+            cursor.Emit(OpCodes.Brfalse_S, playerSpeed);
+            cursor.Emit(OpCodes.Br_S, load3);
 
             /*
              * if (water != null && (double) this.Center.Y < (double) water.Center.Y)
