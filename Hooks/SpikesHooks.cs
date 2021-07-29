@@ -30,7 +30,20 @@ namespace Celeste.Mod.GravityHelper.Hooks
             if (self.Direction == Spikes.Directions.Down)
                 self.Add(new LedgeBlocker {Blocking = false});
 
-            self.Add(new GravityListener());
+            if (self.Direction == Spikes.Directions.Down || self.Direction == Spikes.Directions.Up)
+            {
+                self.Add(new GravityListener
+                {
+                    GravityChanged = (gravityType, _) =>
+                    {
+                        var ledgeBlocker = self.Components.Get<LedgeBlocker>();
+                        if (self.Direction == Spikes.Directions.Up)
+                            ledgeBlocker.Blocking = gravityType == GravityType.Normal;
+                        else if (self.Direction == Spikes.Directions.Down)
+                            ledgeBlocker.Blocking = gravityType == GravityType.Inverted;
+                    }
+                });
+            }
         }
 
         private static void Spikes_OnCollide(On.Celeste.Spikes.orig_OnCollide orig, Spikes self, Player player)

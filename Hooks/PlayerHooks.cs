@@ -862,7 +862,47 @@ namespace Celeste.Mod.GravityHelper.Hooks
                 {
                     OnOutBegin = () => GravityHelperModule.Session.InitialGravity = GravityHelperModule.Instance.Gravity,
                 },
-                new GravityListener(),
+                new GravityListener
+                {
+                    GravityChanged = (gravityType, momentumMultiplier) =>
+                    {
+                        void invertHitbox(Hitbox hitbox) => hitbox.Position.Y = -hitbox.Position.Y - hitbox.Height;
+
+                        var normalHitbox = self.GetNormalHitbox();
+                        var collider = self.Collider ?? normalHitbox;
+
+                        if (gravityType == GravityType.Inverted && collider.Top < -1 || gravityType == GravityType.Normal && collider.Bottom > 1)
+                        {
+                            var normalHurtbox = self.GetNormalHurtbox();
+                            var duckHitbox = self.GetDuckHitbox();
+                            var duckHurtbox = self.GetDuckHurtbox();
+                            var starFlyHitbox = self.GetStarFlyHitbox();
+                            var starFlyHurtbox = self.GetStarFlyHurtbox();
+
+                            self.Position.Y = gravityType == GravityType.Inverted ? collider.AbsoluteTop : collider.AbsoluteBottom;
+                            self.Speed.Y *= -momentumMultiplier;
+                            self.DashDir.Y *= -1;
+                            self.SetVarJumpTimer(0f);
+
+                            invertHitbox(normalHitbox);
+                            invertHitbox(normalHurtbox);
+                            invertHitbox(duckHitbox);
+                            invertHitbox(duckHurtbox);
+                            invertHitbox(starFlyHitbox);
+                            invertHitbox(starFlyHurtbox);
+
+                            Vector2 normalLightOffset = new Vector2(0.0f, -8f);
+                            Vector2 duckingLightOffset = new Vector2(0.0f, -3f);
+
+                            self.SetNormalLightOffset(gravityType == GravityType.Normal ? normalLightOffset : -normalLightOffset);
+                            self.SetDuckingLightOffset(gravityType == GravityType.Normal ? duckingLightOffset : -duckingLightOffset);
+
+                            var starFlyBloom = self.GetStarFlyBloom();
+                            if (starFlyBloom != null)
+                                starFlyBloom.Y = Math.Abs(starFlyBloom.Y) * (gravityType == GravityType.Inverted ? 1 : -1);
+                        }
+                    }
+                },
                 new DashListener
                 {
                     OnDash = _ =>
@@ -872,7 +912,8 @@ namespace Celeste.Mod.GravityHelper.Hooks
                         GravityHelperModule.Instance.GravityRefillCharges--;
                         GravityHelperModule.Instance.SetGravity(GravityType.Toggle);
                     }
-                });
+                }
+            );
         }
 
         private static bool Player_DreamDashCheck(On.Celeste.Player.orig_DreamDashCheck orig, Player self, Vector2 dir)

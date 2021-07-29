@@ -195,7 +195,7 @@ namespace Celeste.Mod.GravityHelper
         {
             var gravityListeners = Engine.Scene.Tracker.GetComponents<GravityListener>().ToArray();
             foreach (Component component in gravityListeners)
-                (component as GravityListener)?.GravityChanged(gravityType, momentumMultiplier);
+                (component as GravityListener)?.OnGravityChanged(gravityType, momentumMultiplier);
         }
 
         public static bool ShouldInvert => Instance.Gravity == GravityType.Inverted;
