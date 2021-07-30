@@ -34,13 +34,13 @@ namespace Celeste.Mod.GravityHelper.Hooks
             {
                 self.Add(new GravityListener
                 {
-                    GravityChanged = (gravityType, _) =>
+                    GravityChanged = args =>
                     {
                         var ledgeBlocker = self.Components.Get<LedgeBlocker>();
                         if (self.Direction == Spikes.Directions.Up)
-                            ledgeBlocker.Blocking = gravityType == GravityType.Normal;
+                            ledgeBlocker.Blocking = args.NewValue == GravityType.Normal;
                         else if (self.Direction == Spikes.Directions.Down)
-                            ledgeBlocker.Blocking = gravityType == GravityType.Inverted;
+                            ledgeBlocker.Blocking = args.NewValue == GravityType.Inverted;
                     }
                 });
             }

@@ -25,10 +25,6 @@
         </Reference>
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Graphics\Atlases\Gameplay\objects\GravityHelper\gravityField" />
-    </ItemGroup>
-
     <Choose>
         <When Condition="'$(CelesteType)' == 'FNA'">
             <ItemGroup>

@@ -169,33 +169,36 @@ namespace Celeste.Mod.GravityHelper
             if (state[nameof(GravityRefillCharges)] is int gravityRefillCharges)
                 Instance.GravityRefillCharges = gravityRefillCharges;
             if (state[nameof(Gravity)] is GravityType gravity)
-                Instance.SetGravity(gravity);
+                Instance.SetGravity(new GravityChangeArgs(gravity));
 
             // fix upside down jumpthru tracking
             foreach (var udjt in Engine.Scene.Entities.Where(e => e is UpsideDownJumpThru))
                 ((UpsideDownJumpThru)udjt).EnsureCorrectTracking();
         }
 
-        public void SetGravity(GravityType gravityType, float momentumMultiplier = 1f)
+        public void SetGravity(GravityType type) => SetGravity(new GravityChangeArgs(type));
+
+        public void SetGravity(GravityChangeArgs args)
         {
-            if (gravityType == GravityType.None)
+            if (args.NewValue == GravityType.None)
                 return;
 
-            if (gravityType == GravityType.Toggle)
+            if (args.NewValue == GravityType.Toggle)
             {
-                SetGravity(Gravity.Opposite(), momentumMultiplier);
-                return;
+                args.NewValue = Gravity.Opposite();
+                args.WasToggled = true;
             }
 
-            Gravity = gravityType;
-            TriggerGravityListeners(gravityType, momentumMultiplier);
+            args.OldValue = Gravity;
+            Gravity = args.NewValue;
+            TriggerGravityListeners(args);
         }
 
-        public void TriggerGravityListeners(GravityType gravityType, float momentumMultiplier = 1f)
+        public void TriggerGravityListeners(GravityChangeArgs args)
         {
             var gravityListeners = Engine.Scene.Tracker.GetComponents<GravityListener>().ToArray();
             foreach (Component component in gravityListeners)
-                (component as GravityListener)?.OnGravityChanged(gravityType, momentumMultiplier);
+                (component as GravityListener)?.OnGravityChanged(args);
         }
 
         public static bool ShouldInvert => Instance.Gravity == GravityType.Inverted;

@@ -864,14 +864,14 @@ namespace Celeste.Mod.GravityHelper.Hooks
                 },
                 new GravityListener
                 {
-                    GravityChanged = (gravityType, momentumMultiplier) =>
+                    GravityChanged = args =>
                     {
                         void invertHitbox(Hitbox hitbox) => hitbox.Position.Y = -hitbox.Position.Y - hitbox.Height;
 
                         var normalHitbox = self.GetNormalHitbox();
                         var collider = self.Collider ?? normalHitbox;
 
-                        if (gravityType == GravityType.Inverted && collider.Top < -1 || gravityType == GravityType.Normal && collider.Bottom > 1)
+                        if (args.NewValue == GravityType.Inverted && collider.Top < -1 || args.NewValue == GravityType.Normal && collider.Bottom > 1)
                         {
                             var normalHurtbox = self.GetNormalHurtbox();
                             var duckHitbox = self.GetDuckHitbox();
@@ -879,8 +879,8 @@ namespace Celeste.Mod.GravityHelper.Hooks
                             var starFlyHitbox = self.GetStarFlyHitbox();
                             var starFlyHurtbox = self.GetStarFlyHurtbox();
 
-                            self.Position.Y = gravityType == GravityType.Inverted ? collider.AbsoluteTop : collider.AbsoluteBottom;
-                            self.Speed.Y *= -momentumMultiplier;
+                            self.Position.Y = args.NewValue == GravityType.Inverted ? collider.AbsoluteTop : collider.AbsoluteBottom;
+                            self.Speed.Y *= -args.MomentumMultiplier;
                             self.DashDir.Y *= -1;
                             self.SetVarJumpTimer(0f);
 
@@ -894,12 +894,12 @@ namespace Celeste.Mod.GravityHelper.Hooks
                             Vector2 normalLightOffset = new Vector2(0.0f, -8f);
                             Vector2 duckingLightOffset = new Vector2(0.0f, -3f);
 
-                            self.SetNormalLightOffset(gravityType == GravityType.Normal ? normalLightOffset : -normalLightOffset);
-                            self.SetDuckingLightOffset(gravityType == GravityType.Normal ? duckingLightOffset : -duckingLightOffset);
+                            self.SetNormalLightOffset(args.NewValue == GravityType.Normal ? normalLightOffset : -normalLightOffset);
+                            self.SetDuckingLightOffset(args.NewValue == GravityType.Normal ? duckingLightOffset : -duckingLightOffset);
 
                             var starFlyBloom = self.GetStarFlyBloom();
                             if (starFlyBloom != null)
-                                starFlyBloom.Y = Math.Abs(starFlyBloom.Y) * (gravityType == GravityType.Inverted ? 1 : -1);
+                                starFlyBloom.Y = Math.Abs(starFlyBloom.Y) * (args.NewValue == GravityType.Inverted ? 1 : -1);
                         }
                     }
                 },
