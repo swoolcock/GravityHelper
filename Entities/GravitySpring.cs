@@ -105,7 +105,7 @@ namespace Celeste.Mod.GravityHelper.Entities
                     Orientations.Ceiling => jt => CollideCheck(jt, Position - Vector2.UnitY),
                     _ => jt => CollideCheck(jt, Position + Vector2.UnitY)
                 },
-                OnShake = amount => Position += amount,
+                OnShake = amount => sprite.Position += amount,
                 OnEnable = OnEnable,
                 OnDisable = OnDisable,
             });

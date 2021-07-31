@@ -44,6 +44,7 @@ namespace Celeste.Mod.GravityHelper.Entities
         private readonly SpriteEffects arrowSpriteEffects;
         private readonly Vector2 arrowOrigin;
         private readonly Vector2 arrowSmallOrigin;
+        private Vector2 arrowShakeOffset;
 
         private readonly Hitbox normalHitbox;
         private readonly Hitbox staticMoverHitbox;
@@ -79,7 +80,7 @@ namespace Celeste.Mod.GravityHelper.Entities
                 {
                     OnAttach = p => Depth = p.Depth - 1,
                     SolidChecker = staticMoverCollideCheck,
-                    OnShake = amount => Position += amount,
+                    OnShake = amount => arrowShakeOffset += amount,
                 });
             }
 
@@ -167,6 +168,7 @@ namespace Celeste.Mod.GravityHelper.Entities
                 renderer?.Track(this);
             }
 
+            arrowShakeOffset = Vector2.Zero;
             fieldGroup = null;
         }
 
@@ -246,7 +248,7 @@ namespace Celeste.Mod.GravityHelper.Entities
                     {
                         int offsetX = x * 16 + 8 + widthInTiles % 2 * 4;
                         if (widthInTiles == 1) offsetX = 4;
-                        texture.Draw(Position + new Vector2(offsetX, offsetY), origin, color, 1f, 0f, arrowSpriteEffects);
+                        texture.Draw(Position + arrowShakeOffset + new Vector2(offsetX, offsetY), origin, color, 1f, 0f, arrowSpriteEffects);
                     }
                 }
             }
