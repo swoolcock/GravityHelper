@@ -836,7 +836,9 @@ namespace Celeste.Mod.GravityHelper.Hooks
             orig(self, scene);
 
             SpawnGravityTrigger trigger = self.CollideFirstOrDefault<SpawnGravityTrigger>();
-            GravityHelperModule.Instance.SetGravity(GravityHelperModule.Instance.GravityBeforeReload ?? trigger?.GravityType ?? GravityHelperModule.Session.InitialGravity);
+            GravityHelperModule.Instance.SetGravity(GravityHelperModule.Instance.GravityBeforeReload ??
+                                                    trigger?.GravityType ??
+                                                    GravityHelperModule.Session.InitialGravity, playerTriggered: false);
             GravityHelperModule.Instance.GravityRefillCharges = 0;
             GravityHelperModule.Instance.GravityBeforeReload = null;
         }
@@ -1028,7 +1030,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
         private static void Player_StartCassetteFly(On.Celeste.Player.orig_StartCassetteFly orig, Player self, Vector2 targetPosition, Vector2 control)
         {
-            GravityHelperModule.Instance.SetGravity(GravityType.Normal);
+            GravityHelperModule.Instance.SetGravity(GravityType.Normal, playerTriggered: false);
             orig(self, targetPosition, control);
         }
 

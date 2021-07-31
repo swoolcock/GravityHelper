@@ -41,7 +41,7 @@ namespace Celeste.Mod.GravityHelper.Entities
                     if (string.IsNullOrEmpty(soundName))
                         soundName = args.NewValue == GravityType.Normal ? NormalGravitySound : InvertedGravitySound;
 
-                    if (!string.IsNullOrEmpty(soundName) && soundMuffleRemaining <= 0)
+                    if (!string.IsNullOrEmpty(soundName) && soundMuffleRemaining <= 0 && args.PlayerTriggered)
                     {
                         soundMuffleRemaining = sound_muffle_time_seconds;
                         Audio.Play(soundName);

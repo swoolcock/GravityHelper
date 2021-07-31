@@ -169,27 +169,23 @@ namespace Celeste.Mod.GravityHelper
             if (state[nameof(GravityRefillCharges)] is int gravityRefillCharges)
                 Instance.GravityRefillCharges = gravityRefillCharges;
             if (state[nameof(Gravity)] is GravityType gravity)
-                Instance.SetGravity(new GravityChangeArgs(gravity));
+                Instance.SetGravity(new GravityChangeArgs(gravity, playerTriggered: false));
 
             // fix upside down jumpthru tracking
             foreach (var udjt in Engine.Scene.Entities.Where(e => e is UpsideDownJumpThru))
                 ((UpsideDownJumpThru)udjt).EnsureCorrectTracking();
         }
 
-        public void SetGravity(GravityType type) => SetGravity(new GravityChangeArgs(type));
+        public void SetGravity(GravityType newValue, float momentumMultiplier = 1f, bool playerTriggered = true) =>
+            SetGravity(new GravityChangeArgs(newValue, momentumMultiplier, playerTriggered));
 
         public void SetGravity(GravityChangeArgs args)
         {
-            if (args.NewValue == GravityType.None)
+            if (args.SourceValue == GravityType.None)
                 return;
 
-            if (args.NewValue == GravityType.Toggle)
-            {
-                args.NewValue = Gravity.Opposite();
-                args.WasToggled = true;
-            }
-
             args.OldValue = Gravity;
+            args.NewValue = args.SourceValue == GravityType.Toggle ? args.OldValue.Opposite() : args.SourceValue;
             Gravity = args.NewValue;
             TriggerGravityListeners(args);
         }

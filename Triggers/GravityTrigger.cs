@@ -19,7 +19,7 @@ namespace Celeste.Mod.GravityHelper.Triggers
         public override void OnEnter(Player player)
         {
             base.OnEnter(player);
-            GravityHelperModule.Instance.SetGravity(new GravityChangeArgs(GravityType, MomentumMultiplier));
+            GravityHelperModule.Instance.SetGravity(GravityType, MomentumMultiplier);
         }
     }
 }

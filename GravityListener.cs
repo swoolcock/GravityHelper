@@ -15,12 +15,8 @@ namespace Celeste.Mod.GravityHelper
         {
         }
 
-        public override void EntityAwake()
-        {
-            // let GravityController handle its own Awake
-            if (Entity is not GravityController)
-                OnGravityChanged(new GravityChangeArgs(GravityHelperModule.Instance.Gravity));
-        }
+        public override void EntityAwake() =>
+            OnGravityChanged(new GravityChangeArgs(GravityHelperModule.Instance.Gravity, playerTriggered: false));
 
         public void OnGravityChanged(GravityChangeArgs args) =>
             GravityChanged?.Invoke(args);
