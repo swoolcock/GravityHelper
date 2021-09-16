@@ -15,14 +15,14 @@ namespace Celeste.Mod.GravityHelper.Hooks
         {
             Logger.Log(nameof(GravityHelperModule), "Loading third party hooks...");
             ReflectionCache.LoadThirdPartyTypes();
-            executeIfAvailable("SpeedrunTool", true, loadSpeedrunTool);
+            // executeIfAvailable("SpeedrunTool", true, loadSpeedrunTool);
             executeIfAvailable("FancyTileEntities", true, loadFancyTileEntities);
         }
 
         public static void Unload()
         {
             Logger.Log(nameof(GravityHelperModule), "Unloading third party hooks...");
-            executeIfAvailable("SpeedrunTool", false, unloadSpeedrunTool);
+            // executeIfAvailable("SpeedrunTool", false, unloadSpeedrunTool);
             executeIfAvailable("FancyTileEntities", false, unloadFancyTileEntities);
         }
 
