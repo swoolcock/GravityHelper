@@ -76,13 +76,14 @@ namespace Celeste.Mod.GravityHelper.Hooks
             ILLabel target = default;
 
             if (!cursor.TryGotoNext(
-                instr => instr.MatchLdarg(1),
-                instr => instr.MatchLdcI4(0),
-                instr => instr.MatchBle(out target)))
+                instr => instr.MatchBle(out target),
+                instr => instr.MatchLdarg(out _),
+                instr => instr.MatchLdfld<Actor>(nameof(Actor.IgnoreJumpThrus))))
                 throw new HookException("Couldn't find moveV > 0.");
 
             // skip 'moveV > 0' check since we potentially always want to do collision checks with jumpthrus
-            cursor.Emit(OpCodes.Br_S, target);
+            cursor.Remove();
+            cursor.Emit(OpCodes.Beq_S, target);
 
             // replace CollideFirstOutside<JumpThru> with a delegate that handles upside down jumpthrus
             if (!cursor.TryGotoNext(instr => instr.MatchCallGeneric<Entity>(nameof(Entity.CollideFirstOutside), out _)))
