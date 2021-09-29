@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Microsoft.Xna.Framework;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Monocle;
 using MonoMod.Cil;
+using MonoMod.Utils;
 
 // ReSharper disable InconsistentNaming
 
@@ -162,11 +164,30 @@ namespace Celeste.Mod.GravityHelper
         public static void GotoNextBottom(this ILCursor cursor, MoveType moveType = MoveType.Before) => cursor.GotoNext(moveType, BottomPredicate);
         public static void GotoNextBottomCenter(this ILCursor cursor, MoveType moveType = MoveType.Before) => cursor.GotoNext(moveType, BottomCenterPredicate);
 
+        public static void EmitActorInvertVectorDelegate(this ILCursor cursor, OpCode loadActorOpCode)
+        {
+            cursor.Emit(loadActorOpCode);
+            cursor.EmitDelegate<Func<Vector2, Actor, Vector2>>((v, a) =>
+                a.IsInverted() ? new Vector2(v.X, -v.Y) : v);
+        }
+
         public static void EmitInvertVectorDelegate(this ILCursor cursor) =>
             cursor.EmitDelegate<Func<Vector2, Vector2>>(v => GravityHelperModule.ShouldInvert ? new Vector2(v.X, -v.Y) : v);
 
+        public static void EmitActorInvertFloatDelegate(this ILCursor cursor, OpCode loadActorOpCode)
+        {
+            cursor.Emit(loadActorOpCode);
+            cursor.EmitDelegate<Func<float, Actor, float>>((f, a) => a.IsInverted() ? -f : f);
+        }
+
         public static void EmitInvertFloatDelegate(this ILCursor cursor) =>
             cursor.EmitDelegate<Func<float, float>>(f => GravityHelperModule.ShouldInvert ? -f : f);
+
+        public static void EmitActorInvertIntDelegate(this ILCursor cursor, OpCode loadActorOpCode)
+        {
+            cursor.Emit(loadActorOpCode);
+            cursor.EmitDelegate<Func<int, Actor, int>>((i, a) => a.IsInverted() ? -i : i);
+        }
 
         public static void EmitInvertIntDelegate(this ILCursor cursor) =>
             cursor.EmitDelegate<Func<int, int>>(i => GravityHelperModule.ShouldInvert ? -i : i);
@@ -186,5 +207,16 @@ namespace Celeste.Mod.GravityHelper
         }
 
         #endregion
+
+        public static Rectangle ToRectangle(this Collider collider) =>
+            new Rectangle((int)collider.Left, (int)collider.Top, (int)collider.Width, (int)collider.Height);
+
+        private const string inverted_key = "GravityHelper_Inverted";
+
+        public static bool IsInverted(this Actor actor) =>
+            new DynData<Actor>(actor).Data.TryGetValue(inverted_key, out var value) && (bool)value;
+
+        public static void SetInverted(this Actor actor, bool inverted) =>
+            new DynData<Actor>(actor).Data[inverted_key] = inverted;
     }
 }

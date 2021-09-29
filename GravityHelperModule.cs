@@ -243,11 +243,18 @@ namespace Celeste.Mod.GravityHelper
 
         public static bool ShouldInvert => Instance.Gravity == GravityType.Inverted;
 
-        public static bool ShouldInvertActor(Actor actor) => actor is Player player
-                                                             && player.StateMachine.State != Player.StDreamDash
-                                                             && player.CurrentBooster == null
-                                                             && !SolidMoving && !Transitioning
-                                                             && ShouldInvert;
+        public static bool ShouldInvertActor(Actor actor)
+        {
+            if (SolidMoving || Transitioning)
+                return false;
+
+            if (actor is Player player)
+                return player.StateMachine.State != Player.StDreamDash &&
+                       player.CurrentBooster == null &&
+                       ShouldInvert;
+
+            return actor.IsInverted();
+        }
 
         [Command("gravity", "Changes the current gravity (0 = normal, 1 = inverted, 2 = toggle)")]
         private static void CmdSetGravity(int gravityType = -1)

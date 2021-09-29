@@ -29,7 +29,6 @@ namespace Celeste.Mod.GravityHelper.Hooks
             cursor.EmitInvertVectorDelegate();
         });
 
-
         private static void Solid_MoveVExact(On.Celeste.Solid.orig_MoveVExact orig, Solid self, int move)
         {
             if (!GravityHelperModule.ShouldInvert)

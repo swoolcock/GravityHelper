@@ -41,65 +41,60 @@ namespace Celeste.Mod.GravityHelper.Hooks
         {
             var cursor = new ILCursor(il);
 
-            if (cursor.TryGotoNext(instr => instr.MatchLdarg(0),
+            if (!cursor.TryGotoNext(instr => instr.MatchLdarg(0),
                 instr => instr.MatchLdarg(1),
                 instr => instr.MatchLdarg(0)))
+                throw new HookException("Couldn't patch Actor.IsRiding for jumpthrus");
+
+            cursor.Emit(OpCodes.Ldarg_0);
+            cursor.Emit(OpCodes.Ldarg_1);
+            cursor.EmitDelegate<Func<Actor, JumpThru, bool>>((self, jumpThru) =>
             {
-                cursor.Emit(OpCodes.Ldarg_0);
-                cursor.Emit(OpCodes.Ldarg_1);
-                cursor.EmitDelegate<Func<Actor, JumpThru, bool>>((self, jumpThru) =>
-                    GravityHelperModule.ShouldInvert && jumpThru is UpsideDownJumpThru && self is Player &&
-                    self.CollideCheckOutside(jumpThru, self.Position - Vector2.UnitY) ||
-                    !GravityHelperModule.ShouldInvert && jumpThru is not UpsideDownJumpThru &&
-                    self.CollideCheckOutside(jumpThru, self.Position + Vector2.UnitY));
-                cursor.Emit(OpCodes.Ret);
-            }
-            else
-            {
-                throw new Exception("Couldn't patch Actor.IsRiding for jumpthrus");
-            }
+                var shouldInvert = GravityHelperModule.ShouldInvertActor(self);
+                return shouldInvert && jumpThru is UpsideDownJumpThru &&
+                       self.CollideCheckOutside(jumpThru, self.Position - Vector2.UnitY) ||
+                       !shouldInvert && jumpThru is not UpsideDownJumpThru &&
+                       self.CollideCheckOutside(jumpThru, self.Position + Vector2.UnitY);
+            });
+            cursor.Emit(OpCodes.Ret);
         });
 
         private static void Actor_IsRiding_Solid(ILContext il) => HookUtils.SafeHook(() =>
         {
             var cursor = new ILCursor(il);
 
-            if (cursor.TryGotoNext(MoveType.After, instr => instr.MatchCall<Vector2>("get_UnitY")))
-                cursor.EmitInvertVectorDelegate();
-            else
-                throw new Exception("Couldn't patch Actor.IsRiding for solids");
+            if (!cursor.TryGotoNext(MoveType.After, instr => instr.MatchCall<Vector2>("get_UnitY")))
+                throw new HookException("Couldn't patch Actor.IsRiding for solids");
+
+            cursor.EmitActorInvertVectorDelegate(OpCodes.Ldarg_0);
         });
 
         private static void Actor_MoveVExact(ILContext il) => HookUtils.SafeHook(() =>
         {
             var cursor = new ILCursor(il);
 
-            if (cursor.TryGotoNext(MoveType.After, instr => instr.MatchLdarg(1),
-                instr => instr.MatchLdcI4(0) && instr.Next.MatchBle(out _)))
-            {
-                cursor.Next.MatchBle(out var label);
-                cursor.Remove();
-                cursor.Emit(OpCodes.Beq_S, label);
-            }
-            else
-            {
-                throw new Exception("Couldn't patch ble to beq.");
-            }
+            ILLabel target = default;
 
-            if (cursor.TryGotoNext(instr => instr.MatchCallGeneric<Entity>(nameof(Entity.CollideFirstOutside), out _)))
-            {
-                cursor.Remove();
-                cursor.Emit(OpCodes.Ldloc_1); // num1
-                cursor.Emit(OpCodes.Ldarg_1); // moveV
-                cursor.EmitDelegate<Func<Actor, Vector2, int, int, JumpThru>>((self, at, num1, moveV) =>
-                    moveV > 0
-                        ? self.CollideFirstOutside<JumpThru>(at)
-                        : self.CollideFirstOutside<UpsideDownJumpThru>(self.Position + Vector2.UnitY * num1));
-            }
-            else
-            {
-                throw new Exception("Couldn't replace CollideFirstOutside<JumpThru>.");
-            }
+            if (!cursor.TryGotoNext(
+                instr => instr.MatchLdarg(1),
+                instr => instr.MatchLdcI4(0),
+                instr => instr.MatchBle(out target)))
+                throw new HookException("Couldn't find moveV > 0.");
+
+            // skip 'moveV > 0' check since we potentially always want to do collision checks with jumpthrus
+            cursor.Emit(OpCodes.Br_S, target);
+
+            // replace CollideFirstOutside<JumpThru> with a delegate that handles upside down jumpthrus
+            if (!cursor.TryGotoNext(instr => instr.MatchCallGeneric<Entity>(nameof(Entity.CollideFirstOutside), out _)))
+                throw new HookException("Couldn't find CollideFirstOutside<JumpThru>.");
+
+            cursor.Remove();
+            cursor.Emit(OpCodes.Ldloc_1); // num1
+            cursor.Emit(OpCodes.Ldarg_1); // moveV
+            cursor.EmitDelegate<Func<Actor, Vector2, int, int, JumpThru>>((self, at, num1, moveV) =>
+                moveV > 0
+                    ? self.CollideFirstOutside<JumpThru>(at)
+                    : self.CollideFirstOutside<UpsideDownJumpThru>(self.Position + Vector2.UnitY * num1));
         });
 
         private static bool Actor_MoveV(On.Celeste.Actor.orig_MoveV orig, Actor self, float moveV, Collision onCollide, Solid pusher)
@@ -128,7 +123,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
         private static bool Actor_OnGround_int(On.Celeste.Actor.orig_OnGround_int orig, Actor self, int downCheck)
         {
-            if (!GravityHelperModule.ShouldInvert || self is not Player)
+            if (!GravityHelperModule.ShouldInvertActor(self))
                 return orig(self, downCheck);
 
             if (self.CollideCheck<Solid>(self.Position - Vector2.UnitY * downCheck))
