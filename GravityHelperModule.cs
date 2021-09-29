@@ -81,6 +81,12 @@ namespace Celeste.Mod.GravityHelper
             deactivateHooks();
         }
 
+        public override void Initialize()
+        {
+            base.Initialize();
+            ThirdPartyHooks.Load();
+        }
+
         private static bool hooksActive;
 
         private static void activateHooks()
@@ -106,7 +112,6 @@ namespace Celeste.Mod.GravityHelper
             SpikesHooks.Load();
             SpringHooks.Load();
             TrailManagerHooks.Load();
-            ThirdPartyHooks.Load();
         }
 
         private static void deactivateHooks()
@@ -132,7 +137,6 @@ namespace Celeste.Mod.GravityHelper
             SpikesHooks.Unload();
             SpringHooks.Unload();
             TrailManagerHooks.Unload();
-            ThirdPartyHooks.Unload();
         }
 
         private static void LevelEnter_Go(On.Celeste.LevelEnter.orig_Go orig, Session session, bool fromsavedata)
