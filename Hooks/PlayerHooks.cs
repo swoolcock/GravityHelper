@@ -1064,13 +1064,6 @@ namespace Celeste.Mod.GravityHelper.Hooks
                 Input.Feather.SetValue(new Vector2(Input.Feather.Value.X, featherY));
                 Input.Aim.SetValue(new Vector2(Input.Aim.Value.X, aimY));
             }
-
-            // flip crown in MaddyCrown if loaded
-            if (ReflectionCache.GetMaddyCrownModuleSprite() is { } mcs)
-            {
-                mcs.Position.Y = Math.Abs(mcs.Position.Y) * (GravityHelperModule.ShouldInvert ? 1 : -1);
-                mcs.Scale.Y = GravityHelperModule.ShouldInvert ? -1 : 1;
-            }
         }
 
         private static void Player_WindMove(On.Celeste.Player.orig_WindMove orig, Player self, Vector2 move) =>
