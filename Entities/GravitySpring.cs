@@ -1,3 +1,6 @@
+// Copyright (c) Shane Woolcock. Licensed under the MIT Licence.
+// See the LICENCE file in the repository root for full licence text.
+
 using System;
 using Celeste.Mod.Entities;
 using Microsoft.Xna.Framework;
