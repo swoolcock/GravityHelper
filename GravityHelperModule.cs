@@ -1,4 +1,7 @@
-﻿#if DEBUG
+﻿// Copyright (c) Shane Woolcock. Licensed under the MIT Licence.
+// See the LICENCE file in the repository root for full licence text.
+
+#if DEBUG
 #define FORCE_LOAD_HOOKS
 #endif
 
@@ -100,6 +103,7 @@ namespace Celeste.Mod.GravityHelper
             BounceBlockHooks.Load();
             BumperHooks.Load();
             FlyFeatherHooks.Load();
+            HoldableHooks.Load();
             JumpThruHooks.Load();
             LevelHooks.Load();
             PlayerDeadBodyHooks.Load();
@@ -125,6 +129,7 @@ namespace Celeste.Mod.GravityHelper
             BounceBlockHooks.Unload();
             BumperHooks.Unload();
             FlyFeatherHooks.Unload();
+            HoldableHooks.Unload();
             JumpThruHooks.Unload();
             LevelHooks.Unload();
             PlayerDeadBodyHooks.Unload();

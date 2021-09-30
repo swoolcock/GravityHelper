@@ -1,3 +1,6 @@
+// Copyright (c) Shane Woolcock. Licensed under the MIT Licence.
+// See the LICENCE file in the repository root for full licence text.
+
 using System;
 using System.Linq;
 using System.Reflection;
@@ -53,6 +56,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             IL.Celeste.Player.SwimJumpCheck += Player_SwimJumpCheck;
             IL.Celeste.Player.SwimRiseCheck += Player_SwimRiseCheck;
             IL.Celeste.Player.SwimUnderwaterCheck += Player_SwimUnderwaterCheck;
+            IL.Celeste.Player.UpdateCarry += Player_UpdateCarry;
 
             On.Celeste.Player.ctor += Player_ctor;
             On.Celeste.Player.Added += Player_Added;
@@ -121,6 +125,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             IL.Celeste.Player.SwimJumpCheck -= Player_SwimJumpCheck;
             IL.Celeste.Player.SwimRiseCheck -= Player_SwimRiseCheck;
             IL.Celeste.Player.SwimUnderwaterCheck -= Player_SwimUnderwaterCheck;
+            IL.Celeste.Player.UpdateCarry -= Player_UpdateCarry;
 
             On.Celeste.Player.ctor -= Player_ctor;
             On.Celeste.Player.Added -= Player_Added;
@@ -825,6 +830,21 @@ namespace Celeste.Mod.GravityHelper.Hooks
             var cursor = new ILCursor(il);
             cursor.GotoNext(MoveType.After, instr => instr.MatchLdcR4(out _));
             cursor.EmitInvertFloatDelegate();
+        });
+
+        private static void Player_UpdateCarry(ILContext il) => HookUtils.SafeHook(() =>
+        {
+            var cursor = new ILCursor(il);
+
+            if (!cursor.TryGotoNext(MoveType.After, instr => instr.MatchLdfld<Player>("carryOffset")))
+                throw new HookException("Couldn't find carryOffset.");
+
+            cursor.EmitInvertVectorDelegate();
+
+            if (!cursor.TryGotoNext(MoveType.After, Extensions.UnitYPredicate))
+                throw new HookException("Couldn't find get_UnitY.");
+
+            cursor.EmitInvertVectorDelegate();
         });
 
         #endregion
