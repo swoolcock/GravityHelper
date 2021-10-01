@@ -1,6 +1,7 @@
 // Copyright (c) Shane Woolcock. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+using System.Linq;
 using Celeste.Mod.Entities;
 using Microsoft.Xna.Framework;
 using Monocle;
@@ -38,15 +39,39 @@ namespace Celeste.Mod.GravityHelper.Entities
             sprite.Scale.Y *= -1;
 
             var animations = sprite.GetAnimations();
+            bool failedKey = false;
+
             foreach (var prefix in prefixes)
             {
                 foreach (var pair in pairs)
                 {
-                    var upAnim = animations[prefix + pair[0]];
-                    var downAnim = animations[prefix + pair[1]];
-                    animations[prefix + pair[0]] = downAnim;
-                    animations[prefix + pair[1]] = upAnim;
+                    var upAnimString = prefix + pair[0];
+                    var downAnimString = prefix + pair[1];
+
+                    if (!animations.TryGetValue(upAnimString, out var upAnim))
+                    {
+                        Logger.Log(nameof(GravityHelperModule), $"Couldn't find up animation {upAnimString}");
+                        failedKey = true;
+                        continue;
+                    }
+
+                    if (!animations.TryGetValue(upAnimString, out var downAnim))
+                    {
+                        Logger.Log(nameof(GravityHelperModule), $"Couldn't find down animation {downAnimString}");
+                        failedKey = true;
+                        continue;
+                    }
+
+                    animations[upAnimString] = downAnim;
+                    animations[downAnimString] = upAnim;
                 }
+            }
+
+            // if we failed getting any animation key, dump out the available ones
+            if (failedKey)
+            {
+                var animKeys = string.Join(",", animations.Keys);
+                Logger.Log(nameof(GravityHelperModule), $"WatchTower animations available: {animKeys}");
             }
         }
 
