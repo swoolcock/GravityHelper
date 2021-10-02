@@ -277,7 +277,31 @@ namespace Celeste.Mod.GravityHelper.Hooks
             // if (Input.MoveY.Value != 1 && (double) this.Speed.Y > 0.0 && !this.CollideCheck<Solid>(this.Position + new Vector2((float) this.Facing, 1f)))
             cursor.GotoNextAddition();
             cursor.EmitInvertVectorDelegate();
+
+            // borrowed from MaxHelpingHand
+            if (cursor.TryGotoNext(instr => instr.MatchStfld<Vector2>("Y"),
+                instr => instr.MatchLdarg(0),
+                instr => instr.MatchLdfld<Player>("climbNoMoveTimer"),
+                instr => instr.MatchLdcR4(0.0f)))
+            {
+                cursor.Index += 2;
+                FieldInfo field = typeof (Player).GetField("lastClimbMove", BindingFlags.Instance | BindingFlags.NonPublic);
+                cursor.Emit(OpCodes.Ldarg_0);
+                cursor.Emit(OpCodes.Ldarg_0);
+                cursor.Emit(OpCodes.Ldfld, field);
+                cursor.EmitDelegate<Func<Player, int, int>>(updateClimbMove);
+                cursor.Emit(OpCodes.Stfld, field);
+                cursor.Emit(OpCodes.Ldarg_0);
+            }
         });
+
+        private static int updateClimbMove(Player player, int lastClimbMove)
+        {
+            if (Input.MoveY.Value != -1 || !player.CollideCheckOutsideUpsideDownJumpThru(player.Position - Vector2.UnitY))
+                return lastClimbMove;
+            player.Speed.Y = 0.0f;
+            return 0;
+        }
 
         private static void Player_CreateWallSlideParticles(ILContext il) => HookUtils.SafeHook(() =>
         {
