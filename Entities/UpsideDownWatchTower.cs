@@ -50,14 +50,14 @@ namespace Celeste.Mod.GravityHelper.Entities
 
                     if (!animations.TryGetValue(upAnimString, out var upAnim))
                     {
-                        Logger.Log(nameof(GravityHelperModule), $"Couldn't find up animation {upAnimString}");
+                        Logger.Log(LogLevel.Warn, nameof(GravityHelperModule), $"Couldn't find up animation {upAnimString}");
                         failedKey = true;
                         continue;
                     }
 
                     if (!animations.TryGetValue(upAnimString, out var downAnim))
                     {
-                        Logger.Log(nameof(GravityHelperModule), $"Couldn't find down animation {downAnimString}");
+                        Logger.Log(LogLevel.Warn, nameof(GravityHelperModule), $"Couldn't find down animation {downAnimString}");
                         failedKey = true;
                         continue;
                     }
@@ -71,7 +71,7 @@ namespace Celeste.Mod.GravityHelper.Entities
             if (failedKey)
             {
                 var animKeys = string.Join(",", animations.Keys);
-                Logger.Log(nameof(GravityHelperModule), $"WatchTower animations available: {animKeys}");
+                Logger.Log(LogLevel.Warn, nameof(GravityHelperModule), $"WatchTower animations available: {animKeys}");
             }
         }
 
