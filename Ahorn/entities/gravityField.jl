@@ -6,7 +6,8 @@ using ..Ahorn, Maple
     x::Integer, y::Integer,
     width::Integer=Maple.defaultBlockWidth, height::Integer=Maple.defaultBlockHeight,
     gravityType::Integer=0, attachToSolids::Bool=false,
-    arrowType::Integer=-2, fieldType::Integer=-2
+    arrowType::Integer=-2, fieldType::Integer=-2,
+    arrowOpacity::String="", fieldOpacity::String="", particleOpacity::String=""
 )
 
 const gravityColors = Dict{Integer, Tuple{Real, Real, Real, Real}}(
@@ -79,7 +80,7 @@ function Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::GravityField, room:
     height = Int(get(entity.data, "height", 8))
     gravityType = Int(get(entity.data, "gravityType", 0))
     color = gravityColors[gravityType]
-    
+
     Ahorn.Cairo.save(ctx)
     Ahorn.set_antialias(ctx, 1)
     Ahorn.set_line_width(ctx, 1)

@@ -2,8 +2,8 @@ module GravityHelperGravityController
 
 using ..Ahorn, Maple
 
-const default_normal_gravity_sound = "event:/char/madeline/climb_ledge"
-const default_inverted_gravity_sound = "event:/char/madeline/crystaltheo_lift"
+const default_normal_gravity_sound = "event:/ui/game/lookout_off"
+const default_inverted_gravity_sound = "event:/ui/game/lookout_on"
 
 @mapdef Entity "GravityHelper/GravityController" GravityController(
     x::Integer, y::Integer,
@@ -11,6 +11,7 @@ const default_inverted_gravity_sound = "event:/char/madeline/crystaltheo_lift"
     normalGravitySound::String=default_normal_gravity_sound,
     invertedGravitySound::String=default_inverted_gravity_sound,
     toggleGravitySound::String="",
+    arrowOpacity::Real=0.5, fieldOpacity::Real=0.15, particleOpacity::Real=0.5
 )
 
 const placements = Ahorn.PlacementDict(

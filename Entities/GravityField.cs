@@ -15,25 +15,42 @@ namespace Celeste.Mod.GravityHelper.Entities
     [Tracked]
     public class GravityField : Trigger, IConnectableField
     {
-        private static readonly Color gravity_normal_color = Color.Blue;
-        private static readonly Color gravity_invert_color = Color.Red;
-        private static readonly Color gravity_toggle_color = Color.Purple;
+        public static readonly Color GRAVITY_NORMAL_COLOR = Color.Blue;
+        public static readonly Color GRAVITY_INVERT_COLOR = Color.Red;
+        public static readonly Color GRAVITY_TOGGLE_COLOR = Color.Purple;
+
+        public const float DEFAULT_ARROW_OPACITY = 0.5f;
+        public const float DEFAULT_FIELD_OPACITY = 0.15f;
+        public const float DEFAULT_PARTICLE_OPACITY = 0.5f;
+
+        #region Entity Properties
 
         public GravityType GravityType { get; }
         public VisualType ArrowType { get; }
         public VisualType FieldType { get; }
         public bool AttachToSolids { get; }
 
-        public Color FieldColor => colorForGravityType(fieldGravityType);
+        private float? _arrowOpacity;
+        public float ArrowOpacity => _arrowOpacity ?? DEFAULT_ARROW_OPACITY;
+
+        private float? _fieldOpacity;
+        public float FieldOpacity => _fieldOpacity ?? DEFAULT_FIELD_OPACITY;
+
+        private float? _particleOpacity;
+        public float ParticleOpacity => _particleOpacity ?? DEFAULT_PARTICLE_OPACITY;
+
+        #endregion
+
+        public Color FieldColor => colorForGravityType(fieldGravityType) * FieldOpacity;
 
         private GravityType arrowGravityType => ArrowType == VisualType.Default ? GravityType : (GravityType) ArrowType;
         private GravityType fieldGravityType => FieldType == VisualType.Default ? GravityType : (GravityType) FieldType;
 
         private static Color colorForGravityType(GravityType type) => type switch
         {
-            GravityType.Normal => gravity_normal_color,
-            GravityType.Inverted => gravity_invert_color,
-            GravityType.Toggle => gravity_toggle_color,
+            GravityType.Normal => GRAVITY_NORMAL_COLOR,
+            GravityType.Inverted => GRAVITY_INVERT_COLOR,
+            GravityType.Toggle => GRAVITY_TOGGLE_COLOR,
             _ => Color.White
         };
 
@@ -60,6 +77,15 @@ namespace Celeste.Mod.GravityHelper.Entities
             AttachToSolids = data.Bool("attachToSolids");
             ArrowType = (VisualType)data.Int("arrowType", (int) VisualType.Default);
             FieldType = (VisualType)data.Int("fieldType", (int) VisualType.Default);
+
+            if (float.TryParse(data.Attr("arrowOpacity"), out var arrowOpacity))
+                _arrowOpacity = Calc.Clamp(arrowOpacity, 0f, 1f);
+
+            if (float.TryParse(data.Attr("particleOpacity"), out var particleOpacity))
+                _particleOpacity = Calc.Clamp(particleOpacity, 0f, 1f);
+
+            if (float.TryParse(data.Attr("fieldOpacity"), out var fieldOpacity))
+                _fieldOpacity = Calc.Clamp(fieldOpacity, 0f, 1f);
 
             shouldDrawArrows = !(ArrowType == VisualType.None || ArrowType == VisualType.Default && GravityType == GravityType.None);
             shouldDrawField = !(FieldType == VisualType.None || FieldType == VisualType.Default && GravityType == GravityType.None);
@@ -149,10 +175,19 @@ namespace Celeste.Mod.GravityHelper.Entities
             fieldGroup.Semaphore--;
         }
 
+        private GravityController getController(Scene scene)
+        {
+            if (scene == null) return null;
+            var controller = scene.Entities.OfType<GravityController>().FirstOrDefault() ??
+                             scene.Entities.ToAdd.OfType<GravityController>().FirstOrDefault();
+            return controller;
+        }
+
         private GravityFieldRenderer getRenderer(Scene scene, bool create = false)
         {
             if (scene == null) return null;
-            var renderer = scene.Entities.OfType<GravityFieldRenderer>().FirstOrDefault() ?? scene.Entities.ToAdd.OfType<GravityFieldRenderer>().FirstOrDefault();
+            var renderer = scene.Entities.OfType<GravityFieldRenderer>().FirstOrDefault() ??
+                           scene.Entities.ToAdd.OfType<GravityFieldRenderer>().FirstOrDefault();
             if (create && renderer == null)
                 scene.Add(renderer = new GravityFieldRenderer());
             return renderer;
@@ -161,6 +196,13 @@ namespace Celeste.Mod.GravityHelper.Entities
         public override void Added(Scene scene)
         {
             base.Added(scene);
+
+            if (getController(scene) is { } controller)
+            {
+                _arrowOpacity ??= controller.ArrowOpacity;
+                _fieldOpacity ??= controller.FieldOpacity;
+                _particleOpacity ??= controller.ParticleOpacity;
+            }
 
             if (shouldDrawField)
             {
@@ -219,7 +261,7 @@ namespace Celeste.Mod.GravityHelper.Entities
 
             if (shouldDrawField)
             {
-                Color color = Color.White * 0.5f;
+                Color color = Color.White * ParticleOpacity;
                 foreach (Vector2 particle in particles)
                     Draw.Pixel.Draw(Position + particle, Vector2.Zero, color);
             }
@@ -236,7 +278,7 @@ namespace Celeste.Mod.GravityHelper.Entities
                 // if width or height is 1, scale down the arrows
                 var texture = widthInTiles == 1 || heightInTiles == 1 ? arrowSmallTexture : arrowTexture;
                 var origin = widthInTiles == 1 || heightInTiles == 1 ? arrowSmallOrigin : arrowOrigin;
-                var color = shouldDrawField ? Color.White * 0.5f : Color.White;
+                var color = shouldDrawField ? Color.White * ArrowOpacity : Color.White;
 
                 // arrows should be centre aligned in each 2x2 box
                 // offset by half a tile if the width or height is odd

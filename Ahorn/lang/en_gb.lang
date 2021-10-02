@@ -10,6 +10,18 @@ placements.entities.GravityHelper/GravityField.tooltips.gravityType=The gravity 
 placements.entities.GravityHelper/GravityField.tooltips.arrowType=The gravity type to use when rendering arrows. "None" disables arrows, and "Default" will use the current value of gravityType.
 placements.entities.GravityHelper/GravityField.tooltips.fieldType=The gravity type to use when rendering the field. "None" disables field rendering, and "Default" will use the current value of gravityType.
 placements.entities.GravityHelper/GravityField.tooltips.attachToSolids=Whether this and connected fields should attach to solids.
+placements.entities.GravityHelper/GravityField.tooltips.fieldOpacity=The opacity of the shimmering field effect, if enabled. Ranges from 0 (invisible) to 1 (fully opaque). If empty and a GravityController exists, it will use the value provided from that, otherwise 0.15.
+placements.entities.GravityHelper/GravityField.tooltips.arrowOpacity=The opacity of the arrows, if enabled. Ranges from 0 (invisible) to 1 (fully opaque). If empty and a GravityController exists, it will use the value provided from that, otherwise 0.5.
+placements.entities.GravityHelper/GravityField.tooltips.particleOpacity=The opacity of the moving particles, if the field effect is enabled. Ranges from 0 (invisible) to 1 (fully opaque). If empty and a GravityController exists, it will use the value provided from that, otherwise 0.5.
+
+# Gravity Controller
+placements.entities.GravityHelper/GravityController.tooltips.alwaysTrigger=Whether or not gravity sound effects should always play when gravity is set, even if the gravity didn't actually change. Defaults to false.
+placements.entities.GravityHelper/GravityController.tooltips.normalGravitySound=The sound to play when gravity resets to normal. Defaults to event:/ui/game/lookout_off (the sound when cancelling a watch tower).
+placements.entities.GravityHelper/GravityController.tooltips.invertedGravitySound=The sound to play when gravity inverts. Defaults to event:/ui/game/lookout_on (the sound when first using a watch tower).
+placements.entities.GravityHelper/GravityController.tooltips.toggleGravitySound=Whether this and connected fields should attach to solids.
+placements.entities.GravityHelper/GravityController.tooltips.fieldOpacity=The default opacity of shimmering field effects, if enabled. Ranges from 0 (invisible) to 1 (fully opaque). Defaults to 0.15.
+placements.entities.GravityHelper/GravityController.tooltips.arrowOpacity=The default opacity of arrows, if enabled. Ranges from 0 (invisible) to 1 (fully opaque). Defaults to 0.5.
+placements.entities.GravityHelper/GravityController.tooltips.particleOpacity=The default opacity of moving particles, if enabled. Ranges from 0 (invisible) to 1 (fully opaque). Defaults to 0.5.
 
 # Gravity Refill
 placements.entities.GravityHelper/GravityRefill.tooltips.charges=The number of gravity charges that this refill will provide.
@@ -37,7 +49,7 @@ placements.entities.GravityHelper/GravitySpringWallRight.tooltips.cooldown=Time 
 placements.entities.GravityHelper/GravitySpringCeiling.tooltips.playerCanUse=Whether the spring will activate for the player.
 placements.entities.GravityHelper/GravitySpringCeiling.tooltips.gravityType=The gravity type to set when Madeline activates the spring.
 placements.entities.GravityHelper/GravitySpringCeiling.tooltips.cooldown=Time in seconds before the spring will change Madeline's gravity again (the bouncing component has no cooldown).
- 
+
 # Upside Down Watch Tower
 placements.entities.GravityHelper/UpsideDownWatchTower.tooltips.summit=Whether the watch tower should zoom on the final node or not. Requires nodes to function, otherwise game will crash.
 placements.entities.GravityHelper/UpsideDownWatchTower.tooltips.onlyY=Whether the watch tower can only move vertically. If the watch tower has nodes it will still follow them.

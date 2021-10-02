@@ -12,11 +12,11 @@ namespace Celeste.Mod.GravityHelper.Entities
     public class ConnectedFieldRenderer<TEntity> : Entity
         where TEntity : Entity, IConnectableField
     {
-        public ConnectedFieldRenderer()
+        protected ConnectedFieldRenderer()
         {
             Tag = Tags.TransitionUpdate;
             Depth = 1;
-            
+
             Add(new CustomBloom(onRenderBloom));
         }
 
@@ -24,7 +24,7 @@ namespace Celeste.Mod.GravityHelper.Entities
         {
             var fieldColor = entity.FieldColor;
             var fieldGroup = Components.GetAll<FieldGroupRenderer>().FirstOrDefault(f => f.Color == fieldColor);
-            
+
             if (fieldGroup == null)
                 Add(fieldGroup = new FieldGroupRenderer(fieldColor));
 
@@ -35,16 +35,16 @@ namespace Celeste.Mod.GravityHelper.Entities
         {
             var fieldColor = entity.FieldColor;
             var fieldGroup = Components.GetAll<FieldGroupRenderer>().FirstOrDefault(f => f.Color == fieldColor);
-            
+
             if (fieldGroup == null)
                 return;
-            
+
             fieldGroup.Untrack(entity, true);
-            
+
             if (removeIfEmpty && !Components.GetAll<FieldGroupRenderer>().Any())
                 RemoveSelf();
         }
-        
+
         private void onRenderBloom()
         {
             foreach (var fieldGroup in Components.GetAll<FieldGroupRenderer>())
@@ -54,9 +54,9 @@ namespace Celeste.Mod.GravityHelper.Entities
         private class FieldGroupRenderer : Component
         {
             public Color Color { get; }
-            
-            private List<TEntity> list = new List<TEntity>();
-            private List<Edge> edges = new List<Edge>();
+
+            private readonly List<TEntity> list = new List<TEntity>();
+            private readonly List<Edge> edges = new List<Edge>();
             private VirtualMap<bool> tiles;
             private Rectangle levelTileBounds;
             private bool dirty;
@@ -85,7 +85,7 @@ namespace Celeste.Mod.GravityHelper.Entities
                 list.Remove(entity);
 
                 dirty = true;
-                
+
                 if (list.Any())
                 {
                     for (int x = (int) entity.X / 8; x < entity.Right / 8.0; ++x)
@@ -223,12 +223,12 @@ namespace Celeste.Mod.GravityHelper.Entities
             {
                 if (list.Count <= 0)
                     return;
-                const float alpha = 0.15f;
-                Color color1 = Color * alpha;
+
+                var color = Color;
                 foreach (var entity in list)
                 {
                     if (entity.Visible)
-                        Draw.Rect(entity.Collider, color1);
+                        Draw.Rect(entity.Collider, color);
                 }
 
                 if (edges.Count == 0)
@@ -242,7 +242,7 @@ namespace Celeste.Mod.GravityHelper.Entities
                         for (int index = 0; index <= (double) edge.Length; ++index)
                         {
                             Vector2 start = vector2_1 + edge.Normal * index;
-                            Draw.Line(start, start + edge.Perpendicular * edge.Wave[index], color1);
+                            Draw.Line(start, start + edge.Perpendicular * edge.Wave[index], color);
                         }
                     }
                 }

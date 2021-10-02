@@ -21,6 +21,9 @@ namespace Celeste.Mod.GravityHelper.Entities
         public string InvertedGravitySound { get; }
         public string ToggleGravitySound { get; }
         public bool AlwaysTrigger { get; }
+        public float ArrowOpacity { get; }
+        public float FieldOpacity { get; }
+        public float ParticleOpacity { get; }
 
         public GravityController(EntityData data, Vector2 offset)
             : base(data.Position + offset)
@@ -29,6 +32,9 @@ namespace Celeste.Mod.GravityHelper.Entities
             InvertedGravitySound = data.Attr("invertedGravitySound", default_inverted_gravity_sound);
             ToggleGravitySound = data.Attr("toggleGravitySound");
             AlwaysTrigger = data.Bool("alwaysTrigger");
+            ArrowOpacity = Calc.Clamp(data.Float("arrowOpacity", GravityField.DEFAULT_ARROW_OPACITY), 0f, 1f);
+            FieldOpacity = Calc.Clamp(data.Float("fieldOpacity", GravityField.DEFAULT_FIELD_OPACITY), 0f, 1f);
+            ParticleOpacity = Calc.Clamp(data.Float("particleOpacity", GravityField.DEFAULT_PARTICLE_OPACITY), 0f, 1f);
 
             Add(new GravityListener
             {
