@@ -12,6 +12,8 @@ using Monocle;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
 
+// ReSharper disable InconsistentNaming
+
 namespace Celeste.Mod.GravityHelper.Hooks
 {
     public static class ThirdPartyHooks
@@ -23,6 +25,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             // executeIfAvailable("SpeedrunTool", true, loadSpeedrunTool);
             executeIfAvailable("FancyTileEntities", true, loadFancyTileEntities);
             executeIfAvailable("MaddyCrown", true, loadMaddyCrown);
+            executeIfAvailable("MaxHelpingHand", true, loadMaxHelpingHand);
         }
 
         public static void Unload()
@@ -31,15 +34,14 @@ namespace Celeste.Mod.GravityHelper.Hooks
             // executeIfAvailable("SpeedrunTool", false, unloadSpeedrunTool);
             executeIfAvailable("FancyTileEntities", false, unloadFancyTileEntities);
             executeIfAvailable("MaddyCrown", false, unloadMaddyCrown);
+            executeIfAvailable("MaxHelpingHand", false, unloadMaxHelpingHand);
         }
 
         #region FancyTileEntities
 
-        // ReSharper disable InconsistentNaming
         private static IDetour hook_FancyFallingBlock_MoveVExact;
         private static IDetour hook_FancyFallingBlock_GetLandSoundIndex;
         private static IDetour hook_FancyFallingBlock_GetStepSoundIndex;
-        // ReSharper restore InconsistentNaming
 
         private static void loadFancyTileEntities()
         {
@@ -159,7 +161,6 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
         #region MaddyCrown
 
-        // ReSharper disable once InconsistentNaming
         private static IDetour hook_MaddyCrownModule_Player_Update;
 
         private static void loadMaddyCrown()
@@ -190,6 +191,46 @@ namespace Celeste.Mod.GravityHelper.Hooks
             });
             cursor.Emit(OpCodes.Br_S, cursor.Next.Next);
         });
+
+        #endregion
+
+        #region MaxHelpingHand
+
+        private static IDetour hook_MaxHelpingHand_UpsideDownJumpThru_playerMovingUp;
+        private static IDetour hook_MaxHelpingHand_UpsideDownJumpThru_updateClimbMove;
+
+        private static void loadMaxHelpingHand()
+        {
+            var mhhudjt = ReflectionCache.MaxHelpingHandUpsideDownJumpThruType;
+
+            var playerMovingUpMethod = mhhudjt?.GetMethod("playerMovingUp", BindingFlags.Static | BindingFlags.NonPublic);
+            if (playerMovingUpMethod != null)
+            {
+                var target = typeof(ThirdPartyHooks).GetMethod(nameof(MaxHelpingHand_UpsideDownJumpThru_playerMovingUp), BindingFlags.Static | BindingFlags.NonPublic);
+                hook_MaxHelpingHand_UpsideDownJumpThru_playerMovingUp = new Hook(playerMovingUpMethod, target);
+            }
+
+            var updateClimbMoveMethod = mhhudjt?.GetMethod("updateClimbMove", BindingFlags.Static | BindingFlags.NonPublic);
+            if (updateClimbMoveMethod != null)
+            {
+                var target = typeof(ThirdPartyHooks).GetMethod(nameof(MaxHelpingHand_UpsideDownJumpThru_updateClimbMove), BindingFlags.Static | BindingFlags.NonPublic);
+                hook_MaxHelpingHand_UpsideDownJumpThru_updateClimbMove = new Hook(updateClimbMoveMethod, target);
+            }
+        }
+
+        private static void unloadMaxHelpingHand()
+        {
+            hook_MaxHelpingHand_UpsideDownJumpThru_playerMovingUp?.Dispose();
+            hook_MaxHelpingHand_UpsideDownJumpThru_playerMovingUp = null;
+            hook_MaxHelpingHand_UpsideDownJumpThru_updateClimbMove?.Dispose();
+            hook_MaxHelpingHand_UpsideDownJumpThru_updateClimbMove = null;
+        }
+
+        private static int MaxHelpingHand_UpsideDownJumpThru_updateClimbMove(Func<Player, int, int> orig, Player player, int lastClimbMove) =>
+            GravityHelperModule.ShouldInvert ? lastClimbMove : orig(player, lastClimbMove);
+
+        private static bool MaxHelpingHand_UpsideDownJumpThru_playerMovingUp(Func<Player, bool> orig, Player player) =>
+            orig(player) != GravityHelperModule.ShouldInvert;
 
         #endregion
 

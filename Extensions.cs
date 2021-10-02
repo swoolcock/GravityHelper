@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Celeste.Mod.GravityHelper.Entities;
 using Microsoft.Xna.Framework;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -37,7 +38,7 @@ namespace Celeste.Mod.GravityHelper
 
         public static IEnumerable<Entity> GetEntitiesOrEmpty(this Tracker tracker, Type entityType, Func<Entity, bool> predicate = null)
         {
-            if (!tracker.Entities.TryGetValue(entityType, out var list))
+            if (entityType == null || !tracker.Entities.TryGetValue(entityType, out var list))
                 return Enumerable.Empty<Entity>();
             return predicate == null ? list : list.Where(predicate);
         }
@@ -80,6 +81,43 @@ namespace Celeste.Mod.GravityHelper
             return entities != null && Collide.Check(entity, entities);
         }
 
+        public static bool CollideCheckUpsideDownJumpThru(this Entity entity)
+        {
+            if (entity.CollideCheck<UpsideDownJumpThru>())
+                return true;
+            if (ReflectionCache.MaxHelpingHandUpsideDownJumpThruType != null && entity.CollideCheck(ReflectionCache.MaxHelpingHandUpsideDownJumpThruType))
+                return true;
+            return false;
+        }
+
+        public static bool CollideCheckUpsideDownJumpThru(this Entity entity, Vector2 at)
+        {
+            if (entity.CollideCheck<UpsideDownJumpThru>(at))
+                return true;
+            if (ReflectionCache.MaxHelpingHandUpsideDownJumpThruType != null && entity.CollideCheck(ReflectionCache.MaxHelpingHandUpsideDownJumpThruType, at))
+                return true;
+            return false;
+        }
+
+        public static bool CollideCheckOutsideUpsideDownJumpThru(this Entity entity, Vector2 at)
+        {
+            if (entity.CollideCheckOutside<UpsideDownJumpThru>(at))
+                return true;
+            if (ReflectionCache.MaxHelpingHandUpsideDownJumpThruType != null && entity.CollideCheckOutside(ReflectionCache.MaxHelpingHandUpsideDownJumpThruType, at))
+                return true;
+            return false;
+        }
+
+        public static JumpThru CollideFirstOutsideUpsideDownJumpThru(this Entity entity, Vector2 at)
+        {
+            JumpThru collide = entity.CollideFirstOutside<UpsideDownJumpThru>(at);
+
+            if (collide == null && ReflectionCache.MaxHelpingHandUpsideDownJumpThruType != null)
+                collide = (JumpThru) entity.CollideFirstOutside(ReflectionCache.MaxHelpingHandUpsideDownJumpThruType, at);
+
+            return collide;
+        }
+
         private static IEnumerable<Entity> getEntities(Scene scene, Type type, bool checkAllEntities = false)
         {
             IEnumerable<Entity> entities = null;
@@ -89,6 +127,13 @@ namespace Celeste.Mod.GravityHelper
                 entities = scene.Tracker.Entities[type];
 
             return entities;
+        }
+
+        public static bool IsUpsideDownJumpThru(this JumpThru jumpThru)
+        {
+            if (jumpThru is UpsideDownJumpThru) return true;
+            if (jumpThru.GetType() == ReflectionCache.MaxHelpingHandUpsideDownJumpThruType) return true;
+            return false;
         }
 
         #endregion

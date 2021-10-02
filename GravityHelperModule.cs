@@ -6,7 +6,6 @@
 #endif
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Celeste.Mod.GravityHelper.Entities;
@@ -46,18 +45,10 @@ namespace Celeste.Mod.GravityHelper
 
         public int GravityRefillCharges { get; set; }
 
-        private static bool showMHHPostcard;
-        private static Postcard maxHelpingHandPostcard;
-
         #region Hook Activation
 
         public override void Load()
         {
-            Logger.Log(nameof(GravityHelperModule), "Loading compatibility check hooks...");
-            On.Celeste.LevelEnter.Go += LevelEnter_Go;
-            On.Celeste.LevelEnter.Routine += LevelEnter_Routine;
-            On.Celeste.LevelEnter.BeforeRender += LevelEnter_BeforeRender;
-
 #if FORCE_LOAD_HOOKS
             // force load hooks in debug builds
             Logger.Log(nameof(GravityHelperModule), "Force loading hooks due to debug build...");
@@ -71,11 +62,6 @@ namespace Celeste.Mod.GravityHelper
 
         public override void Unload()
         {
-            Logger.Log(nameof(GravityHelperModule), "Unloading compatibility check hooks...");
-            On.Celeste.LevelEnter.Go -= LevelEnter_Go;
-            On.Celeste.LevelEnter.Routine -= LevelEnter_Routine;
-            On.Celeste.LevelEnter.BeforeRender -= LevelEnter_BeforeRender;
-
 #if !FORCE_LOAD_HOOKS
             Logger.Log(nameof(GravityHelperModule), $"Unloading bootstrap hooks...");
             On.Celeste.LevelLoader.ctor -= LevelLoader_ctor;
@@ -144,36 +130,10 @@ namespace Celeste.Mod.GravityHelper
             TrailManagerHooks.Unload();
         }
 
-        private static void LevelEnter_Go(On.Celeste.LevelEnter.orig_Go orig, Session session, bool fromsavedata)
-        {
-            checkConflicts(session);
-            orig(session, fromsavedata);
-        }
-
         private static void AssetReloadHelper_ReloadLevel(On.Celeste.Mod.AssetReloadHelper.orig_ReloadLevel orig)
         {
             Instance.GravityBeforeReload = Instance.Gravity;
             orig();
-        }
-
-        private static void LevelEnter_BeforeRender(On.Celeste.LevelEnter.orig_BeforeRender orig, LevelEnter self)
-        {
-            orig(self);
-            maxHelpingHandPostcard?.BeforeRender();
-        }
-
-        private static IEnumerator LevelEnter_Routine(On.Celeste.LevelEnter.orig_Routine orig, LevelEnter self)
-        {
-            if (showMHHPostcard)
-            {
-                showMHHPostcard = false;
-                self.Add(maxHelpingHandPostcard = new Postcard(Dialog.Get("POSTCARD_GRAVITYHELPER_MHH_UDJT"),
-                    "event:/ui/main/postcard_csides_in", "event:/ui/main/postcard_csides_out"));
-                yield return maxHelpingHandPostcard.DisplayRoutine();
-                maxHelpingHandPostcard = null;
-            }
-
-            yield return new SwapImmediately(orig(self));
         }
 
 #if !FORCE_LOAD_HOOKS
@@ -289,23 +249,6 @@ namespace Celeste.Mod.GravityHelper
 
             Session.InitialGravity = (GravityType) gravityType;
             Engine.Commands.Log($"Initial gravity is now: {Session.InitialGravity}");
-        }
-
-        private static void checkConflicts(Session session)
-        {
-            if (Everest.Loader.DependencyLoaded(new EverestModuleMetadata {Name = "MaxHelpingHand"}))
-                checkMHHConflicts(session);
-        }
-
-        private static void checkMHHConflicts(Session session)
-        {
-            if (AreaData.Areas.Count <= session.Area.ID ||
-                AreaData.Areas[session.Area.ID].Mode.Length <= (int)session.Area.Mode ||
-                AreaData.Areas[session.Area.ID].Mode[(int)session.Area.Mode] == null)
-                return;
-
-            showMHHPostcard = session.MapData.Levels.Exists(levelData =>
-                levelData.Entities.Exists(e => e.Name == "MaxHelpingHand/UpsideDownJumpThru"));
         }
     }
 }

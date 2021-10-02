@@ -7,6 +7,7 @@ using Microsoft.Xna.Framework;
 using Mono.Cecil.Cil;
 using Monocle;
 using MonoMod.Cil;
+using MonoMod.RuntimeDetour;
 
 // ReSharper disable InconsistentNaming
 
@@ -20,7 +21,10 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
             IL.Celeste.Actor.IsRiding_JumpThru += Actor_IsRiding_JumpThru;
             IL.Celeste.Actor.IsRiding_Solid += Actor_IsRiding_Solid;
-            IL.Celeste.Actor.MoveVExact += Actor_MoveVExact;
+
+            // we need to run this after MaxHelpingHand to ensure both UDJT types are handled
+            using (new DetourContext {After = {"MaxHelpingHand"}})
+                IL.Celeste.Actor.MoveVExact += Actor_MoveVExact;
 
             On.Celeste.Actor.MoveV += Actor_MoveV;
             On.Celeste.Actor.MoveVExact += Actor_MoveVExact;
@@ -54,9 +58,9 @@ namespace Celeste.Mod.GravityHelper.Hooks
             cursor.EmitDelegate<Func<Actor, JumpThru, bool>>((self, jumpThru) =>
             {
                 var shouldInvert = GravityHelperModule.ShouldInvertActor(self);
-                return shouldInvert && jumpThru is UpsideDownJumpThru &&
+                return shouldInvert && jumpThru.IsUpsideDownJumpThru() &&
                        self.CollideCheckOutside(jumpThru, self.Position - Vector2.UnitY) ||
-                       !shouldInvert && jumpThru is not UpsideDownJumpThru &&
+                       !shouldInvert && !jumpThru.IsUpsideDownJumpThru() &&
                        self.CollideCheckOutside(jumpThru, self.Position + Vector2.UnitY);
             });
             cursor.Emit(OpCodes.Ret);
@@ -84,11 +88,12 @@ namespace Celeste.Mod.GravityHelper.Hooks
                 instr => instr.MatchLdfld<Actor>(nameof(Actor.IgnoreJumpThrus))))
                 throw new HookException("Couldn't find moveV > 0.");
 
-            // skip 'moveV > 0' check since we potentially always want to do collision checks with jumpthrus
+            // replace 'moveV > 0' with 'moveV != 0' since we potentially always want to do collision checks with jumpthrus
             cursor.Remove();
             cursor.Emit(OpCodes.Beq_S, target);
 
             // replace CollideFirstOutside<JumpThru> with a delegate that handles upside down jumpthrus
+            // note that we only check for GravityHelper UDJT since Max's are already handled
             if (!cursor.TryGotoNext(instr => instr.MatchCallGeneric<Entity>(nameof(Entity.CollideFirstOutside), out _)))
                 throw new HookException("Couldn't find CollideFirstOutside<JumpThru>.");
 
@@ -134,7 +139,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
                 return true;
 
             if (!self.IgnoreJumpThrus)
-                return self.CollideCheckOutside<UpsideDownJumpThru>(self.Position - Vector2.UnitY * downCheck);
+                return self.CollideCheckOutsideUpsideDownJumpThru(self.Position - Vector2.UnitY * downCheck);
 
             return false;
         }

@@ -350,7 +350,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             cursor.Remove();
             cursor.EmitDelegate<Func<Player, bool>>(self =>
                 self.CollideCheck<Solid>() ||
-                !GravityHelperModule.ShouldInvert && self.CollideCheck<UpsideDownJumpThru>() ||
+                !GravityHelperModule.ShouldInvert && self.CollideCheckUpsideDownJumpThru() ||
                 GravityHelperModule.ShouldInvert && self.CollideCheck<JumpThru>());
         });
 
@@ -485,7 +485,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             cursor.EmitDelegate<Func<Player, Platform>>(self =>
                 !GravityHelperModule.ShouldInvert
                     ? self.CollideFirstOutside<JumpThru>(self.Position + Vector2.UnitY)
-                    : self.CollideFirstOutside<UpsideDownJumpThru>(self.Position - Vector2.UnitY));
+                    : self.CollideFirstOutsideUpsideDownJumpThru(self.Position - Vector2.UnitY));
             cursor.Emit(OpCodes.Stloc_1);
             cursor.Emit(OpCodes.Br_S, platformNotEqualNull);
             cursor.Goto(platformNotEqualNull);
@@ -524,7 +524,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             cursor.EmitDelegate<Func<Player, bool>>(self =>
                 !GravityHelperModule.ShouldInvert
                     ? self.CollideCheckOutside<JumpThru>(self.Position + Vector2.UnitY)
-                    : self.CollideCheckOutside<UpsideDownJumpThru>(self.Position - Vector2.UnitY));
+                    : self.CollideCheckOutsideUpsideDownJumpThru(self.Position - Vector2.UnitY));
             cursor.Emit(OpCodes.Brfalse_S, varJumpTimerCheck);
             cursor.Emit(OpCodes.Br_S, spikesCheck);
 
@@ -601,7 +601,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             cursor.EmitDelegate<Func<Player, bool>>(self =>
             {
                 bool checkJumpthru() => GravityHelperModule.ShouldInvert
-                    ? self.CollideCheck<UpsideDownJumpThru>()
+                    ? self.CollideCheckUpsideDownJumpThru()
                     : self.CollideCheck<JumpThru>();
 
                 return !self.GetOnGround() && self.Speed.Y <= 0 &&
@@ -620,7 +620,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             {
                 var dashCorrect = GravityHelperModule.ShouldInvert ? -3f : 3f;
                 bool checkJumpThru(Vector2 at) => GravityHelperModule.ShouldInvert
-                    ? self.CollideCheckOutside<UpsideDownJumpThru>(at)
+                    ? self.CollideCheckOutsideUpsideDownJumpThru(at)
                     : self.CollideCheckOutside<JumpThru>(at);
 
                 return !self.GetOnGround() && self.DashAttacking && self.DashDir.Y == 0 &&
@@ -676,7 +676,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
                 cursor.EmitDelegate<Func<Player, Vector2, bool>>((self, at) =>
                     !GravityHelperModule.ShouldInvert
                         ? self.CollideCheck<JumpThru>(at)
-                        : self.CollideCheck<UpsideDownJumpThru>(at));
+                        : self.CollideCheckUpsideDownJumpThru(at));
             }
         });
 
@@ -1009,7 +1009,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             }
 
             if (GravityHelperModule.ShouldInvert && self.CollideCheckOutside<JumpThru>(self.Position + Vector2.UnitY) ||
-                !GravityHelperModule.ShouldInvert && self.CollideCheckOutside<UpsideDownJumpThru>(self.Position - Vector2.UnitY))
+                !GravityHelperModule.ShouldInvert && self.CollideCheckOutsideUpsideDownJumpThru(self.Position - Vector2.UnitY))
             {
                 self.Speed.Y = 0.0f;
                 self.SetLastClimbMove(0);
@@ -1118,7 +1118,10 @@ namespace Celeste.Mod.GravityHelper.Hooks
                 if (!GravityHelperModule.ShouldInvert)
                     return false;
 
-                var entities = self.Scene.Tracker.GetEntitiesOrEmpty<UpsideDownJumpThru>();
+                var ghUdjt = self.Scene.Tracker.GetEntitiesOrEmpty<UpsideDownJumpThru>().Cast<Entity>();
+                var mhhUdjt = self.Scene.Tracker.GetEntitiesOrEmpty(ReflectionCache.MaxHelpingHandUpsideDownJumpThruType);
+                var entities = ghUdjt.Concat(mhhUdjt);
+
                 foreach (var entity in entities)
                 {
                     if (self.CollideCheck(entity) && entity.Bottom - self.Top <= 6f &&

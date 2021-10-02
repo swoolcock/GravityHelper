@@ -22,6 +22,6 @@ namespace Celeste.Mod.GravityHelper.Hooks
         }
 
         private static bool JumpThru_HasPlayerRider(On.Celeste.JumpThru.orig_HasPlayerRider orig, JumpThru self) =>
-            GravityHelperModule.ShouldInvert == self is UpsideDownJumpThru && orig(self);
+            GravityHelperModule.ShouldInvert == self.IsUpsideDownJumpThru() && orig(self);
     }
 }
