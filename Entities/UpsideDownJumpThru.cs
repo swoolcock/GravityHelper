@@ -12,18 +12,18 @@ namespace Celeste.Mod.GravityHelper.Entities
     [Tracked]
     public class UpsideDownJumpThru : JumpThru
     {
-        private readonly int columns;
-        private readonly string overrideTexture;
-        private readonly int overrideSoundIndex;
+        private readonly int _columns;
+        private readonly string _overrideTexture;
+        private readonly int _overrideSoundIndex;
 
         public UpsideDownJumpThru(Vector2 position, int width, string overrideTexture, int overrideSoundIndex = -1)
             : base(position, width, true)
         {
-            columns = width / 8;
-            Depth = -60;
-            this.overrideTexture = overrideTexture;
-            this.overrideSoundIndex = overrideSoundIndex;
+            _columns = width / 8;
+            _overrideTexture = overrideTexture;
+            _overrideSoundIndex = overrideSoundIndex;
 
+            Depth = -60;
             Collider.Top = 3;
         }
 
@@ -39,11 +39,11 @@ namespace Celeste.Mod.GravityHelper.Entities
             EnsureCorrectTracking(scene);
 
             string str = AreaData.Get(scene).Jumpthru;
-            if (!string.IsNullOrEmpty(overrideTexture) && !overrideTexture.Equals("default"))
-                str = overrideTexture;
+            if (!string.IsNullOrEmpty(_overrideTexture) && !_overrideTexture.Equals("default"))
+                str = _overrideTexture;
 
-            SurfaceSoundIndex = overrideSoundIndex > 0
-                ? overrideSoundIndex
+            SurfaceSoundIndex = _overrideSoundIndex > 0
+                ? _overrideSoundIndex
                 : str.ToLower() switch
                 {
                     "dream" => 32,
@@ -55,7 +55,7 @@ namespace Celeste.Mod.GravityHelper.Entities
 
             var mtexture = GFX.Game[$"objects/jumpthru/{str}"];
             int textureWidthInTiles = mtexture.Width / 8;
-            for (int i = 0; i < columns; ++i)
+            for (int i = 0; i < _columns; ++i)
             {
                 int xOffset;
                 int yOffset;
@@ -64,7 +64,7 @@ namespace Celeste.Mod.GravityHelper.Entities
                     xOffset = 0;
                     yOffset = CollideCheck<Solid, SwapBlock, ExitBlock>(Position + new Vector2(-1f, 0.0f)) ? 0 : 1;
                 }
-                else if (i == columns - 1)
+                else if (i == _columns - 1)
                 {
                     xOffset = textureWidthInTiles - 1;
                     yOffset = CollideCheck<Solid, SwapBlock, ExitBlock>(Position + new Vector2(1f, 0.0f)) ? 0 : 1;

@@ -11,7 +11,7 @@ namespace Celeste.Mod.GravityHelper.Entities
     [Tracked]
     public class GravityController : Entity
     {
-        private static float soundMuffleRemaining;
+        private static float _soundMuffleRemaining;
 
         private const float sound_muffle_time_seconds = 0.25f;
         private const string default_normal_gravity_sound = "event:/char/madeline/climb_ledge";
@@ -47,9 +47,9 @@ namespace Celeste.Mod.GravityHelper.Entities
                     if (string.IsNullOrEmpty(soundName))
                         soundName = args.NewValue == GravityType.Normal ? NormalGravitySound : InvertedGravitySound;
 
-                    if (!string.IsNullOrEmpty(soundName) && soundMuffleRemaining <= 0 && args.PlayerTriggered)
+                    if (!string.IsNullOrEmpty(soundName) && _soundMuffleRemaining <= 0 && args.PlayerTriggered)
                     {
-                        soundMuffleRemaining = sound_muffle_time_seconds;
+                        _soundMuffleRemaining = sound_muffle_time_seconds;
                         Audio.Play(soundName);
                     }
                 },
@@ -59,7 +59,7 @@ namespace Celeste.Mod.GravityHelper.Entities
         public override void Update()
         {
             base.Update();
-            soundMuffleRemaining -= Engine.DeltaTime;
+            _soundMuffleRemaining -= Engine.DeltaTime;
         }
     }
 }

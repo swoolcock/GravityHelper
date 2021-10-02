@@ -923,7 +923,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
                             if (starFlyBloom != null)
                                 starFlyBloom.Y = Math.Abs(starFlyBloom.Y) * (args.NewValue == GravityType.Inverted ? 1 : -1);
                         }
-                    }
+                    },
                 },
                 new DashListener
                 {
@@ -933,7 +933,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
                             return;
                         GravityHelperModule.Instance.GravityRefillCharges--;
                         GravityHelperModule.Instance.SetGravity(GravityType.Toggle);
-                    }
+                    },
                 }
             );
         }
@@ -974,7 +974,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
         {
             if (!GravityHelperModule.ShouldInvert)
                 return orig(self, index);
-            return index == 40 ? invertedSparkyDustParticle.Value : invertedDustParticle.Value;
+            return index == 40 ? _invertedSparkyDustParticle.Value : _invertedDustParticle.Value;
         }
 
         private static bool Player_JumpThruBoostBlockedCheck(On.Celeste.Player.orig_JumpThruBoostBlockedCheck orig, Player self)
@@ -1155,13 +1155,13 @@ namespace Celeste.Mod.GravityHelper.Hooks
             return liftSpeed;
         }
 
-        private static Lazy<ParticleType> invertedDustParticle = new Lazy<ParticleType>(() => new ParticleType(ParticleTypes.Dust)
+        private static Lazy<ParticleType> _invertedDustParticle = new Lazy<ParticleType>(() => new ParticleType(ParticleTypes.Dust)
         {
             Acceleration = new Vector2(0.0f, -4f),
             Direction = -(float)Math.PI / 2f,
         });
 
-        private static Lazy<ParticleType> invertedSparkyDustParticle = new Lazy<ParticleType>(() => new ParticleType(ParticleTypes.SparkyDust)
+        private static Lazy<ParticleType> _invertedSparkyDustParticle = new Lazy<ParticleType>(() => new ParticleType(ParticleTypes.SparkyDust)
         {
             Acceleration = new Vector2(0.0f, -4f),
             Direction = -(float)Math.PI / 2f,

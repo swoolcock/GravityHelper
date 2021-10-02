@@ -118,13 +118,13 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
         #region SpeedrunTool
 
-        private static bool speedrunToolLoaded;
+        private static bool _speedrunToolLoaded;
 
         private static void loadSpeedrunTool()
         {
             // we only ever load this exactly once
-            if (speedrunToolLoaded) return;
-            speedrunToolLoaded = true;
+            if (_speedrunToolLoaded) return;
+            _speedrunToolLoaded = true;
 
             var slat = ReflectionCache.GetModdedTypeByName("SpeedrunTool", "Celeste.Mod.SpeedrunTool.SaveLoad.SaveLoadAction");
             var allFieldInfo = slat?.GetField("All", BindingFlags.Static | BindingFlags.NonPublic);

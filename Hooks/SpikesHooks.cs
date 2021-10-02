@@ -44,7 +44,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
                             ledgeBlocker.Blocking = args.NewValue == GravityType.Normal;
                         else if (self.Direction == Spikes.Directions.Down)
                             ledgeBlocker.Blocking = args.NewValue == GravityType.Inverted;
-                    }
+                    },
                 });
             }
         }

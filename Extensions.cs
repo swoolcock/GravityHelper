@@ -65,25 +65,19 @@ namespace Celeste.Mod.GravityHelper
         public static Entity CollideFirst(this Entity entity, Type type, Vector2 at, bool checkAllEntities = false)
         {
             IEnumerable<Entity> entities = getEntities(entity.Scene, type, checkAllEntities);
-            if (entities == null) return null;
-
-            return Collide.First(entity, entities, at);
+            return entities == null ? null : Collide.First(entity, entities, at);
         }
 
         public static bool CollideCheck(this Entity entity, Type type, Vector2 at, bool checkAllEntities = false)
         {
             IEnumerable<Entity> entities = getEntities(entity.Scene, type, checkAllEntities);
-            if (entities == null) return false;
-
-            return Collide.Check(entity, entities, at);
+            return entities != null && Collide.Check(entity, entities, at);
         }
 
         public static bool CollideCheck(this Entity entity, Type type, bool checkAllEntities = false)
         {
             IEnumerable<Entity> entities = getEntities(entity.Scene, type, checkAllEntities);
-            if (entities == null) return false;
-
-            return Collide.Check(entity, entities);
+            return entities != null && Collide.Check(entity, entities);
         }
 
         private static IEnumerable<Entity> getEntities(Scene scene, Type type, bool checkAllEntities = false)
@@ -198,14 +192,14 @@ namespace Celeste.Mod.GravityHelper
         {
             method = instr.Operand as GenericInstanceMethod;
             if (method == null || instr.OpCode != OpCodes.Call) return false;
-            return method.Name == name;
+            return method.DeclaringType.Is(typeof(T)) && method.Name == name;
         }
 
         public static bool MatchCallvirtGeneric<T>(this Instruction instr, string name, out GenericInstanceMethod method)
         {
             method = instr.Operand as GenericInstanceMethod;
             if (method == null || instr.OpCode != OpCodes.Callvirt) return false;
-            return method.Name == name;
+            return method.DeclaringType.Is(typeof(T)) && method.Name == name;
         }
 
         #endregion

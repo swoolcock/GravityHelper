@@ -11,29 +11,29 @@ namespace Celeste.Mod.GravityHelper
     {
         public const float DEFAULT_INVERT_TIME = 2.0f;
 
-        private bool inverted;
+        private bool _inverted;
         public bool Inverted
         {
-            get => inverted;
+            get => _inverted;
             set
             {
-                var oldValue = inverted;
-                inverted = value;
-                invertTimeRemaining = value ? DEFAULT_INVERT_TIME : 0f;
+                var oldValue = _inverted;
+                _inverted = value;
+                _invertTimeRemaining = value ? DEFAULT_INVERT_TIME : 0f;
 
                 if (oldValue == value) return;
 
                 if (Entity is Actor actor)
-                    actor.SetInverted(inverted);
+                    actor.SetInverted(_inverted);
 
                 Entity.Collider.Top = value
-                    ? -initialCollider.Bottom
-                    : initialCollider.Top;
+                    ? -_initialCollider.Bottom
+                    : _initialCollider.Top;
 
                 if (Holdable != null)
                     Holdable.PickupCollider.Top = value
-                        ? -initialPickupCollider.Bottom
-                        : initialPickupCollider.Top;
+                        ? -_initialPickupCollider.Bottom
+                        : _initialPickupCollider.Top;
 
                 if (Holdable == null || !Holdable.IsHeld)
                     Entity.Position.Y += value ? -Entity.Collider.Height : Entity.Collider.Height;
@@ -42,14 +42,14 @@ namespace Celeste.Mod.GravityHelper
             }
         }
 
-        private Holdable holdable;
-        public Holdable Holdable => holdable ??= Entity.Get<Holdable>();
+        private Holdable _holdable;
+        public Holdable Holdable => _holdable ??= Entity.Get<Holdable>();
 
         public Action<bool> UpdateEntityVisuals { get; set; }
 
-        private float invertTimeRemaining;
-        private Rectangle initialPickupCollider;
-        private Rectangle initialCollider;
+        private float _invertTimeRemaining;
+        private Rectangle _initialPickupCollider;
+        private Rectangle _initialCollider;
 
         public GravityHoldable() : base(true, false)
         {
@@ -65,15 +65,15 @@ namespace Celeste.Mod.GravityHelper
                 Inverted = GravityHelperModule.ShouldInvert;
             else
             {
-                invertTimeRemaining -= Engine.DeltaTime;
-                if (invertTimeRemaining < 0)
+                _invertTimeRemaining -= Engine.DeltaTime;
+                if (_invertTimeRemaining < 0)
                     Inverted = false;
             }
         }
 
         public override void Removed(Entity entity)
         {
-            holdable = null;
+            _holdable = null;
             base.Removed(entity);
         }
 
@@ -82,8 +82,8 @@ namespace Celeste.Mod.GravityHelper
             base.EntityAwake();
             if (Holdable == null) return;
 
-            initialCollider = Entity.Collider.ToRectangle();
-            initialPickupCollider = Holdable.PickupCollider.ToRectangle();
+            _initialCollider = Entity.Collider.ToRectangle();
+            _initialPickupCollider = Holdable.PickupCollider.ToRectangle();
         }
     }
 }

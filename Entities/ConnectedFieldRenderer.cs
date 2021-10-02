@@ -55,11 +55,11 @@ namespace Celeste.Mod.GravityHelper.Entities
         {
             public Color Color { get; }
 
-            private readonly List<TEntity> list = new List<TEntity>();
-            private readonly List<Edge> edges = new List<Edge>();
-            private VirtualMap<bool> tiles;
-            private Rectangle levelTileBounds;
-            private bool dirty;
+            private readonly List<TEntity> _list = new List<TEntity>();
+            private readonly List<Edge> _edges = new List<Edge>();
+            private VirtualMap<bool> _tiles;
+            private Rectangle _levelTileBounds;
+            private bool _dirty;
 
             public FieldGroupRenderer(Color color) : base(true, true)
             {
@@ -68,33 +68,33 @@ namespace Celeste.Mod.GravityHelper.Entities
 
             public void Track(TEntity entity, Scene scene)
             {
-                list.Add(entity);
+                _list.Add(entity);
 
-                if (scene != null && tiles != null)
+                if (scene != null && _tiles != null)
                 {
                     for (int x = (int) entity.X / 8; x < entity.Right / 8.0; ++x)
                     for (int y = (int) entity.Y / 8; y < entity.Bottom / 8.0; ++y)
-                        tiles[x - levelTileBounds.X, y - levelTileBounds.Y] = true;
+                        _tiles[x - _levelTileBounds.X, y - _levelTileBounds.Y] = true;
                 }
 
-                dirty = true;
+                _dirty = true;
             }
 
             public void Untrack(TEntity entity, bool removeIfEmpty = true)
             {
-                list.Remove(entity);
+                _list.Remove(entity);
 
-                dirty = true;
+                _dirty = true;
 
-                if (list.Any())
+                if (_list.Any())
                 {
                     for (int x = (int) entity.X / 8; x < entity.Right / 8.0; ++x)
                     for (int y = (int) entity.Y / 8; y < entity.Bottom / 8.0; ++y)
-                        tiles[x - levelTileBounds.X, y - levelTileBounds.Y] = false;
+                        _tiles[x - _levelTileBounds.X, y - _levelTileBounds.Y] = false;
                 }
                 else
                 {
-                    tiles = null;
+                    _tiles = null;
                     if (removeIfEmpty)
                         RemoveSelf();
                 }
@@ -104,25 +104,25 @@ namespace Celeste.Mod.GravityHelper.Entities
             {
                 base.EntityAdded(scene);
 
-                if (tiles == null && scene is Level level)
+                if (_tiles == null && scene is Level level)
                 {
-                    levelTileBounds = level.TileBounds;
-                    tiles = new VirtualMap<bool>(levelTileBounds.Width, levelTileBounds.Height);
+                    _levelTileBounds = level.TileBounds;
+                    _tiles = new VirtualMap<bool>(_levelTileBounds.Width, _levelTileBounds.Height);
 
-                    foreach (var entity in list)
+                    foreach (var entity in _list)
                     {
                         for (int x = (int) entity.X / 8; x < entity.Right / 8.0; ++x)
                         for (int y = (int) entity.Y / 8; y < entity.Bottom / 8.0; ++y)
-                            tiles[x - levelTileBounds.X, y - levelTileBounds.Y] = true;
+                            _tiles[x - _levelTileBounds.X, y - _levelTileBounds.Y] = true;
                     }
 
-                    dirty = true;
+                    _dirty = true;
                 }
             }
 
             public override void Update()
             {
-                if (dirty)
+                if (_dirty)
                     rebuildEdges();
                 updateEdges();
             }
@@ -133,27 +133,27 @@ namespace Celeste.Mod.GravityHelper.Entities
                 Rectangle view = new Rectangle((int) camera.Left - 4, (int) camera.Top - 4,
                     (int) (camera.Right - (double) camera.Left) + 8,
                     (int) (camera.Bottom - (double) camera.Top) + 8);
-                for (int index = 0; index < edges.Count; ++index)
+                for (int index = 0; index < _edges.Count; ++index)
                 {
-                    if (edges[index].Visible)
+                    if (_edges[index].Visible)
                     {
-                        if (Scene.OnInterval(0.25f, index * 0.01f) && !edges[index].InView(ref view))
-                            edges[index].Visible = false;
+                        if (Scene.OnInterval(0.25f, index * 0.01f) && !_edges[index].InView(ref view))
+                            _edges[index].Visible = false;
                     }
-                    else if (Scene.OnInterval(0.05f, index * 0.01f) && edges[index].InView(ref view))
-                        edges[index].Visible = true;
+                    else if (Scene.OnInterval(0.05f, index * 0.01f) && _edges[index].InView(ref view))
+                        _edges[index].Visible = true;
 
-                    if (edges[index].Visible &&
-                        (Scene.OnInterval(0.05f, index * 0.01f) || edges[index].Wave == null))
-                        edges[index].UpdateWave(Scene.TimeActive * 3f);
+                    if (_edges[index].Visible &&
+                        (Scene.OnInterval(0.05f, index * 0.01f) || _edges[index].Wave == null))
+                        _edges[index].UpdateWave(Scene.TimeActive * 3f);
                 }
             }
 
             private void rebuildEdges()
             {
-                dirty = false;
-                edges.Clear();
-                if (list.Count == 0)
+                _dirty = false;
+                _edges.Clear();
+                if (_list.Count == 0)
                     return;
 
                 Point[] pointArray =
@@ -161,10 +161,10 @@ namespace Celeste.Mod.GravityHelper.Entities
                     new Point(0, -1),
                     new Point(0, 1),
                     new Point(-1, 0),
-                    new Point(1, 0)
+                    new Point(1, 0),
                 };
 
-                foreach (var parent in list)
+                foreach (var parent in _list)
                 {
                     for (int x = (int) parent.X / 8; x < parent.Right / 8.0; ++x)
                     {
@@ -187,7 +187,7 @@ namespace Celeste.Mod.GravityHelper.Entities
                                         point4.X += point2.X;
                                     Vector2 a = new Vector2(point3.X, point3.Y) * 8f + vector2 - parent.Position;
                                     Vector2 b = new Vector2(point4.X, point4.Y) * 8f + vector2 - parent.Position;
-                                    edges.Add(new Edge(parent, a, b));
+                                    _edges.Add(new Edge(parent, a, b));
                                 }
                             }
                         }
@@ -195,17 +195,17 @@ namespace Celeste.Mod.GravityHelper.Entities
                 }
             }
 
-            private bool inside(int tx, int ty) => tiles[tx - levelTileBounds.X, ty - levelTileBounds.Y];
+            private bool inside(int tx, int ty) => _tiles[tx - _levelTileBounds.X, ty - _levelTileBounds.Y];
 
             public void OnRenderBloom()
             {
-                foreach (var entity in list)
+                foreach (var entity in _list)
                 {
                     if (entity.Visible)
                         Draw.Rect(entity.X, entity.Y, entity.Width, entity.Height, Color.White);
                 }
 
-                foreach (var edge in edges)
+                foreach (var edge in _edges)
                 {
                     if (edge.Visible)
                     {
@@ -221,20 +221,20 @@ namespace Celeste.Mod.GravityHelper.Entities
 
             public override void Render()
             {
-                if (list.Count <= 0)
+                if (_list.Count <= 0)
                     return;
 
                 var color = Color;
-                foreach (var entity in list)
+                foreach (var entity in _list)
                 {
                     if (entity.Visible)
                         Draw.Rect(entity.Collider, color);
                 }
 
-                if (edges.Count == 0)
+                if (_edges.Count == 0)
                     return;
 
-                foreach (var edge in edges)
+                foreach (var edge in _edges)
                 {
                     if (edge.Visible)
                     {
@@ -279,10 +279,10 @@ namespace Celeste.Mod.GravityHelper.Entities
                     if (Wave == null || Wave.Length <= (double) Length)
                         Wave = new float[(int) Length + 2];
                     for (int index = 0; index <= (double) Length; ++index)
-                        Wave[index] = GetWaveAt(time, index, Length);
+                        Wave[index] = getWaveAt(time, index, Length);
                 }
 
-                private float GetWaveAt(float offset, float along, float length)
+                private static float getWaveAt(float offset, float along, float length)
                 {
                     if (along <= 1.0 || along >= length - 1.0) // || (double)Parent.Solidify >= 1.0)
                         return 0.0f;

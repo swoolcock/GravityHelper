@@ -17,7 +17,7 @@ namespace Celeste.Mod.GravityHelper
         {
             GravityType.Normal => GravityType.Inverted,
             GravityType.Inverted => GravityType.Normal,
-            _ => type
+            _ => type,
         };
 
         public static bool RequiresHooks(this GravityType type) =>

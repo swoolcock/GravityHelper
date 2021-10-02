@@ -51,24 +51,24 @@ namespace Celeste.Mod.GravityHelper.Entities
             GravityType.Normal => GRAVITY_NORMAL_COLOR,
             GravityType.Inverted => GRAVITY_INVERT_COLOR,
             GravityType.Toggle => GRAVITY_TOGGLE_COLOR,
-            _ => Color.White
+            _ => Color.White,
         };
 
-        private readonly bool shouldDrawArrows;
-        private readonly bool shouldDrawField;
-        private readonly MTexture arrowTexture;
-        private readonly MTexture arrowSmallTexture;
-        private readonly SpriteEffects arrowSpriteEffects;
-        private readonly Vector2 arrowOrigin;
-        private readonly Vector2 arrowSmallOrigin;
-        private Vector2 arrowShakeOffset;
+        private readonly bool _shouldDrawArrows;
+        private readonly bool _shouldDrawField;
+        private readonly MTexture _arrowTexture;
+        private readonly MTexture _arrowSmallTexture;
+        private readonly SpriteEffects _arrowSpriteEffects;
+        private readonly Vector2 _arrowOrigin;
+        private readonly Vector2 _arrowSmallOrigin;
+        private Vector2 _arrowShakeOffset;
 
-        private readonly Hitbox normalHitbox;
-        private readonly Hitbox staticMoverHitbox;
+        private readonly Hitbox _normalHitbox;
+        private readonly Hitbox _staticMoverHitbox;
 
-        private readonly List<Vector2> particles = new List<Vector2>();
-        private readonly float[] speeds = {12f, 20f, 40f};
-        private GravityFieldGroup fieldGroup;
+        private readonly List<Vector2> _particles = new List<Vector2>();
+        private readonly float[] _speeds = {12f, 20f, 40f};
+        private GravityFieldGroup _fieldGroup;
 
         public GravityField(EntityData data, Vector2 offset)
             : base(data, offset)
@@ -87,18 +87,18 @@ namespace Celeste.Mod.GravityHelper.Entities
             if (float.TryParse(data.Attr("fieldOpacity"), out var fieldOpacity))
                 _fieldOpacity = Calc.Clamp(fieldOpacity, 0f, 1f);
 
-            shouldDrawArrows = !(ArrowType == VisualType.None || ArrowType == VisualType.Default && GravityType == GravityType.None);
-            shouldDrawField = !(FieldType == VisualType.None || FieldType == VisualType.Default && GravityType == GravityType.None);
+            _shouldDrawArrows = !(ArrowType == VisualType.None || ArrowType == VisualType.Default && GravityType == GravityType.None);
+            _shouldDrawField = !(FieldType == VisualType.None || FieldType == VisualType.Default && GravityType == GravityType.None);
 
-            Visible = shouldDrawArrows || shouldDrawField;
-            Collider = normalHitbox = new Hitbox(data.Width, data.Height);
+            Visible = _shouldDrawArrows || _shouldDrawField;
+            Collider = _normalHitbox = new Hitbox(data.Width, data.Height);
 
-            if (shouldDrawArrows && !shouldDrawField)
+            if (_shouldDrawArrows && !_shouldDrawField)
                 Depth = Depths.FGDecals - 1;
             else
                 Depth = Depths.Player + 1;
 
-            staticMoverHitbox = new Hitbox(data.Width + 2, data.Height + 2, -1, -1);
+            _staticMoverHitbox = new Hitbox(data.Width + 2, data.Height + 2, -1, -1);
 
             if (AttachToSolids)
             {
@@ -106,41 +106,41 @@ namespace Celeste.Mod.GravityHelper.Entities
                 {
                     OnAttach = p => Depth = p.Depth - 1,
                     SolidChecker = staticMoverCollideCheck,
-                    OnShake = amount => arrowShakeOffset += amount,
+                    OnShake = amount => _arrowShakeOffset += amount,
                 });
             }
 
-            if (shouldDrawArrows)
+            if (_shouldDrawArrows)
             {
                 switch (arrowGravityType)
                 {
                     case GravityType.Normal:
-                        arrowTexture = GFX.Game["objects/GravityHelper/gravityField/arrow"];
-                        arrowSmallTexture = GFX.Game["objects/GravityHelper/gravityField/arrowSmall"];
-                        arrowSpriteEffects = SpriteEffects.FlipVertically;
+                        _arrowTexture = GFX.Game["objects/GravityHelper/gravityField/arrow"];
+                        _arrowSmallTexture = GFX.Game["objects/GravityHelper/gravityField/arrowSmall"];
+                        _arrowSpriteEffects = SpriteEffects.FlipVertically;
                         break;
 
                     case GravityType.Inverted:
-                        arrowTexture = GFX.Game["objects/GravityHelper/gravityField/arrow"];
-                        arrowSmallTexture = GFX.Game["objects/GravityHelper/gravityField/arrowSmall"];
-                        arrowSpriteEffects = SpriteEffects.None;
+                        _arrowTexture = GFX.Game["objects/GravityHelper/gravityField/arrow"];
+                        _arrowSmallTexture = GFX.Game["objects/GravityHelper/gravityField/arrowSmall"];
+                        _arrowSpriteEffects = SpriteEffects.None;
                         break;
 
                     case GravityType.Toggle:
-                        arrowTexture = GFX.Game["objects/GravityHelper/gravityField/doubleArrow"];
-                        arrowSmallTexture = GFX.Game["objects/GravityHelper/gravityField/doubleArrowSmall"];
-                        arrowSpriteEffects = SpriteEffects.None;
+                        _arrowTexture = GFX.Game["objects/GravityHelper/gravityField/doubleArrow"];
+                        _arrowSmallTexture = GFX.Game["objects/GravityHelper/gravityField/doubleArrowSmall"];
+                        _arrowSpriteEffects = SpriteEffects.None;
                         break;
                 }
 
-                arrowOrigin = new Vector2(arrowTexture.Width / 2f, arrowTexture.Height / 2f);
-                arrowSmallOrigin = new Vector2(arrowSmallTexture.Width / 2f, arrowSmallTexture.Height / 2f);
+                _arrowOrigin = new Vector2(_arrowTexture.Width / 2f, _arrowTexture.Height / 2f);
+                _arrowSmallOrigin = new Vector2(_arrowSmallTexture.Width / 2f, _arrowSmallTexture.Height / 2f);
             }
 
-            if (shouldDrawField)
+            if (_shouldDrawField)
             {
                 for (int index = 0; index < Width * (double) Height / 16.0; ++index)
-                    particles.Add(new Vector2(Calc.Random.NextFloat(Width - 1f), Calc.Random.NextFloat(Height - 1f)));
+                    _particles.Add(new Vector2(Calc.Random.NextFloat(Width - 1f), Calc.Random.NextFloat(Height - 1f)));
             }
         }
 
@@ -148,11 +148,11 @@ namespace Celeste.Mod.GravityHelper.Entities
         {
             base.OnEnter(player);
 
-            if (GravityType == GravityType.None || fieldGroup == null) return;
+            if (GravityType == GravityType.None || _fieldGroup == null) return;
 
-            fieldGroup.Semaphore++;
+            _fieldGroup.Semaphore++;
 
-            if (fieldGroup.Semaphore == 1)
+            if (_fieldGroup.Semaphore == 1)
                 GravityHelperModule.Instance.SetGravity(GravityType);
         }
 
@@ -171,8 +171,8 @@ namespace Celeste.Mod.GravityHelper.Entities
         {
             base.OnLeave(player);
 
-            if (fieldGroup == null) return;
-            fieldGroup.Semaphore--;
+            if (_fieldGroup == null) return;
+            _fieldGroup.Semaphore--;
         }
 
         private GravityController getController(Scene scene)
@@ -204,27 +204,27 @@ namespace Celeste.Mod.GravityHelper.Entities
                 _particleOpacity ??= controller.ParticleOpacity;
             }
 
-            if (shouldDrawField)
+            if (_shouldDrawField)
             {
                 var renderer = getRenderer(scene, true);
                 renderer?.Track(this);
             }
 
-            arrowShakeOffset = Vector2.Zero;
-            fieldGroup = null;
+            _arrowShakeOffset = Vector2.Zero;
+            _fieldGroup = null;
         }
 
         public override void Removed(Scene scene)
         {
             base.Removed(scene);
 
-            if (shouldDrawField)
+            if (_shouldDrawField)
             {
                 var renderer = getRenderer(scene);
                 renderer?.Untrack(this, true);
             }
 
-            fieldGroup = null;
+            _fieldGroup = null;
         }
 
         public override void Awake(Scene scene)
@@ -235,21 +235,21 @@ namespace Celeste.Mod.GravityHelper.Entities
 
         public override void Update()
         {
-            int length = speeds.Length;
+            int length = _speeds.Length;
             float height = Height;
             int index = 0;
 
-            for (int count = particles.Count; index < count; ++index)
+            for (int count = _particles.Count; index < count; ++index)
             {
                 bool flip = GravityType == GravityType.Inverted || GravityType == GravityType.Toggle && index % 2 == 1;
-                Vector2 target = particles[index] + Vector2.UnitY * speeds[index % length] * Engine.DeltaTime * (flip ? -1 : 1);
+                Vector2 target = _particles[index] + Vector2.UnitY * _speeds[index % length] * Engine.DeltaTime * (flip ? -1 : 1);
 
                 if (target.Y < 0)
                     target.Y += height;
                 else if (target.Y >= height)
                     target.Y -= height;
 
-                particles[index] = target;
+                _particles[index] = target;
             }
 
             base.Update();
@@ -259,14 +259,14 @@ namespace Celeste.Mod.GravityHelper.Entities
         {
             base.Render();
 
-            if (shouldDrawField)
+            if (_shouldDrawField)
             {
                 Color color = Color.White * ParticleOpacity;
-                foreach (Vector2 particle in particles)
+                foreach (Vector2 particle in _particles)
                     Draw.Pixel.Draw(Position + particle, Vector2.Zero, color);
             }
 
-            if (shouldDrawArrows)
+            if (_shouldDrawArrows)
             {
                 int widthInTiles = (int) (Width / 8);
                 int heightInTiles = (int) (Height / 8);
@@ -276,9 +276,9 @@ namespace Celeste.Mod.GravityHelper.Entities
                 int arrowsY = Math.Max(heightInTiles / 2, 1);
 
                 // if width or height is 1, scale down the arrows
-                var texture = widthInTiles == 1 || heightInTiles == 1 ? arrowSmallTexture : arrowTexture;
-                var origin = widthInTiles == 1 || heightInTiles == 1 ? arrowSmallOrigin : arrowOrigin;
-                var color = shouldDrawField ? Color.White * ArrowOpacity : Color.White;
+                var texture = widthInTiles == 1 || heightInTiles == 1 ? _arrowSmallTexture : _arrowTexture;
+                var origin = widthInTiles == 1 || heightInTiles == 1 ? _arrowSmallOrigin : _arrowOrigin;
+                var color = _shouldDrawField ? Color.White * ArrowOpacity : Color.White;
 
                 // arrows should be centre aligned in each 2x2 box
                 // offset by half a tile if the width or height is odd
@@ -290,7 +290,7 @@ namespace Celeste.Mod.GravityHelper.Entities
                     {
                         int offsetX = x * 16 + 8 + widthInTiles % 2 * 4;
                         if (widthInTiles == 1) offsetX = 4;
-                        texture.Draw(Position + arrowShakeOffset + new Vector2(offsetX, offsetY), origin, color, 1f, 0f, arrowSpriteEffects);
+                        texture.Draw(Position + _arrowShakeOffset + new Vector2(offsetX, offsetY), origin, color, 1f, 0f, _arrowSpriteEffects);
                     }
                 }
             }
@@ -325,13 +325,13 @@ namespace Celeste.Mod.GravityHelper.Entities
 
         private void buildFieldGroup(GravityFieldGroup existing = null)
         {
-            if (fieldGroup != null) return;
+            if (_fieldGroup != null) return;
 
-            fieldGroup = existing ?? new GravityFieldGroup();
+            _fieldGroup = existing ?? new GravityFieldGroup();
 
             var adjacent = getAdjacent();
             foreach (var field in adjacent)
-                field.buildFieldGroup(fieldGroup);
+                field.buildFieldGroup(_fieldGroup);
         }
 
         [Tracked]

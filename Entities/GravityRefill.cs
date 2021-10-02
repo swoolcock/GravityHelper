@@ -20,21 +20,21 @@ namespace Celeste.Mod.GravityHelper.Entities
         public float RespawnTime { get; }
 
         // components
-        private Sprite sprite;
-        private Sprite flash;
-        private Image outline;
-        private Wiggler wiggler;
-        private BloomPoint bloom;
-        private VertexLight light;
-        private SineWave sine;
+        private readonly Sprite _sprite;
+        private readonly Sprite _flash;
+        private readonly Image _outline;
+        private readonly Wiggler _wiggler;
+        private readonly BloomPoint _bloom;
+        private readonly VertexLight _light;
+        private readonly SineWave _sine;
 
         // particles
         private readonly ParticleType p_shatter = Refill.P_Shatter;
         private readonly ParticleType p_regen = Refill.P_Regen;
         private readonly ParticleType p_glow = Refill.P_Glow;
 
-        private Level level;
-        private float respawnTimeRemaining;
+        private Level _level;
+        private float _respawnTimeRemaining;
 
         public GravityRefill(Vector2 position, int charges, bool oneUse, bool refillsDash, bool refillsStamina, float respawnTime)
             : base(position)
@@ -52,25 +52,25 @@ namespace Celeste.Mod.GravityHelper.Entities
 
             // add components
             Add(new PlayerCollider(OnPlayer),
-                outline = new Image(GFX.Game[$"{path}/outline"]) {Visible = false},
-                sprite = new Sprite(GFX.Game, $"{path}/idle"),
-                flash = new Sprite(GFX.Game, $"{path}/flash") {OnFinish = _ => flash.Visible = false},
-                wiggler = Wiggler.Create(1f, 4f, v => sprite.Scale = flash.Scale = Vector2.One * (float) (1.0 + (double) v * 0.2)),
+                _outline = new Image(GFX.Game[$"{path}/outline"]) {Visible = false},
+                _sprite = new Sprite(GFX.Game, $"{path}/idle"),
+                _flash = new Sprite(GFX.Game, $"{path}/flash") {OnFinish = _ => _flash.Visible = false},
+                _wiggler = Wiggler.Create(1f, 4f, v => _sprite.Scale = _flash.Scale = Vector2.One * (float) (1.0 + (double) v * 0.2)),
                 new MirrorReflection(),
-                bloom = new BloomPoint(0.8f, 16f),
-                light = new VertexLight(Color.White, 1f, 16, 48),
-                sine = new SineWave(0.6f, 0.0f));
+                _bloom = new BloomPoint(0.8f, 16f),
+                _light = new VertexLight(Color.White, 1f, 16, 48),
+                _sine = new SineWave(0.6f, 0.0f));
 
             // configure components
-            outline.CenterOrigin();
-            sprite.AddLoop("idle", "", 0.1f);
-            sprite.Play("idle");
-            sprite.CenterOrigin();
-            flash.Add("flash", "", 0.05f);
-            flash.CenterOrigin();
-            sine.Randomize();
+            _outline.CenterOrigin();
+            _sprite.AddLoop("idle", "", 0.1f);
+            _sprite.Play("idle");
+            _sprite.CenterOrigin();
+            _flash.Add("flash", "", 0.05f);
+            _flash.CenterOrigin();
+            _sine.Randomize();
 
-            UpdateY();
+            updateY();
         }
 
         public GravityRefill(EntityData data, Vector2 offset)
@@ -86,52 +86,52 @@ namespace Celeste.Mod.GravityHelper.Entities
         public override void Added(Scene scene)
         {
             base.Added(scene);
-            level = SceneAs<Level>();
+            _level = SceneAs<Level>();
         }
 
         public override void Update()
         {
             base.Update();
 
-            if (respawnTimeRemaining > 0.0)
+            if (_respawnTimeRemaining > 0.0)
             {
-                respawnTimeRemaining -= Engine.DeltaTime;
-                if (respawnTimeRemaining <= 0.0)
-                    Respawn();
+                _respawnTimeRemaining -= Engine.DeltaTime;
+                if (_respawnTimeRemaining <= 0.0)
+                    respawn();
             }
             else if (Scene.OnInterval(0.1f))
-                level.ParticlesFG.Emit(p_glow, 1, Position, Vector2.One * 5f);
+                _level.ParticlesFG.Emit(p_glow, 1, Position, Vector2.One * 5f);
 
-            UpdateY();
+            updateY();
 
-            light.Alpha = Calc.Approach(light.Alpha, sprite.Visible ? 1f : 0.0f, 4f * Engine.DeltaTime);
-            bloom.Alpha = light.Alpha * 0.8f;
+            _light.Alpha = Calc.Approach(_light.Alpha, _sprite.Visible ? 1f : 0.0f, 4f * Engine.DeltaTime);
+            _bloom.Alpha = _light.Alpha * 0.8f;
 
-            if (!Scene.OnInterval(2f) || !sprite.Visible) return;
+            if (!Scene.OnInterval(2f) || !_sprite.Visible) return;
 
-            flash.Play("flash", true);
-            flash.Visible = true;
+            _flash.Play("flash", true);
+            _flash.Visible = true;
         }
 
-        private void Respawn()
+        private void respawn()
         {
             if (Collidable) return;
             Collidable = true;
 
-            sprite.Visible = true;
-            outline.Visible = false;
+            _sprite.Visible = true;
+            _outline.Visible = false;
             Depth = -100;
-            wiggler.Start();
+            _wiggler.Start();
             Audio.Play("event:/game/general/diamond_return", Position);
-            level.ParticlesFG.Emit(p_regen, 16, Position, Vector2.One * 2f);
+            _level.ParticlesFG.Emit(p_regen, 16, Position, Vector2.One * 2f);
         }
 
-        private void UpdateY() => flash.Y = sprite.Y = bloom.Y = sine.Value * 2f;
+        private void updateY() => _flash.Y = _sprite.Y = _bloom.Y = _sine.Value * 2f;
 
         public override void Render()
         {
-            if (sprite.Visible)
-                sprite.DrawOutline();
+            if (_sprite.Visible)
+                _sprite.DrawOutline();
             base.Render();
         }
 
@@ -150,26 +150,26 @@ namespace Celeste.Mod.GravityHelper.Entities
             Audio.Play("event:/game/general/diamond_touch", Position);
             Input.Rumble(RumbleStrength.Medium, RumbleLength.Medium);
             Collidable = false;
-            Add(new Coroutine(RefillRoutine(player)));
-            respawnTimeRemaining = RespawnTime;
+            Add(new Coroutine(refillRoutine(player)));
+            _respawnTimeRemaining = RespawnTime;
         }
 
-        private IEnumerator RefillRoutine(Player player)
+        private IEnumerator refillRoutine(Player player)
         {
             GravityRefill refill = this;
             Celeste.Freeze(0.05f);
             yield return null;
 
-            refill.level.Shake();
-            refill.sprite.Visible = refill.flash.Visible = false;
+            refill._level.Shake();
+            refill._sprite.Visible = refill._flash.Visible = false;
             if (!refill.OneUse)
-                refill.outline.Visible = true;
+                refill._outline.Visible = true;
             refill.Depth = 8999;
             yield return 0.05f;
 
             float direction = player.Speed.Angle();
-            refill.level.ParticlesFG.Emit(refill.p_shatter, 5, refill.Position, Vector2.One * 4f, direction - (float)Math.PI / 2f);
-            refill.level.ParticlesFG.Emit(refill.p_shatter, 5, refill.Position, Vector2.One * 4f, direction + (float)Math.PI / 2f);
+            refill._level.ParticlesFG.Emit(refill.p_shatter, 5, refill.Position, Vector2.One * 4f, direction - (float)Math.PI / 2f);
+            refill._level.ParticlesFG.Emit(refill.p_shatter, 5, refill.Position, Vector2.One * 4f, direction + (float)Math.PI / 2f);
             SlashFx.Burst(refill.Position, direction);
 
             if (refill.OneUse)

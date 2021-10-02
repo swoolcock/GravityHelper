@@ -33,13 +33,13 @@ namespace Celeste.Mod.GravityHelper.Entities
             GravityType.Normal => $"normal_{id}",
             GravityType.Inverted => $"invert_{id}",
             GravityType.Toggle => $"toggle_{id}",
-            _ => id
+            _ => id,
         };
 
-        private Sprite sprite;
-        private Wiggler wiggler;
-        private StaticMover staticMover;
-        private float cooldownRemaining;
+        private Sprite _sprite;
+        private Wiggler _wiggler;
+        private StaticMover _staticMover;
+        private float _cooldownRemaining;
 
         public static Entity LoadFloor(Level level, LevelData levelData, Vector2 offset, EntityData entityData) =>
             new GravitySpring(entityData, offset, Orientations.Floor);
@@ -63,35 +63,35 @@ namespace Celeste.Mod.GravityHelper.Entities
             Orientation = orientation;
 
             Add(new PlayerCollider(OnCollide));
-            Add(sprite = GFX.SpriteBank.Create("gravitySpring"));
-            sprite.Play(getAnimId("idle"));
+            Add(_sprite = GFX.SpriteBank.Create("gravitySpring"));
+            _sprite.Play(getAnimId("idle"));
 
             switch (Orientation)
             {
                 case Orientations.Floor:
-                    sprite.Rotation = 0;
+                    _sprite.Rotation = 0;
                     Collider = new Hitbox(16f, 6f, -8f, -6f);
                     break;
 
                 case Orientations.WallLeft:
-                    sprite.Rotation = (float) Math.PI / 2f;
+                    _sprite.Rotation = (float) Math.PI / 2f;
                     Collider = new Hitbox(6, 16f, 0f, -8f);
                     break;
 
                 case Orientations.WallRight:
-                    sprite.Rotation = (float) -Math.PI / 2f;
+                    _sprite.Rotation = (float) -Math.PI / 2f;
                     Collider = new Hitbox(6, 16f, -6f, -8f);
                     break;
 
                 case Orientations.Ceiling:
-                    sprite.Rotation = (float) Math.PI;
+                    _sprite.Rotation = (float) Math.PI;
                     Collider = new Hitbox(16f, 6f, -8f, 0f);
                     break;
             }
 
-            Depth = -8501;
+            Depth = Depths.Above - 1;
 
-            Add(staticMover = new StaticMover
+            Add(_staticMover = new StaticMover
             {
                 OnAttach = p => Depth = p.Depth + 1,
                 SolidChecker = Orientation switch
@@ -99,28 +99,28 @@ namespace Celeste.Mod.GravityHelper.Entities
                     Orientations.WallLeft => s => CollideCheck(s, Position - Vector2.UnitX),
                     Orientations.WallRight => s => CollideCheck(s, Position + Vector2.UnitX),
                     Orientations.Ceiling => s => CollideCheck(s, Position - Vector2.UnitY),
-                    _ => s => CollideCheck(s, Position + Vector2.UnitY)
+                    _ => s => CollideCheck(s, Position + Vector2.UnitY),
                 },
                 JumpThruChecker = Orientation switch
                 {
                     Orientations.WallLeft => jt => CollideCheck(jt, Position - Vector2.UnitX),
                     Orientations.WallRight => jt => CollideCheck(jt, Position + Vector2.UnitX),
                     Orientations.Ceiling => jt => CollideCheck(jt, Position - Vector2.UnitY),
-                    _ => jt => CollideCheck(jt, Position + Vector2.UnitY)
+                    _ => jt => CollideCheck(jt, Position + Vector2.UnitY),
                 },
-                OnShake = amount => sprite.Position += amount,
+                OnShake = amount => _sprite.Position += amount,
                 OnEnable = OnEnable,
                 OnDisable = OnDisable,
             });
 
-            Add(wiggler = Wiggler.Create(1f, 4f, v => sprite.Scale.Y = 1 + v * 0.2f));
+            Add(_wiggler = Wiggler.Create(1f, 4f, v => _sprite.Scale.Y = 1 + v * 0.2f));
         }
 
         private void OnEnable()
         {
             Visible = Collidable = true;
-            sprite.Color = Color.White;
-            sprite.Play(getAnimId("idle"));
+            _sprite.Color = Color.White;
+            _sprite.Play(getAnimId("idle"));
         }
 
         private void OnDisable()
@@ -128,8 +128,8 @@ namespace Celeste.Mod.GravityHelper.Entities
             Collidable = false;
             if (VisibleWhenDisabled)
             {
-                sprite.Play("disabled");
-                sprite.Color = DisabledColor;
+                _sprite.Play("disabled");
+                _sprite.Color = DisabledColor;
             }
             else
                 Visible = false;
@@ -139,9 +139,9 @@ namespace Celeste.Mod.GravityHelper.Entities
         {
             base.Update();
 
-            if (cooldownRemaining > 0)
+            if (_cooldownRemaining > 0)
             {
-                cooldownRemaining = Math.Max(0, cooldownRemaining - Engine.DeltaTime);
+                _cooldownRemaining = Math.Max(0, _cooldownRemaining - Engine.DeltaTime);
                 // TODO: update sprite to show cooldown
             }
         }
@@ -164,15 +164,15 @@ namespace Celeste.Mod.GravityHelper.Entities
             }
 
             // set gravity and cooldown if not on cooldown
-            if (GravityType != GravityType.None && cooldownRemaining == 0f)
+            if (GravityType != GravityType.None && _cooldownRemaining == 0f)
             {
                 GravityHelperModule.Instance.SetGravity(GravityType);
-                cooldownRemaining = Cooldown;
+                _cooldownRemaining = Cooldown;
                 // TODO: update sprite to show cooldown
             }
 
             // boing!
-            BounceAnimate();
+            bounceAnimate();
 
             // bounce player away
             switch (Orientation)
@@ -201,18 +201,18 @@ namespace Celeste.Mod.GravityHelper.Entities
             }
         }
 
-        private void BounceAnimate()
+        private void bounceAnimate()
         {
             Audio.Play("event:/game/general/spring", BottomCenter);
-            staticMover.TriggerPlatform();
-            sprite.Play(getAnimId("bounce"), true);
-            wiggler.Start();
+            _staticMover.TriggerPlatform();
+            _sprite.Play(getAnimId("bounce"), true);
+            _wiggler.Start();
         }
 
         public override void Render()
         {
             if (Collidable)
-                sprite.DrawOutline();
+                _sprite.DrawOutline();
             base.Render();
         }
 

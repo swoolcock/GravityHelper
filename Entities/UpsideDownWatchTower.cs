@@ -20,7 +20,7 @@ namespace Celeste.Mod.GravityHelper.Entities
             new[] {"lookingUpLeft", "lookingDownLeft"},
         };
 
-        private bool addedUI;
+        private bool _addedUI;
 
         public UpsideDownWatchTower(EntityData data, Vector2 offset)
             : base(data, offset)
@@ -77,12 +77,12 @@ namespace Celeste.Mod.GravityHelper.Entities
 
         public override void Update()
         {
-            if (!addedUI)
+            if (!_addedUI)
             {
                 var talkComponent = Get<TalkComponent>();
                 if (talkComponent.UI == null)
                 {
-                    addedUI = true;
+                    _addedUI = true;
                     Scene.Add(talkComponent.UI = new UpsideDownTalkComponentUI(talkComponent));
                 }
             }
