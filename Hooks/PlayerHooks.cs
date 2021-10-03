@@ -983,12 +983,17 @@ namespace Celeste.Mod.GravityHelper.Hooks
             if (!GravityHelperModule.ShouldInvert)
                 return orig(self);
 
+            var player = new DynData<Player>(self);
+
             self.Speed.Y *= -1;
             self.DashDir.Y *= -1;
 
             var rv = orig(self);
 
-            self.Speed.Y *= -1;
+            // if we've buffered a dream jump, don't flip the Y component back
+            if (!player.Get<bool>("dreamJump"))
+                self.Speed.Y *= -1;
+
             self.DashDir.Y *= -1;
 
             return rv;
