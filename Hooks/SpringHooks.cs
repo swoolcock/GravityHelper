@@ -3,6 +3,8 @@
 
 // ReSharper disable InconsistentNaming
 
+using Celeste.Mod.GravityHelper.Entities;
+
 namespace Celeste.Mod.GravityHelper.Hooks
 {
     public static class SpringHooks
@@ -31,11 +33,12 @@ namespace Celeste.Mod.GravityHelper.Hooks
             if (player.StateMachine.State == Player.StDreamDash || !self.GetPlayerCanUse())
                 return;
 
-            // if we hit a floor spring while inverted, flip gravity back to normal
-            if (self.Orientation == Spring.Orientations.Floor)
-                GravityHelperModule.Instance.SetGravity(GravityType.Normal);
+            // do nothing if moving away
+            if (player.Speed.Y > 0)
+                return;
 
-            orig(self, player);
+            self.CallBounceAnimate();
+            GravitySpring.InvertedSuperBounce(player, self.Top);
         }
     }
 }

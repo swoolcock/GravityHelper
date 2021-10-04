@@ -61,6 +61,7 @@ namespace Celeste.Mod.GravityHelper
         public static readonly MethodInfo PlayerDeadBody_DeathRoutine = typeof(PlayerDeadBody).GetMethod("DeathRoutine", BindingFlags.Instance | BindingFlags.NonPublic);
         public static readonly MethodInfo Seeker_RegenerateCoroutine = typeof(Seeker).GetMethod("RegenerateCoroutine", BindingFlags.Instance | BindingFlags.NonPublic);
         public static readonly MethodInfo SolidTiles_SurfaceSoundIndexAt = typeof(SolidTiles).GetMethod("SurfaceSoundIndexAt", BindingFlags.Instance | BindingFlags.NonPublic);
+        public static readonly MethodInfo Spring_BounceAnimate = typeof(Spring).GetMethod("BounceAnimate", BindingFlags.Instance | BindingFlags.NonPublic);
         public static readonly MethodInfo VirtualJoystick_SetValue = typeof(VirtualJoystick).GetProperty("Value")?.GetSetMethod(true);
         public static readonly object[] VirtualJoystick_SetValue_Params = { Vector2.Zero };
 
@@ -110,6 +111,7 @@ namespace Celeste.Mod.GravityHelper
         public static bool CallJumpThruBoostBlockedCheck(this Player player) => (bool)Player_JumpThruBoostBlockedCheck.Invoke(player, new object[0]);
         public static void SetMovementCounter(this Actor actor, Vector2 value) => Actor_MovementCounter.SetValue(actor, value);
         public static Vector2 GetMovementCounter(this Actor actor) => (Vector2) Actor_MovementCounter.GetValue(actor);
+        public static void CallBounceAnimate(this Spring spring) => Spring_BounceAnimate.Invoke(spring, new object[0]);
 
         public static int CallFancyFallingBlockSurfaceSoundIndexAt(this FallingBlock fallingBlock, Vector2 readPosition)
         {
