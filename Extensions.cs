@@ -209,7 +209,7 @@ namespace Celeste.Mod.GravityHelper
         {
             cursor.Emit(loadActorOpCode);
             cursor.EmitDelegate<Func<Vector2, Actor, Vector2>>((v, a) =>
-                a.IsInverted() ? new Vector2(v.X, -v.Y) : v);
+                GravityHelperModule.ShouldInvertActor(a) ? new Vector2(v.X, -v.Y) : v);
         }
 
         public static void EmitInvertVectorDelegate(this ILCursor cursor) =>
@@ -218,7 +218,8 @@ namespace Celeste.Mod.GravityHelper
         public static void EmitActorInvertFloatDelegate(this ILCursor cursor, OpCode loadActorOpCode)
         {
             cursor.Emit(loadActorOpCode);
-            cursor.EmitDelegate<Func<float, Actor, float>>((f, a) => a.IsInverted() ? -f : f);
+            cursor.EmitDelegate<Func<float, Actor, float>>((f, a) =>
+                GravityHelperModule.ShouldInvertActor(a) ? -f : f);
         }
 
         public static void EmitInvertFloatDelegate(this ILCursor cursor) =>
@@ -227,7 +228,8 @@ namespace Celeste.Mod.GravityHelper
         public static void EmitActorInvertIntDelegate(this ILCursor cursor, OpCode loadActorOpCode)
         {
             cursor.Emit(loadActorOpCode);
-            cursor.EmitDelegate<Func<int, Actor, int>>((i, a) => a.IsInverted() ? -i : i);
+            cursor.EmitDelegate<Func<int, Actor, int>>((i, a) =>
+                GravityHelperModule.ShouldInvertActor(a) ? -i : i);
         }
 
         public static void EmitInvertIntDelegate(this ILCursor cursor) =>
