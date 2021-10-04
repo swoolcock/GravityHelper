@@ -569,6 +569,13 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
             cursor.EmitInvertIntDelegate();
 
+            // change speedring angle
+            if (!cursor.TryGotoNext(instr => instr.MatchCall<Engine>("get_Pooler")) ||
+                !cursor.TryGotoNext(MoveType.After, instr => instr.MatchLdfld<Player>(nameof(Player.Speed))))
+                throw new HookException("Couldn't find Engine.Pooler.");
+
+            cursor.EmitInvertVectorDelegate();
+
             // skip to base.Update();
             if (!cursor.TryGotoNext(instr => instr.MatchLdarg(0),
                 instr => instr.MatchCall<Actor>(nameof(Actor.Update))))
