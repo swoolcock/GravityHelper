@@ -23,7 +23,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
         {
             Logger.Log(nameof(GravityHelperModule), "Loading third party hooks...");
             ReflectionCache.LoadThirdPartyTypes();
-            // executeIfAvailable("SpeedrunTool", true, loadSpeedrunTool);
+            executeIfAvailable("SpeedrunTool", true, loadSpeedrunTool);
             executeIfAvailable("FancyTileEntities", true, loadFancyTileEntities);
             executeIfAvailable("MaddyCrown", true, loadMaddyCrown);
             executeIfAvailable("MaxHelpingHand", true, loadMaxHelpingHand);
@@ -33,7 +33,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
         public static void Unload()
         {
             Logger.Log(nameof(GravityHelperModule), "Unloading third party hooks...");
-            // executeIfAvailable("SpeedrunTool", false, unloadSpeedrunTool);
+            executeIfAvailable("SpeedrunTool", false, unloadSpeedrunTool);
             executeIfAvailable("FancyTileEntities", false, unloadFancyTileEntities);
             executeIfAvailable("MaddyCrown", false, unloadMaddyCrown);
             executeIfAvailable("MaxHelpingHand", false, unloadMaxHelpingHand);
@@ -123,41 +123,42 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
         #region SpeedrunTool
 
-        private static bool _speedrunToolLoaded;
+        private static object _speedrunToolSaveLoadAction;
 
         private static void loadSpeedrunTool()
         {
-            // we only ever load this exactly once
-            if (_speedrunToolLoaded) return;
-            _speedrunToolLoaded = true;
-
             var slat = ReflectionCache.GetModdedTypeByName("SpeedrunTool", "Celeste.Mod.SpeedrunTool.SaveLoad.SaveLoadAction");
             var allFieldInfo = slat?.GetField("All", BindingFlags.Static | BindingFlags.NonPublic);
             if (allFieldInfo?.GetValue(null) is not IList all) return;
+            var slActionDelegateType = slat.GetNestedType("SlAction");
 
-            Action<Dictionary<Type, Dictionary<string, object>>, Level> saveState = (savedValues, _) =>
-            {
-                if (!savedValues.TryGetValue(typeof(GravityHelperModule), out var dict))
-                    dict = savedValues[typeof(GravityHelperModule)] = new Dictionary<string, object>();
-                GravityHelperModule.SaveState(dict);
-            };
+            var saveState = Delegate.CreateDelegate(slActionDelegateType, typeof(ThirdPartyHooks).GetMethod(nameof(speedrunToolSaveState), BindingFlags.NonPublic | BindingFlags.Static)!);
+            var loadState = Delegate.CreateDelegate(slActionDelegateType, typeof(ThirdPartyHooks).GetMethod(nameof(speedrunToolLoadState), BindingFlags.NonPublic | BindingFlags.Static)!);
 
-            Action<Dictionary<Type, Dictionary<string, object>>, Level> loadState = (savedValues, _) =>
-            {
-                if (!savedValues.TryGetValue(typeof(GravityHelperModule), out var dict))
-                    return;
-                GravityHelperModule.LoadState(dict);
-            };
+            var cons = slat.GetConstructors().First(c => c.GetParameters().Length == 3);
+            _speedrunToolSaveLoadAction = cons.Invoke(new object[] {saveState, loadState, null});
+            all.Add(_speedrunToolSaveLoadAction);
+        }
 
-            var cons = slat.GetConstructors().First(c => c.GetParameters().Length == 2);
-            var saveLoadAction = cons.Invoke(new object[] {saveState, loadState});
+        private static void speedrunToolLoadState(Dictionary<Type, Dictionary<string, object>> savedValues, Level level)
+        {
+            if (!savedValues.TryGetValue(typeof(GravityHelperModule), out var dict)) return;
+            GravityHelperModule.LoadState(dict, level);
+        }
 
-            all.Add(saveLoadAction);
+        private static void speedrunToolSaveState(Dictionary<Type, Dictionary<string, object>> savedValues, Level level)
+        {
+            if (!savedValues.TryGetValue(typeof(GravityHelperModule), out var dict)) dict = savedValues[typeof(GravityHelperModule)] = new Dictionary<string, object>();
+            GravityHelperModule.SaveState(dict, level);
         }
 
         private static void unloadSpeedrunTool()
         {
-            // at the moment it's just too hard to unload
+            var slat = ReflectionCache.GetModdedTypeByName("SpeedrunTool", "Celeste.Mod.SpeedrunTool.SaveLoad.SaveLoadAction");
+            var allFieldInfo = slat?.GetField("All", BindingFlags.Static | BindingFlags.NonPublic);
+            if (allFieldInfo?.GetValue(null) is not IList all) return;
+            all.Remove(_speedrunToolSaveLoadAction);
+            _speedrunToolSaveLoadAction = null;
         }
 
         #endregion

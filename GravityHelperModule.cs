@@ -161,7 +161,7 @@ namespace Celeste.Mod.GravityHelper
         internal static bool Transitioning;
         internal static bool SolidMoving;
 
-        public static void SaveState(Dictionary<string, object> state)
+        public static void SaveState(Dictionary<string, object> state, Level level)
         {
             state[nameof(Transitioning)] = Transitioning;
             state[nameof(SolidMoving)] = SolidMoving;
@@ -169,7 +169,7 @@ namespace Celeste.Mod.GravityHelper
             state[nameof(Gravity)] = Instance.Gravity;
         }
 
-        public static void LoadState(Dictionary<string, object> state)
+        public static void LoadState(Dictionary<string, object> state, Level level)
         {
             if (state[nameof(Transitioning)] is bool transitioning)
                 Transitioning = transitioning;
