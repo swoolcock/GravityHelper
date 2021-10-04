@@ -74,6 +74,8 @@ namespace Celeste.Mod.GravityHelper
         public static MethodInfo FancyFallingBlock_SurfaceSoundIndexAt { get; private set; }
         public static Type MaddyCrownModuleType { get; private set; }
         public static FieldInfo MaddyCrownModule_sprite { get; private set; }
+        public static Type FrostHelperCustomSpringType { get; private set; }
+        public static FieldInfo FrostHelperCustomSpring_speedMult { get; private set; }
 
         public static void LoadThirdPartyTypes()
         {
@@ -82,6 +84,8 @@ namespace Celeste.Mod.GravityHelper
             MaddyCrownModuleType = GetModdedTypeByName("MaddyCrown", "Celeste.Mod.MaddyCrown.MaddyCrownModule");
             MaddyCrownModule_sprite = MaddyCrownModuleType?.GetField("sprite", BindingFlags.Static | BindingFlags.NonPublic);
             MaxHelpingHandUpsideDownJumpThruType = GetModdedTypeByName("MaxHelpingHand", "Celeste.Mod.MaxHelpingHand.Entities.UpsideDownJumpThru");
+            FrostHelperCustomSpringType = GetModdedTypeByName("FrostHelper", "FrostHelper.CustomSpring");
+            FrostHelperCustomSpring_speedMult = FrostHelperCustomSpringType?.GetField("speedMult", BindingFlags.Static | BindingFlags.NonPublic);
         }
 
         #endregion
@@ -120,6 +124,7 @@ namespace Celeste.Mod.GravityHelper
         }
 
         public static Sprite GetMaddyCrownModuleSprite() => MaddyCrownModule_sprite?.GetValue(null) as Sprite;
+        public static float GetSpeedMult(this Spring spring) => (float) FrostHelperCustomSpring_speedMult.GetValue(spring);
 
         public static void SetValue(this VirtualJoystick virtualJoystick, Vector2 value)
         {

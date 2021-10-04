@@ -6,6 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Celeste.Mod.GravityHelper.Entities;
 using Microsoft.Xna.Framework;
 using Mono.Cecil.Cil;
 using Monocle;
@@ -26,6 +27,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             executeIfAvailable("FancyTileEntities", true, loadFancyTileEntities);
             executeIfAvailable("MaddyCrown", true, loadMaddyCrown);
             executeIfAvailable("MaxHelpingHand", true, loadMaxHelpingHand);
+            executeIfAvailable("FrostHelper", true, loadFrostHelper);
         }
 
         public static void Unload()
@@ -35,6 +37,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             executeIfAvailable("FancyTileEntities", false, unloadFancyTileEntities);
             executeIfAvailable("MaddyCrown", false, unloadMaddyCrown);
             executeIfAvailable("MaxHelpingHand", false, unloadMaxHelpingHand);
+            executeIfAvailable("FrostHelper", false, unloadFrostHelper);
         }
 
         #region FancyTileEntities
@@ -231,6 +234,66 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
         private static bool MaxHelpingHand_UpsideDownJumpThru_playerMovingUp(Func<Player, bool> orig, Player player) =>
             orig(player) != GravityHelperModule.ShouldInvert;
+
+        #endregion
+
+        #region FrostHelper
+
+        private static IDetour hook_FrostHelper_CustomSpring_OnCollide;
+
+        private static void loadFrostHelper()
+        {
+            var fhcst = ReflectionCache.FrostHelperCustomSpringType;
+            var onCollideMethod = fhcst?.GetMethod("OnCollide", BindingFlags.Instance | BindingFlags.NonPublic);
+
+            if (onCollideMethod != null)
+                hook_FrostHelper_CustomSpring_OnCollide = new ILHook(onCollideMethod, FrostHelper_CustomSpring_OnCollide);
+        }
+
+        private static void unloadFrostHelper()
+        {
+            hook_FrostHelper_CustomSpring_OnCollide?.Dispose();
+            hook_FrostHelper_CustomSpring_OnCollide = null;
+        }
+
+        private static void FrostHelper_CustomSpring_OnCollide(ILContext il) => HookUtils.SafeHook(() =>
+        {
+            var cursor = new ILCursor(il);
+
+            // invert first Speed.Y check
+            if (!cursor.TryGotoNext(instr => instr.MatchLdcR4(0), instr => instr.MatchBltUn(out _)))
+                throw new HookException("Couldn't find first Speed.Y check.");
+            cursor.EmitInvertFloatDelegate();
+
+            // replace SuperBounce with GravityHelper version
+            if (!cursor.TryGotoNext(instr => instr.MatchCallvirt<Player>(nameof(Player.SuperBounce))))
+                throw new HookException("Couldn't find first SuperBounce.");
+            cursor.EmitDelegate<Func<bool>>(() => GravityHelperModule.ShouldInvert);
+            cursor.Emit(OpCodes.Brfalse_S, cursor.Next);
+            cursor.EmitDelegate<Action<Player, float>>(GravitySpring.InvertedSuperBounce);
+            cursor.Emit(OpCodes.Br_S, cursor.Next.Next);
+
+            // invert second Speed.Y check
+            if (!cursor.TryGotoNext(instr => instr.MatchLdcR4(0), instr => instr.MatchBgtUn(out _)))
+                throw new HookException("Couldn't find second Speed.Y check.");
+            cursor.EmitInvertFloatDelegate();
+
+            // replace SuperBounce with GravityHelper version
+            if (!cursor.TryGotoNext(instr => instr.MatchCallvirt<Player>(nameof(Player.SuperBounce))))
+                throw new HookException("Couldn't find second SuperBounce.");
+            cursor.EmitDelegate<Func<bool>>(() => GravityHelperModule.ShouldInvert);
+            cursor.Emit(OpCodes.Brfalse_S, cursor.Next);
+            cursor.EmitDelegate<Action<Player, float>>(GravitySpring.InvertedSuperBounce);
+            cursor.Emit(OpCodes.Br_S, cursor.Next.Next);
+
+            // cancel the negative
+            if (!cursor.TryGotoNext(instr => instr.MatchNeg()))
+                throw new HookException("Couldn't find neg");
+            cursor.EmitDelegate<Func<bool>>(() => GravityHelperModule.ShouldInvert);
+            cursor.Emit(OpCodes.Brfalse_S, cursor.Next);
+            cursor.Emit(OpCodes.Neg);
+            cursor.Emit(OpCodes.Br_S, cursor.Next.Next);
+        });
 
         #endregion
 
