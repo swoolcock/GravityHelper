@@ -56,7 +56,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             cursor.GotoNext(MoveType.After, instr => instr.MatchLdfld<Vector2>(nameof(Vector2.Y)));
             cursor.EmitInvertFloatDelegate();
             cursor.GotoNext(instr => instr.MatchCall<Rectangle>("get_Bottom"));
-            cursor.EmitDelegate<Func<bool>>(() => GravityHelperModule.ShouldInvert);
+            cursor.EmitLoadShouldInvert();
             cursor.Emit(OpCodes.Brfalse_S, cursor.Next);
             cursor.Emit(OpCodes.Call, typeof(Rectangle).GetMethod("get_Top"));
             cursor.Emit(OpCodes.Neg);

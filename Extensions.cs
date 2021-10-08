@@ -235,6 +235,34 @@ namespace Celeste.Mod.GravityHelper
         public static void EmitInvertIntDelegate(this ILCursor cursor) =>
             cursor.EmitDelegate<Func<int, int>>(i => GravityHelperModule.ShouldInvert ? -i : i);
 
+        public static void EmitLoadShouldInvert(this ILCursor cursor) =>
+            cursor.Emit(OpCodes.Call, typeof(GravityHelperModule).GetProperty(nameof(GravityHelperModule.ShouldInvert)).GetGetMethod());
+
+        public static void DumpIL(this ILCursor cursor, int instructions = 1, int offset = 0)
+        {
+            var thisCursor = cursor.Clone();
+            thisCursor.Index += offset;
+            for (int it = 0; it < instructions; it++)
+            {
+                var instr = thisCursor.Next;
+                thisCursor.Index++;
+
+                var str = $"{instr.Offset:x4}{(it == -offset ? "*" : " ")}: {instr.OpCode.ToString().PadRight(10)}";
+
+                if (instr.MatchLdarg(out var i)) str += $"   {i}";
+                else if (instr.MatchLdloc(out i)) str += $"   {i}";
+                else if (instr.MatchStloc(out i)) str += $"   {i}";
+                else if (instr.MatchCall(out var mr)) str += $"   {mr.FullName}";
+                else if (instr.MatchCallvirt(out mr)) str += $"   {mr.FullName}";
+                else if (instr.MatchLdfld(out var fr)) str += $"   {fr.FullName}";
+                else if (instr.MatchStfld(out fr)) str += $"   {fr.FullName}";
+                else if (instr.MatchLdcR4(out var f)) str += $"   {f}";
+                else if (instr.MatchLdcI4(out i)) str += $"   {i}";
+
+                Logger.Log(nameof(GravityHelperModule), str);
+            }
+        }
+
         public static bool MatchCallGeneric<T>(this Instruction instr, string name, out GenericInstanceMethod method)
         {
             method = instr.Operand as GenericInstanceMethod;
@@ -242,11 +270,31 @@ namespace Celeste.Mod.GravityHelper
             return method.DeclaringType.Is(typeof(T)) && method.Name == name;
         }
 
+        public static bool MatchCallGeneric<T, A>(this Instruction instr, string name, out GenericInstanceMethod method)
+        {
+            method = instr.Operand as GenericInstanceMethod;
+            if (method == null || instr.OpCode != OpCodes.Call) return false;
+            return method.DeclaringType.Is(typeof(T)) &&
+                   method.Name == name &&
+                   method.GenericArguments.Count == 1 &&
+                   method.GenericArguments[0].ResolveReflection() == typeof(A);
+        }
+
         public static bool MatchCallvirtGeneric<T>(this Instruction instr, string name, out GenericInstanceMethod method)
         {
             method = instr.Operand as GenericInstanceMethod;
             if (method == null || instr.OpCode != OpCodes.Callvirt) return false;
             return method.DeclaringType.Is(typeof(T)) && method.Name == name;
+        }
+
+        public static bool MatchCallvirtGeneric<T, A>(this Instruction instr, string name, out GenericInstanceMethod method)
+        {
+            method = instr.Operand as GenericInstanceMethod;
+            if (method == null || instr.OpCode != OpCodes.Callvirt) return false;
+            return method.DeclaringType.Is(typeof(T)) &&
+                   method.Name == name &&
+                   method.GenericArguments.Count == 1 &&
+                   method.GenericArguments[0].ResolveReflection() == typeof(A);
         }
 
         #endregion

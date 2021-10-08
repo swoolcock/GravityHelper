@@ -269,7 +269,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             // replace SuperBounce with GravityHelper version
             if (!cursor.TryGotoNext(instr => instr.MatchCallvirt<Player>(nameof(Player.SuperBounce))))
                 throw new HookException("Couldn't find first SuperBounce.");
-            cursor.EmitDelegate<Func<bool>>(() => GravityHelperModule.ShouldInvert);
+            cursor.EmitLoadShouldInvert();
             cursor.Emit(OpCodes.Brfalse_S, cursor.Next);
             cursor.EmitDelegate<Action<Player, float>>(GravitySpring.InvertedSuperBounce);
             cursor.Emit(OpCodes.Br_S, cursor.Next.Next);
@@ -282,7 +282,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             // replace SuperBounce with GravityHelper version
             if (!cursor.TryGotoNext(instr => instr.MatchCallvirt<Player>(nameof(Player.SuperBounce))))
                 throw new HookException("Couldn't find second SuperBounce.");
-            cursor.EmitDelegate<Func<bool>>(() => GravityHelperModule.ShouldInvert);
+            cursor.EmitLoadShouldInvert();
             cursor.Emit(OpCodes.Brfalse_S, cursor.Next);
             cursor.EmitDelegate<Action<Player, float>>(GravitySpring.InvertedSuperBounce);
             cursor.Emit(OpCodes.Br_S, cursor.Next.Next);
@@ -290,7 +290,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             // cancel the negative
             if (!cursor.TryGotoNext(instr => instr.MatchNeg()))
                 throw new HookException("Couldn't find neg");
-            cursor.EmitDelegate<Func<bool>>(() => GravityHelperModule.ShouldInvert);
+            cursor.EmitLoadShouldInvert();
             cursor.Emit(OpCodes.Brfalse_S, cursor.Next);
             cursor.Emit(OpCodes.Neg);
             cursor.Emit(OpCodes.Br_S, cursor.Next.Next);
