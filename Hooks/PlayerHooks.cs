@@ -75,7 +75,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             On.Celeste.Player.Update += Player_Update;
             On.Celeste.Player.WindMove += Player_WindMove;
 
-            using (new DetourContext { Before = { "MaxHelpingHand", "SpringCollab2020" }})
+            using (new DetourContext { After = { "MaxHelpingHand", "SpringCollab2020" }})
                 hook_Player_orig_Update = new ILHook(ReflectionCache.Player_OrigUpdate, Player_orig_Update);
 
             hook_Player_DashCoroutine = new ILHook(ReflectionCache.Player_DashCoroutine.GetStateMachineTarget(), Player_DashCoroutine);
@@ -582,11 +582,11 @@ namespace Celeste.Mod.GravityHelper.Hooks
                 throw new HookException("Couldn't find base.Update()");
 
             // find collidecheck
-            if (!cursor.TryGotoNext(instr => instr.MatchCallGeneric<Entity>(nameof(Entity.CollideCheck), out _)))
+            if (!cursor.TryGotoNext(instr => instr.MatchCallGeneric<Entity, JumpThru>(nameof(Entity.CollideCheck), out _)))
                 throw new HookException("Couldn't find CollideCheck<JumpThru>");
 
             // emit UDJT check
-            cursor.EmitDelegate<Func<bool>>(() => GravityHelperModule.ShouldInvert);
+            cursor.EmitLoadShouldInvert();
             cursor.Emit(OpCodes.Brfalse_S, cursor.Next);
             cursor.EmitDelegate<Func<Entity, bool>>(e => e.CollideCheckUpsideDownJumpThru());
             cursor.Emit(OpCodes.Br_S, cursor.Next.Next);
@@ -606,14 +606,15 @@ namespace Celeste.Mod.GravityHelper.Hooks
             cursor.EmitInvertFloatDelegate();
 
             // find collidecheckoutside
-            if (!cursor.TryGotoNext(instr => instr.MatchCallGeneric<Entity>(nameof(Entity.CollideCheckOutside), out _)))
+            if (!cursor.TryGotoNext(MoveType.After, instr => instr.MatchCallGeneric<Entity, JumpThru>(nameof(Entity.CollideCheckOutside), out _)))
                 throw new HookException("Couldn't find CollideCheckOutside<JumpThru>");
 
-            // emit UDJT check
-            cursor.EmitDelegate<Func<bool>>(() => GravityHelperModule.ShouldInvert);
-            cursor.Emit(OpCodes.Brfalse_S, cursor.Next);
-            cursor.EmitDelegate<Func<Entity, Vector2, bool>>((e, at) => e.CollideCheckOutsideUpsideDownJumpThru(at));
-            cursor.Emit(OpCodes.Br_S, cursor.Next.Next);
+            // emit UDJT check AFTER, to be compatible with MHH's hooks
+            cursor.Emit(OpCodes.Ldarg_0);
+            cursor.EmitDelegate<Func<bool, Player, bool>>((b, self) =>
+                !GravityHelperModule.ShouldInvert
+                    ? b
+                    : self.CollideCheckOutsideUpsideDownJumpThru(self.Position - Vector2.UnitY * 3f));
 
             // find 3
             if (!cursor.TryGotoNext(MoveType.After, instr => instr.MatchLdcR4(3)))
