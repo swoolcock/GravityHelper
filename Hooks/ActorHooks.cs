@@ -2,11 +2,11 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System;
+using System.Linq;
 using Celeste.Mod.GravityHelper.Entities;
 using Celeste.Mod.GravityHelper.Extensions;
 using Microsoft.Xna.Framework;
 using Mono.Cecil.Cil;
-using Monocle;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
 
@@ -22,12 +22,12 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
             IL.Celeste.Actor.IsRiding_JumpThru += Actor_IsRiding_JumpThru;
             IL.Celeste.Actor.IsRiding_Solid += Actor_IsRiding_Solid;
+            IL.Celeste.Actor.MoveV += Actor_MoveV;
 
             // we need to run this after MaxHelpingHand to ensure both UDJT types are handled
             using (new DetourContext {After = {"MaxHelpingHand"}})
                 IL.Celeste.Actor.MoveVExact += Actor_MoveVExact;
 
-            On.Celeste.Actor.MoveV += Actor_MoveV;
             On.Celeste.Actor.MoveVExact += Actor_MoveVExact;
             On.Celeste.Actor.OnGround_int += Actor_OnGround_int;
         }
@@ -39,8 +39,8 @@ namespace Celeste.Mod.GravityHelper.Hooks
             IL.Celeste.Actor.IsRiding_JumpThru -= Actor_IsRiding_JumpThru;
             IL.Celeste.Actor.IsRiding_Solid -= Actor_IsRiding_Solid;
             IL.Celeste.Actor.MoveVExact -= Actor_MoveVExact;
+            IL.Celeste.Actor.MoveV -= Actor_MoveV;
 
-            On.Celeste.Actor.MoveV -= Actor_MoveV;
             On.Celeste.Actor.MoveVExact -= Actor_MoveVExact;
             On.Celeste.Actor.OnGround_int -= Actor_OnGround_int;
         }
@@ -79,54 +79,53 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
         private static void Actor_MoveVExact(ILContext il) => HookUtils.SafeHook(() =>
         {
+            // borrowed and repurposed some code from MaxHelpingHand to check for GH UDJT
             var cursor = new ILCursor(il);
+            VariableDefinition variable = il.Method.Body.Variables.FirstOrDefault(v =>
+                v.VariableType.FullName == "Celeste.Platform");
 
-            ILLabel target = default;
+            if (!cursor.TryGotoNext(MoveType.AfterLabel, instr => instr.MatchLdarg(1), instr => instr.MatchLdcI4(0)))
+                throw new HookException("Couldn't find moveV > 0");
 
-            if (!cursor.TryGotoNext(
-                instr => instr.MatchBle(out target),
-                instr => instr.MatchLdarg(out _),
-                instr => instr.MatchLdfld<Actor>(nameof(Actor.IgnoreJumpThrus))))
-                throw new HookException("Couldn't find moveV > 0.");
+            var cursor2 = cursor.Clone();
 
-            // replace 'moveV > 0' with 'moveV != 0' since we potentially always want to do collision checks with jumpthrus
-            cursor.Remove();
-            cursor.Emit(OpCodes.Beq_S, target);
+            if (!cursor2.TryGotoNext(MoveType.AfterLabel, instr => instr.MatchLdarg(0), instr => instr.MatchLdflda<Actor>("movementCounter")))
+                throw new HookException("Couldn't find movementCounter");
 
-            // replace CollideFirstOutside<JumpThru> with a delegate that handles upside down jumpthrus
-            // note that we only check for GravityHelper UDJT since Max's are already handled
-            if (!cursor.TryGotoNext(instr => instr.MatchCallGeneric<Entity>(nameof(Entity.CollideFirstOutside), out _)))
-                throw new HookException("Couldn't find CollideFirstOutside<JumpThru>.");
-
-            cursor.Remove();
-            cursor.Emit(OpCodes.Ldloc_1); // num1
-            cursor.Emit(OpCodes.Ldarg_1); // moveV
-            cursor.EmitDelegate<Func<Actor, Vector2, int, int, JumpThru>>((self, at, num1, moveV) =>
-                moveV > 0
-                    ? self.CollideFirstOutside<JumpThru>(at)
-                    : self.CollideFirstOutside<UpsideDownJumpThru>(self.Position + Vector2.UnitY * num1));
+            cursor.Emit(OpCodes.Ldarg_0);
+            cursor.Emit(OpCodes.Ldarg_1);
+            cursor.EmitDelegate<Func<Actor, int, JumpThru>>((self, moveV) =>
+            {
+                if (moveV >= 0 || self.IgnoreJumpThrus) return null;
+                return self.CollideFirstOutside<UpsideDownJumpThru>(self.Position - Vector2.UnitY);
+            });
+            cursor.Emit(OpCodes.Stloc, variable);
+            cursor.Emit(OpCodes.Ldloc, variable);
+            cursor.Emit(OpCodes.Brtrue, cursor2.Next);
         });
 
-        private static bool Actor_MoveV(On.Celeste.Actor.orig_MoveV orig, Actor self, float moveV, Collision onCollide, Solid pusher)
+        private static void Actor_MoveV(ILContext il) => HookUtils.SafeHook(() =>
         {
-            if (!GravityHelperModule.ShouldInvertActor(self))
-                return orig(self, moveV, onCollide, pusher);
+            var cursor = new ILCursor(il);
 
-            var movementCounter = (Vector2)ReflectionCache.Actor_MovementCounter.GetValue(self);
-            movementCounter.Y -= moveV;
+            // invert moveV at the start of the method if we need to
+            cursor.Emit(OpCodes.Ldarg_0);
+            cursor.EmitDelegate<Func<Actor, bool>>(GravityHelperModule.ShouldInvertActor);
+            cursor.Emit(OpCodes.Brfalse_S, cursor.Next.Next);
+            cursor.Emit(OpCodes.Ldarg_1);
+            cursor.Emit(OpCodes.Neg);
+            cursor.Emit(OpCodes.Starg, 1);
 
-            int moveV1 = (int) Math.Round(movementCounter.Y, MidpointRounding.ToEven);
-            if (moveV1 == 0)
-            {
-                ReflectionCache.Actor_MovementCounter.SetValue(self, movementCounter);
-                return false;
-            }
+            // and revert it before we call MoveVExact
+            if (!cursor.TryGotoNext(MoveType.After,
+                instr => instr.MatchSub(),
+                instr => instr.MatchStindR4(),
+                instr => instr.MatchLdarg(0),
+                instr => instr.MatchLdloc(0)))
+                throw new HookException("Couldn't find call to MoveVExact");
 
-            movementCounter.Y -= moveV1;
-            ReflectionCache.Actor_MovementCounter.SetValue(self, movementCounter);
-
-            return self.MoveVExact(-moveV1, onCollide, pusher);
-        }
+            cursor.EmitActorInvertIntDelegate(OpCodes.Ldarg_0);
+        });
 
         private static bool Actor_MoveVExact(On.Celeste.Actor.orig_MoveVExact orig, Actor self, int moveV, Collision onCollide, Solid pusher) =>
             orig(self, GravityHelperModule.ShouldInvertActor(self) ? -moveV : moveV, onCollide, pusher);

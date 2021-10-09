@@ -115,11 +115,11 @@ namespace Celeste.Mod.GravityHelper.Extensions
         public static void DumpIL(this ILCursor cursor, int instructions = 1, int offset = 0)
         {
             var thisCursor = cursor.Clone();
-            thisCursor.Index += offset;
+            thisCursor.Index = Calc.Clamp(thisCursor.Index + offset, 0, thisCursor.Instrs.Count - 1);
+
             for (int it = 0; it < instructions; it++)
             {
                 var instr = thisCursor.Next;
-                thisCursor.Index++;
 
                 var str = $"{instr.Offset:x4}{(it == -offset ? "*" : " ")}: {instr.OpCode.ToString().PadRight(10)}";
 
@@ -132,8 +132,21 @@ namespace Celeste.Mod.GravityHelper.Extensions
                 else if (instr.MatchStfld(out fr)) str += $"   {fr.FullName}";
                 else if (instr.MatchLdcR4(out var f)) str += $"   {f}";
                 else if (instr.MatchLdcI4(out i)) str += $"   {i}";
+                else if (instr.MatchBeq(out var label)) str += $"   {label.Target.Offset:x4}";
+                else if (instr.MatchBneUn(out label)) str += $"   {label.Target.Offset:x4}";
+                else if (instr.MatchBge(out label)) str += $"   {label.Target.Offset:x4}";
+                else if (instr.MatchBgeUn(out label)) str += $"   {label.Target.Offset:x4}";
+                else if (instr.MatchBgt(out label)) str += $"   {label.Target.Offset:x4}";
+                else if (instr.MatchBgtUn(out label)) str += $"   {label.Target.Offset:x4}";
+                else if (instr.MatchBle(out label)) str += $"   {label.Target.Offset:x4}";
+                else if (instr.MatchBleUn(out label)) str += $"   {label.Target.Offset:x4}";
+                else if (instr.MatchBlt(out label)) str += $"   {label.Target.Offset:x4}";
+                else if (instr.MatchBltUn(out label)) str += $"   {label.Target.Offset:x4}";
 
                 Logger.Log(nameof(GravityHelperModule), str);
+
+                thisCursor.Index++;
+                if (thisCursor.Next == null) break;
             }
         }
 
