@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Celeste.Mod.GravityHelper.Entities;
+using Celeste.Mod.GravityHelper.Extensions;
 using Celeste.Mod.GravityHelper.Hooks;
 using Monocle;
 

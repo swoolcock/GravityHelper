@@ -3,6 +3,7 @@
 
 using System;
 using Celeste.Mod.GravityHelper.Entities;
+using Celeste.Mod.GravityHelper.Extensions;
 using Microsoft.Xna.Framework;
 using Mono.Cecil.Cil;
 using Monocle;

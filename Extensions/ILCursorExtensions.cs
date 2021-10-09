@@ -1,10 +1,7 @@
-// Copyright (c) Shane Woolcock. Licensed under the MIT Licence.
-// See the LICENCE file in the repository root for full licence text.
+// "Copyright (c) Shane Woolcock. Licensed under the MIT Licence.
+// See the LICENCE file in the repository root for full licence text."
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using Celeste.Mod.GravityHelper.Entities;
 using Microsoft.Xna.Framework;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -12,133 +9,10 @@ using Monocle;
 using MonoMod.Cil;
 using MonoMod.Utils;
 
-// ReSharper disable InconsistentNaming
-
-namespace Celeste.Mod.GravityHelper
+namespace Celeste.Mod.GravityHelper.Extensions
 {
-    internal static class Extensions
+    public static class ILCursorExtensions
     {
-        #region Entity Extensions
-
-        public static T GetEntityOrDefault<T>(this Tracker tracker, Func<T, bool> predicate = null) where T : Entity
-        {
-            if (!tracker.Entities.TryGetValue(typeof(T), out var list))
-                return default;
-            var ofType = list.OfType<T>();
-            return predicate == null ? ofType.FirstOrDefault() : ofType.FirstOrDefault(predicate);
-        }
-
-        public static IEnumerable<T> GetEntitiesOrEmpty<T>(this Tracker tracker, Func<T, bool> predicate = null) where T : Entity
-        {
-            if (!tracker.Entities.TryGetValue(typeof(T), out var list))
-                return Enumerable.Empty<T>();
-            var ofType = list.OfType<T>();
-            return predicate == null ? ofType : ofType.Where(predicate);
-        }
-
-        public static IEnumerable<Entity> GetEntitiesOrEmpty(this Tracker tracker, Type entityType, Func<Entity, bool> predicate = null)
-        {
-            if (entityType == null || !tracker.Entities.TryGetValue(entityType, out var list))
-                return Enumerable.Empty<Entity>();
-            return predicate == null ? list : list.Where(predicate);
-        }
-
-        public static T CollideFirstOrDefault<T>(this Entity entity) where T : Entity =>
-            entity.Scene.Tracker.Entities.ContainsKey(typeof(T)) ? entity.CollideFirst<T>() : default;
-
-        public static Entity CollideFirstOutside(this Entity entity, Type type, Vector2 at, bool checkAllEntities = false)
-        {
-            IEnumerable<Entity> entities = getEntities(entity.Scene, type, checkAllEntities);
-            if (entities == null) return null;
-
-            foreach (Entity b in entities)
-            {
-                if (!Collide.Check(entity, b) && Collide.Check(entity, b, at))
-                    return b;
-            }
-
-            return default;
-        }
-
-        public static bool CollideCheckOutside(this Entity entity, Type type, Vector2 at, bool checkAllEntities = false) =>
-            entity.CollideFirstOutside(type, at, checkAllEntities) != null;
-
-        public static Entity CollideFirst(this Entity entity, Type type, Vector2 at, bool checkAllEntities = false)
-        {
-            IEnumerable<Entity> entities = getEntities(entity.Scene, type, checkAllEntities);
-            return entities == null ? null : Collide.First(entity, entities, at);
-        }
-
-        public static bool CollideCheck(this Entity entity, Type type, Vector2 at, bool checkAllEntities = false)
-        {
-            IEnumerable<Entity> entities = getEntities(entity.Scene, type, checkAllEntities);
-            return entities != null && Collide.Check(entity, entities, at);
-        }
-
-        public static bool CollideCheck(this Entity entity, Type type, bool checkAllEntities = false)
-        {
-            IEnumerable<Entity> entities = getEntities(entity.Scene, type, checkAllEntities);
-            return entities != null && Collide.Check(entity, entities);
-        }
-
-        public static bool CollideCheckUpsideDownJumpThru(this Entity entity)
-        {
-            if (entity.CollideCheck<UpsideDownJumpThru>())
-                return true;
-            if (ReflectionCache.MaxHelpingHandUpsideDownJumpThruType != null && entity.CollideCheck(ReflectionCache.MaxHelpingHandUpsideDownJumpThruType))
-                return true;
-            return false;
-        }
-
-        public static bool CollideCheckUpsideDownJumpThru(this Entity entity, Vector2 at)
-        {
-            if (entity.CollideCheck<UpsideDownJumpThru>(at))
-                return true;
-            if (ReflectionCache.MaxHelpingHandUpsideDownJumpThruType != null && entity.CollideCheck(ReflectionCache.MaxHelpingHandUpsideDownJumpThruType, at))
-                return true;
-            return false;
-        }
-
-        public static bool CollideCheckOutsideUpsideDownJumpThru(this Entity entity, Vector2 at)
-        {
-            if (entity.CollideCheckOutside<UpsideDownJumpThru>(at))
-                return true;
-            if (ReflectionCache.MaxHelpingHandUpsideDownJumpThruType != null && entity.CollideCheckOutside(ReflectionCache.MaxHelpingHandUpsideDownJumpThruType, at))
-                return true;
-            return false;
-        }
-
-        public static JumpThru CollideFirstOutsideUpsideDownJumpThru(this Entity entity, Vector2 at)
-        {
-            JumpThru collide = entity.CollideFirstOutside<UpsideDownJumpThru>(at);
-
-            if (collide == null && ReflectionCache.MaxHelpingHandUpsideDownJumpThruType != null)
-                collide = (JumpThru) entity.CollideFirstOutside(ReflectionCache.MaxHelpingHandUpsideDownJumpThruType, at);
-
-            return collide;
-        }
-
-        private static IEnumerable<Entity> getEntities(Scene scene, Type type, bool checkAllEntities = false)
-        {
-            IEnumerable<Entity> entities = null;
-            if (checkAllEntities)
-                entities = scene.Tracker.Entities.SelectMany(p => p.Value.Where(e => e.GetType() == type));
-            else if (scene.Tracker.Entities.ContainsKey(type))
-                entities = scene.Tracker.Entities[type];
-
-            return entities;
-        }
-
-        public static bool IsUpsideDownJumpThru(this JumpThru jumpThru)
-        {
-            if (jumpThru is UpsideDownJumpThru) return true;
-            if (jumpThru.GetType() == ReflectionCache.MaxHelpingHandUpsideDownJumpThruType) return true;
-            return false;
-        }
-
-        #endregion
-
-        #region IL Extensions
         public static bool AdditionPredicate(Instruction instr) => instr.MatchCall<Vector2>("op_Addition");
         public static bool SubtractionPredicate(Instruction instr) => instr.MatchCall<Vector2>("op_Subtraction");
         public static bool UnitYPredicate(Instruction instr) => instr.MatchCall<Vector2>("get_UnitY");
@@ -270,14 +144,14 @@ namespace Celeste.Mod.GravityHelper
             return method.DeclaringType.Is(typeof(T)) && method.Name == name;
         }
 
-        public static bool MatchCallGeneric<T, A>(this Instruction instr, string name, out GenericInstanceMethod method)
+        public static bool MatchCallGeneric<TType, TFirst>(this Instruction instr, string name, out GenericInstanceMethod method)
         {
             method = instr.Operand as GenericInstanceMethod;
             if (method == null || instr.OpCode != OpCodes.Call) return false;
-            return method.DeclaringType.Is(typeof(T)) &&
+            return method.DeclaringType.Is(typeof(TType)) &&
                    method.Name == name &&
                    method.GenericArguments.Count == 1 &&
-                   method.GenericArguments[0].ResolveReflection() == typeof(A);
+                   method.GenericArguments[0].ResolveReflection() == typeof(TFirst);
         }
 
         public static bool MatchCallvirtGeneric<T>(this Instruction instr, string name, out GenericInstanceMethod method)
@@ -287,27 +161,14 @@ namespace Celeste.Mod.GravityHelper
             return method.DeclaringType.Is(typeof(T)) && method.Name == name;
         }
 
-        public static bool MatchCallvirtGeneric<T, A>(this Instruction instr, string name, out GenericInstanceMethod method)
+        public static bool MatchCallvirtGeneric<TType, TFirst>(this Instruction instr, string name, out GenericInstanceMethod method)
         {
             method = instr.Operand as GenericInstanceMethod;
             if (method == null || instr.OpCode != OpCodes.Callvirt) return false;
-            return method.DeclaringType.Is(typeof(T)) &&
+            return method.DeclaringType.Is(typeof(TType)) &&
                    method.Name == name &&
                    method.GenericArguments.Count == 1 &&
-                   method.GenericArguments[0].ResolveReflection() == typeof(A);
+                   method.GenericArguments[0].ResolveReflection() == typeof(TFirst);
         }
-
-        #endregion
-
-        public static Rectangle ToRectangle(this Collider collider) =>
-            new Rectangle((int)collider.Left, (int)collider.Top, (int)collider.Width, (int)collider.Height);
-
-        private const string inverted_key = "GravityHelper_Inverted";
-
-        public static bool IsInverted(this Actor actor) =>
-            new DynData<Actor>(actor).Data.TryGetValue(inverted_key, out var value) && (bool)value;
-
-        public static void SetInverted(this Actor actor, bool inverted) =>
-            new DynData<Actor>(actor).Data[inverted_key] = inverted;
     }
 }

@@ -2,6 +2,7 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using Celeste.Mod.GravityHelper.Entities;
+using Celeste.Mod.GravityHelper.Extensions;
 
 // ReSharper disable InconsistentNaming
 

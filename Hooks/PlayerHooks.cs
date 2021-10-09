@@ -5,6 +5,7 @@ using System;
 using System.Linq;
 using System.Reflection;
 using Celeste.Mod.GravityHelper.Entities;
+using Celeste.Mod.GravityHelper.Extensions;
 using Celeste.Mod.GravityHelper.Triggers;
 using Microsoft.Xna.Framework;
 using Mono.Cecil.Cil;
@@ -271,7 +272,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
             // if (this.CollideCheck<Solid>(this.Position - Vector2.UnitY) || this.ClimbHopBlockedCheck() && this.SlipCheck(-1f))
             cursor.GotoNext(MoveType.After,
-                instr => Extensions.UnitYPredicate(instr) && Extensions.SubtractionPredicate(instr.Next));
+                instr => ILCursorExtensions.UnitYPredicate(instr) && ILCursorExtensions.SubtractionPredicate(instr.Next));
             cursor.EmitInvertVectorDelegate();
 
             // if (Input.MoveY.Value != 1 && (double) this.Speed.Y > 0.0 && !this.CollideCheck<Solid>(this.Position + new Vector2((float) this.Facing, 1f)))
@@ -297,8 +298,17 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
         private static int updateClimbMove(Player player, int lastClimbMove)
         {
-            if (Input.MoveY.Value != -1 || !player.CollideCheckOutsideUpsideDownJumpThru(player.Position - Vector2.UnitY))
+            if (Input.MoveY.Value != -1)
                 return lastClimbMove;
+
+            if (!GravityHelperModule.ShouldInvert &&
+                !player.CollideCheckOutsideUpsideDownJumpThru(player.Position - Vector2.UnitY))
+                return lastClimbMove;
+
+            if (GravityHelperModule.ShouldInvert &&
+                !player.CollideCheckOutsideNotUpsideDownJumpThru(player.Position + Vector2.UnitY))
+                return lastClimbMove;
+
             player.Speed.Y = 0.0f;
             return 0;
         }
@@ -441,7 +451,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             cursor.EmitInvertVectorDelegate();
 
             // Vector2 at = this.Position + add;
-            cursor.GotoPrev(Extensions.AdditionPredicate);
+            cursor.GotoPrev(ILCursorExtensions.AdditionPredicate);
             cursor.EmitInvertVectorDelegate();
         });
 
@@ -460,7 +470,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
             // Platform platformByPriority = SurfaceIndex.GetPlatformByPriority(this.CollideAll<Platform>(this.Position + new Vector2(0.0f, 1f), this.temp));
             cursor.GotoNext(instr => instr.MatchCall<SurfaceIndex>(nameof(SurfaceIndex.GetPlatformByPriority)));
-            cursor.GotoPrev(Extensions.AdditionPredicate);
+            cursor.GotoPrev(ILCursorExtensions.AdditionPredicate);
             cursor.EmitInvertVectorDelegate();
 
             // Dust.Burst(this.Position, new Vector2(0.0f, -1f).Angle(), 8, this.DustParticleFromSurfaceIndex(index));
@@ -472,7 +482,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             for (int i = 0; i < 4; i++)
             {
                 cursor.GotoNext(instr => instr.MatchLdfld<Entity>(nameof(Entity.Position)));
-                cursor.GotoNext(Extensions.AdditionPredicate);
+                cursor.GotoNext(ILCursorExtensions.AdditionPredicate);
                 cursor.EmitInvertVectorDelegate();
                 cursor.Index += 2;
             }
@@ -497,7 +507,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
             // prevent Madeline from attempting to stand on the underside of regular jumpthrus
             // or the topside of upside down jumpthrus
-            if (!cursor.TryGotoNext(Extensions.AdditionPredicate) ||
+            if (!cursor.TryGotoNext(ILCursorExtensions.AdditionPredicate) ||
                 !cursor.TryGotoNext(instr => instr.MatchLdloc(1) && instr.Next.MatchBrfalse(out _)))
                 throw new HookException("Couldn't find platform != null check.");
 
@@ -519,7 +529,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
              */
 
             // ensure we check ground collisions the right direction for refilling dash on solid ground
-            if (!cursor.TryGotoNext(Extensions.AdditionPredicate))
+            if (!cursor.TryGotoNext(ILCursorExtensions.AdditionPredicate))
                 throw new HookException("Couldn't apply patch for dash refill.");
 
             cursor.EmitInvertVectorDelegate();
@@ -530,7 +540,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
             var jumpThruCheck = cursor.Next;
 
-            if (!cursor.TryGotoNext(MoveType.After, Extensions.AdditionPredicate) ||
+            if (!cursor.TryGotoNext(MoveType.After, ILCursorExtensions.AdditionPredicate) ||
                 !cursor.TryGotoNext(instr => instr.MatchLdarg(0)))
                 throw new HookException("Couldn't find spikes check.");
 
@@ -682,7 +692,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
         private static void Player_PointBounce(ILContext il) => HookUtils.SafeHook(() =>
         {
             var cursor = new ILCursor(il);
-            if (!cursor.TryGotoNext(MoveType.After, Extensions.SubtractionPredicate))
+            if (!cursor.TryGotoNext(MoveType.After, ILCursorExtensions.SubtractionPredicate))
                 throw new HookException("Couldn't invert bounce direction.");
 
             cursor.EmitInvertVectorDelegate();
@@ -716,7 +726,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
                 throw new HookException("Couldn't replace 4 with 5 while inverted");
             cursor.EmitDelegate<Func<float, float>>(f => GravityHelperModule.ShouldInvert ? f + 1 : f);
 
-            if (!cursor.TryGotoNext(Extensions.AdditionPredicate))
+            if (!cursor.TryGotoNext(ILCursorExtensions.AdditionPredicate))
                 throw new HookException("Couldn't replace vector addition with subtraction");
             cursor.EmitInvertVectorDelegate();
 
@@ -729,7 +739,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
                 throw new HookException("Couldn't replace 4 with 5 while inverted");
             cursor.EmitDelegate<Func<float, float>>(f => GravityHelperModule.ShouldInvert ? f + 1 : f);
 
-            if (!cursor.TryGotoNext(Extensions.AdditionPredicate))
+            if (!cursor.TryGotoNext(ILCursorExtensions.AdditionPredicate))
                 throw new HookException("Couldn't replace vector addition with subtraction");
             cursor.EmitInvertVectorDelegate();
 
@@ -737,7 +747,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
                 throw new HookException("Couldn't replace -4 with -5 while inverted");
             cursor.EmitDelegate<Func<float, float>>(f => GravityHelperModule.ShouldInvert ? f - 1 : f);
 
-            if (!cursor.TryGotoNext(Extensions.AdditionPredicate))
+            if (!cursor.TryGotoNext(ILCursorExtensions.AdditionPredicate))
                 throw new HookException("Couldn't replace vector addition with subtraction");
             cursor.EmitInvertVectorDelegate();
         });
@@ -833,7 +843,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
             cursor.EmitInvertVectorDelegate();
 
-            if (!cursor.TryGotoNext(MoveType.After, Extensions.UnitYPredicate))
+            if (!cursor.TryGotoNext(MoveType.After, ILCursorExtensions.UnitYPredicate))
                 throw new HookException("Couldn't find get_UnitY.");
 
             cursor.EmitInvertVectorDelegate();
