@@ -318,12 +318,15 @@ namespace Celeste.Mod.GravityHelper.Hooks
             var cursor = new ILCursor(il);
 
             // Dust.Burst(dir != 1 ? center + new Vector2(-x, 4f) : center + new Vector2(x, 4f), -1.5707964f, particleType: particleType);
-            if (!cursor.TryGotoNext(MoveType.After, instr => instr.MatchLdcR4(4)))
+
+            if (!cursor.TryGotoNext(MoveType.After,
+                instr => instr.MatchLdcR4(4) && instr.Next.MatchNewobj<Vector2>()))
                 throw new HookException("Couldn't match first instance of 4f");
 
             cursor.EmitInvertFloatDelegate();
 
-            if (!cursor.TryGotoNext(MoveType.After, instr => instr.MatchLdcR4(4)))
+            if (!cursor.TryGotoNext(MoveType.After,
+                instr => instr.MatchLdcR4(4) && instr.Next.MatchNewobj<Vector2>()))
                 throw new HookException("Couldn't match second instance of 4f");
 
             cursor.EmitInvertFloatDelegate();
