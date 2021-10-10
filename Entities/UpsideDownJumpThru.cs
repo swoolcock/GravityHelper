@@ -16,6 +16,8 @@ namespace Celeste.Mod.GravityHelper.Entities
         private readonly string _overrideTexture;
         private readonly int _overrideSoundIndex;
 
+        private Vector2 _shakeOffset;
+
         public UpsideDownJumpThru(Vector2 position, int width, string overrideTexture, int overrideSoundIndex = -1)
             : base(position, width, true)
         {
@@ -25,6 +27,17 @@ namespace Celeste.Mod.GravityHelper.Entities
 
             Depth = -60;
             Collider.Top = 3;
+
+            Add(new StaticMover
+            {
+                SolidChecker = s => CollideCheck(s, Position - Vector2.UnitX) || CollideCheck(s, Position + Vector2.UnitX),
+                OnMove = v =>
+                {
+                    MoveH(v.X);
+                    MoveV(v.Y);
+                },
+                OnShake = v => _shakeOffset += v,
+            });
         }
 
         public UpsideDownJumpThru(EntityData data, Vector2 offset)
@@ -82,6 +95,13 @@ namespace Celeste.Mod.GravityHelper.Entities
                     Scale = {Y = -1},
                 });
             }
+        }
+
+        public override void Render()
+        {
+            Position += _shakeOffset;
+            base.Render();
+            Position -= _shakeOffset;
         }
 
         public void EnsureCorrectTracking(Scene scene = null)

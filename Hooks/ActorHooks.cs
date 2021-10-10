@@ -49,15 +49,11 @@ namespace Celeste.Mod.GravityHelper.Hooks
         {
             var cursor = new ILCursor(il);
 
-            if (!cursor.TryGotoNext(instr => instr.MatchLdarg(0),
-                instr => instr.MatchLdarg(1),
-                instr => instr.MatchLdarg(0)))
-                throw new HookException("Couldn't patch Actor.IsRiding for jumpthrus");
-
             cursor.Emit(OpCodes.Ldarg_0);
             cursor.Emit(OpCodes.Ldarg_1);
             cursor.EmitDelegate<Func<Actor, JumpThru, bool>>((self, jumpThru) =>
             {
+                if (self.IgnoreJumpThrus) return false;
                 var shouldInvert = GravityHelperModule.ShouldInvertActor(self);
                 return shouldInvert && jumpThru.IsUpsideDownJumpThru() &&
                        self.CollideCheckOutside(jumpThru, self.Position - Vector2.UnitY) ||
@@ -131,6 +127,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             orig(self,
                 GravityHelperModule.ShouldInvertActor(self) &&
                 !GravityHelperModule.SolidMoving &&
+                !GravityHelperModule.JumpThruMoving &&
                 !GravityHelperModule.Transitioning ? -moveV : moveV, onCollide, pusher);
 
         private static bool Actor_OnGround_int(On.Celeste.Actor.orig_OnGround_int orig, Actor self, int downCheck)

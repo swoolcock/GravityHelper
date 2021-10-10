@@ -1,7 +1,7 @@
 // Copyright (c) Shane Woolcock. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
-using Celeste.Mod.GravityHelper.Extensions;
+
 
 // ReSharper disable InconsistentNaming
 
@@ -12,16 +12,26 @@ namespace Celeste.Mod.GravityHelper.Hooks
         public static void Load()
         {
             Logger.Log(nameof(GravityHelperModule), $"Loading {nameof(JumpThru)} hooks...");
-            On.Celeste.JumpThru.HasPlayerRider += JumpThru_HasPlayerRider;
+            On.Celeste.JumpThru.MoveVExact += JumpThru_MoveVExact;
+        }
+
+        private static void JumpThru_MoveVExact(On.Celeste.JumpThru.orig_MoveVExact orig, JumpThru self, int move)
+        {
+            if (!GravityHelperModule.ShouldInvert)
+            {
+                orig(self, move);
+                return;
+            }
+
+            GravityHelperModule.JumpThruMoving = true;
+            orig(self, move);
+            GravityHelperModule.JumpThruMoving = false;
         }
 
         public static void Unload()
         {
             Logger.Log(nameof(GravityHelperModule), $"Unloading {nameof(JumpThru)} hooks...");
-            On.Celeste.JumpThru.HasPlayerRider -= JumpThru_HasPlayerRider;
+            On.Celeste.JumpThru.MoveVExact += JumpThru_MoveVExact;
         }
-
-        private static bool JumpThru_HasPlayerRider(On.Celeste.JumpThru.orig_HasPlayerRider orig, JumpThru self) =>
-            GravityHelperModule.ShouldInvert == self.IsUpsideDownJumpThru() && orig(self);
     }
 }

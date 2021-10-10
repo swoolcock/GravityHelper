@@ -161,11 +161,13 @@ namespace Celeste.Mod.GravityHelper
 
         internal static bool Transitioning;
         internal static bool SolidMoving;
+        internal static bool JumpThruMoving;
 
         public static void SaveState(Dictionary<string, object> state, Level level)
         {
             state[nameof(Transitioning)] = Transitioning;
             state[nameof(SolidMoving)] = SolidMoving;
+            state[nameof(JumpThruMoving)] = JumpThruMoving;
             state[nameof(GravityRefillCharges)] = Instance.GravityRefillCharges;
             state[nameof(Gravity)] = Instance.Gravity;
         }
@@ -176,6 +178,8 @@ namespace Celeste.Mod.GravityHelper
                 Transitioning = transitioning;
             if (state[nameof(SolidMoving)] is bool solidMoving)
                 SolidMoving = solidMoving;
+            if (state[nameof(JumpThruMoving)] is bool jumpThruMoving)
+                JumpThruMoving = jumpThruMoving;
             if (state[nameof(GravityRefillCharges)] is int gravityRefillCharges)
                 Instance.GravityRefillCharges = gravityRefillCharges;
             if (state[nameof(Gravity)] is GravityType gravity)
