@@ -22,7 +22,6 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
             IL.Celeste.Actor.IsRiding_JumpThru += Actor_IsRiding_JumpThru;
             IL.Celeste.Actor.IsRiding_Solid += Actor_IsRiding_Solid;
-            IL.Celeste.Actor.MoveV += Actor_MoveV;
 
             // we need to run this after MaxHelpingHand to ensure both UDJT types are handled
             using (new DetourContext {After = {"MaxHelpingHand"}})
@@ -39,7 +38,6 @@ namespace Celeste.Mod.GravityHelper.Hooks
             IL.Celeste.Actor.IsRiding_JumpThru -= Actor_IsRiding_JumpThru;
             IL.Celeste.Actor.IsRiding_Solid -= Actor_IsRiding_Solid;
             IL.Celeste.Actor.MoveVExact -= Actor_MoveVExact;
-            IL.Celeste.Actor.MoveV -= Actor_MoveV;
 
             On.Celeste.Actor.MoveVExact -= Actor_MoveVExact;
             On.Celeste.Actor.OnGround_int -= Actor_OnGround_int;
@@ -98,29 +96,6 @@ namespace Celeste.Mod.GravityHelper.Hooks
             cursor.Emit(OpCodes.Stloc, variable);
             cursor.Emit(OpCodes.Ldloc, variable);
             cursor.Emit(OpCodes.Brtrue, cursor2.Next);
-        });
-
-        private static void Actor_MoveV(ILContext il) => HookUtils.SafeHook(() =>
-        {
-            var cursor = new ILCursor(il);
-
-            // invert moveV at the start of the method if we need to
-            cursor.Emit(OpCodes.Ldarg_0);
-            cursor.EmitDelegate<Func<Actor, bool>>(GravityHelperModule.ShouldInvertActor);
-            cursor.Emit(OpCodes.Brfalse_S, cursor.Next.Next);
-            cursor.Emit(OpCodes.Ldarg_1);
-            cursor.Emit(OpCodes.Neg);
-            cursor.Emit(OpCodes.Starg, 1);
-
-            // and revert it before we call MoveVExact
-            if (!cursor.TryGotoNext(MoveType.After,
-                instr => instr.MatchSub(),
-                instr => instr.MatchStindR4(),
-                instr => instr.MatchLdarg(0),
-                instr => instr.MatchLdloc(0)))
-                throw new HookException("Couldn't find call to MoveVExact");
-
-            cursor.EmitActorInvertIntDelegate(OpCodes.Ldarg_0);
         });
 
         private static bool Actor_MoveVExact(On.Celeste.Actor.orig_MoveVExact orig, Actor self, int moveV, Collision onCollide, Solid pusher) =>

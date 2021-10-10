@@ -1,5 +1,5 @@
 - Name: GravityHelper
-  Version: 1.0.19
+  Version: 1.0.20
   DLL: bin/GravityHelper.dll
   Dependencies:
     - Name: Everest
