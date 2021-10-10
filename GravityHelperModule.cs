@@ -211,9 +211,6 @@ namespace Celeste.Mod.GravityHelper
 
         public static bool ShouldInvertActor(Actor actor)
         {
-            if (SolidMoving || Transitioning)
-                return false;
-
             if (actor is Player player)
                 return player.StateMachine.State != Player.StDreamDash &&
                        player.CurrentBooster == null &&
