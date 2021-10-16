@@ -76,7 +76,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             On.Celeste.Player.Update += Player_Update;
             On.Celeste.Player.WindMove += Player_WindMove;
 
-            using (new DetourContext { After = { "MaxHelpingHand", "SpringCollab2020" }})
+            using (new DetourContext { Before = { "MaxHelpingHand", "SpringCollab2020" }})
                 hook_Player_orig_Update = new ILHook(ReflectionCache.Player_OrigUpdate, Player_orig_Update);
 
             hook_Player_DashCoroutine = new ILHook(ReflectionCache.Player_DashCoroutine.GetStateMachineTarget(), Player_DashCoroutine);
