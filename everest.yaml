@@ -1,6 +1,9 @@
 - Name: GravityHelper
-  Version: 1.0.21
+  Version: 1.0.22
   DLL: bin/GravityHelper.dll
   Dependencies:
     - Name: Everest
       Version: 1.2781.0
+  OptionalDependencies:
+    - Name: SpeedrunTool
+      Version: 3.6.18
