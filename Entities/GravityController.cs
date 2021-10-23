@@ -24,6 +24,7 @@ namespace Celeste.Mod.GravityHelper.Entities
         public float ArrowOpacity { get; }
         public float FieldOpacity { get; }
         public float ParticleOpacity { get; }
+        public float HoldableResetTime { get; }
 
         public GravityController(EntityData data, Vector2 offset)
             : base(data.Position + offset)
@@ -35,6 +36,7 @@ namespace Celeste.Mod.GravityHelper.Entities
             ArrowOpacity = Calc.Clamp(data.Float("arrowOpacity", GravityField.DEFAULT_ARROW_OPACITY), 0f, 1f);
             FieldOpacity = Calc.Clamp(data.Float("fieldOpacity", GravityField.DEFAULT_FIELD_OPACITY), 0f, 1f);
             ParticleOpacity = Calc.Clamp(data.Float("particleOpacity", GravityField.DEFAULT_PARTICLE_OPACITY), 0f, 1f);
+            HoldableResetTime = data.Float("holdableResetTime", 2f);
 
             Add(new GravityListener
             {
@@ -51,6 +53,17 @@ namespace Celeste.Mod.GravityHelper.Entities
                     {
                         _soundMuffleRemaining = sound_muffle_time_seconds;
                         Audio.Play(soundName);
+                    }
+                },
+            }, new TransitionListener
+            {
+                OnInEnd = () =>
+                {
+                    var comps = Scene.Tracker.GetComponents<GravityHoldable>();
+                    foreach (var comp in comps)
+                    {
+                        var gh = (GravityHoldable)comp;
+                        gh.InvertTime = HoldableResetTime;
                     }
                 },
             });

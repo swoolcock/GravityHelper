@@ -10,7 +10,12 @@ namespace Celeste.Mod.GravityHelper
 {
     public class GravityHoldable : Component
     {
-        public const float DEFAULT_INVERT_TIME = 2.0f;
+        private float _invertTime = 2f;
+        public float InvertTime
+        {
+            get => _invertTime;
+            set => _invertTime = _invertTimeRemaining = value;
+        }
 
         private bool _inverted;
         public bool Inverted
@@ -20,7 +25,7 @@ namespace Celeste.Mod.GravityHelper
             {
                 var oldValue = _inverted;
                 _inverted = value;
-                _invertTimeRemaining = value ? DEFAULT_INVERT_TIME : 0f;
+                _invertTimeRemaining = value ? InvertTime : 0f;
 
                 if (oldValue == value) return;
 
@@ -64,7 +69,7 @@ namespace Celeste.Mod.GravityHelper
 
             if (Holdable.IsHeld)
                 Inverted = GravityHelperModule.ShouldInvert;
-            else
+            else if (InvertTime > 0)
             {
                 _invertTimeRemaining -= Engine.DeltaTime;
                 if (_invertTimeRemaining < 0)

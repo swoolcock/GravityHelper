@@ -33,6 +33,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             }
         }
 
+        // ReSharper disable once UnusedMember.Global
         public static void Unload()
         {
             Logger.Log(nameof(GravityHelperModule), "Unloading third party hooks...");

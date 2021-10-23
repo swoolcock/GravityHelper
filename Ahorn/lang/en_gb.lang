@@ -22,6 +22,7 @@ placements.entities.GravityHelper/GravityController.tooltips.toggleGravitySound=
 placements.entities.GravityHelper/GravityController.tooltips.fieldOpacity=The default opacity of shimmering field effects, if enabled. Ranges from 0 (invisible) to 1 (fully opaque). Defaults to 0.15.
 placements.entities.GravityHelper/GravityController.tooltips.arrowOpacity=The default opacity of arrows, if enabled. Ranges from 0 (invisible) to 1 (fully opaque). Defaults to 0.5.
 placements.entities.GravityHelper/GravityController.tooltips.particleOpacity=The default opacity of moving particles, if enabled. Ranges from 0 (invisible) to 1 (fully opaque). Defaults to 0.5.
+placements.entities.GravityHelper/GravityController.tooltips.holdableResetTime=The amount of time in seconds a holdable will take to reset after being dropped. If <= 0, the holdable will never reset. Defaults to 2.
 
 # Gravity Refill
 placements.entities.GravityHelper/GravityRefill.tooltips.charges=The number of gravity charges that this refill will provide.
