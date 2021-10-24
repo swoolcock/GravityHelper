@@ -23,30 +23,6 @@ namespace Celeste.Mod.GravityHelper.Extensions
         public static bool TopPredicate(Instruction instr) => instr.MatchCallOrCallvirt<Entity>("get_Top");
         public static bool BottomCenterPredicate(Instruction instr) => instr.MatchCallOrCallvirt<Entity>("get_BottomCenter");
 
-        public static readonly Func<Vector2, Vector2, Vector2> AdditionDelegate = (lhs, rhs) =>
-            lhs + (GravityHelperModule.ShouldInvert ? new Vector2(rhs.X, -rhs.Y) : rhs);
-
-        public static readonly Func<Vector2, Vector2, Vector2> SubtractionDelegate = (lhs, rhs) =>
-            lhs - (GravityHelperModule.ShouldInvert ? new Vector2(rhs.X, -rhs.Y) : rhs);
-
-        public static readonly Func<float, float, float> MinDelegate = (a, b) =>
-            GravityHelperModule.ShouldInvert ? Math.Max(a, b) : Math.Min(a, b);
-
-        public static readonly Func<float, float, float> MaxDelegate = (a, b) =>
-            GravityHelperModule.ShouldInvert ? Math.Min(a, b) : Math.Max(a, b);
-
-        public static readonly Func<float, float> SignDelegate = a =>
-            GravityHelperModule.ShouldInvert ? -Math.Sign(a) : Math.Sign(a);
-
-        public static readonly Func<Entity, float> BottomDelegate = e =>
-            GravityHelperModule.ShouldInvert ? e.Top : e.Bottom;
-
-        public static readonly Func<Entity, float> TopDelegate = e =>
-            GravityHelperModule.ShouldInvert ? e.Bottom : e.Top;
-
-        public static readonly Func<Entity, Vector2> BottomCenterDelegate = e =>
-            GravityHelperModule.ShouldInvert ? e.TopCenter : e.BottomCenter;
-
         public static void ReplaceWithDelegate<T>(this ILCursor cursor, Func<Instruction, bool> predicate, T del, int count = 1)
             where T : Delegate
         {
@@ -61,15 +37,6 @@ namespace Celeste.Mod.GravityHelper.Extensions
             }
         }
 
-        public static void ReplaceAdditionWithDelegate(this ILCursor cursor, int count = 1) => cursor.ReplaceWithDelegate(AdditionPredicate, AdditionDelegate, count);
-        public static void ReplaceSubtractionWithDelegate(this ILCursor cursor, int count = 1) => cursor.ReplaceWithDelegate(SubtractionPredicate, SubtractionDelegate, count);
-        public static void ReplaceMinWithDelegate(this ILCursor cursor, int count = 1) => cursor.ReplaceWithDelegate(MinPredicate, MinDelegate, count);
-        public static void ReplaceMaxWithDelegate(this ILCursor cursor, int count = 1) => cursor.ReplaceWithDelegate(MaxPredicate, MaxDelegate, count);
-        public static void ReplaceSignWithDelegate(this ILCursor cursor, int count = 1) => cursor.ReplaceWithDelegate(SignPredicate, SignDelegate, count);
-        public static void ReplaceBottomWithDelegate(this ILCursor cursor, int count = 1) => cursor.ReplaceWithDelegate(BottomPredicate, BottomDelegate, count);
-        public static void ReplaceTopWithDelegate(this ILCursor cursor, int count = 1) => cursor.ReplaceWithDelegate(TopPredicate, TopDelegate, count);
-        public static void ReplaceBottomCenterWithDelegate(this ILCursor cursor, int count = 1) => cursor.ReplaceWithDelegate(BottomCenterPredicate, BottomCenterDelegate, count);
-
         public static void GotoNextAddition(this ILCursor cursor, MoveType moveType = MoveType.Before) => cursor.GotoNext(moveType, AdditionPredicate);
         public static void GotoNextSubtraction(this ILCursor cursor, MoveType moveType = MoveType.Before) => cursor.GotoNext(moveType, SubtractionPredicate);
         public static void GotoNextMin(this ILCursor cursor, MoveType moveType = MoveType.Before) => cursor.GotoNext(moveType, MinPredicate);
@@ -78,6 +45,29 @@ namespace Celeste.Mod.GravityHelper.Extensions
         public static void GotoNextUnitY(this ILCursor cursor, MoveType moveType = MoveType.Before) => cursor.GotoNext(moveType, UnitYPredicate);
         public static void GotoNextBottom(this ILCursor cursor, MoveType moveType = MoveType.Before) => cursor.GotoNext(moveType, BottomPredicate);
         public static void GotoNextBottomCenter(this ILCursor cursor, MoveType moveType = MoveType.Before) => cursor.GotoNext(moveType, BottomCenterPredicate);
+
+        public static void EmitInvertEntityPoint(this ILCursor cursor, string name)
+        {
+            var target = name switch
+            {
+                nameof(Entity.Top) => nameof(Entity.Bottom),
+                nameof(Entity.TopLeft) => nameof(Entity.BottomLeft),
+                nameof(Entity.TopRight) => nameof(Entity.BottomRight),
+                nameof(Entity.TopCenter) => nameof(Entity.BottomCenter),
+                nameof(Entity.Bottom) => nameof(Entity.Top),
+                nameof(Entity.BottomLeft) => nameof(Entity.TopLeft),
+                nameof(Entity.BottomRight) => nameof(Entity.TopRight),
+                nameof(Entity.BottomCenter) => nameof(Entity.TopCenter),
+                _ => "",
+            };
+
+            Logger.Log(nameof(GravityHelperModule), $"Replacing call to Entity.{name} with Entity.{target} when inverted.");
+
+            cursor.EmitLoadShouldInvert();
+            cursor.Emit(OpCodes.Brfalse_S, cursor.Next);
+            cursor.Emit(OpCodes.Call, typeof(Entity).GetProperty(target).GetGetMethod());
+            cursor.Emit(OpCodes.Br_S, cursor.Next.Next);
+        }
 
         public static void EmitActorInvertVectorDelegate(this ILCursor cursor, OpCode loadActorOpCode)
         {

@@ -234,9 +234,14 @@ namespace Celeste.Mod.GravityHelper.Hooks
         private static void Player_Bounce(ILContext il) => HookUtils.SafeHook(() =>
         {
             var cursor = new ILCursor(il);
+            if (!cursor.TryGotoNext(ILCursorExtensions.BottomPredicate))
+                throw new HookException("Couldn't find Bottom.");
 
-            cursor.ReplaceBottomWithDelegate();
-            cursor.GotoNext(instr => instr.MatchLdnull() && instr.Next.MatchLdnull());
+            cursor.EmitInvertEntityPoint(nameof(Entity.Bottom));
+
+            if (!cursor.TryGotoNext(instr => instr.MatchLdnull(), instr => instr.MatchLdnull()))
+                throw new HookException("Couldn't find ldnull/ldnull");
+
             cursor.EmitInvertIntDelegate();
         });
 
@@ -410,12 +415,20 @@ namespace Celeste.Mod.GravityHelper.Hooks
             cursor.replaceGetLiftBoost();
 
             // Platform platformByPriority = SurfaceIndex.GetPlatformByPriority(this.CollideAll<Platform>(this.Position + Vector2.UnitY, this.temp));
-            cursor.GotoNext(instr => instr.MatchCall<Vector2>("get_UnitY"));
+            if (!cursor.TryGotoNext(instr => instr.MatchCall<Vector2>("get_UnitY")))
+                throw new HookException("Couldn't find UnitY");
+
             cursor.EmitInvertVectorDelegate();
 
             // Dust.Burst(this.BottomCenter, -1.5707964f, 4, this.DustParticleFromSurfaceIndex(index));
-            cursor.ReplaceBottomCenterWithDelegate();
-            cursor.GotoNext(instr => instr.MatchLdcI4(4));
+            if (!cursor.TryGotoNext(ILCursorExtensions.BottomCenterPredicate))
+                throw new HookException("Couldn't find BottomCenter");
+
+            cursor.EmitInvertEntityPoint(nameof(Entity.BottomCenter));
+
+            if (!cursor.TryGotoNext(instr => instr.MatchLdcI4(4)))
+                throw new HookException("Couldn't find ldci4(4)");
+
             cursor.EmitInvertFloatDelegate();
         });
 
@@ -511,11 +524,11 @@ namespace Celeste.Mod.GravityHelper.Hooks
             // prevent Madeline from attempting to stand on the underside of regular jumpthrus
             // or the topside of upside down jumpthrus
             if (!cursor.TryGotoNext(ILCursorExtensions.AdditionPredicate) ||
-                !cursor.TryGotoNext(instr => instr.MatchLdloc(1) && instr.Next.MatchBrfalse(out _)))
+                !cursor.TryGotoNext(instr => instr.MatchLdloc(1), instr => instr.MatchBrfalse(out _)))
                 throw new HookException("Couldn't find platform != null check.");
 
             var platformNotEqualNull = cursor.Next;
-            if (!cursor.TryGotoPrev(instr => instr.MatchLdarg(0) && instr.Next.MatchLdarg(0)))
+            if (!cursor.TryGotoPrev(instr => instr.MatchLdarg(0), instr => instr.MatchLdarg(0)))
                 throw new HookException("Couldn't apply patch for jumpthrus.");
 
             cursor.Emit(OpCodes.Ldarg_0); // this
@@ -538,7 +551,8 @@ namespace Celeste.Mod.GravityHelper.Hooks
             cursor.EmitInvertVectorDelegate();
 
             // find some instructions
-            if (!cursor.TryGotoNext(instr => instr.Match(OpCodes.Ldarg_0) && instr.Next.Match(OpCodes.Ldarg_0)))
+            if (!cursor.TryGotoNext(instr => instr.Match(OpCodes.Ldarg_0),
+                instr => instr.Match(OpCodes.Ldarg_0)))
                 throw new HookException("Couldn't find jumpthru check.");
 
             var jumpThruCheck = cursor.Next;
@@ -549,8 +563,8 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
             var spikesCheck = cursor.Next;
 
-            if (!cursor.TryGotoNext(instr =>
-                instr.Match(OpCodes.Ldarg_0) && instr.Next.MatchLdfld<Player>("varJumpTimer")))
+            if (!cursor.TryGotoNext(instr => instr.Match(OpCodes.Ldarg_0),
+                instr => instr.MatchLdfld<Player>("varJumpTimer")))
                 throw new HookException("Couldn't find varJumpTimer check");
 
             var varJumpTimerCheck = cursor.Next;
@@ -711,8 +725,14 @@ namespace Celeste.Mod.GravityHelper.Hooks
             var cursor = new ILCursor(il);
 
             // this.MoveV(Calc.Clamp(fromY - this.Bottom, -4f, 4f));
-            cursor.ReplaceBottomWithDelegate();
-            cursor.GotoNext(instr => instr.MatchLdnull() && instr.Next.MatchLdnull());
+            if (!cursor.TryGotoNext(ILCursorExtensions.BottomPredicate))
+                throw new HookException("Couldn't find Bottom");
+
+            cursor.EmitInvertEntityPoint(nameof(Entity.Bottom));
+
+            if (!cursor.TryGotoNext(instr => instr.MatchLdnull(), instr => instr.MatchLdnull()))
+                throw new HookException("Couldn't find ldnull/ldnull");
+
             cursor.EmitInvertFloatDelegate();
         });
 
@@ -722,8 +742,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
             if (!cursor.TryGotoNext(instr => instr.MatchCall<Entity>("get_TopRight")))
                 throw new HookException("Couldn't replace TopRight with BottomRight while inverted");
-            cursor.Remove();
-            cursor.EmitDelegate<Func<Entity, Vector2>>(e => GravityHelperModule.ShouldInvert ? e.BottomRight : e.TopRight);
+            cursor.EmitInvertEntityPoint(nameof(Entity.TopRight));
 
             if (!cursor.TryGotoNext(MoveType.After, instr => instr.MatchLdcR4(4)))
                 throw new HookException("Couldn't replace 4 with 5 while inverted");
@@ -735,8 +754,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
             if (!cursor.TryGotoNext(instr => instr.MatchCall<Entity>("get_TopLeft")))
                 throw new HookException("Couldn't replace TopLeft with BottomLeft while inverted");
-            cursor.Remove();
-            cursor.EmitDelegate<Func<Entity, Vector2>>(e => GravityHelperModule.ShouldInvert ? e.BottomLeft : e.TopLeft);
+            cursor.EmitInvertEntityPoint(nameof(Entity.TopLeft));
 
             if (!cursor.TryGotoNext(MoveType.After, instr => instr.MatchLdcR4(4)))
                 throw new HookException("Couldn't replace 4 with 5 while inverted");
@@ -770,8 +788,14 @@ namespace Celeste.Mod.GravityHelper.Hooks
             var cursor = new ILCursor(il);
 
             // this.MoveV(fromY - this.Bottom);
-            cursor.ReplaceBottomWithDelegate();
-            cursor.GotoNext(instr => instr.MatchLdnull() && instr.Next.MatchLdnull());
+            if (!cursor.TryGotoNext(ILCursorExtensions.BottomPredicate))
+                throw new HookException("Couldn't find Bottom");
+
+            cursor.EmitInvertEntityPoint(nameof(Entity.Bottom));
+
+            if (!cursor.TryGotoNext(instr => instr.MatchLdnull(), instr => instr.MatchLdnull()))
+                throw new HookException("Couldn't find ldnull/ldnull");
+
             cursor.EmitInvertFloatDelegate();
         });
 
@@ -787,8 +811,14 @@ namespace Celeste.Mod.GravityHelper.Hooks
             cursor.EmitInvertVectorDelegate();
 
             // Dust.Burst(this.BottomCenter, -1.5707964f, 4, this.DustParticleFromSurfaceIndex(index));
-            cursor.ReplaceBottomCenterWithDelegate();
-            cursor.GotoNext(instr => instr.MatchLdcI4(4));
+            if (!cursor.TryGotoNext(ILCursorExtensions.BottomCenterPredicate))
+                throw new HookException("Couldn't find BottomCenter");
+
+            cursor.EmitInvertEntityPoint(nameof(Entity.BottomCenter));
+
+            if (!cursor.TryGotoNext(instr => instr.MatchLdcI4(4)))
+                throw new HookException("Couldn't find ldci4(4)");
+
             cursor.EmitInvertFloatDelegate();
         });
 
