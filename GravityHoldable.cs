@@ -8,6 +8,7 @@ using Monocle;
 
 namespace Celeste.Mod.GravityHelper
 {
+    [Tracked]
     public class GravityHoldable : Component
     {
         private float _invertTime = 2f;

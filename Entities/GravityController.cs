@@ -2,6 +2,7 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using Celeste.Mod.Entities;
+using Celeste.Mod.GravityHelper.Extensions;
 using Microsoft.Xna.Framework;
 using Monocle;
 
@@ -59,7 +60,7 @@ namespace Celeste.Mod.GravityHelper.Entities
             {
                 OnInEnd = () =>
                 {
-                    var comps = Scene.Tracker.GetComponents<GravityHoldable>();
+                    var comps = Scene.Tracker.GetComponentsOrEmpty<GravityHoldable>();
                     foreach (var comp in comps)
                     {
                         var gh = (GravityHoldable)comp;
