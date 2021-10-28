@@ -9,7 +9,7 @@ using System.Reflection;
 
 namespace Celeste.Mod.GravityHelper.Hooks.ThirdParty
 {
-    [ThirdPartyMod("SpeedrunTool", "3.6.18")]
+    [ThirdPartyMod("SpeedrunTool", "3.7.2")]
     public class SpeedrunToolModSupport : ThirdPartyModSupport
     {
         private static object _speedrunToolSaveLoadAction;
@@ -24,8 +24,15 @@ namespace Celeste.Mod.GravityHelper.Hooks.ThirdParty
             var saveState = Delegate.CreateDelegate(slActionDelegateType, GetType().GetMethod(nameof(speedrunToolSaveState), BindingFlags.NonPublic | BindingFlags.Static)!);
             var loadState = Delegate.CreateDelegate(slActionDelegateType, GetType().GetMethod(nameof(speedrunToolLoadState), BindingFlags.NonPublic | BindingFlags.Static)!);
 
-            var cons = slat.GetConstructors().First(c => c.GetParameters().Length == 3);
-            _speedrunToolSaveLoadAction = cons.Invoke(new object[] {saveState, loadState, null});
+            // this constructor changes with almost every version of SpeedrunTool,
+            // so we'll just take the first with at least two parameters and hope for the best
+            var cons = slat.GetConstructors().First(c => c.GetParameters().Length >= 2);
+            var parameters = cons.GetParameters();
+            var args = new object[parameters.Length];
+            args[0] = saveState;
+            args[1] = loadState;
+
+            _speedrunToolSaveLoadAction = cons.Invoke(args);
             all.Add(_speedrunToolSaveLoadAction);
         }
 

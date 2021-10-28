@@ -23,7 +23,7 @@ namespace Celeste.Mod.GravityHelper.Hooks.ThirdParty
 
             if (_loaded)
             {
-                Logger.Log(nameof(GravityHelperModule), $"{attr.Name} already loaded, skipping.");
+                Logger.Log(LogLevel.Info, nameof(GravityHelperModule), $"{attr.Name} already loaded, skipping.");
                 return false;
             }
 
@@ -37,19 +37,19 @@ namespace Celeste.Mod.GravityHelper.Hooks.ThirdParty
 
             if (Version.TryParse(attr.MinimumVersion ?? string.Empty, out var minVersion) && module.Metadata.Version < minVersion)
             {
-                Logger.Log(nameof(GravityHelperModule), $"{module.Metadata.Name} ({module.Metadata.VersionString}) is less than minimum version {minVersion}, skipping.");
+                Logger.Log(LogLevel.Info, nameof(GravityHelperModule), $"{module.Metadata.Name} ({module.Metadata.VersionString}) is less than minimum version {minVersion}, skipping.");
                 return false;
             }
 
             if (Version.TryParse(attr.MaximumVersion ?? string.Empty, out var maxVersion) && module.Metadata.Version > maxVersion)
             {
-                Logger.Log(nameof(GravityHelperModule), $"{module.Metadata.Name} ({module.Metadata.VersionString}) is greater than maximum version {minVersion}, skipping.");
+                Logger.Log(LogLevel.Info, nameof(GravityHelperModule), $"{module.Metadata.Name} ({module.Metadata.VersionString}) is greater than maximum version {minVersion}, skipping.");
                 return false;
             }
 
             try
             {
-                Logger.Log(nameof(GravityHelperModule), $"Loading mod support for {module.Metadata.Name} ({module.Metadata.Version})...");
+                Logger.Log(LogLevel.Info, nameof(GravityHelperModule), $"Loading mod support for {module.Metadata.Name} ({module.Metadata.Version})...");
                 Load();
             }
             catch (Exception)
@@ -77,7 +77,7 @@ namespace Celeste.Mod.GravityHelper.Hooks.ThirdParty
 
             try
             {
-                Logger.Log(nameof(GravityHelperModule), $"Unloading mod support for {module.Metadata.Name} ({module.Metadata.Version})...");
+                Logger.Log(LogLevel.Info, nameof(GravityHelperModule), $"Unloading mod support for {module.Metadata.Name} ({module.Metadata.Version})...");
                 Unload();
             }
             catch (Exception)
