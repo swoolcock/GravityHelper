@@ -26,6 +26,7 @@ namespace Celeste.Mod.GravityHelper.Entities
         public float FieldOpacity { get; }
         public float ParticleOpacity { get; }
         public float HoldableResetTime { get; }
+        public string GravityMusicParam { get; }
 
         public GravityController(EntityData data, Vector2 offset)
             : base(data.Position + offset)
@@ -38,11 +39,14 @@ namespace Celeste.Mod.GravityHelper.Entities
             FieldOpacity = Calc.Clamp(data.Float("fieldOpacity", GravityField.DEFAULT_FIELD_OPACITY), 0f, 1f);
             ParticleOpacity = Calc.Clamp(data.Float("particleOpacity", GravityField.DEFAULT_PARTICLE_OPACITY), 0f, 1f);
             HoldableResetTime = data.Float("holdableResetTime", 2f);
+            GravityMusicParam = data.Attr("gravityMusicParam", "flip");
 
             Add(new GravityListener
             {
                 GravityChanged = args =>
                 {
+                    setParam();
+
                     if (!args.Changed && !AlwaysTrigger)
                         return;
 
@@ -74,6 +78,18 @@ namespace Celeste.Mod.GravityHelper.Entities
         {
             base.Update();
             _soundMuffleRemaining -= Engine.DeltaTime;
+        }
+
+        public override void Awake(Scene scene)
+        {
+            base.Awake(scene);
+            setParam();
+        }
+
+        private void setParam()
+        {
+            if (!string.IsNullOrEmpty(GravityMusicParam))
+                Audio.SetMusicParam(GravityMusicParam, GravityHelperModule.ShouldInvert ? 1 : 0);
         }
     }
 }
