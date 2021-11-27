@@ -223,6 +223,12 @@ namespace Celeste.Mod.GravityHelper
             return actor.IsInverted();
         }
 
+        public static void InvalidateRun()
+        {
+            if (Engine.Scene is Level level)
+                level.Session.StartedFromBeginning = false;
+        }
+
         [Command("gravity", "Changes the current gravity (0 = normal, 1 = inverted, 2 = toggle)")]
         private static void CmdSetGravity(int gravityType = -1)
         {
@@ -235,6 +241,8 @@ namespace Celeste.Mod.GravityHelper
             if (gravityType < 0 || gravityType > 2) return;
 
             Instance.SetGravity((GravityType) gravityType);
+            InvalidateRun();
+
             Engine.Commands.Log($"Current gravity is now: {Instance.Gravity}");
         }
 
@@ -250,6 +258,8 @@ namespace Celeste.Mod.GravityHelper
             if (gravityType < 0 || gravityType > 1) return;
 
             Session.InitialGravity = (GravityType) gravityType;
+            InvalidateRun();
+
             Engine.Commands.Log($"Initial gravity is now: {Session.InitialGravity}");
         }
     }
