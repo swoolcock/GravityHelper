@@ -34,7 +34,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             bool frozenUpdate,
             bool useRawDeltaTime)
         {
-            if (GravityHelperModule.ShouldInvert)
+            if (GravityComponent.ShouldInvertPlayer)
                 scale = new Vector2(scale.X, -scale.Y);
 
             return orig(position, sprite, hair, scale, color, depth, duration, frozenUpdate, useRawDeltaTime);

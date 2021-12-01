@@ -41,9 +41,9 @@ namespace Celeste.Mod.GravityHelper.Entities
             HoldableResetTime = data.Float("holdableResetTime", 2f);
             GravityMusicParam = data.Attr("gravityMusicParam", "flip");
 
-            Add(new GravityListener
+            Add(new PlayerGravityListener
             {
-                GravityChanged = args =>
+                GravityChanged = (_, args) =>
                 {
                     setParam();
 
@@ -89,7 +89,7 @@ namespace Celeste.Mod.GravityHelper.Entities
         private void setParam()
         {
             if (!string.IsNullOrEmpty(GravityMusicParam))
-                Audio.SetMusicParam(GravityMusicParam, GravityHelperModule.ShouldInvert ? 1 : 0);
+                Audio.SetMusicParam(GravityMusicParam, GravityComponent.ShouldInvertPlayer ? 1 : 0);
         }
     }
 }

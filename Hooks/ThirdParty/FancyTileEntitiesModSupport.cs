@@ -58,7 +58,7 @@ namespace Celeste.Mod.GravityHelper.Hooks.ThirdParty
 
         private static void FancyFallingBlock_MoveVExact(Action<FallingBlock, int> orig, FallingBlock self, int move)
         {
-            if (!GravityHelperModule.ShouldInvert)
+            if (!GravityComponent.ShouldInvertPlayer)
             {
                 orig(self, move);
                 return;
@@ -71,7 +71,7 @@ namespace Celeste.Mod.GravityHelper.Hooks.ThirdParty
 
         private static int FancyFallingBlock_GetLandSoundIndex(Func<FallingBlock, Entity, int> orig, FallingBlock self, Entity entity)
         {
-            if (!GravityHelperModule.ShouldInvert)
+            if (!GravityComponent.ShouldInvertPlayer)
                 return orig(self, entity);
 
             int num = self.CallFancyFallingBlockSurfaceSoundIndexAt(entity.TopCenter - Vector2.UnitY * 4f);
@@ -82,7 +82,7 @@ namespace Celeste.Mod.GravityHelper.Hooks.ThirdParty
 
         private static int FancyFallingBlock_GetStepSoundIndex(Func<FallingBlock, Entity, int> orig, FallingBlock self, Entity entity)
         {
-            if (!GravityHelperModule.ShouldInvert)
+            if (!GravityComponent.ShouldInvertPlayer)
                 return orig(self, entity);
 
             int num = self.CallFancyFallingBlockSurfaceSoundIndexAt(entity.TopCenter - Vector2.UnitY * 4f);

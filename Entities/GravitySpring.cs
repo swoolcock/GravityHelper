@@ -153,7 +153,7 @@ namespace Celeste.Mod.GravityHelper.Entities
                 return;
 
             // ignore spring if moving away
-            var realY = GravityHelperModule.ShouldInvert ? -player.Speed.Y : player.Speed.Y;
+            var realY = GravityComponent.ShouldInvertPlayer ? -player.Speed.Y : player.Speed.Y;
             switch (Orientation)
             {
                 case Orientations.Floor when realY < 0:
@@ -166,7 +166,7 @@ namespace Celeste.Mod.GravityHelper.Entities
             // set gravity and cooldown if not on cooldown
             if (GravityType != GravityType.None && _cooldownRemaining == 0f)
             {
-                GravityHelperModule.Instance.SetGravity(GravityType);
+                GravityComponent.PlayerComponent.SetGravity(GravityType);
                 _cooldownRemaining = Cooldown;
                 // TODO: update sprite to show cooldown
             }
@@ -178,14 +178,14 @@ namespace Celeste.Mod.GravityHelper.Entities
             switch (Orientation)
             {
                 case Orientations.Floor:
-                    if (GravityHelperModule.ShouldInvert)
+                    if (GravityComponent.ShouldInvertPlayer)
                         InvertedSuperBounce(player, Top);
                     else
                         player.SuperBounce(Top);
                     break;
 
                 case Orientations.Ceiling:
-                    if (!GravityHelperModule.ShouldInvert)
+                    if (!GravityComponent.ShouldInvertPlayer)
                         InvertedSuperBounce(player, Bottom);
                     else
                         player.SuperBounce(Bottom);
@@ -234,7 +234,7 @@ namespace Celeste.Mod.GravityHelper.Entities
 
             Collider collider = self.Collider;
             self.Collider = self.GetNormalHitbox();
-            self.MoveV(GravityHelperModule.ShouldInvert ? self.Bottom - fromY : fromY - self.Top);
+            self.MoveV(GravityComponent.ShouldInvertPlayer ? self.Bottom - fromY : fromY - self.Top);
             if (!self.Inventory.NoRefills)
                 self.RefillDash();
             self.RefillStamina();
@@ -258,7 +258,7 @@ namespace Celeste.Mod.GravityHelper.Entities
             self.Speed.Y = 185f;
 
             var level = self.SceneAs<Level>();
-            level?.DirectionalShake(GravityHelperModule.ShouldInvert ? -Vector2.UnitY : Vector2.UnitY, 0.1f);
+            level?.DirectionalShake(GravityComponent.ShouldInvertPlayer ? -Vector2.UnitY : Vector2.UnitY, 0.1f);
             Input.Rumble(RumbleStrength.Medium, RumbleLength.Medium);
             self.Sprite.Scale = new Vector2(0.5f, 1.5f);
             self.Collider = collider;

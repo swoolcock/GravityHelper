@@ -28,7 +28,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
         private static int SolidTiles_GetLandSoundIndex(On.Celeste.SolidTiles.orig_GetLandSoundIndex orig, SolidTiles self, Entity entity)
         {
-            if (!GravityHelperModule.ShouldInvert)
+            if (!GravityComponent.ShouldInvertPlayer)
                 return orig(self, entity);
 
             int num = self.CallSurfaceSoundIndexAt(entity.TopCenter - Vector2.UnitY * 4f);
@@ -39,7 +39,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
         private static int SolidTiles_GetStepSoundIndex(On.Celeste.SolidTiles.orig_GetStepSoundIndex orig, SolidTiles self, Entity entity)
         {
-            if (!GravityHelperModule.ShouldInvert)
+            if (!GravityComponent.ShouldInvertPlayer)
                 return orig(self, entity);
 
             int num = self.CallSurfaceSoundIndexAt(entity.TopCenter - Vector2.UnitY * 4f);

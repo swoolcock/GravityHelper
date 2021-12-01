@@ -35,9 +35,9 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
             if (self.Direction == Spikes.Directions.Down || self.Direction == Spikes.Directions.Up)
             {
-                self.Add(new GravityListener
+                self.Add(new PlayerGravityListener
                 {
-                    GravityChanged = args =>
+                    GravityChanged = (_, args) =>
                     {
                         var ledgeBlocker = self.Components.Get<LedgeBlocker>();
                         if (self.Direction == Spikes.Directions.Up)
@@ -51,7 +51,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
         private static void Spikes_OnCollide(On.Celeste.Spikes.orig_OnCollide orig, Spikes self, Player player)
         {
-            if (!GravityHelperModule.ShouldInvert || self.Direction == Spikes.Directions.Left || self.Direction == Spikes.Directions.Right)
+            if (!GravityComponent.ShouldInvertPlayer || self.Direction == Spikes.Directions.Left || self.Direction == Spikes.Directions.Right)
             {
                 orig(self, player);
                 return;

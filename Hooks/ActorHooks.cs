@@ -52,7 +52,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             cursor.EmitDelegate<Func<Actor, JumpThru, bool>>((self, jumpThru) =>
             {
                 if (self.IgnoreJumpThrus) return false;
-                var shouldInvert = GravityHelperModule.ShouldInvertActor(self);
+                var shouldInvert = self.ShouldInvertChecked();
                 return shouldInvert && jumpThru.IsUpsideDownJumpThru() &&
                        self.CollideCheckOutside(jumpThru, self.Position - Vector2.UnitY) ||
                        !shouldInvert && !jumpThru.IsUpsideDownJumpThru() &&
@@ -100,14 +100,14 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
         private static bool Actor_MoveVExact(On.Celeste.Actor.orig_MoveVExact orig, Actor self, int moveV, Collision onCollide, Solid pusher) =>
             orig(self,
-                GravityHelperModule.ShouldInvertActor(self) &&
+                self.ShouldInvertChecked() &&
                 !GravityHelperModule.SolidMoving &&
                 !GravityHelperModule.JumpThruMoving &&
                 !GravityHelperModule.Transitioning ? -moveV : moveV, onCollide, pusher);
 
         private static bool Actor_OnGround_int(On.Celeste.Actor.orig_OnGround_int orig, Actor self, int downCheck)
         {
-            if (!GravityHelperModule.ShouldInvertActor(self))
+            if (!self.ShouldInvertChecked())
                 return orig(self, downCheck);
 
             if (self.CollideCheck<Solid>(self.Position - Vector2.UnitY * downCheck))

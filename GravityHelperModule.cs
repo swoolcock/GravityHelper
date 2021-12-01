@@ -9,7 +9,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Celeste.Mod.GravityHelper.Entities;
-using Celeste.Mod.GravityHelper.Extensions;
 using Celeste.Mod.GravityHelper.Hooks;
 using Monocle;
 
@@ -41,8 +40,6 @@ namespace Celeste.Mod.GravityHelper
         }
 
         public GravityType? GravityBeforeReload;
-
-        public GravityType Gravity { get; private set; }
 
         public int GravityRefillCharges { get; set; }
 
@@ -90,6 +87,7 @@ namespace Celeste.Mod.GravityHelper
             BounceBlockHooks.Load();
             BumperHooks.Load();
             FlyFeatherHooks.Load();
+            GliderHooks.Load();
             HoldableHooks.Load();
             JumpThruHooks.Load();
             LevelHooks.Load();
@@ -102,6 +100,7 @@ namespace Celeste.Mod.GravityHelper
             SolidTilesHooks.Load();
             SpikesHooks.Load();
             SpringHooks.Load();
+            TheoCrystalHooks.Load();
             TrailManagerHooks.Load();
         }
 
@@ -116,6 +115,7 @@ namespace Celeste.Mod.GravityHelper
             BounceBlockHooks.Unload();
             BumperHooks.Unload();
             FlyFeatherHooks.Unload();
+            GliderHooks.Unload();
             HoldableHooks.Unload();
             JumpThruHooks.Unload();
             LevelHooks.Unload();
@@ -128,12 +128,13 @@ namespace Celeste.Mod.GravityHelper
             SolidTilesHooks.Unload();
             SpikesHooks.Unload();
             SpringHooks.Unload();
+            TheoCrystalHooks.Unload();
             TrailManagerHooks.Unload();
         }
 
         private static void AssetReloadHelper_ReloadLevel(On.Celeste.Mod.AssetReloadHelper.orig_ReloadLevel orig)
         {
-            Instance.GravityBeforeReload = Instance.Gravity;
+            Instance.GravityBeforeReload = GravityComponent.PlayerComponent?.CurrentGravity;
             orig();
         }
 
@@ -169,7 +170,6 @@ namespace Celeste.Mod.GravityHelper
             state[nameof(SolidMoving)] = SolidMoving;
             state[nameof(JumpThruMoving)] = JumpThruMoving;
             state[nameof(GravityRefillCharges)] = Instance.GravityRefillCharges;
-            state[nameof(Gravity)] = Instance.Gravity;
         }
 
         public static void LoadState(Dictionary<string, object> state, Level level)
@@ -182,45 +182,10 @@ namespace Celeste.Mod.GravityHelper
                 JumpThruMoving = jumpThruMoving;
             if (state[nameof(GravityRefillCharges)] is int gravityRefillCharges)
                 Instance.GravityRefillCharges = gravityRefillCharges;
-            if (state[nameof(Gravity)] is GravityType gravity)
-                Instance.SetGravity(new GravityChangeArgs(gravity, playerTriggered: false));
 
             // fix upside down jumpthru tracking
             foreach (var udjt in Engine.Scene.Entities.Where(e => e is UpsideDownJumpThru))
                 ((UpsideDownJumpThru)udjt).EnsureCorrectTracking();
-        }
-
-        public void SetGravity(GravityType newValue, float momentumMultiplier = 1f, bool playerTriggered = true) =>
-            SetGravity(new GravityChangeArgs(newValue, momentumMultiplier, playerTriggered));
-
-        public void SetGravity(GravityChangeArgs args)
-        {
-            if (args.SourceValue == GravityType.None)
-                return;
-
-            args.OldValue = Gravity;
-            args.NewValue = args.SourceValue == GravityType.Toggle ? args.OldValue.Opposite() : args.SourceValue;
-            Gravity = args.NewValue;
-            TriggerGravityListeners(args);
-        }
-
-        public void TriggerGravityListeners(GravityChangeArgs args)
-        {
-            var gravityListeners = Engine.Scene.Tracker.GetComponents<GravityListener>().ToArray();
-            foreach (Component component in gravityListeners)
-                (component as GravityListener)?.OnGravityChanged(args);
-        }
-
-        public static bool ShouldInvert => Instance.Gravity == GravityType.Inverted;
-
-        public static bool ShouldInvertActor(Actor actor)
-        {
-            if (actor is Player player)
-                return player.StateMachine.State != Player.StDreamDash &&
-                       player.CurrentBooster == null &&
-                       ShouldInvert;
-
-            return actor.IsInverted();
         }
 
         public static void InvalidateRun()
@@ -234,16 +199,16 @@ namespace Celeste.Mod.GravityHelper
         {
             if (gravityType == -1)
             {
-                Engine.Commands.Log($"Current gravity state: {Instance.Gravity}");
+                Engine.Commands.Log($"Current gravity state: {GravityComponent.PlayerComponent?.CurrentGravity ?? GravityType.Normal}");
                 return;
             }
 
             if (gravityType < 0 || gravityType > 2) return;
 
-            Instance.SetGravity((GravityType) gravityType);
+            GravityComponent.PlayerComponent?.SetGravity((GravityType) gravityType);
             InvalidateRun();
 
-            Engine.Commands.Log($"Current gravity is now: {Instance.Gravity}");
+            Engine.Commands.Log($"Current gravity is now: {GravityComponent.PlayerComponent?.CurrentGravity ?? GravityType.Normal}");
         }
 
         [Command("initial_gravity", "Changes the room entry/spawn gravity (0 = normal, 1 = inverted)")]

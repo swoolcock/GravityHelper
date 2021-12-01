@@ -186,12 +186,19 @@ namespace Celeste.Mod.GravityHelper.Extensions
         public static Rectangle ToRectangle(this Collider collider) =>
             new Rectangle((int)collider.Left, (int)collider.Top, (int)collider.Width, (int)collider.Height);
 
-        private const string inverted_key = "GravityHelper_Inverted";
+        public static bool ShouldInvert(this Entity entity) =>
+            new DynData<Entity>(entity).Data.TryGetValue(GravityComponent.INVERTED_KEY, out var value) && (bool)value;
 
-        public static bool IsInverted(this Actor actor) =>
-            new DynData<Actor>(actor).Data.TryGetValue(inverted_key, out var value) && (bool)value;
+        public static bool ShouldInvertChecked(this Entity entity)
+        {
+            if (entity is Player) return GravityComponent.ShouldInvertPlayerChecked;
+            return entity.Get<GravityComponent>()?.ShouldInvertChecked ?? false;
+        }
 
-        public static void SetInverted(this Actor actor, bool inverted) =>
-            new DynData<Actor>(actor).Data[inverted_key] = inverted;
+        public static void SetGravity(this Entity entity, GravityType gravityType, float momentumMultiplier = 1f, bool playerTriggered = true)
+        {
+            if (entity.Get<GravityComponent>() is { } gravityComponent)
+                gravityComponent.SetGravity(gravityType, momentumMultiplier, playerTriggered);
+        }
     }
 }

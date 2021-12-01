@@ -32,7 +32,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
             cursor.Emit(OpCodes.Ldloc_1);
             cursor.EmitDelegate<Func<Vector2, Player, Vector2>>((v, p) =>
-                !GravityHelperModule.ShouldInvert ? v : new Vector2(v.X, p.CenterY - (v.Y - p.CenterY)));
+                !GravityComponent.ShouldInvertPlayer ? v : new Vector2(v.X, p.CenterY - (v.Y - p.CenterY)));
         });
     }
 }

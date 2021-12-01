@@ -73,34 +73,34 @@ namespace Celeste.Mod.GravityHelper.Extensions
         {
             cursor.Emit(loadActorOpCode);
             cursor.EmitDelegate<Func<Vector2, Actor, Vector2>>((v, a) =>
-                GravityHelperModule.ShouldInvertActor(a) ? new Vector2(v.X, -v.Y) : v);
+                a.ShouldInvertChecked() ? new Vector2(v.X, -v.Y) : v);
         }
 
         public static void EmitInvertVectorDelegate(this ILCursor cursor) =>
-            cursor.EmitDelegate<Func<Vector2, Vector2>>(v => GravityHelperModule.ShouldInvert ? new Vector2(v.X, -v.Y) : v);
+            cursor.EmitDelegate<Func<Vector2, Vector2>>(v => GravityComponent.ShouldInvertPlayer ? new Vector2(v.X, -v.Y) : v);
 
         public static void EmitActorInvertFloatDelegate(this ILCursor cursor, OpCode loadActorOpCode)
         {
             cursor.Emit(loadActorOpCode);
             cursor.EmitDelegate<Func<float, Actor, float>>((f, a) =>
-                GravityHelperModule.ShouldInvertActor(a) ? -f : f);
+                a.ShouldInvertChecked() ? -f : f);
         }
 
         public static void EmitInvertFloatDelegate(this ILCursor cursor) =>
-            cursor.EmitDelegate<Func<float, float>>(f => GravityHelperModule.ShouldInvert ? -f : f);
+            cursor.EmitDelegate<Func<float, float>>(f => GravityComponent.ShouldInvertPlayer ? -f : f);
 
         public static void EmitActorInvertIntDelegate(this ILCursor cursor, OpCode loadActorOpCode)
         {
             cursor.Emit(loadActorOpCode);
             cursor.EmitDelegate<Func<int, Actor, int>>((i, a) =>
-                GravityHelperModule.ShouldInvertActor(a) ? -i : i);
+                a.ShouldInvertChecked() ? -i : i);
         }
 
         public static void EmitInvertIntDelegate(this ILCursor cursor) =>
-            cursor.EmitDelegate<Func<int, int>>(i => GravityHelperModule.ShouldInvert ? -i : i);
+            cursor.EmitDelegate<Func<int, int>>(i => GravityComponent.ShouldInvertPlayer ? -i : i);
 
         public static void EmitLoadShouldInvert(this ILCursor cursor) =>
-            cursor.Emit(OpCodes.Call, typeof(GravityHelperModule).GetProperty(nameof(GravityHelperModule.ShouldInvert)).GetGetMethod());
+            cursor.Emit(OpCodes.Call, typeof(GravityComponent).GetProperty(nameof(GravityComponent.ShouldInvertPlayer)).GetGetMethod());
 
         public static void DumpIL(this ILCursor cursor, int instructions = 1, int offset = 0)
         {
