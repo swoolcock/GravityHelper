@@ -3,7 +3,7 @@
 
 using Monocle;
 
-namespace Celeste.Mod.GravityHelper
+namespace Celeste.Mod.GravityHelper.Components
 {
     [Tracked]
     public class GravityHoldable : Component
@@ -32,7 +32,7 @@ namespace Celeste.Mod.GravityHelper
             if (holdable.IsHeld)
             {
                 _invertTimeRemaining = InvertTime;
-                gravityComponent.SetGravity(GravityComponent.PlayerComponent.CurrentGravity);
+                gravityComponent.SetGravity(GravityHelperModule.PlayerComponent.CurrentGravity);
             }
             else if (InvertTime > 0)
             {

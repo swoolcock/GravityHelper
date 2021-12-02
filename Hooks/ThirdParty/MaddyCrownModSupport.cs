@@ -40,8 +40,8 @@ namespace Celeste.Mod.GravityHelper.Hooks.ThirdParty
 
             cursor.EmitDelegate<Action<GraphicsComponent, Vector2>>((sprite, pos) =>
             {
-                sprite.Position = new Vector2(pos.X, Math.Abs(pos.Y) * (GravityComponent.ShouldInvertPlayer ? 1 : -1));
-                sprite.Scale.Y = GravityComponent.ShouldInvertPlayer ? -1 : 1;
+                sprite.Position = new Vector2(pos.X, Math.Abs(pos.Y) * (GravityHelperModule.ShouldInvertPlayer ? 1 : -1));
+                sprite.Scale.Y = GravityHelperModule.ShouldInvertPlayer ? -1 : 1;
             });
             cursor.Emit(OpCodes.Br_S, cursor.Next.Next);
         });

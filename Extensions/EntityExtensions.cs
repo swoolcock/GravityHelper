@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Celeste.Mod.GravityHelper.Components;
 using Celeste.Mod.GravityHelper.Entities;
 using Microsoft.Xna.Framework;
 using Monocle;
@@ -191,7 +192,7 @@ namespace Celeste.Mod.GravityHelper.Extensions
 
         public static bool ShouldInvertChecked(this Entity entity)
         {
-            if (entity is Player) return GravityComponent.ShouldInvertPlayerChecked;
+            if (entity is Player) return GravityHelperModule.ShouldInvertPlayerChecked;
             return entity.Get<GravityComponent>()?.ShouldInvertChecked ?? false;
         }
 

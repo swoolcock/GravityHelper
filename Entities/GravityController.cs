@@ -2,6 +2,7 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using Celeste.Mod.Entities;
+using Celeste.Mod.GravityHelper.Components;
 using Celeste.Mod.GravityHelper.Extensions;
 using Microsoft.Xna.Framework;
 using Monocle;
@@ -89,7 +90,7 @@ namespace Celeste.Mod.GravityHelper.Entities
         private void setParam()
         {
             if (!string.IsNullOrEmpty(GravityMusicParam))
-                Audio.SetMusicParam(GravityMusicParam, GravityComponent.ShouldInvertPlayer ? 1 : 0);
+                Audio.SetMusicParam(GravityMusicParam, GravityHelperModule.ShouldInvertPlayer ? 1 : 0);
         }
     }
 }

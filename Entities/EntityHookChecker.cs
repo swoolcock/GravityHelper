@@ -4,6 +4,7 @@
 using System;
 using System.Linq;
 using System.Reflection;
+using Celeste.Mod.GravityHelper.Components;
 using Celeste.Mod.GravityHelper.Triggers;
 
 namespace Celeste.Mod.GravityHelper.Entities

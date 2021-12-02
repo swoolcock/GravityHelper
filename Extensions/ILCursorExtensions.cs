@@ -2,6 +2,7 @@
 // See the LICENCE file in the repository root for full licence text."
 
 using System;
+using Celeste.Mod.GravityHelper.Components;
 using Microsoft.Xna.Framework;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -77,7 +78,7 @@ namespace Celeste.Mod.GravityHelper.Extensions
         }
 
         public static void EmitInvertVectorDelegate(this ILCursor cursor) =>
-            cursor.EmitDelegate<Func<Vector2, Vector2>>(v => GravityComponent.ShouldInvertPlayer ? new Vector2(v.X, -v.Y) : v);
+            cursor.EmitDelegate<Func<Vector2, Vector2>>(v => GravityHelperModule.ShouldInvertPlayer ? new Vector2(v.X, -v.Y) : v);
 
         public static void EmitActorInvertFloatDelegate(this ILCursor cursor, OpCode loadActorOpCode)
         {
@@ -87,7 +88,7 @@ namespace Celeste.Mod.GravityHelper.Extensions
         }
 
         public static void EmitInvertFloatDelegate(this ILCursor cursor) =>
-            cursor.EmitDelegate<Func<float, float>>(f => GravityComponent.ShouldInvertPlayer ? -f : f);
+            cursor.EmitDelegate<Func<float, float>>(f => GravityHelperModule.ShouldInvertPlayer ? -f : f);
 
         public static void EmitActorInvertIntDelegate(this ILCursor cursor, OpCode loadActorOpCode)
         {
@@ -97,10 +98,10 @@ namespace Celeste.Mod.GravityHelper.Extensions
         }
 
         public static void EmitInvertIntDelegate(this ILCursor cursor) =>
-            cursor.EmitDelegate<Func<int, int>>(i => GravityComponent.ShouldInvertPlayer ? -i : i);
+            cursor.EmitDelegate<Func<int, int>>(i => GravityHelperModule.ShouldInvertPlayer ? -i : i);
 
         public static void EmitLoadShouldInvert(this ILCursor cursor) =>
-            cursor.Emit(OpCodes.Call, typeof(GravityComponent).GetProperty(nameof(GravityComponent.ShouldInvertPlayer)).GetGetMethod());
+            cursor.Emit(OpCodes.Call, typeof(GravityComponent).GetProperty(nameof(GravityHelperModule.ShouldInvertPlayer)).GetGetMethod());
 
         public static void DumpIL(this ILCursor cursor, int instructions = 1, int offset = 0)
         {

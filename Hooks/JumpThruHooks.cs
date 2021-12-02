@@ -17,7 +17,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
         private static void JumpThru_MoveVExact(On.Celeste.JumpThru.orig_MoveVExact orig, JumpThru self, int move)
         {
-            if (!GravityComponent.ShouldInvertPlayer)
+            if (!GravityHelperModule.ShouldInvertPlayer)
             {
                 orig(self, move);
                 return;

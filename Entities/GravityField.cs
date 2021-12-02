@@ -153,7 +153,7 @@ namespace Celeste.Mod.GravityHelper.Entities
             _fieldGroup.Semaphore++;
 
             if (_fieldGroup.Semaphore == 1)
-                GravityComponent.PlayerComponent.SetGravity(GravityType);
+                GravityHelperModule.PlayerComponent.SetGravity(GravityType);
         }
 
         public override void OnStay(Player player)
@@ -163,8 +163,8 @@ namespace Celeste.Mod.GravityHelper.Entities
             if (GravityType == GravityType.None || GravityType == GravityType.Toggle)
                 return;
 
-            if (GravityType != GravityComponent.PlayerComponent.CurrentGravity)
-                GravityComponent.PlayerComponent.SetGravity(GravityType);
+            if (GravityType != GravityHelperModule.PlayerComponent.CurrentGravity)
+                GravityHelperModule.PlayerComponent.SetGravity(GravityType);
         }
 
         public override void OnLeave(Player player)

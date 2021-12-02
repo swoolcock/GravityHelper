@@ -8,6 +8,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Celeste.Mod.GravityHelper.Components;
 using Celeste.Mod.GravityHelper.Entities;
 using Celeste.Mod.GravityHelper.Hooks;
 using Monocle;
@@ -28,6 +29,10 @@ namespace Celeste.Mod.GravityHelper
         public static GravityHelperModuleSession Session => (GravityHelperModuleSession) Instance._Session;
 
         public static GravityHelperModule Instance { get; private set; }
+
+        public static GravityComponent PlayerComponent { get; internal set; }
+        public static bool ShouldInvertPlayer => PlayerComponent?.ShouldInvert ?? false;
+        public static bool ShouldInvertPlayerChecked => PlayerComponent?.ShouldInvertChecked ?? false;
 
         public GravityHelperModule()
         {
@@ -134,7 +139,7 @@ namespace Celeste.Mod.GravityHelper
 
         private static void AssetReloadHelper_ReloadLevel(On.Celeste.Mod.AssetReloadHelper.orig_ReloadLevel orig)
         {
-            Instance.GravityBeforeReload = GravityComponent.PlayerComponent?.CurrentGravity;
+            Instance.GravityBeforeReload = PlayerComponent?.CurrentGravity;
             orig();
         }
 
@@ -199,16 +204,16 @@ namespace Celeste.Mod.GravityHelper
         {
             if (gravityType == -1)
             {
-                Engine.Commands.Log($"Current gravity state: {GravityComponent.PlayerComponent?.CurrentGravity ?? GravityType.Normal}");
+                Engine.Commands.Log($"Current gravity state: {PlayerComponent?.CurrentGravity ?? GravityType.Normal}");
                 return;
             }
 
             if (gravityType < 0 || gravityType > 2) return;
 
-            GravityComponent.PlayerComponent?.SetGravity((GravityType) gravityType);
+            PlayerComponent?.SetGravity((GravityType) gravityType);
             InvalidateRun();
 
-            Engine.Commands.Log($"Current gravity is now: {GravityComponent.PlayerComponent?.CurrentGravity ?? GravityType.Normal}");
+            Engine.Commands.Log($"Current gravity is now: {PlayerComponent?.CurrentGravity ?? GravityType.Normal}");
         }
 
         [Command("initial_gravity", "Changes the room entry/spawn gravity (0 = normal, 1 = inverted)")]

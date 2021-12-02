@@ -2,6 +2,7 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using Celeste.Mod.Entities;
+using Celeste.Mod.GravityHelper.Components;
 using Microsoft.Xna.Framework;
 using Monocle;
 

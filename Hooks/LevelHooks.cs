@@ -65,7 +65,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
         private static void Level_EnforceBounds(On.Celeste.Level.orig_EnforceBounds orig, Level self, Player player)
         {
-            if (!GravityComponent.ShouldInvertPlayer)
+            if (!GravityHelperModule.ShouldInvertPlayer)
             {
                 orig(self, player);
                 return;
@@ -172,7 +172,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             {
                 GravityHelperModule.InvalidateRun();
                 GravityHelperModule.Settings.ToggleInvertGravity.ConsumePress();
-                GravityComponent.PlayerComponent.SetGravity(GravityType.Toggle);
+                GravityHelperModule.PlayerComponent.SetGravity(GravityType.Toggle);
             }
 
             orig(self);

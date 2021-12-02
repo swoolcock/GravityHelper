@@ -4,6 +4,7 @@
 using System;
 using System.Linq;
 using System.Reflection;
+using Celeste.Mod.GravityHelper.Components;
 using Celeste.Mod.GravityHelper.Entities;
 using Celeste.Mod.GravityHelper.Extensions;
 using Celeste.Mod.GravityHelper.Triggers;
@@ -173,7 +174,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             cursor.Emit(OpCodes.Ldarg_0);
             cursor.EmitDelegate<Func<Player, bool>>(self =>
             {
-                if (!GravityComponent.ShouldInvertPlayer)
+                if (!GravityHelperModule.ShouldInvertPlayer)
                     return false;
 
                 // copied from Player.BeforeUpTransition
@@ -205,7 +206,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             cursor.Emit(OpCodes.Ldarg_0);
             cursor.EmitDelegate<Func<Player, bool>>(self =>
             {
-                if (!GravityComponent.ShouldInvertPlayer)
+                if (!GravityHelperModule.ShouldInvertPlayer)
                     return false;
 
                 // copied from Player.BeforeDownTransition
@@ -306,11 +307,11 @@ namespace Celeste.Mod.GravityHelper.Hooks
             if (Input.MoveY.Value != -1)
                 return lastClimbMove;
 
-            if (!GravityComponent.ShouldInvertPlayer &&
+            if (!GravityHelperModule.ShouldInvertPlayer &&
                 !player.CollideCheckOutsideUpsideDownJumpThru(player.Position - Vector2.UnitY))
                 return lastClimbMove;
 
-            if (GravityComponent.ShouldInvertPlayer &&
+            if (GravityHelperModule.ShouldInvertPlayer &&
                 !player.CollideCheckOutsideNotUpsideDownJumpThru(player.Position + Vector2.UnitY))
                 return lastClimbMove;
 
@@ -392,8 +393,8 @@ namespace Celeste.Mod.GravityHelper.Hooks
             cursor.Remove();
             cursor.EmitDelegate<Func<Player, bool>>(self =>
                 self.CollideCheck<Solid>() ||
-                !GravityComponent.ShouldInvertPlayer && self.CollideCheckUpsideDownJumpThru() ||
-                GravityComponent.ShouldInvertPlayer && self.CollideCheck<JumpThru>());
+                !GravityHelperModule.ShouldInvertPlayer && self.CollideCheckUpsideDownJumpThru() ||
+                GravityHelperModule.ShouldInvertPlayer && self.CollideCheck<JumpThru>());
         });
 
         private static void Player_IsOverWater(ILContext il) => HookUtils.SafeHook(() =>
@@ -402,7 +403,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             cursor.GotoNext(MoveType.After, instr => instr.MatchLdloc(0));
             cursor.EmitDelegate<Func<Rectangle, Rectangle>>(r =>
             {
-                if (GravityComponent.ShouldInvertPlayer) r.Y -= 2;
+                if (GravityHelperModule.ShouldInvertPlayer) r.Y -= 2;
                 return r;
             });
         });
@@ -533,7 +534,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
             cursor.Emit(OpCodes.Ldarg_0); // this
             cursor.EmitDelegate<Func<Player, Platform>>(self =>
-                !GravityComponent.ShouldInvertPlayer
+                !GravityHelperModule.ShouldInvertPlayer
                     ? self.CollideFirstOutside<JumpThru>(self.Position + Vector2.UnitY)
                     : self.CollideFirstOutsideUpsideDownJumpThru(self.Position - Vector2.UnitY));
             cursor.Emit(OpCodes.Stloc_1);
@@ -573,7 +574,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             cursor.Goto(jumpThruCheck);
             cursor.Emit(OpCodes.Ldarg_0); // this
             cursor.EmitDelegate<Func<Player, bool>>(self =>
-                !GravityComponent.ShouldInvertPlayer
+                !GravityHelperModule.ShouldInvertPlayer
                     ? self.CollideCheckOutside<JumpThru>(self.Position + Vector2.UnitY)
                     : self.CollideCheckOutsideUpsideDownJumpThru(self.Position - Vector2.UnitY));
             cursor.Emit(OpCodes.Brfalse_S, varJumpTimerCheck);
@@ -639,7 +640,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             // emit UDJT check AFTER, to be compatible with MHH's hooks
             cursor.Emit(OpCodes.Ldarg_0);
             cursor.EmitDelegate<Func<bool, Player, bool>>((b, self) =>
-                !GravityComponent.ShouldInvertPlayer
+                !GravityHelperModule.ShouldInvertPlayer
                     ? b
                     : self.CollideCheckOutsideUpsideDownJumpThru(self.Position - Vector2.UnitY * 3f));
 
@@ -693,7 +694,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
                 cursor.GotoNext(instr => instr.MatchCallGeneric<Entity>(nameof(Entity.CollideCheck), out _));
                 cursor.Remove();
                 cursor.EmitDelegate<Func<Player, Vector2, bool>>((self, at) =>
-                    !GravityComponent.ShouldInvertPlayer
+                    !GravityHelperModule.ShouldInvertPlayer
                         ? self.CollideCheck<JumpThru>(at)
                         : self.CollideCheckUpsideDownJumpThru(at));
             }
@@ -746,7 +747,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
             if (!cursor.TryGotoNext(MoveType.After, instr => instr.MatchLdcR4(4)))
                 throw new HookException("Couldn't replace 4 with 5 while inverted");
-            cursor.EmitDelegate<Func<float, float>>(f => GravityComponent.ShouldInvertPlayer ? f + 1 : f);
+            cursor.EmitDelegate<Func<float, float>>(f => GravityHelperModule.ShouldInvertPlayer ? f + 1 : f);
 
             if (!cursor.TryGotoNext(ILCursorExtensions.AdditionPredicate))
                 throw new HookException("Couldn't replace vector addition with subtraction");
@@ -758,7 +759,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
             if (!cursor.TryGotoNext(MoveType.After, instr => instr.MatchLdcR4(4)))
                 throw new HookException("Couldn't replace 4 with 5 while inverted");
-            cursor.EmitDelegate<Func<float, float>>(f => GravityComponent.ShouldInvertPlayer ? f + 1 : f);
+            cursor.EmitDelegate<Func<float, float>>(f => GravityHelperModule.ShouldInvertPlayer ? f + 1 : f);
 
             if (!cursor.TryGotoNext(ILCursorExtensions.AdditionPredicate))
                 throw new HookException("Couldn't replace vector addition with subtraction");
@@ -766,7 +767,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
             if (!cursor.TryGotoNext(MoveType.After, instr => instr.MatchLdcR4(-4)))
                 throw new HookException("Couldn't replace -4 with -5 while inverted");
-            cursor.EmitDelegate<Func<float, float>>(f => GravityComponent.ShouldInvertPlayer ? f - 1 : f);
+            cursor.EmitDelegate<Func<float, float>>(f => GravityHelperModule.ShouldInvertPlayer ? f - 1 : f);
 
             if (!cursor.TryGotoNext(ILCursorExtensions.AdditionPredicate))
                 throw new HookException("Couldn't replace vector addition with subtraction");
@@ -891,7 +892,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             orig(self, scene);
 
             SpawnGravityTrigger trigger = self.CollideFirstOrDefault<SpawnGravityTrigger>();
-            GravityComponent.PlayerComponent?.SetGravity(
+            GravityHelperModule.PlayerComponent?.SetGravity(
                 GravityHelperModule.Instance.GravityBeforeReload ??
                 trigger?.GravityType ??
                 GravityHelperModule.Session.InitialGravity,
@@ -906,11 +907,11 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
             SpawnGravityTrigger trigger = self.CollideFirstOrDefault<SpawnGravityTrigger>();
             if (trigger?.FireOnBubbleReturn ?? false)
-                GravityComponent.PlayerComponent.SetGravity(trigger.GravityType);
+                GravityHelperModule.PlayerComponent.SetGravity(trigger.GravityType);
         }
 
         private static bool Player_ClimbCheck(On.Celeste.Player.orig_ClimbCheck orig, Player self, int dir, int yAdd) =>
-            orig(self, dir, GravityComponent.ShouldInvertPlayer ? -yAdd : yAdd);
+            orig(self, dir, GravityHelperModule.ShouldInvertPlayer ? -yAdd : yAdd);
 
         private static void Player_ctor(On.Celeste.Player.orig_ctor orig, Player self, Vector2 position,
             PlayerSpriteMode spriteMode)
@@ -919,7 +920,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
             self.Add(new TransitionListener
                 {
-                    OnOutBegin = () => GravityHelperModule.Session.InitialGravity = GravityComponent.PlayerComponent?.CurrentGravity ?? GravityType.Normal,
+                    OnOutBegin = () => GravityHelperModule.Session.InitialGravity = GravityHelperModule.PlayerComponent?.CurrentGravity ?? GravityType.Normal,
                 },
                 new GravityComponent
                 {
@@ -967,7 +968,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
                         if (GravityHelperModule.Instance.GravityRefillCharges == 0)
                             return;
                         GravityHelperModule.Instance.GravityRefillCharges--;
-                        GravityComponent.PlayerComponent.SetGravity(GravityType.Toggle);
+                        GravityHelperModule.PlayerComponent.SetGravity(GravityType.Toggle);
                     },
                 }
             );
@@ -975,7 +976,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
         private static bool Player_DreamDashCheck(On.Celeste.Player.orig_DreamDashCheck orig, Player self, Vector2 dir)
         {
-            if (!GravityComponent.ShouldInvertPlayer)
+            if (!GravityHelperModule.ShouldInvertPlayer)
                 return orig(self, dir);
 
             self.Speed.Y *= -1;
@@ -991,7 +992,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
         private static int Player_DreamDashUpdate(On.Celeste.Player.orig_DreamDashUpdate orig, Player self)
         {
-            if (!GravityComponent.ShouldInvertPlayer)
+            if (!GravityHelperModule.ShouldInvertPlayer)
                 return orig(self);
 
             var player = new DynData<Player>(self);
@@ -1012,14 +1013,14 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
         private static ParticleType Player_DustParticleFromSurfaceIndex(On.Celeste.Player.orig_DustParticleFromSurfaceIndex orig, Player self, int index)
         {
-            if (!GravityComponent.ShouldInvertPlayer)
+            if (!GravityHelperModule.ShouldInvertPlayer)
                 return orig(self, index);
             return index == 40 ? _invertedSparkyDustParticle.Value : _invertedDustParticle.Value;
         }
 
         private static bool Player_JumpThruBoostBlockedCheck(On.Celeste.Player.orig_JumpThruBoostBlockedCheck orig, Player self)
         {
-            if (!GravityComponent.ShouldInvertPlayer)
+            if (!GravityHelperModule.ShouldInvertPlayer)
                 return orig(self);
 
             foreach (var component in self.Scene.Tracker.GetComponents<LedgeBlocker>())
@@ -1048,8 +1049,8 @@ namespace Celeste.Mod.GravityHelper.Hooks
                 return;
             }
 
-            if (GravityComponent.ShouldInvertPlayer && self.CollideCheckOutside<JumpThru>(self.Position + Vector2.UnitY) ||
-                !GravityComponent.ShouldInvertPlayer && self.CollideCheckOutsideUpsideDownJumpThru(self.Position - Vector2.UnitY))
+            if (GravityHelperModule.ShouldInvertPlayer && self.CollideCheckOutside<JumpThru>(self.Position + Vector2.UnitY) ||
+                !GravityHelperModule.ShouldInvertPlayer && self.CollideCheckOutsideUpsideDownJumpThru(self.Position - Vector2.UnitY))
             {
                 self.Speed.Y = 0.0f;
                 self.SetLastClimbMove(0);
@@ -1061,18 +1062,18 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
         private static void Player_ReflectBounce(On.Celeste.Player.orig_ReflectBounce orig, Player self,
             Vector2 direction) =>
-            orig(self, GravityComponent.ShouldInvertPlayer ? new Vector2(direction.X, -direction.Y) : direction);
+            orig(self, GravityHelperModule.ShouldInvertPlayer ? new Vector2(direction.X, -direction.Y) : direction);
 
         private static void Player_Render(On.Celeste.Player.orig_Render orig, Player self)
         {
             var scaleY = self.Sprite.Scale.Y;
 
-            if (GravityComponent.ShouldInvertPlayer)
+            if (GravityHelperModule.ShouldInvertPlayer)
                 self.Sprite.Scale.Y = -scaleY;
 
             orig(self);
 
-            if (GravityComponent.ShouldInvertPlayer)
+            if (GravityHelperModule.ShouldInvertPlayer)
                 self.Sprite.Scale.Y = scaleY;
         }
 
@@ -1080,7 +1081,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
         {
             orig(self);
 
-            if (GravityComponent.ShouldInvertPlayer)
+            if (GravityHelperModule.ShouldInvertPlayer)
             {
                 var bloom = self.GetStarFlyBloom();
                 if (bloom != null)
@@ -1090,7 +1091,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
         private static void Player_StartCassetteFly(On.Celeste.Player.orig_StartCassetteFly orig, Player self, Vector2 targetPosition, Vector2 control)
         {
-            GravityComponent.PlayerComponent.SetGravity(GravityType.Normal, playerTriggered: false);
+            GravityHelperModule.PlayerComponent.SetGravity(GravityType.Normal, playerTriggered: false);
             orig(self, targetPosition, control);
         }
 
@@ -1109,7 +1110,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             var aimY = Input.Aim.Value.Y;
             var moveY = Input.MoveY.Value;
 
-            if (GravityComponent.ShouldInvertPlayer)
+            if (GravityHelperModule.ShouldInvertPlayer)
             {
                 Input.Aim.SetValue(new Vector2(Input.Aim.Value.X, -aimY));
                 Input.Feather.SetValue(new Vector2(Input.Feather.Value.X, -featherY));
@@ -1118,7 +1119,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
             orig(self);
 
-            if (GravityComponent.ShouldInvertPlayer)
+            if (GravityHelperModule.ShouldInvertPlayer)
             {
                 Input.MoveY.Value = moveY;
                 Input.Feather.SetValue(new Vector2(Input.Feather.Value.X, featherY));
@@ -1127,7 +1128,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
         }
 
         private static void Player_WindMove(On.Celeste.Player.orig_WindMove orig, Player self, Vector2 move) =>
-            orig(self, GravityComponent.ShouldInvertPlayer ? new Vector2(move.X, -move.Y) : move);
+            orig(self, GravityHelperModule.ShouldInvertPlayer ? new Vector2(move.X, -move.Y) : move);
 
         #endregion
 
@@ -1155,7 +1156,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             cursor.Emit(OpCodes.Ldarg_0); // this
             cursor.EmitDelegate<Func<Player, bool>>(self =>
             {
-                if (!GravityComponent.ShouldInvertPlayer)
+                if (!GravityHelperModule.ShouldInvertPlayer)
                     return false;
 
                 var ghUdjt = self.Scene.Tracker.GetEntitiesOrEmpty<UpsideDownJumpThru>().Cast<Entity>();
@@ -1184,7 +1185,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
         private static Vector2 getLiftBoost(Player player)
         {
             Vector2 liftSpeed = player.LiftSpeed;
-            if (GravityComponent.ShouldInvertPlayer)
+            if (GravityHelperModule.ShouldInvertPlayer)
                 liftSpeed = new Vector2(liftSpeed.X, -liftSpeed.Y);
 
             if (Math.Abs(liftSpeed.X) > 250f)

@@ -5,17 +5,12 @@ using System;
 using Monocle;
 using MonoMod.Utils;
 
-namespace Celeste.Mod.GravityHelper
+namespace Celeste.Mod.GravityHelper.Components
 {
     [Tracked]
     public class GravityComponent : Component
     {
         internal const string INVERTED_KEY = "GravityHelper_Inverted";
-
-        // optimisation for player
-        public static GravityComponent PlayerComponent { get; private set; }
-        public static bool ShouldInvertPlayer => PlayerComponent?.ShouldInvert ?? false;
-        public static bool ShouldInvertPlayerChecked => PlayerComponent?.ShouldInvertChecked ?? false;
 
         private GravityType _currentGravity;
         public GravityType CurrentGravity
@@ -30,6 +25,7 @@ namespace Celeste.Mod.GravityHelper
 
         private DynData<Entity> _data;
 
+        public bool UpdateEntity { get; set; } = true;
         public Func<bool> CheckInvert;
         public Action<GravityChangeArgs> UpdateVisuals;
         public Action<GravityChangeArgs> UpdateColliders;
@@ -50,7 +46,7 @@ namespace Celeste.Mod.GravityHelper
             _data = new DynData<Entity>(entity);
             _data.Data[INVERTED_KEY] = _currentGravity == GravityType.Inverted;
 
-            if (entity is Player) PlayerComponent = this;
+            if (entity is Player) GravityHelperModule.PlayerComponent = this;
         }
 
         public override void Removed(Entity entity)
@@ -62,7 +58,7 @@ namespace Celeste.Mod.GravityHelper
             _data.Data[INVERTED_KEY] = false;
             _data = null;
 
-            if (entity is Player) PlayerComponent = null;
+            if (entity is Player) GravityHelperModule.PlayerComponent = null;
         }
 
         public override void EntityAwake()
@@ -85,6 +81,8 @@ namespace Celeste.Mod.GravityHelper
 
         private void updateGravity(GravityChangeArgs args)
         {
+            if (!UpdateEntity) return;
+
             if (UpdatePosition != null)
                 UpdatePosition(args);
             else if (args.Changed && Entity.Collider != null)

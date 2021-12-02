@@ -35,7 +35,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
         private static void Solid_MoveVExact(On.Celeste.Solid.orig_MoveVExact orig, Solid self, int move)
         {
-            if (!GravityComponent.ShouldInvertPlayer)
+            if (!GravityHelperModule.ShouldInvertPlayer)
             {
                 orig(self, move);
                 return;

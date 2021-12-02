@@ -23,7 +23,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
         private static void Spring_OnCollide(On.Celeste.Spring.orig_OnCollide orig, Spring self, Player player)
         {
-            if (!GravityComponent.ShouldInvertPlayer || self.Orientation != Spring.Orientations.Floor)
+            if (!GravityHelperModule.ShouldInvertPlayer || self.Orientation != Spring.Orientations.Floor)
             {
                 orig(self, player);
                 return;

@@ -55,10 +55,10 @@ namespace Celeste.Mod.GravityHelper.Hooks.ThirdParty
         }
 
         private static int MaxHelpingHand_UpsideDownJumpThru_updateClimbMove(Func<Player, int, int> orig, Player player, int lastClimbMove) =>
-            GravityComponent.ShouldInvertPlayer ? lastClimbMove : orig(player, lastClimbMove);
+            GravityHelperModule.ShouldInvertPlayer ? lastClimbMove : orig(player, lastClimbMove);
 
         private static bool MaxHelpingHand_UpsideDownJumpThru_playerMovingUp(Func<Player, bool> orig, Player player) =>
-            orig(player) != GravityComponent.ShouldInvertPlayer;
+            orig(player) != GravityHelperModule.ShouldInvertPlayer;
 
         private static void MaxHelpingHand_onJumpthruHasPlayerRider(ILContext il) => HookUtils.SafeHook(() =>
         {

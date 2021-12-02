@@ -4,7 +4,7 @@
 using System;
 using Monocle;
 
-namespace Celeste.Mod.GravityHelper
+namespace Celeste.Mod.GravityHelper.Components
 {
     [Tracked]
     public class GravityListener : Component
@@ -38,7 +38,7 @@ namespace Celeste.Mod.GravityHelper
             base.EntityAwake();
 
             var component = Target is Player || TargetType == typeof(Player)
-                ? GravityComponent.PlayerComponent
+                ? GravityHelperModule.PlayerComponent
                 : Target?.Get<GravityComponent>();
 
             if (component != null)

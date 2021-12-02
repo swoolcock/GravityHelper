@@ -1,6 +1,7 @@
 // Copyright (c) Shane Woolcock. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+using Celeste.Mod.GravityHelper.Components;
 using Microsoft.Xna.Framework;
 
 // ReSharper disable InconsistentNaming
@@ -51,7 +52,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
         private static void Spikes_OnCollide(On.Celeste.Spikes.orig_OnCollide orig, Spikes self, Player player)
         {
-            if (!GravityComponent.ShouldInvertPlayer || self.Direction == Spikes.Directions.Left || self.Direction == Spikes.Directions.Right)
+            if (!GravityHelperModule.ShouldInvertPlayer || self.Direction == Spikes.Directions.Left || self.Direction == Spikes.Directions.Right)
             {
                 orig(self, player);
                 return;
