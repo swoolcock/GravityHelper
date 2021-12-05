@@ -101,7 +101,7 @@ namespace Celeste.Mod.GravityHelper.Extensions
             cursor.EmitDelegate<Func<int, int>>(i => GravityHelperModule.ShouldInvertPlayer ? -i : i);
 
         public static void EmitLoadShouldInvert(this ILCursor cursor) =>
-            cursor.Emit(OpCodes.Call, typeof(GravityComponent).GetProperty(nameof(GravityHelperModule.ShouldInvertPlayer)).GetGetMethod());
+            cursor.Emit(OpCodes.Call, typeof(GravityHelperModule).GetProperty(nameof(GravityHelperModule.ShouldInvertPlayer)).GetGetMethod());
 
         public static void DumpIL(this ILCursor cursor, int instructions = 1, int offset = 0)
         {

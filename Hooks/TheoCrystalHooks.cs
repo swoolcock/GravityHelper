@@ -2,6 +2,7 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using Celeste.Mod.GravityHelper.Components;
+using Microsoft.Xna.Framework;
 using Monocle;
 using MonoMod.Utils;
 
@@ -37,6 +38,11 @@ namespace Celeste.Mod.GravityHelper.Hooks
                     var sprite = data.Get<Sprite>("sprite");
                     sprite.Scale.Y = args.NewValue == GravityType.Inverted ? -1 : 1;
                 },
+                UpdateSpeed = args =>
+                {
+                    if (args.Changed)
+                        self.Speed.Y *= -args.MomentumMultiplier;
+                }
             });
         }
     }

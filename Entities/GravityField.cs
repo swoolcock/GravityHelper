@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Celeste.Mod.Entities;
+using Celeste.Mod.GravityHelper.Triggers;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Monocle;
@@ -13,7 +14,7 @@ namespace Celeste.Mod.GravityHelper.Entities
 {
     [CustomEntity("GravityHelper/GravityField")]
     [Tracked]
-    public class GravityField : Trigger, IConnectableField
+    public class GravityField : GravityTrigger, IConnectableField
     {
         public static readonly Color GRAVITY_NORMAL_COLOR = Color.Blue;
         public static readonly Color GRAVITY_INVERT_COLOR = Color.Red;
@@ -25,7 +26,6 @@ namespace Celeste.Mod.GravityHelper.Entities
 
         #region Entity Properties
 
-        public GravityType GravityType { get; }
         public VisualType ArrowType { get; }
         public VisualType FieldType { get; }
         public bool AttachToSolids { get; }
@@ -40,6 +40,9 @@ namespace Celeste.Mod.GravityHelper.Entities
         public float ParticleOpacity => _particleOpacity ?? DEFAULT_PARTICLE_OPACITY;
 
         #endregion
+
+        // We'll always handle it ourselves to cover connected fields
+        public override bool ShouldAffectPlayer => false;
 
         public Color FieldColor => colorForGravityType(fieldGravityType) * FieldOpacity;
 
@@ -73,7 +76,6 @@ namespace Celeste.Mod.GravityHelper.Entities
         public GravityField(EntityData data, Vector2 offset)
             : base(data, offset)
         {
-            GravityType = (GravityType)data.Int("gravityType");
             AttachToSolids = data.Bool("attachToSolids");
             ArrowType = (VisualType)data.Int("arrowType", (int) VisualType.Default);
             FieldType = (VisualType)data.Int("fieldType", (int) VisualType.Default);
@@ -144,33 +146,27 @@ namespace Celeste.Mod.GravityHelper.Entities
             }
         }
 
-        public override void OnEnter(Player player)
+        protected override void HandleOnEnter(Player player)
         {
-            base.OnEnter(player);
-
             if (GravityType == GravityType.None || _fieldGroup == null) return;
 
             _fieldGroup.Semaphore++;
 
             if (_fieldGroup.Semaphore == 1)
-                GravityHelperModule.PlayerComponent.SetGravity(GravityType);
+                GravityHelperModule.PlayerComponent.SetGravity(GravityType, MomentumMultiplier);
         }
 
-        public override void OnStay(Player player)
+        protected override void HandleOnStay(Player player)
         {
-            base.OnStay(player);
-
             if (GravityType == GravityType.None || GravityType == GravityType.Toggle)
                 return;
 
             if (GravityType != GravityHelperModule.PlayerComponent.CurrentGravity)
-                GravityHelperModule.PlayerComponent.SetGravity(GravityType);
+                GravityHelperModule.PlayerComponent.SetGravity(GravityType, MomentumMultiplier);
         }
 
-        public override void OnLeave(Player player)
+        protected override void HandleOnLeave(Player player)
         {
-            base.OnLeave(player);
-
             if (_fieldGroup == null) return;
             _fieldGroup.Semaphore--;
         }

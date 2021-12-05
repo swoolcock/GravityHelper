@@ -30,6 +30,7 @@ namespace Celeste.Mod.GravityHelper.Components
         public Action<GravityChangeArgs> UpdateVisuals;
         public Action<GravityChangeArgs> UpdateColliders;
         public Action<GravityChangeArgs> UpdatePosition;
+        public Action<GravityChangeArgs> UpdateSpeed;
 
         public bool ShouldInvert => _currentGravity == GravityType.Inverted;
         public bool ShouldInvertChecked => _currentGravity == GravityType.Inverted && (CheckInvert?.Invoke() ?? true);
@@ -87,7 +88,7 @@ namespace Celeste.Mod.GravityHelper.Components
                 UpdatePosition(args);
             else if (args.Changed && Entity.Collider != null)
                 Entity.Position.Y = args.NewValue == GravityType.Inverted
-                    ? -Entity.Collider.AbsoluteTop
+                    ? Entity.Collider.AbsoluteTop
                     : Entity.Collider.AbsoluteBottom;
 
             if (UpdateColliders != null)
@@ -100,6 +101,7 @@ namespace Celeste.Mod.GravityHelper.Components
                     holdable.PickupCollider.Top = -holdable.PickupCollider.Bottom;
             }
 
+            UpdateSpeed?.Invoke(args);
             UpdateVisuals?.Invoke(args);
         }
 

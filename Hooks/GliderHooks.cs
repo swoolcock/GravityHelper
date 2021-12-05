@@ -30,7 +30,14 @@ namespace Celeste.Mod.GravityHelper.Hooks
         {
             orig(self, scene);
             if (self.Get<GravityComponent>() != null) return;
-            self.Add(new GravityComponent());
+            self.Add(new GravityComponent
+            {
+                UpdateSpeed = args =>
+                {
+                    if (args.Changed)
+                        self.Speed.Y *= -args.MomentumMultiplier;
+                },
+            });
         }
 
         private static void Glider_Render(On.Celeste.Glider.orig_Render orig, Glider self)

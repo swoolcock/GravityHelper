@@ -945,9 +945,6 @@ namespace Celeste.Mod.GravityHelper.Hooks
                         self.Position.Y = args.NewValue == GravityType.Inverted
                             ? collider.AbsoluteTop
                             : collider.AbsoluteBottom;
-                        self.Speed.Y *= -args.MomentumMultiplier;
-                        self.DashDir.Y *= -1;
-                        self.SetVarJumpTimer(0f);
                     },
                     UpdateColliders = args =>
                     {
@@ -959,6 +956,13 @@ namespace Celeste.Mod.GravityHelper.Hooks
                         invertHitbox(self.GetDuckHurtbox());
                         invertHitbox(self.GetStarFlyHitbox());
                         invertHitbox(self.GetStarFlyHurtbox());
+                    },
+                    UpdateSpeed = args =>
+                    {
+                        if (!args.Changed) return;
+                        self.Speed.Y *= -args.MomentumMultiplier;
+                        self.DashDir.Y *= -1;
+                        self.SetVarJumpTimer(0f);
                     },
                 },
                 new DashListener

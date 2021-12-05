@@ -1,6 +1,7 @@
 // Copyright (c) Shane Woolcock. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+using Celeste.Mod.GravityHelper.Entities;
 using Monocle;
 
 namespace Celeste.Mod.GravityHelper.Components
@@ -24,6 +25,10 @@ namespace Celeste.Mod.GravityHelper.Components
         public override void Update()
         {
             base.Update();
+
+            var controller = Scene.Tracker.GetEntity<GravityController>();
+            if (controller != null)
+                InvertTime = controller.HoldableResetTime;
 
             var holdable = Entity.Get<Holdable>();
             var gravityComponent = Entity.Get<GravityComponent>();
