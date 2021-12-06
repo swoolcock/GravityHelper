@@ -16,6 +16,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
             On.Celeste.Glider.Added += Glider_Added;
             On.Celeste.Glider.Render += Glider_Render;
+            On.Celeste.Glider.Update += Glider_Update;
         }
 
         public static void Unload()
@@ -24,6 +25,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
             On.Celeste.Glider.Added -= Glider_Added;
             On.Celeste.Glider.Render -= Glider_Render;
+            On.Celeste.Glider.Update -= Glider_Update;
         }
 
         private static void Glider_Added(On.Celeste.Glider.orig_Added orig, Glider self, Scene scene)
@@ -53,6 +55,15 @@ namespace Celeste.Mod.GravityHelper.Hooks
             sprite.Scale.Y *= -1;
             orig(self);
             sprite.Scale.Y *= -1;
+        }
+
+        private static void Glider_Update(On.Celeste.Glider.orig_Update orig, Glider self)
+        {
+            var value = Input.GliderMoveY.Value;
+            if (GravityHelperModule.ShouldInvertPlayer)
+                Input.GliderMoveY.Value = -value;
+            orig(self);
+            Input.GliderMoveY.Value = value;
         }
     }
 }

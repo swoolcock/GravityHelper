@@ -1113,18 +1113,21 @@ namespace Celeste.Mod.GravityHelper.Hooks
             var featherY = Input.Feather.Value.Y;
             var aimY = Input.Aim.Value.Y;
             var moveY = Input.MoveY.Value;
+            var gliderMoveY = Input.GliderMoveY.Value;
 
             if (GravityHelperModule.ShouldInvertPlayer)
             {
                 Input.Aim.SetValue(new Vector2(Input.Aim.Value.X, -aimY));
                 Input.Feather.SetValue(new Vector2(Input.Feather.Value.X, -featherY));
                 Input.MoveY.Value = -moveY;
+                Input.GliderMoveY.Value = -gliderMoveY;
             }
 
             orig(self);
 
             if (GravityHelperModule.ShouldInvertPlayer)
             {
+                Input.GliderMoveY.Value = gliderMoveY;
                 Input.MoveY.Value = moveY;
                 Input.Feather.SetValue(new Vector2(Input.Feather.Value.X, featherY));
                 Input.Aim.SetValue(new Vector2(Input.Aim.Value.X, aimY));
