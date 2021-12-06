@@ -29,9 +29,20 @@ namespace Celeste.Mod.GravityHelper.Entities
         private readonly SineWave _sine;
 
         // particles
-        private readonly ParticleType p_shatter = Refill.P_Shatter;
-        private readonly ParticleType p_regen = Refill.P_Regen;
-        private readonly ParticleType p_glow = Refill.P_Glow;
+        private readonly ParticleType p_shatter = new ParticleType(Refill.P_Shatter)
+        {
+            Color = Color.Purple,
+        };
+
+        private readonly ParticleType p_regen = new ParticleType(Refill.P_Regen)
+        {
+            Color = Color.BlueViolet,
+        };
+
+        private readonly ParticleType p_glow = new ParticleType(Refill.P_Glow)
+        {
+            Color = Color.Violet,
+        };
 
         private Level _level;
         private float _respawnTimeRemaining;
@@ -66,8 +77,10 @@ namespace Celeste.Mod.GravityHelper.Entities
             _sprite.AddLoop("idle", "", 0.1f);
             _sprite.Play("idle");
             _sprite.CenterOrigin();
+            _sprite.Color = Color.Purple;
             _flash.Add("flash", "", 0.05f);
             _flash.CenterOrigin();
+            _flash.Color = Color.Purple;
             _sine.Randomize();
 
             updateY();
