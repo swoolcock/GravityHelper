@@ -16,10 +16,6 @@ namespace Celeste.Mod.GravityHelper.Entities
     [Tracked]
     public class GravityField : GravityTrigger, IConnectableField
     {
-        public static readonly Color GRAVITY_NORMAL_COLOR = Color.Blue;
-        public static readonly Color GRAVITY_INVERT_COLOR = Color.Red;
-        public static readonly Color GRAVITY_TOGGLE_COLOR = Color.Purple;
-
         public const float DEFAULT_ARROW_OPACITY = 0.5f;
         public const float DEFAULT_FIELD_OPACITY = 0.15f;
         public const float DEFAULT_PARTICLE_OPACITY = 0.5f;
@@ -44,18 +40,10 @@ namespace Celeste.Mod.GravityHelper.Entities
         // We'll always handle it ourselves to cover connected fields
         public override bool ShouldAffectPlayer => false;
 
-        public Color FieldColor => colorForGravityType(fieldGravityType) * FieldOpacity;
+        public Color FieldColor => fieldGravityType.Color() * FieldOpacity;
 
         private GravityType arrowGravityType => ArrowType == VisualType.Default ? GravityType : (GravityType) ArrowType;
         private GravityType fieldGravityType => FieldType == VisualType.Default ? GravityType : (GravityType) FieldType;
-
-        private static Color colorForGravityType(GravityType type) => type switch
-        {
-            GravityType.Normal => GRAVITY_NORMAL_COLOR,
-            GravityType.Inverted => GRAVITY_INVERT_COLOR,
-            GravityType.Toggle => GRAVITY_TOGGLE_COLOR,
-            _ => Color.White,
-        };
 
         private readonly bool _shouldDrawArrows;
         private readonly bool _shouldDrawField;

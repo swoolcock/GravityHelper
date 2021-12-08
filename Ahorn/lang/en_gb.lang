@@ -31,6 +31,9 @@ placements.entities.GravityHelper/GravityRefill.tooltips.refillsDash=Whether the
 placements.entities.GravityHelper/GravityRefill.tooltips.refillsStamina=Whether the gravity refill will also refill Madeline's stamina.
 placements.entities.GravityHelper/GravityRefill.tooltips.respawnTime=Time in seconds before the crystal will respawn (unless oneUse is enabled).
 
+# Gravity Dream Block
+placements.entities.GravityHelper/GravityDreamBlock.tooltips.gravityType=The gravity type to set when Madeline exits the dream block.
+
 # Gravity Spring (Floor)
 placements.entities.GravityHelper/GravitySpringFloor.tooltips.playerCanUse=Whether the spring will activate for the player.
 placements.entities.GravityHelper/GravitySpringFloor.tooltips.gravityType=The gravity type to set when Madeline activates the spring.
