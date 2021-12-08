@@ -4,6 +4,7 @@
 using System;
 using System.Reflection;
 using Celeste.Mod.Entities;
+using Celeste.Mod.GravityHelper.Extensions;
 using Microsoft.Xna.Framework;
 using Monocle;
 using MonoMod.Utils;
@@ -38,11 +39,7 @@ namespace Celeste.Mod.GravityHelper.Entities
                 {
                     var particle = particles.GetValue(i);
                     var lightness = -0.25f + Calc.Random.NextFloat();
-                    var color = new Color(
-                        Calc.Clamp(gravityTypeColor.R + lightness, 0f, 1f),
-                        Calc.Clamp(gravityTypeColor.G + lightness, 0f, 1f),
-                        Calc.Clamp(gravityTypeColor.B + lightness, 0f, 1f));
-                    dream_particle_color_fieldinfo.SetValue(particle, color);
+                    dream_particle_color_fieldinfo.SetValue(particle, gravityTypeColor.Lighter(lightness));
                     particles.SetValue(particle, i);
                 }
             }

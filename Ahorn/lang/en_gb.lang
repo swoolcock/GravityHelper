@@ -34,6 +34,9 @@ placements.entities.GravityHelper/GravityRefill.tooltips.respawnTime=Time in sec
 # Gravity Dream Block
 placements.entities.GravityHelper/GravityDreamBlock.tooltips.gravityType=The gravity type to set when Madeline exits the dream block.
 
+# Gravity Bumper
+placements.entities.GravityHelper/GravityBumper.tooltips.gravityType=The gravity type to set when Madeline touches the bumper.
+
 # Gravity Spring (Floor)
 placements.entities.GravityHelper/GravitySpringFloor.tooltips.playerCanUse=Whether the spring will activate for the player.
 placements.entities.GravityHelper/GravitySpringFloor.tooltips.gravityType=The gravity type to set when Madeline activates the spring.
