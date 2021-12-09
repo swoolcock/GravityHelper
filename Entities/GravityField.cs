@@ -49,7 +49,6 @@ namespace Celeste.Mod.GravityHelper.Entities
         private readonly bool _shouldDrawField;
         private readonly MTexture _arrowTexture;
         private readonly MTexture _arrowSmallTexture;
-        private readonly SpriteEffects _arrowSpriteEffects;
         private readonly Vector2 _arrowOrigin;
         private readonly Vector2 _arrowSmallOrigin;
         private Vector2 _arrowShakeOffset;
@@ -102,27 +101,15 @@ namespace Celeste.Mod.GravityHelper.Entities
 
             if (_shouldDrawArrows)
             {
-                switch (arrowGravityType)
+                var prefix = arrowGravityType switch
                 {
-                    case GravityType.Normal:
-                        _arrowTexture = GFX.Game["objects/GravityHelper/gravityField/arrow"];
-                        _arrowSmallTexture = GFX.Game["objects/GravityHelper/gravityField/arrowSmall"];
-                        _arrowSpriteEffects = SpriteEffects.FlipVertically;
-                        break;
+                    GravityType.Normal => "down",
+                    GravityType.Inverted => "up",
+                    _ => "double",
+                };
 
-                    case GravityType.Inverted:
-                        _arrowTexture = GFX.Game["objects/GravityHelper/gravityField/arrow"];
-                        _arrowSmallTexture = GFX.Game["objects/GravityHelper/gravityField/arrowSmall"];
-                        _arrowSpriteEffects = SpriteEffects.None;
-                        break;
-
-                    case GravityType.Toggle:
-                        _arrowTexture = GFX.Game["objects/GravityHelper/gravityField/doubleArrow"];
-                        _arrowSmallTexture = GFX.Game["objects/GravityHelper/gravityField/doubleArrowSmall"];
-                        _arrowSpriteEffects = SpriteEffects.None;
-                        break;
-                }
-
+                _arrowTexture = GFX.Game[$"objects/GravityHelper/gravityField/{prefix}Arrow"];
+                _arrowSmallTexture = GFX.Game[$"objects/GravityHelper/gravityField/{prefix}ArrowSmall"];
                 _arrowOrigin = new Vector2(_arrowTexture.Width / 2f, _arrowTexture.Height / 2f);
                 _arrowSmallOrigin = new Vector2(_arrowSmallTexture.Width / 2f, _arrowSmallTexture.Height / 2f);
             }
@@ -274,7 +261,7 @@ namespace Celeste.Mod.GravityHelper.Entities
                     {
                         int offsetX = x * 16 + 8 + widthInTiles % 2 * 4;
                         if (widthInTiles == 1) offsetX = 4;
-                        texture.Draw(Position + _arrowShakeOffset + new Vector2(offsetX, offsetY), origin, color, 1f, 0f, _arrowSpriteEffects);
+                        texture.Draw(Position + _arrowShakeOffset + new Vector2(offsetX, offsetY), origin, color, 1f, 0f);
                     }
                 }
             }

@@ -27,6 +27,17 @@ namespace Celeste.Mod.GravityHelper.Entities
         {
             GravityType = (GravityType)data.Int("gravityType");
             _dreamBlockData = new DynData<DreamBlock>(this);
+
+            var textures = _dreamBlockData.Get<MTexture[]>("particleTextures");
+            var prefix = GravityType switch
+            {
+                GravityType.Normal => "down",
+                GravityType.Inverted => "up",
+                _ => "double",
+            };
+
+            textures[0] = GFX.Game[$"objects/GravityHelper/gravityDreamBlock/{prefix}Arrow"];
+            textures[1] = GFX.Game[$"objects/GravityHelper/gravityDreamBlock/{prefix}ArrowSmall"];
         }
 
         public void UpdateParticleColors()
