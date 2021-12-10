@@ -26,6 +26,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
         {
             Logger.Log(nameof(GravityHelperModule), $"Unloading {nameof(Bumper)} hooks...");
             IL.Celeste.Bumper.OnPlayer -= Bumper_OnPlayer;
+            IL.Celeste.Bumper.Update -= Bumper_Update;
         }
 
         private static void Bumper_OnPlayer(ILContext il) => HookUtils.SafeHook(() =>
