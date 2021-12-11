@@ -70,6 +70,7 @@ namespace Celeste.Mod.GravityHelper
         public static MethodInfo FancyFallingBlock_SurfaceSoundIndexAt { get; private set; }
         public static Type MaddyCrownModuleType { get; private set; }
         public static Type FrostHelperCustomSpringType { get; private set; }
+        public static Type OutbackHelperPortalType { get; private set; }
 
         public static void LoadThirdPartyTypes()
         {
@@ -78,6 +79,7 @@ namespace Celeste.Mod.GravityHelper
             MaddyCrownModuleType = GetModdedTypeByName("MaddyCrown", "Celeste.Mod.MaddyCrown.MaddyCrownModule");
             MaxHelpingHandUpsideDownJumpThruType = GetModdedTypeByName("MaxHelpingHand", "Celeste.Mod.MaxHelpingHand.Entities.UpsideDownJumpThru");
             FrostHelperCustomSpringType = GetModdedTypeByName("FrostHelper", "FrostHelper.CustomSpring");
+            OutbackHelperPortalType = GetModdedTypeByName("OutbackHelper", "Celeste.Mod.OutbackHelper.Portal");
         }
 
         #endregion
