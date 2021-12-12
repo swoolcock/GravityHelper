@@ -2,7 +2,6 @@
 // See the LICENCE file in the repository root for full licence text."
 
 using System;
-using Celeste.Mod.GravityHelper.Components;
 using Microsoft.Xna.Framework;
 using Mono.Cecil;
 using Mono.Cecil.Cil;

@@ -3,7 +3,6 @@
 
 using System;
 using System.Reflection;
-using Celeste.Mod.GravityHelper.Extensions;
 using Monocle;
 using MonoMod.RuntimeDetour;
 

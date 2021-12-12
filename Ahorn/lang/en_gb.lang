@@ -23,6 +23,8 @@ placements.entities.GravityHelper/GravityController.tooltips.fieldOpacity=The de
 placements.entities.GravityHelper/GravityController.tooltips.arrowOpacity=The default opacity of arrows, if enabled. Ranges from 0 (invisible) to 1 (fully opaque). Defaults to 0.5.
 placements.entities.GravityHelper/GravityController.tooltips.particleOpacity=The default opacity of moving particles, if enabled. Ranges from 0 (invisible) to 1 (fully opaque). Defaults to 0.5.
 placements.entities.GravityHelper/GravityController.tooltips.holdableResetTime=The amount of time in seconds a holdable will take to reset after being dropped. If <= 0, the holdable will never reset. Defaults to 2.
+placements.entities.GravityHelper/GravityController.tooltips.gravityMusicParam=The music parameter that should be set to 0 or 1 depending on whether gravity is currently normal or inverted.
+placements.entities.GravityHelper/GravityController.tooltips.vvvvvv=Enables VVVVVV mode. Dash and grab are disabled, and jump will toggle gravity instantly. Jump can only be pressed on safe ground.
 
 # Gravity Refill
 placements.entities.GravityHelper/GravityRefill.tooltips.charges=The number of gravity charges that this refill will provide.
@@ -36,6 +38,9 @@ placements.entities.GravityHelper/GravityDreamBlock.tooltips.gravityType=The gra
 
 # Gravity Bumper
 placements.entities.GravityHelper/GravityBumper.tooltips.gravityType=The gravity type to set when Madeline touches the bumper.
+
+# Gravity Booster
+placements.entities.GravityHelper/GravityBooster.tooltips.gravityType=The gravity type to set when Madeline leaves the booster (bubble).
 
 # Gravity Spring (Floor)
 placements.entities.GravityHelper/GravitySpringFloor.tooltips.playerCanUse=Whether the spring will activate for the player.

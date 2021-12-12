@@ -18,6 +18,13 @@ namespace Celeste.Mod.GravityHelper.Entities
         private const float sound_muffle_time_seconds = 0.25f;
         private const string default_normal_gravity_sound = "event:/char/madeline/climb_ledge";
         private const string default_inverted_gravity_sound = "event:/char/madeline/crystaltheo_lift";
+        private const string vvvvvv_mode_flag = "GravityHelper_vvvvvv_mode";
+
+        public static bool VVVVVV
+        {
+            get => (Engine.Scene as Level)?.Session.GetFlag(vvvvvv_mode_flag) ?? false;
+            set => (Engine.Scene as Level)?.Session.SetFlag(vvvvvv_mode_flag, value);
+        }
 
         public string NormalGravitySound { get; }
         public string InvertedGravitySound { get; }
@@ -28,6 +35,9 @@ namespace Celeste.Mod.GravityHelper.Entities
         public float ParticleOpacity { get; }
         public float HoldableResetTime { get; }
         public string GravityMusicParam { get; }
+
+        private static PlayerInventory _previousInventory = PlayerInventory.Default;
+        private readonly bool _vvvvvv;
 
         public GravityController(EntityData data, Vector2 offset)
             : base(data.Position + offset)
@@ -41,6 +51,8 @@ namespace Celeste.Mod.GravityHelper.Entities
             ParticleOpacity = Calc.Clamp(data.Float("particleOpacity", GravityField.DEFAULT_PARTICLE_OPACITY), 0f, 1f);
             HoldableResetTime = data.Float("holdableResetTime", 2f);
             GravityMusicParam = data.Attr("gravityMusicParam", "flip");
+
+            _vvvvvv = data.Bool("vvvvvv");
 
             Add(new PlayerGravityListener
             {
@@ -71,7 +83,25 @@ namespace Celeste.Mod.GravityHelper.Entities
                         var gh = (GravityHoldable)comp;
                         gh.InvertTime = HoldableResetTime;
                     }
+
+                    if (_vvvvvv && Scene is Level level && level.Tracker.GetEntity<Player>() is { } player)
+                    {
+                        _previousInventory = level.Session.Inventory;
+                        level.Session.Inventory = new PlayerInventory(0);
+                        player.Dashes = 0;
+                        VVVVVV = true;
+                    }
                 },
+                OnOutBegin = () =>
+                {
+                    if (_vvvvvv && Scene is Level level && level.Tracker.GetEntity<Player>() is { } player)
+                    {
+                        level.Session.Inventory = _previousInventory;
+                        player.RefillDash();
+                        _previousInventory = default;
+                        VVVVVV = false;
+                    }
+                }
             });
         }
 

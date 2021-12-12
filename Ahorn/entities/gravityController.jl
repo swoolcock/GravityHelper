@@ -14,12 +14,20 @@ const default_gravity_music_param = "flip"
     toggleGravitySound::String="",
     arrowOpacity::Real=0.5, fieldOpacity::Real=0.15, particleOpacity::Real=0.5,
     holdableResetTime::Real=2.0,
-    gravityMusicParam::String=default_gravity_music_param
+    gravityMusicParam::String=default_gravity_music_param,
+    vvvvvv::Bool=false
 )
 
 const placements = Ahorn.PlacementDict(
     "Gravity Controller (GravityHelper)" => Ahorn.EntityPlacement(
         GravityController,
+    ),
+    "Gravity Controller (VVVVVV) (GravityHelper)" => Ahorn.EntityPlacement(
+        GravityController,
+        "point",
+        Dict{String, Any}(
+            "vvvvvv" => true,
+        )
     ),
 )
 

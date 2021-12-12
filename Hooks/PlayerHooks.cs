@@ -1115,6 +1115,18 @@ namespace Celeste.Mod.GravityHelper.Hooks
             var moveY = Input.MoveY.Value;
             var gliderMoveY = Input.GliderMoveY.Value;
 
+            if (GravityController.VVVVVV)
+            {
+                var jumpPressed = Input.Jump.Pressed;
+                Input.Jump.ConsumePress();
+
+                if (jumpPressed && self.OnSafeGround)
+                {
+                    GravityHelperModule.PlayerComponent.SetGravity(GravityType.Toggle);
+                    self.Speed.Y = 160f * (self.SceneAs<Level>().InSpace ? 0.6f : 1f);
+                }
+            }
+
             if (GravityHelperModule.ShouldInvertPlayer)
             {
                 Input.Aim.SetValue(new Vector2(Input.Aim.Value.X, -aimY));
