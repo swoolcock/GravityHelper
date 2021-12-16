@@ -64,6 +64,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             On.Celeste.Player.Added += Player_Added;
             On.Celeste.Player.ClimbCheck += Player_ClimbCheck;
             On.Celeste.Player.CassetteFlyEnd += Player_CassetteFlyEnd;
+            On.Celeste.Player.CreateTrail += Player_CreateTrail;
             On.Celeste.Player.DreamDashCheck += Player_DreamDashCheck;
             On.Celeste.Player.DreamDashUpdate += Player_DreamDashUpdate;
             On.Celeste.Player.DustParticleFromSurfaceIndex += Player_DustParticleFromSurfaceIndex;
@@ -133,6 +134,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             On.Celeste.Player.Added -= Player_Added;
             On.Celeste.Player.CassetteFlyEnd -= Player_CassetteFlyEnd;
             On.Celeste.Player.ClimbCheck -= Player_ClimbCheck;
+            On.Celeste.Player.CreateTrail -= Player_CreateTrail;
             On.Celeste.Player.DreamDashCheck -= Player_DreamDashCheck;
             On.Celeste.Player.DreamDashUpdate -= Player_DreamDashUpdate;
             On.Celeste.Player.DustParticleFromSurfaceIndex -= Player_DustParticleFromSurfaceIndex;
@@ -976,6 +978,20 @@ namespace Celeste.Mod.GravityHelper.Hooks
                     },
                 }
             );
+        }
+
+        private static void Player_CreateTrail(On.Celeste.Player.orig_CreateTrail orig, Player self)
+        {
+            if (!GravityHelperModule.ShouldInvertPlayer)
+            {
+                orig(self);
+                return;
+            }
+
+            var scaleY = self.Sprite.Scale.Y;
+            self.Sprite.Scale.Y = -scaleY;
+            orig(self);
+            self.Sprite.Scale.Y = scaleY;
         }
 
         private static bool Player_DreamDashCheck(On.Celeste.Player.orig_DreamDashCheck orig, Player self, Vector2 dir)

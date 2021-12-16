@@ -109,7 +109,6 @@ namespace Celeste.Mod.GravityHelper
             SpikesHooks.Load();
             SpringHooks.Load();
             TheoCrystalHooks.Load();
-            TrailManagerHooks.Load();
         }
 
         private static void deactivateHooks()
@@ -140,7 +139,6 @@ namespace Celeste.Mod.GravityHelper
             SpikesHooks.Unload();
             SpringHooks.Unload();
             TheoCrystalHooks.Unload();
-            TrailManagerHooks.Unload();
         }
 
         private static void AssetReloadHelper_ReloadLevel(On.Celeste.Mod.AssetReloadHelper.orig_ReloadLevel orig)
