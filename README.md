@@ -82,6 +82,9 @@ Note that these will be executed in the order listed.
 #### Crowneline
 * It just works, no need for additional hooks.
 
+#### Cateline
+* Added hooks to correctly invert the tail.  Also fixes the missing tail trail.
+
 ### What entities/triggers are provided?
 
 All entities provided follow a common theme of blue = normal, red = inverted, purple = toggle.
@@ -92,6 +95,9 @@ Can be configured to support Madeline and/or any holdable/non-holdable `Actor`.
 
 #### SpawnGravityTrigger
 An invisible trigger that will set Madeline's initial gravity if placed over a player spawn entity.
+Will optionally apply this gravity setting when returning from a berry/cassette bubble,
+since return bubbles will always set regular gravity when triggered.
+This was the safest solution given that return bubbles do not work well while inverted.
 
 #### GravityBooster
 A `Booster` (bubble) that will change Madeline's gravity when she is released.
@@ -107,6 +113,7 @@ A controller entity that manages gravity functionality for an entire room.  This
 * Adjusting the visuals of all `GravityField`s in a room.
 * Defining a music param to change upon gravity flip.
 * Defining the reset time of any `Holdable`s in the room.
+* Enabling "VVVVVV mode", which disables dash and grab and replaces the jump action with an instant gravity toggle while on safe ground.
 
 #### GravityDreamBlock
 A `DreamBlock` that will change Madeline's gravity upon exit.
