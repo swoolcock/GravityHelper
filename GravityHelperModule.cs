@@ -109,6 +109,7 @@ namespace Celeste.Mod.GravityHelper
             SolidTilesHooks.Load();
             SpikesHooks.Load();
             SpringHooks.Load();
+            StarJumpBlockHooks.Load();
             TheoCrystalHooks.Load();
         }
 
@@ -140,6 +141,7 @@ namespace Celeste.Mod.GravityHelper
             SolidTilesHooks.Unload();
             SpikesHooks.Unload();
             SpringHooks.Unload();
+            StarJumpBlockHooks.Unload();
             TheoCrystalHooks.Unload();
         }
 
