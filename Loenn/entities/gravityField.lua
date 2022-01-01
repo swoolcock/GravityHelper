@@ -1,0 +1,55 @@
+local consts = require("mods").requireFromPlugin("consts")
+local helpers = require("mods").requireFromPlugin("helpers")
+local colors = require("consts.xna_colors")
+
+local placementData = {
+    width = 8,
+    height = 8,
+    gravityType = consts.gravityTypes.normal.index,
+    attachToSolids = false,
+    arrowType = consts.gravityTypes.default.index,
+    fieldType = consts.gravityTypes.default.index,
+    arrowOpacity = nil,
+    fieldOpacity = nil,
+    particleOpacity = nil,
+    affectsPlayer = true,
+    affectsHoldableActors = false,
+    affectsOtherActors = false,
+}
+
+local gravityField = {
+    name = "GravityHelper/GravityField",
+    depth = -8500,
+    borderColor = colors.White,
+    placements = {
+        {
+            name = "normal",
+            data = placementData,
+        },
+        {
+            name = "attachedIndicator",
+            data = helpers.union(placementData, {
+                attachToSolids = true,
+                drawArrows = true,
+                drawField = false,
+                visualOnly = true,
+            }),
+        },
+        {
+            name = "visualOnly",
+            data = helpers.union(placementData, {
+                attachToSolids = false,
+                drawArrows = true,
+                drawField = true,
+                visualOnly = true,
+            }),
+        },
+    },
+}
+
+function gravityField.fillColor(room, entity)
+    local type = consts:gravityTypeForIndex(entity.gravityType)
+    return helpers.colorWithAlpha(type.color, 0.5)
+end
+
+return gravityField

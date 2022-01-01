@@ -1,0 +1,97 @@
+# Gravity Booster (Bubble)
+entities.GravityHelper/GravityBooster.placements.name.normal=Gravity Booster (GravityHelper)
+entities.GravityHelper/GravityBooster.attributes.description.gravityType=The gravity type to set when Madeline leaves the booster (bubble). 0: Normal, 1: Inverted, 2: Toggle. -1: None (ignore).
+
+# Gravity Bumper
+entities.GravityHelper/GravityBumper.placements.name.normal=Gravity Bumper (GravityHelper)
+entities.GravityHelper/GravityBumper.attributes.description.gravityType=The gravity type to set when Madeline touches the bumper. 0: Normal, 1: Inverted, 2: Toggle. -1: None (ignore).
+
+# Gravity Controller
+entities.GravityHelper/GravityController.placements.name.normal=Gravity Controller (GravityHelper)
+entities.GravityHelper/GravityController.placements.name.vvvvvv=Gravity Controller (VVVVVV) (GravityHelper)
+entities.GravityHelper/GravityController.attributes.description.alwaysTrigger=Whether or not gravity sound effects should always play when gravity is set, even if the gravity didn't actually change. Defaults to false.
+entities.GravityHelper/GravityController.attributes.description.normalGravitySound=The sound to play when gravity resets to normal. Defaults to event:/ui/game/lookout_off (the sound when cancelling a watch tower).
+entities.GravityHelper/GravityController.attributes.description.invertedGravitySound=The sound to play when gravity inverts. Defaults to event:/ui/game/lookout_on (the sound when first using a watch tower).
+entities.GravityHelper/GravityController.attributes.description.toggleGravitySound=Whether this and connected fields should attach to solids.
+entities.GravityHelper/GravityController.attributes.description.fieldOpacity=The default opacity of shimmering field effects, if enabled. Ranges from 0 (invisible) to 1 (fully opaque). Defaults to 0.15.
+entities.GravityHelper/GravityController.attributes.description.arrowOpacity=The default opacity of arrows, if enabled. Ranges from 0 (invisible) to 1 (fully opaque). Defaults to 0.5.
+entities.GravityHelper/GravityController.attributes.description.particleOpacity=The default opacity of moving particles, if enabled. Ranges from 0 (invisible) to 1 (fully opaque). Defaults to 0.5.
+entities.GravityHelper/GravityController.attributes.description.holdableResetTime=The amount of time in seconds a holdable will take to reset after being dropped. If <= 0, the holdable will never reset. Defaults to 2.
+entities.GravityHelper/GravityController.attributes.description.gravityMusicParam=The music parameter that should be set to 0 or 1 depending on whether gravity is currently normal or inverted.
+entities.GravityHelper/GravityController.attributes.description.vvvvvv=Enables VVVVVV mode. Dash and grab are disabled, and jump will toggle gravity instantly. Jump can only be pressed on safe ground.
+
+# Gravity Dream Block
+entities.GravityHelper/GravityDreamBlock.placements.name.normal=Gravity Dream Block (GravityHelper)
+entities.GravityHelper/GravityDreamBlock.attributes.description.gravityType=The gravity type to set when Madeline exits the dream block.
+
+# Gravity Field
+entities.GravityHelper/GravityField.placements.name.normal=Gravity Field (GravityHelper)
+entities.GravityHelper/GravityField.placements.name.attachedIndicator=Gravity Field (Attached Indicator) (GravityHelper)
+entities.GravityHelper/GravityField.placements.name.visualOnly=Gravity Field (Visual Only) (GravityHelper)
+entities.GravityHelper/GravityField.attributes.description.gravityType=The gravity type to set when Madeline enters the field. 0: Normal, 1: Inverted, 2: Toggle. -1: None (ignore).
+entities.GravityHelper/GravityField.attributes.description.momentumMultiplier=The multiplier to apply to Madeline's Y velocity when gravity flips. 0 means instantly change, positive values give a gradual change. Defaults to 1.
+entities.GravityHelper/GravityField.attributes.description.arrowType=The gravity type to use when rendering arrows. "None" disables arrows, and "Default" will use the current value of gravityType.
+entities.GravityHelper/GravityField.attributes.description.fieldType=The gravity type to use when rendering the field. "None" disables field rendering, and "Default" will use the current value of gravityType.
+entities.GravityHelper/GravityField.attributes.description.attachToSolids=Whether this and connected fields should attach to solids.
+entities.GravityHelper/GravityField.attributes.description.fieldOpacity=The opacity of the shimmering field effect, if enabled. Ranges from 0 (invisible) to 1 (fully opaque). If empty and a GravityController exists, it will use the value provided from that, otherwise 0.15.
+entities.GravityHelper/GravityField.attributes.description.arrowOpacity=The opacity of the arrows, if enabled. Ranges from 0 (invisible) to 1 (fully opaque). If empty and a GravityController exists, it will use the value provided from that, otherwise 0.5.
+entities.GravityHelper/GravityField.attributes.description.particleOpacity=The opacity of the moving particles, if the field effect is enabled. Ranges from 0 (invisible) to 1 (fully opaque). If empty and a GravityController exists, it will use the value provided from that, otherwise 0.5.
+entities.GravityHelper/GravityField.attributes.description.affectsPlayer=Whether the field affects Madeline. Defaults to true.
+entities.GravityHelper/GravityField.attributes.description.affectsHoldableActors=Whether the field affects Actors with a Holdable component while they are not being held. Defaults to false.
+entities.GravityHelper/GravityField.attributes.description.affectsOtherActors=Whether the field affects non-holdable Actors. Defaults to false.
+
+# Gravity Refill
+entities.GravityHelper/GravityRefill.placements.name.normal=Gravity Refill (GravityHelper)
+entities.GravityHelper/GravityRefill.attributes.description.charges=The number of charges of gravity toggle that Madeline will receive. Defaults to 1.
+entities.GravityHelper/GravityRefill.attributes.description.oneUse=If true, the crystal will not respawn after it has been collected. Defaults to false.
+entities.GravityHelper/GravityRefill.attributes.description.refillsDash=Whether collecting the crystal will also refill Madeline's dash. Defaults to true.
+entities.GravityHelper/GravityRefill.attributes.description.refillsStamina=Whether collecting the crystal will also refill Madeline's stamina. Defaults to true.
+entities.GravityHelper/GravityRefill.attributes.description.respawnTime=How long in seconds it will take for the crystal to respawn if enabled. Defaults to 2.5.
+
+# Gravity Spring
+entities.GravityHelper/GravitySpringFloor.placements.name.normal=Gravity Spring (Floor) (GravityHelper)
+entities.GravityHelper/GravitySpringCeiling.placements.name.normal=Gravity Spring (Ceiling) (GravityHelper)
+entities.GravityHelper/GravitySpringWallLeft.placements.name.normal=Gravity Spring (Wall Left) (GravityHelper)
+entities.GravityHelper/GravitySpringWallRight.placements.name.normal=Gravity Spring (Wall Right) (GravityHelper)
+entities.GravityHelper/GravitySpringFloor.attributes.description.playerCanUse=Whether the spring will activate for the player.
+entities.GravityHelper/GravitySpringFloor.attributes.description.gravityType=The gravity type to set when Madeline activates the spring. 0: Normal, 1: Inverted, 2: Toggle. -1: None (ignore). Defaults to 0.
+entities.GravityHelper/GravitySpringFloor.attributes.description.cooldown=Time in seconds before the spring will change Madeline's gravity again (the bouncing component has no cooldown).
+entities.GravityHelper/GravitySpringWallLeft.attributes.description.playerCanUse=Whether the spring will activate for the player.
+entities.GravityHelper/GravitySpringWallLeft.attributes.description.gravityType=The gravity type to set when Madeline activates the spring. 0: Normal, 1: Inverted, 2: Toggle. -1: None (ignore). Defaults to 2.
+entities.GravityHelper/GravitySpringWallLeft.attributes.description.cooldown=Time in seconds before the spring will change Madeline's gravity again (the bouncing component has no cooldown).
+entities.GravityHelper/GravitySpringWallRight.attributes.description.playerCanUse=Whether the spring will activate for the player.
+entities.GravityHelper/GravitySpringWallRight.attributes.description.gravityType=The gravity type to set when Madeline activates the spring. 0: Normal, 1: Inverted, 2: Toggle. -1: None (ignore). Defaults to 2.
+entities.GravityHelper/GravitySpringWallRight.attributes.description.cooldown=Time in seconds before the spring will change Madeline's gravity again (the bouncing component has no cooldown).
+entities.GravityHelper/GravitySpringCeiling.attributes.description.playerCanUse=Whether the spring will activate for the player.
+entities.GravityHelper/GravitySpringCeiling.attributes.description.gravityType=The gravity type to set when Madeline activates the spring. 0: Normal, 1: Inverted, 2: Toggle. -1: None (ignore). Defaults to 1.
+entities.GravityHelper/GravitySpringCeiling.attributes.description.cooldown=Time in seconds before the spring will change Madeline's gravity again (the bouncing component has no cooldown).
+
+# Upside Down Jump Thru
+entities.GravityHelper/UpsideDownJumpThru.placements.name.wood=Upside Down Jump Through (Wood) (GravityHelper)
+entities.GravityHelper/UpsideDownJumpThru.placements.name.dream=Upside Down Jump Through (Dream) (GravityHelper)
+entities.GravityHelper/UpsideDownJumpThru.placements.name.temple=Upside Down Jump Through (Temple) (GravityHelper)
+entities.GravityHelper/UpsideDownJumpThru.placements.name.templeB=Upside Down Jump Through (Temple B) (GravityHelper)
+entities.GravityHelper/UpsideDownJumpThru.placements.name.cliffside=Upside Down Jump Through (Cliffside) (GravityHelper)
+entities.GravityHelper/UpsideDownJumpThru.placements.name.reflection=Upside Down Jump Through (Reflection) (GravityHelper)
+entities.GravityHelper/UpsideDownJumpThru.placements.name.core=Upside Down Jump Through (Core) (GravityHelper)
+entities.GravityHelper/UpsideDownJumpThru.placements.name.moon=Upside Down Jump Through (Moon) (GravityHelper)
+entities.GravityHelper/UpsideDownJumpThru.attributes.description.texture=The sprite to use for the jump through.
+entities.GravityHelper/UpsideDownJumpThru.attributes.description.surfaceIndex=The sound to use for the jump through. Defaults to -1, which uses the expected sound for the texture.
+
+# Upside Down Watch Tower
+entities.GravityHelper/UpsideDownWatchTower.placements.name.normal=Upside Down Watch Tower (GravityHelper)
+entities.GravityHelper/UpsideDownWatchTower.attributes.description.summit=Whether the watch tower should zoom on the final node or not. Requires nodes to function, otherwise the game will crash.
+entities.GravityHelper/UpsideDownWatchTower.attributes.description.onlyY=Whether the watch tower can only move vertically. If the watch tower has nodes it will still follow them.
+
+# Gravity Trigger
+triggers.GravityHelper/GravityTrigger.placements.name.normal=Gravity Trigger (GravityHelper)
+triggers.GravityHelper/GravityTrigger.attributes.description.gravityType=The gravity type to set when Madeline enters the trigger. 0: Normal, 1: Inverted, 2: Toggle. -1: None (ignore).
+triggers.GravityHelper/GravityTrigger.attributes.description.momentumMultiplier=The multiplier to apply to Madeline's Y velocity when gravity flips. 0 means instantly change, positive values give a gradual change. Defaults to 1.
+triggers.GravityHelper/GravityTrigger.attributes.description.affectsPlayer=Whether the trigger affects Madeline. Defaults to true.
+triggers.GravityHelper/GravityTrigger.attributes.description.affectsHoldableActors=Whether the trigger affects Actors with a Holdable component while they are not being held. Defaults to false.
+triggers.GravityHelper/GravityTrigger.attributes.description.affectsOtherActors=Whether the trigger affects non-holdable Actors. Defaults to false.
+
+# Spawn Gravity Trigger
+triggers.GravityHelper/SpawnGravityTrigger.placements.name.normal=Spawn Gravity Trigger (GravityHelper)
+triggers.GravityHelper/SpawnGravityTrigger.attributes.description.gravityType=The gravity type to set when Madeline spawns inside the trigger. 0: Normal, 1: Inverted, 2: Toggle. -1: None (ignore).
+triggers.GravityHelper/SpawnGravityTrigger.attributes.description.fireOnBubbleReturn=Whether gravity should be applied if Madeline is sent to the spawn trigger via a cassette or berry return bubble.
