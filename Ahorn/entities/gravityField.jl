@@ -8,7 +8,8 @@ using ..Ahorn, Maple
     gravityType::Integer=0, attachToSolids::Bool=false,
     arrowType::Integer=-2, fieldType::Integer=-2,
     arrowOpacity::String="", fieldOpacity::String="", particleOpacity::String="",
-    affectsPlayer::Bool=true, affectsHoldableActors::Bool=false, affectsOtherActors::Bool=false
+    affectsPlayer::Bool=true, affectsHoldableActors::Bool=false, affectsOtherActors::Bool=false,
+    momentumMultiplier::Real=1.0
 )
 
 const gravityColors = Dict{Integer, Tuple{Real, Real, Real, Real}}(
