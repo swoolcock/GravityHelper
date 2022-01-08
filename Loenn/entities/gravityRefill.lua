@@ -1,9 +1,9 @@
-local consts = require("mods").requireFromPlugin("consts")
-local drawableSprite = require("structs.drawable_sprite")
+local utils = require("utils")
 
 local gravityRefill = {
     name = "GravityHelper/GravityRefill",
     depth = -100,
+    texture = "objects/GravityHelper/gravityRefill/idle00",
     placements = {
         {
             name = "normal",
@@ -18,10 +18,8 @@ local gravityRefill = {
     },
 }
 
-function gravityRefill.sprite(room, entity)
-    local sprite = drawableSprite.fromTexture("objects/refill/idle00", entity)
-    sprite:setColor(consts.gravityTypes.toggle.color)
-    return sprite
+function gravityRefill.selection(room, entity)
+    return utils.rectangle(entity.x - 4, entity.y - 5, 8, 10)
 end
 
 return gravityRefill

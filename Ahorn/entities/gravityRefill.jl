@@ -17,15 +17,13 @@ const placements = Ahorn.PlacementDict(
     ),
 )
 
-const sprite = "objects/refill/idle00"
+const sprite = "objects/GravityHelper/gravityRefill/idle00"
 
 function Ahorn.selection(entity::GravityRefill)
     x, y = Ahorn.position(entity)
-    return Ahorn.getSpriteRectangle(sprite, x, y)
+    return Ahorn.Rectangle(x - 4, y - 5, 8, 10)
 end
 
-function Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::GravityRefill, room::Maple.Room)
-    Ahorn.drawSprite(ctx, sprite, 0, 0)
-end
+Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::GravityRefill, room::Maple.Room) = Ahorn.drawSprite(ctx, sprite, 0, 0)
 
 end
