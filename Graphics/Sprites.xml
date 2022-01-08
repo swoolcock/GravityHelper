@@ -22,4 +22,9 @@
         <Justify x="0.5" y="0.5" />
         <Anim id="arrows" path="arrows" delay="0.07" frames="0-7" />
     </gravityRefillArrows>
+
+    <gravityRefillIndicator path="objects/GravityHelper/gravityRefill/">
+        <Justify x="0.5" y="0.5" />
+        <Loop id="loop" path="indicator" delay="0.1" frames="0-4" />
+    </gravityRefillIndicator>
 </Sprites>

@@ -58,6 +58,13 @@ namespace Celeste.Mod.GravityHelper.Entities
 
         private bool _emitNormal;
 
+        private const string gravity_toggle_charges = "GravityHelper_toggle_charges";
+        public static int NumberOfCharges
+        {
+            get => (Engine.Scene as Level)?.Session.GetCounter(gravity_toggle_charges) ?? 0;
+            set => (Engine.Scene as Level)?.Session.SetCounter(gravity_toggle_charges, value);
+        }
+
         public GravityRefill(Vector2 position, int charges, bool oneUse, bool refillsDash, bool refillsStamina, float respawnTime)
             : base(position)
         {
@@ -165,13 +172,13 @@ namespace Celeste.Mod.GravityHelper.Entities
         {
             bool canUse = RefillsDash && player.Dashes < player.MaxDashes ||
                           RefillsStamina && player.Stamina < 20 ||
-                          GravityHelperModule.Instance.GravityRefillCharges < Charges;
+                          NumberOfCharges < Charges;
 
             if (!canUse) return;
 
             if (RefillsDash) player.RefillDash();
             if (RefillsStamina) player.RefillStamina();
-            GravityHelperModule.Instance.GravityRefillCharges = Charges;
+            NumberOfCharges = Charges;
 
             Audio.Play("event:/game/general/diamond_touch", Position);
             Input.Rumble(RumbleStrength.Medium, RumbleLength.Medium);
@@ -200,6 +207,28 @@ namespace Celeste.Mod.GravityHelper.Entities
 
             if (refill.OneUse)
                 refill.RemoveSelf();
+        }
+
+        public class Indicator : Sprite
+        {
+            public Indicator() : base(null, string.Empty)
+            {
+                GFX.SpriteBank.CreateOn(this, "gravityRefillIndicator");
+            }
+
+            public override void Update()
+            {
+                base.Update();
+
+                var hasCharges = NumberOfCharges > 0;
+
+                if (Visible && !hasCharges)
+                    Stop();
+                else if (!Visible && hasCharges)
+                    Play("loop", true);
+
+                Visible = hasCharges;
+            }
         }
     }
 }

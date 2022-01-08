@@ -899,7 +899,6 @@ namespace Celeste.Mod.GravityHelper.Hooks
                 trigger?.GravityType ??
                 GravityHelperModule.Session.InitialGravity,
                 playerTriggered: false);
-            GravityHelperModule.Instance.GravityRefillCharges = 0;
             GravityHelperModule.Instance.GravityBeforeReload = null;
         }
 
@@ -920,6 +919,11 @@ namespace Celeste.Mod.GravityHelper.Hooks
         {
             orig(self, position, spriteMode);
 
+            var refillIndicator = new GravityRefill.Indicator
+            {
+                Position = new Vector2(0f, -20f),
+            };
+
             self.Add(new TransitionListener
                 {
                     OnOutBegin = () => GravityHelperModule.Session.InitialGravity = GravityHelperModule.PlayerComponent?.CurrentGravity ?? GravityType.Normal,
@@ -939,6 +943,8 @@ namespace Celeste.Mod.GravityHelper.Hooks
                         var starFlyBloom = self.GetStarFlyBloom();
                         if (starFlyBloom != null)
                             starFlyBloom.Y = Math.Abs(starFlyBloom.Y) * (args.NewValue == GravityType.Inverted ? 1 : -1);
+
+                        refillIndicator.Y = Math.Abs(refillIndicator.Y) * (args.NewValue == GravityType.Inverted ? 1 : -1);
                     },
                     UpdatePosition = args =>
                     {
@@ -971,12 +977,13 @@ namespace Celeste.Mod.GravityHelper.Hooks
                 {
                     OnDash = _ =>
                     {
-                        if (GravityHelperModule.Instance.GravityRefillCharges == 0)
+                        if (GravityRefill.NumberOfCharges == 0)
                             return;
-                        GravityHelperModule.Instance.GravityRefillCharges--;
+                        GravityRefill.NumberOfCharges--;
                         GravityHelperModule.PlayerComponent.SetGravity(GravityType.Toggle);
                     },
-                }
+                },
+                refillIndicator
             );
         }
 

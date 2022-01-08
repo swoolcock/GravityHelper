@@ -47,8 +47,6 @@ namespace Celeste.Mod.GravityHelper
 
         public GravityType? GravityBeforeReload;
 
-        public int GravityRefillCharges { get; set; }
-
         #region Hook Activation
 
         public override void Load()
@@ -185,7 +183,6 @@ namespace Celeste.Mod.GravityHelper
             state[nameof(Transitioning)] = Transitioning;
             state[nameof(SolidMoving)] = SolidMoving;
             state[nameof(JumpThruMoving)] = JumpThruMoving;
-            state[nameof(GravityRefillCharges)] = Instance.GravityRefillCharges;
         }
 
         public static void LoadState(Dictionary<string, object> state, Level level)
@@ -196,8 +193,6 @@ namespace Celeste.Mod.GravityHelper
                 SolidMoving = solidMoving;
             if (state[nameof(JumpThruMoving)] is bool jumpThruMoving)
                 JumpThruMoving = jumpThruMoving;
-            if (state[nameof(GravityRefillCharges)] is int gravityRefillCharges)
-                Instance.GravityRefillCharges = gravityRefillCharges;
 
             // fix upside down jumpthru tracking
             foreach (var udjt in Engine.Scene.Entities.Where(e => e is UpsideDownJumpThru))
