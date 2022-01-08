@@ -21,7 +21,7 @@ namespace Celeste.Mod.GravityHelper.Entities
 
         // components
         private readonly Sprite _sprite;
-        private readonly Sprite _flash;
+        private readonly Sprite _arrows;
         private readonly Image _outline;
         private readonly Wiggler _wiggler;
         private readonly BloomPoint _bloom;
@@ -32,20 +32,31 @@ namespace Celeste.Mod.GravityHelper.Entities
         private readonly ParticleType p_shatter = new ParticleType(Refill.P_Shatter)
         {
             Color = Color.Purple,
+            Color2 = Color.MediumPurple,
         };
 
         private readonly ParticleType p_regen = new ParticleType(Refill.P_Regen)
         {
             Color = Color.BlueViolet,
+            Color2 = Color.Violet,
         };
 
-        private readonly ParticleType p_glow = new ParticleType(Refill.P_Glow)
+        private readonly ParticleType p_glow_normal = new ParticleType(Refill.P_Glow)
         {
-            Color = Color.Violet,
+            Color = Color.Blue,
+            Color2 = Color.BlueViolet,
+        };
+
+        private readonly ParticleType p_glow_inverted = new ParticleType(Refill.P_Glow)
+        {
+            Color = Color.Red,
+            Color2 = Color.MediumVioletRed,
         };
 
         private Level _level;
         private float _respawnTimeRemaining;
+
+        private bool _emitNormal;
 
         public GravityRefill(Vector2 position, int charges, bool oneUse, bool refillsDash, bool refillsStamina, float respawnTime)
             : base(position)
@@ -59,29 +70,23 @@ namespace Celeste.Mod.GravityHelper.Entities
             Collider = new Hitbox(16f, 16f, -8f, -8f);
             Depth = -100;
 
-            var path = "objects/refill";
+            var path = "objects/GravityHelper/gravityRefill";
 
             // add components
             Add(new PlayerCollider(OnPlayer),
                 _outline = new Image(GFX.Game[$"{path}/outline"]) {Visible = false},
-                _sprite = new Sprite(GFX.Game, $"{path}/idle"),
-                _flash = new Sprite(GFX.Game, $"{path}/flash") {OnFinish = _ => _flash.Visible = false},
-                _wiggler = Wiggler.Create(1f, 4f, v => _sprite.Scale = _flash.Scale = Vector2.One * (float) (1.0 + (double) v * 0.2)),
+                _sprite = GFX.SpriteBank.Create("gravityRefill"),
+                _arrows = GFX.SpriteBank.Create("gravityRefillArrows"),
+                _wiggler = Wiggler.Create(1f, 4f, v => _sprite.Scale = Vector2.One * (float) (1.0 + (double) v * 0.2)),
                 new MirrorReflection(),
                 _bloom = new BloomPoint(0.8f, 16f),
                 _light = new VertexLight(Color.White, 1f, 16, 48),
                 _sine = new SineWave(0.6f, 0.0f));
 
-            // configure components
             _outline.CenterOrigin();
-            _sprite.AddLoop("idle", "", 0.1f);
-            _sprite.Play("idle");
-            _sprite.CenterOrigin();
-            _sprite.Color = Color.Purple;
-            _flash.Add("flash", "", 0.05f);
-            _flash.CenterOrigin();
-            _flash.Color = Color.Purple;
+            _sprite.Play("idle", true, true);
             _sine.Randomize();
+            _arrows.OnFinish = _ => _arrows.Visible = false;
 
             updateY();
         }
@@ -113,7 +118,14 @@ namespace Celeste.Mod.GravityHelper.Entities
                     respawn();
             }
             else if (Scene.OnInterval(0.1f))
-                _level.ParticlesFG.Emit(p_glow, 1, Position, Vector2.One * 5f);
+            {
+                var offset = Vector2.UnitY * (_emitNormal ? 5f : -5f);
+                var range = Vector2.One * 4f;
+                var direction = Vector2.UnitY.Angle() * (_emitNormal ? 1 : -1);
+                var p_glow = _emitNormal ? p_glow_normal : p_glow_inverted;
+                _level.ParticlesFG.Emit(p_glow, 1, Position + offset, range, direction);
+                _emitNormal = !_emitNormal;
+            }
 
             updateY();
 
@@ -122,8 +134,8 @@ namespace Celeste.Mod.GravityHelper.Entities
 
             if (!Scene.OnInterval(2f) || !_sprite.Visible) return;
 
-            _flash.Play("flash", true);
-            _flash.Visible = true;
+            _arrows.Play("arrows", true);
+            _arrows.Visible = true;
         }
 
         private void respawn()
@@ -133,13 +145,14 @@ namespace Celeste.Mod.GravityHelper.Entities
 
             _sprite.Visible = true;
             _outline.Visible = false;
+            _arrows.Stop();
             Depth = -100;
             _wiggler.Start();
             Audio.Play("event:/game/general/diamond_return", Position);
             _level.ParticlesFG.Emit(p_regen, 16, Position, Vector2.One * 2f);
         }
 
-        private void updateY() => _flash.Y = _sprite.Y = _bloom.Y = _sine.Value * 2f;
+        private void updateY() => _arrows.Y = _sprite.Y = _bloom.Y = _sine.Value * 2f;
 
         public override void Render()
         {
@@ -174,7 +187,7 @@ namespace Celeste.Mod.GravityHelper.Entities
             yield return null;
 
             refill._level.Shake();
-            refill._sprite.Visible = refill._flash.Visible = false;
+            refill._sprite.Visible = refill._arrows.Visible = false;
             if (!refill.OneUse)
                 refill._outline.Visible = true;
             refill.Depth = 8999;

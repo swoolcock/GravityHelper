@@ -12,6 +12,7 @@ using Celeste.Mod.GravityHelper.Components;
 using Celeste.Mod.GravityHelper.Entities;
 using Celeste.Mod.GravityHelper.Hooks;
 using Monocle;
+using MonoMod.ModInterop;
 
 #if !FORCE_LOAD_HOOKS
 using Microsoft.Xna.Framework;
@@ -52,6 +53,8 @@ namespace Celeste.Mod.GravityHelper
 
         public override void Load()
         {
+            typeof(GravityHelperExports).ModInterop();
+
 #if FORCE_LOAD_HOOKS
             // force load hooks in debug builds
             Logger.Log(nameof(GravityHelperModule), "Force loading hooks due to debug build...");
