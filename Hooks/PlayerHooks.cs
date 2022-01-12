@@ -462,15 +462,21 @@ namespace Celeste.Mod.GravityHelper.Hooks
         {
             var cursor = new ILCursor(il);
 
-            // (SKIP) if (this.onGround && this.DuckFreeAt(this.Position + Vector2.UnitX * (float) Math.Sign(this.Speed.X)))
-            cursor.GotoNext(MoveType.After, instr => instr.MatchCallvirt<Player>(nameof(Player.DuckFreeAt)));
+            // Vector2 add = new Vector2((float) Math.Sign(this.Speed.X), (float) (index1 * index2));
+            if (!cursor.TryGotoNext(MoveType.After,
+                instr => instr.MatchConvR4(),
+                instr => instr.MatchLdloc(out _),
+                instr => instr.MatchLdloc(out _),
+                instr => instr.MatchMul(),
+                instr => instr.MatchConvR4()))
+                throw new HookException("Couldn't invert (index1 * index2)");
+
+            cursor.EmitInvertFloatDelegate();
 
             // if (!this.CollideCheck<Solid>(at) && this.CollideCheck<Solid>(at - Vector2.UnitY * (float) index2) && !this.DashCorrectCheck(add))
-            cursor.GotoNext(MoveType.After, instr => instr.MatchCall<Vector2>("get_UnitY"));
-            cursor.EmitInvertVectorDelegate();
+            if (!cursor.TryGotoNext(MoveType.After, instr => instr.MatchCall<Vector2>("get_UnitY")))
+                throw new HookException("Couldn't invert call to CollideCheck<Solid>");
 
-            // Vector2 at = this.Position + add;
-            cursor.GotoPrev(ILCursorExtensions.AdditionPredicate);
             cursor.EmitInvertVectorDelegate();
         });
 
