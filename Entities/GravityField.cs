@@ -122,7 +122,7 @@ namespace Celeste.Mod.GravityHelper.Entities
 
         protected override void HandleOnEnter(Player player)
         {
-            if (GravityType == GravityType.None || _fieldGroup == null) return;
+            if (GravityType == GravityType.None || !AffectsPlayer || _fieldGroup == null) return;
 
             _fieldGroup.Semaphore++;
 
@@ -132,7 +132,7 @@ namespace Celeste.Mod.GravityHelper.Entities
 
         protected override void HandleOnStay(Player player)
         {
-            if (GravityType == GravityType.None || GravityType == GravityType.Toggle)
+            if (GravityType == GravityType.None || !AffectsPlayer ||GravityType == GravityType.Toggle)
                 return;
 
             if (GravityType != GravityHelperModule.PlayerComponent.CurrentGravity)
