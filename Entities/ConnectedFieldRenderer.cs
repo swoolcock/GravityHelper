@@ -12,12 +12,20 @@ namespace Celeste.Mod.GravityHelper.Entities
     public class ConnectedFieldRenderer<TEntity> : Entity
         where TEntity : Entity, IConnectableField
     {
+        public string InitialRoom { get; private set; }
+
         protected ConnectedFieldRenderer()
         {
             Tag = Tags.TransitionUpdate;
             Depth = 1;
 
             Add(new CustomBloom(onRenderBloom));
+        }
+
+        public override void Added(Scene scene)
+        {
+            base.Added(scene);
+            InitialRoom = SceneAs<Level>().Session.LevelData.Name;
         }
 
         public void Track(TEntity entity)
@@ -31,18 +39,24 @@ namespace Celeste.Mod.GravityHelper.Entities
             fieldGroup.Track(entity, Scene);
         }
 
-        public void Untrack(TEntity entity, bool removeIfEmpty = false)
+        public bool Untrack(TEntity entity, bool removeIfEmpty = false)
         {
             var fieldColor = entity.FieldColor;
-            var fieldGroup = Components.GetAll<FieldGroupRenderer>().FirstOrDefault(f => f.Color == fieldColor);
+            var found = false;
 
-            if (fieldGroup == null)
-                return;
-
-            fieldGroup.Untrack(entity, true);
+            foreach (var renderer in Components.GetAll<FieldGroupRenderer>().Where(f => f.Color == fieldColor))
+            {
+                if (renderer.Untrack(entity))
+                {
+                    found = true;
+                    break;
+                }
+            }
 
             if (removeIfEmpty && !Components.GetAll<FieldGroupRenderer>().Any())
                 RemoveSelf();
+
+            return found;
         }
 
         private void onRenderBloom()
@@ -70,7 +84,7 @@ namespace Celeste.Mod.GravityHelper.Entities
             {
                 _list.Add(entity);
 
-                if (scene != null && _tiles != null)
+                if (ensureTiles(scene))
                 {
                     for (int x = (int) entity.X / 8; x < entity.Right / 8.0; ++x)
                     for (int y = (int) entity.Y / 8; y < entity.Bottom / 8.0; ++y)
@@ -80,9 +94,9 @@ namespace Celeste.Mod.GravityHelper.Entities
                 _dirty = true;
             }
 
-            public void Untrack(TEntity entity, bool removeIfEmpty = true)
+            public bool Untrack(TEntity entity, bool removeIfEmpty = true)
             {
-                _list.Remove(entity);
+                if (!_list.Remove(entity)) return false;
 
                 _dirty = true;
 
@@ -98,12 +112,12 @@ namespace Celeste.Mod.GravityHelper.Entities
                     if (removeIfEmpty)
                         RemoveSelf();
                 }
+
+                return true;
             }
 
-            public override void EntityAdded(Scene scene)
+            private bool ensureTiles(Scene scene)
             {
-                base.EntityAdded(scene);
-
                 if (_tiles == null && scene is Level level)
                 {
                     _levelTileBounds = level.TileBounds;
@@ -118,6 +132,14 @@ namespace Celeste.Mod.GravityHelper.Entities
 
                     _dirty = true;
                 }
+
+                return _tiles != null;
+            }
+
+            public override void EntityAdded(Scene scene)
+            {
+                base.EntityAdded(scene);
+                ensureTiles(scene);
             }
 
             public override void Update()
@@ -153,7 +175,7 @@ namespace Celeste.Mod.GravityHelper.Entities
             {
                 _dirty = false;
                 _edges.Clear();
-                if (_list.Count == 0)
+                if (_list.Count == 0 || _tiles == null)
                     return;
 
                 Point[] pointArray =
@@ -296,6 +318,39 @@ namespace Celeste.Mod.GravityHelper.Entities
                                                           view.Top < Parent.Y + (double) Max.Y &&
                                                           view.Bottom > Parent.Y + (double) Min.Y;
             }
+        }
+    }
+
+    public static class ConnectedFieldRendererExtensions
+    {
+        public static TConnectedFieldRenderer GetConnectedFieldRenderer<TConnectedFieldRenderer, TEntity>(this TEntity entity, Scene scene = null, bool? track = null)
+            where TEntity : Entity, IConnectableField
+            where TConnectedFieldRenderer : ConnectedFieldRenderer<TEntity>, new()
+        {
+            scene = scene as Level ?? entity.Scene as Level ?? Engine.Scene as Level;
+            if (scene is not Level level) return null;
+            var roomName = level.Session.LevelData.Name;
+
+            if (track == false)
+            {
+                foreach (var r in scene.Entities.OfType<TConnectedFieldRenderer>())
+                {
+                    if (r.Untrack(entity))
+                        return r;
+                }
+            }
+
+            var renderer = scene.Entities.OfType<TConnectedFieldRenderer>().FirstOrDefault(r => r.InitialRoom == roomName) ??
+                scene.Entities.ToAdd.OfType<TConnectedFieldRenderer>().FirstOrDefault();
+
+            if (track == true)
+            {
+                if (renderer == null)
+                    scene.Add(renderer = new TConnectedFieldRenderer());
+                renderer.Track(entity);
+            }
+
+            return renderer;
         }
     }
 }

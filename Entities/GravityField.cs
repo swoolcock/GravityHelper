@@ -153,16 +153,6 @@ namespace Celeste.Mod.GravityHelper.Entities
             return controller;
         }
 
-        private GravityFieldRenderer getRenderer(Scene scene, bool create = false)
-        {
-            if (scene == null) return null;
-            var renderer = scene.Entities.OfType<GravityFieldRenderer>().FirstOrDefault() ??
-                           scene.Entities.ToAdd.OfType<GravityFieldRenderer>().FirstOrDefault();
-            if (create && renderer == null)
-                scene.Add(renderer = new GravityFieldRenderer());
-            return renderer;
-        }
-
         public override void Added(Scene scene)
         {
             base.Added(scene);
@@ -175,10 +165,7 @@ namespace Celeste.Mod.GravityHelper.Entities
             }
 
             if (_shouldDrawField)
-            {
-                var renderer = getRenderer(scene, true);
-                renderer?.Track(this);
-            }
+                this.GetConnectedFieldRenderer<GravityFieldRenderer, GravityField>(scene, true);
 
             _arrowShakeOffset = Vector2.Zero;
             _fieldGroup = null;
@@ -189,10 +176,7 @@ namespace Celeste.Mod.GravityHelper.Entities
             base.Removed(scene);
 
             if (_shouldDrawField)
-            {
-                var renderer = getRenderer(scene);
-                renderer?.Untrack(this, true);
-            }
+                this.GetConnectedFieldRenderer<GravityFieldRenderer, GravityField>(scene, false);
 
             _fieldGroup = null;
         }
