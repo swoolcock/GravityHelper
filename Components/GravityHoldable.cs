@@ -1,6 +1,7 @@
 // Copyright (c) Shane Woolcock. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+using System.Linq;
 using Celeste.Mod.GravityHelper.Entities;
 using Monocle;
 
@@ -22,13 +23,30 @@ namespace Celeste.Mod.GravityHelper.Components
         {
         }
 
+        public void ResetInvertTime() => _invertTimeRemaining = InvertTime;
+
+        public override void Added(Entity entity)
+        {
+            base.Added(entity);
+
+            entity.Add(new GravityListener(entity)
+            {
+                GravityChanged = (_, _) => ResetInvertTime(),
+            });
+        }
+
+        public override void EntityAdded(Scene scene)
+        {
+            base.EntityAdded(scene);
+
+            var controller = Scene.Entities.ToAdd.Concat(Scene.Entities).OfType<GravityController>().FirstOrDefault();
+            if (controller != null)
+                InvertTime = controller.HoldableResetTime;
+        }
+
         public override void Update()
         {
             base.Update();
-
-            var controller = Scene.Tracker.GetEntity<GravityController>();
-            if (controller != null)
-                InvertTime = controller.HoldableResetTime;
 
             var holdable = Entity.Get<Holdable>();
             var gravityComponent = Entity.Get<GravityComponent>();
@@ -36,13 +54,13 @@ namespace Celeste.Mod.GravityHelper.Components
 
             if (holdable.IsHeld)
             {
-                _invertTimeRemaining = InvertTime;
+                ResetInvertTime();
                 gravityComponent.SetGravity(GravityHelperModule.PlayerComponent.CurrentGravity);
             }
-            else if (InvertTime > 0)
+            else if (InvertTime > 0 && _invertTimeRemaining > 0 && gravityComponent.CurrentGravity == GravityType.Inverted)
             {
                 _invertTimeRemaining -= Engine.DeltaTime;
-                if (_invertTimeRemaining < 0)
+                if (_invertTimeRemaining <= 0)
                     gravityComponent.SetGravity(GravityType.Normal);
             }
         }
