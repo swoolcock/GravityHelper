@@ -1,4 +1,6 @@
 using System;
+using Celeste.Mod.GravityHelper.Components;
+using Monocle;
 using MonoMod.ModInterop;
 
 namespace Celeste.Mod.GravityHelper {
@@ -16,5 +18,43 @@ namespace Celeste.Mod.GravityHelper {
             GravityHelperModule.PlayerComponent?.SetGravity((GravityType) gravityType, momentumMultiplier);
 
         public static bool IsPlayerInverted() => GravityHelperModule.ShouldInvertPlayer;
+
+        public static Component CreateGravityComponent(
+            Action<int, bool, float> updatePosition,
+            Action<int, bool, float> updateColliders,
+            Action<int, bool, float> updateSpeed,
+            Action<int, bool, float> updateVisuals,
+            Func<bool> checkInvert)
+        {
+            static Action<GravityChangeArgs> makeClosure(Action<int, bool, float> action) =>
+                action == null ? null : args => action((int)args.NewValue, args.Changed, args.MomentumMultiplier);
+
+            return new GravityComponent
+            {
+                UpdatePosition = makeClosure(updatePosition),
+                UpdateColliders = makeClosure(updateColliders),
+                UpdateSpeed = makeClosure(updateSpeed),
+                UpdateVisuals = makeClosure(updateVisuals),
+                CheckInvert = checkInvert,
+            };
+        }
+
+        public static Component CreateEntityGravityListener(Entity entity, Action<Entity, int, bool, float> action) =>
+            new GravityListener(entity)
+            {
+                GravityChanged = (e, args) => action(e, (int)args.NewValue, args.Changed, args.MomentumMultiplier),
+            };
+
+        public static Component CreateTypeGravityListener(Type type, Action<Entity, int, bool, float> action) =>
+            new GravityListener(type)
+            {
+                GravityChanged = (e, args) => action(e, (int)args.NewValue, args.Changed, args.MomentumMultiplier),
+            };
+
+        public static Component CreatePlayerGravityListener(Action<Entity, int, bool, float> action) =>
+            new PlayerGravityListener
+            {
+                GravityChanged = (e, args) => action(e, (int)args.NewValue, args.Changed, args.MomentumMultiplier),
+            };
     }
 }
