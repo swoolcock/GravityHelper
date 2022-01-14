@@ -124,7 +124,7 @@ Can be configured to support Madeline and/or any holdable/non-holdable `Actor`.
 
 #### GravityRefill
 A `Refill` that provides a single 'charge' that causes the next dash to toggle gravity.
-Currently lacks an indicator or a decent sprite.
+Has a cool sprite and animated indicator above Madeline's head.
 
 #### GravitySpring
 A `Spring` that will change Madeline's gravity upon touch.  Can be attached to the ceiling.
