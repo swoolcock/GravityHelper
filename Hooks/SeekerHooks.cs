@@ -20,14 +20,35 @@ namespace Celeste.Mod.GravityHelper.Hooks
         public static void Load()
         {
             Logger.Log(nameof(GravityHelperModule), $"Loading {nameof(Seeker)} hooks...");
+
+            On.Celeste.Seeker.Update += Seeker_Update;
+
             hook_Seeker_RegenerateCoroutine = new ILHook(ReflectionCache.Seeker_RegenerateCoroutine.GetStateMachineTarget(), Seeker_RegenerateCoroutine);
         }
 
         public static void Unload()
         {
             Logger.Log(nameof(GravityHelperModule), $"Unloading {nameof(Seeker)} hooks...");
+
+            On.Celeste.Seeker.Update -= Seeker_Update;
+
             hook_Seeker_RegenerateCoroutine?.Dispose();
             hook_Seeker_RegenerateCoroutine = null;
+        }
+
+        private static void Seeker_Update(On.Celeste.Seeker.orig_Update orig, Seeker self)
+        {
+            var data = new DynData<Seeker>(self);
+            var bounceHitbox = data.Get<Hitbox>("bounceHitbox");
+            var attackHitbox = data.Get<Hitbox>("attackHitbox");
+
+            if (GravityHelperModule.ShouldInvertPlayer != bounceHitbox.Top > attackHitbox.Top)
+            {
+                bounceHitbox.Top = -bounceHitbox.Bottom;
+                attackHitbox.Top = -attackHitbox.Bottom;
+            }
+
+            orig(self);
         }
 
         private static void Seeker_RegenerateCoroutine(ILContext il) => HookUtils.SafeHook(() =>
