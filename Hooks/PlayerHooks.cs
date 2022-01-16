@@ -1149,7 +1149,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
                 var jumpPressed = Input.Jump.Pressed;
                 Input.Jump.ConsumePress();
 
-                if (jumpPressed && self.OnSafeGround)
+                if (jumpPressed && self.OnGround())
                 {
                     GravityHelperModule.PlayerComponent.SetGravity(GravityType.Toggle);
                     self.Speed.Y = 160f * (self.SceneAs<Level>().InSpace ? 0.6f : 1f);
