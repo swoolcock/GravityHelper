@@ -69,7 +69,6 @@ namespace Celeste.Mod.GravityHelper.Hooks
             On.Celeste.Player.DreamDashUpdate += Player_DreamDashUpdate;
             On.Celeste.Player.DustParticleFromSurfaceIndex += Player_DustParticleFromSurfaceIndex;
             On.Celeste.Player.JumpThruBoostBlockedCheck += Player_JumpThruBoostBlockedCheck;
-            On.Celeste.Player.OnCollideV += Player_OnCollideV;
             On.Celeste.Player.ReflectBounce += Player_ReflectBounce;
             On.Celeste.Player.Render += Player_Render;
             On.Celeste.Player.StarFlyBegin += Player_StarFlyBegin;
@@ -139,7 +138,6 @@ namespace Celeste.Mod.GravityHelper.Hooks
             On.Celeste.Player.DreamDashUpdate -= Player_DreamDashUpdate;
             On.Celeste.Player.DustParticleFromSurfaceIndex -= Player_DustParticleFromSurfaceIndex;
             On.Celeste.Player.JumpThruBoostBlockedCheck -= Player_JumpThruBoostBlockedCheck;
-            On.Celeste.Player.OnCollideV -= Player_OnCollideV;
             On.Celeste.Player.ReflectBounce -= Player_ReflectBounce;
             On.Celeste.Player.Render -= Player_Render;
             On.Celeste.Player.StarFlyBegin -= Player_StarFlyBegin;
@@ -389,14 +387,30 @@ namespace Celeste.Mod.GravityHelper.Hooks
         private static void Player_get_CanUnDuck(ILContext il) => HookUtils.SafeHook(() =>
         {
             var cursor = new ILCursor(il);
-            if (!cursor.TryGotoNext(instr => instr.MatchCallGeneric<Entity>(nameof(Entity.CollideCheck), out _)))
-                throw new HookException("Couldn't hook jumpthru checks in Player.CanUnDuck");
 
-            cursor.Remove();
-            cursor.EmitDelegate<Func<Player, bool>>(self =>
-                self.CollideCheck<Solid>() ||
+            static bool collideJumpthrus(Player self) =>
                 !GravityHelperModule.ShouldInvertPlayer && self.CollideCheckUpsideDownJumpThru() ||
-                GravityHelperModule.ShouldInvertPlayer && self.CollideCheck<JumpThru>());
+                GravityHelperModule.ShouldInvertPlayer && self.CollideCheck<JumpThru>();
+
+            if (!cursor.TryGotoNext(MoveType.After, instr => instr.MatchCallGeneric<Entity>(nameof(Entity.CollideCheck), out _)))
+                throw new HookException("Couldn't find CollideCheck<Solid>");
+
+            // check whether the unducked hitbox collides with any jumpthrus for the gravity state
+            // if standing would collide but ducking does not, we cannot unduck
+            // if ducking collides, we ignore it and we can unduck
+            cursor.Emit(OpCodes.Ldarg_0);
+            cursor.EmitDelegate<Func<bool, Player, bool>>((didCollideSolid, self) =>
+            {
+                if (didCollideSolid) return true;
+
+                // check if ducking collides
+                var currentCollider = self.Collider;
+                self.Collider = self.GetDuckHitbox();
+                var didCollideJumpthrus = collideJumpthrus(self);
+                self.Collider = currentCollider;
+
+                return !didCollideJumpthrus && collideJumpthrus(self);
+            });
         });
 
         private static void Player_IsOverWater(ILContext il) => HookUtils.SafeHook(() =>
@@ -482,6 +496,10 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
         private static void Player_OnCollideV(ILContext il) => HookUtils.SafeHook(() =>
         {
+            static bool collideJumpthrus(Player self, Vector2 at) =>
+                !GravityHelperModule.ShouldInvertPlayer && self.CollideCheckUpsideDownJumpThru(at) ||
+                GravityHelperModule.ShouldInvertPlayer && self.CollideCheck<JumpThru>(at);
+
             var cursor = new ILCursor(il);
 
             // if (this.DashAttacking && (double) data.Direction.Y == (double) Math.Sign(this.DashDir.Y))
@@ -504,12 +522,29 @@ namespace Celeste.Mod.GravityHelper.Hooks
             cursor.EmitInvertFloatDelegate();
 
             // ceiling pop correction
-            for (int i = 0; i < 4; i++)
+            for (int i = -1; i <= 1; i += 2)
             {
-                cursor.GotoNext(instr => instr.MatchLdfld<Entity>(nameof(Entity.Position)));
-                cursor.GotoNext(ILCursorExtensions.AdditionPredicate);
-                cursor.EmitInvertVectorDelegate();
-                cursor.Index += 2;
+                cursor.GotoNext(MoveType.After, instr => instr.MatchLdfld<Entity>(nameof(Entity.Position)));
+                if (!cursor.Next.MatchLdloc(out int indexLoc))
+                    throw new HookException("Couldn't match ldloc");
+
+                cursor.GotoNext(MoveType.After, instr => instr.MatchLdcR4(-1));
+                cursor.EmitInvertFloatDelegate();
+
+                var sign = i;
+                cursor.GotoNext(MoveType.After, instr => instr.MatchCallGeneric<Entity>(nameof(Entity.CollideCheck), out _));
+                cursor.Emit(OpCodes.Ldarg_0);
+                cursor.Emit(OpCodes.Ldloc, indexLoc);
+                cursor.EmitDelegate<Func<bool, Player, int, bool>>((collideSolid, self, index) =>
+                {
+                    if (collideSolid) return true;
+                    var direction = GravityHelperModule.ShouldInvertPlayer ? 1f : -1f;
+                    var at = self.Position + new Vector2(index * sign, direction);
+                    return collideJumpthrus(self, at);
+                });
+
+                cursor.GotoNext(MoveType.After, instr => instr.MatchLdcR4(-1));
+                cursor.EmitInvertFloatDelegate();
             }
         });
 
@@ -925,6 +960,8 @@ namespace Celeste.Mod.GravityHelper.Hooks
         {
             orig(self, position, spriteMode);
 
+            GravityRefill.NumberOfCharges = 0;
+
             var refillIndicator = new GravityRefill.Indicator
             {
                 Position = new Vector2(0f, -20f),
@@ -1070,29 +1107,6 @@ namespace Celeste.Mod.GravityHelper.Hooks
             return false;
         }
 
-        private static void Player_OnCollideV(On.Celeste.Player.orig_OnCollideV orig, Player self, CollisionData data)
-        {
-            var correctState = self.StateMachine.State != Player.StStarFly &&
-                               self.StateMachine.State != Player.StSwim &&
-                               self.StateMachine.State != Player.StDreamDash;
-
-            if (!correctState || self.Speed.Y >= 0)
-            {
-                orig(self, data);
-                return;
-            }
-
-            if (GravityHelperModule.ShouldInvertPlayer && self.CollideCheckOutside<JumpThru>(self.Position + Vector2.UnitY) ||
-                !GravityHelperModule.ShouldInvertPlayer && self.CollideCheckOutsideUpsideDownJumpThru(self.Position - Vector2.UnitY))
-            {
-                self.Speed.Y = 0.0f;
-                self.SetLastClimbMove(0);
-                ReflectionCache.Player_VarJumpTimer.SetValue(self, 0);
-            }
-
-            orig(self, data);
-        }
-
         private static void Player_ReflectBounce(On.Celeste.Player.orig_ReflectBounce orig, Player self,
             Vector2 direction) =>
             orig(self, GravityHelperModule.ShouldInvertPlayer ? new Vector2(direction.X, -direction.Y) : direction);
@@ -1149,7 +1163,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
                 var jumpPressed = Input.Jump.Pressed;
                 Input.Jump.ConsumePress();
 
-                if (jumpPressed && self.OnSafeGround)
+                if (jumpPressed && self.OnGround())
                 {
                     GravityHelperModule.PlayerComponent.SetGravity(GravityType.Toggle);
                     self.Speed.Y = 160f * (self.SceneAs<Level>().InSpace ? 0.6f : 1f);
