@@ -925,6 +925,8 @@ namespace Celeste.Mod.GravityHelper.Hooks
         {
             orig(self, position, spriteMode);
 
+            GravityRefill.NumberOfCharges = 0;
+
             var refillIndicator = new GravityRefill.Indicator
             {
                 Position = new Vector2(0f, -20f),
