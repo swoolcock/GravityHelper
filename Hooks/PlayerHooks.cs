@@ -389,14 +389,30 @@ namespace Celeste.Mod.GravityHelper.Hooks
         private static void Player_get_CanUnDuck(ILContext il) => HookUtils.SafeHook(() =>
         {
             var cursor = new ILCursor(il);
-            if (!cursor.TryGotoNext(instr => instr.MatchCallGeneric<Entity>(nameof(Entity.CollideCheck), out _)))
-                throw new HookException("Couldn't hook jumpthru checks in Player.CanUnDuck");
 
-            cursor.Remove();
-            cursor.EmitDelegate<Func<Player, bool>>(self =>
-                self.CollideCheck<Solid>() ||
+            static bool collideJumpthrus(Player self) =>
                 !GravityHelperModule.ShouldInvertPlayer && self.CollideCheckUpsideDownJumpThru() ||
-                GravityHelperModule.ShouldInvertPlayer && self.CollideCheck<JumpThru>());
+                GravityHelperModule.ShouldInvertPlayer && self.CollideCheck<JumpThru>();
+
+            if (!cursor.TryGotoNext(MoveType.After, instr => instr.MatchCallGeneric<Entity>(nameof(Entity.CollideCheck), out _)))
+                throw new HookException("Couldn't find CollideCheck<Solid>");
+
+            // check whether the unducked hitbox collides with any jumpthrus for the gravity state
+            // if standing would collide but ducking does not, we cannot unduck
+            // if ducking collides, we ignore it and we can unduck
+            cursor.Emit(OpCodes.Ldarg_0);
+            cursor.EmitDelegate<Func<bool, Player, bool>>((didCollideSolid, self) =>
+            {
+                if (didCollideSolid) return true;
+
+                // check if ducking collides
+                var currentCollider = self.Collider;
+                self.Collider = self.GetDuckHitbox();
+                var didCollideJumpthrus = collideJumpthrus(self);
+                self.Collider = currentCollider;
+
+                return !didCollideJumpthrus && collideJumpthrus(self);
+            });
         });
 
         private static void Player_IsOverWater(ILContext il) => HookUtils.SafeHook(() =>
