@@ -432,7 +432,6 @@ namespace Celeste.Mod.GravityHelper.Hooks
             cursor.Emit(OpCodes.Stloc, counter); // set counter to -1
             if (!cursor.TryGotoNext(instr => instr.MatchLdloca(1), instr => instr.MatchCall("System.Collections.Generic.List`1/Enumerator<Celeste.Player/ChaserState>", "MoveNext")))
                 throw new HookException("MoveNext in loop not found.");
-
         });
 
 
@@ -952,16 +951,25 @@ namespace Celeste.Mod.GravityHelper.Hooks
         private static void Player_UpdateChaserStates(ILContext il) => HookUtils.SafeHook(() =>
         {
             var cursor = new ILCursor(il);
-            //Pre check
             if (!(cursor.TryGotoNext(MoveType.After, instr => instr.MatchCallvirt("System.Collections.Generic.List`1<Celeste.Player/ChaserState>", "RemoveAt")) && cursor.TryGotoNext(MoveType.After, instr => instr.MatchCallvirt("System.Collections.Generic.List`1<Celeste.Player/ChaserState>", "Add"))))
                 throw new HookException("Couldn't find Add or RemoveAt functions."); //This is fine :catstare:
+
             cursor.GotoPrev(MoveType.Before, instr => instr.MatchCallvirt("System.Collections.Generic.List`1<Celeste.Player/ChaserState>", "RemoveAt"));
             cursor.Emit(OpCodes.Ldarg_0);
-            cursor.EmitDelegate<Func<int, Player, int>>((i,p) => { BadelineOldSiteHooks.ChaserStateGravity.Remove(p.ChaserStates[0]); return 0; });
+            cursor.EmitDelegate<Func<int, Player, int>>((i, p) =>
+            {
+                BadelineOldsiteHooks.ChaserStateGravity.Remove(p.ChaserStates[0]);
+                return 0;
+            });
+
             //This ideally would be an infix Func<int,Player,int> hook here but it doesn't matter since who is gonna change the RemoveAt of 0 in this, realistically.
 
             cursor.GotoNext(MoveType.Before, instr => instr.MatchCallvirt("System.Collections.Generic.List`1<Celeste.Player/ChaserState>", "Add"));
-            cursor.EmitDelegate<Func<Player.ChaserState, Player.ChaserState>>(p => { BadelineOldSiteHooks.ChaserStateGravity.Add(p, GravityHelperModule.PlayerComponent.CurrentGravity); return p; });
+            cursor.EmitDelegate<Func<Player.ChaserState, Player.ChaserState>>(p =>
+            {
+                BadelineOldsiteHooks.ChaserStateGravity.Add(p, GravityHelperModule.PlayerComponent.CurrentGravity);
+                return p;
+            });
         });
 
 
@@ -1001,7 +1009,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
         {
             orig(self, position, spriteMode);
 
-            BadelineOldSiteHooks.ChaserStateGravity = new Dictionary<Player.ChaserState, GravityType>();
+            BadelineOldsiteHooks.ChaserStateGravity = new Dictionary<Player.ChaserState, GravityType>();
             GravityRefill.NumberOfCharges = 0;
 
             var refillIndicator = new GravityRefill.Indicator
@@ -1042,7 +1050,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
                     UpdateColliders = args =>
                     {
                         if (!args.Changed) return;
-                        
+
                         InvertHitbox(self.GetNormalHitbox());
                         InvertHitbox(self.GetNormalHurtbox());
                         InvertHitbox(self.GetDuckHitbox());
