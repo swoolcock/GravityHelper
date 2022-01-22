@@ -16,6 +16,7 @@ namespace Celeste.Mod.GravityHelper.Hooks.ThirdParty
         private static IDetour hook_MaxHelpingHand_UpsideDownJumpThru_playerMovingUp;
         private static IDetour hook_MaxHelpingHand_UpsideDownJumpThru_updateClimbMove;
         private static IDetour hook_MaxHelpingHand_UpsideDownJumpThru_onJumpthruHasPlayerRider;
+        private static IDetour hook_MaxHelpingHand_UpsideDownJumpThru_onPlayerOnCollideV;
         // ReSharper restore InconsistentNaming
 
         protected override void Load()
@@ -39,8 +40,13 @@ namespace Celeste.Mod.GravityHelper.Hooks.ThirdParty
             var onJumpthruHasPlayerRiderMethod = mhhudjt?.GetMethod("onJumpthruHasPlayerRider", BindingFlags.Static | BindingFlags.NonPublic);
             if (onJumpthruHasPlayerRiderMethod != null)
             {
-                var target = GetType().GetMethod(nameof(MaxHelpingHand_UpsideDownJumpThru_updateClimbMove), BindingFlags.Static | BindingFlags.NonPublic);
                 hook_MaxHelpingHand_UpsideDownJumpThru_onJumpthruHasPlayerRider = new ILHook(onJumpthruHasPlayerRiderMethod, MaxHelpingHand_onJumpthruHasPlayerRider);
+            }
+
+            var onPlayerOnCollideVMethod = mhhudjt?.GetMethod("onPlayerOnCollideV", BindingFlags.Static | BindingFlags.NonPublic);
+            if (onPlayerOnCollideVMethod != null)
+            {
+                hook_MaxHelpingHand_UpsideDownJumpThru_onPlayerOnCollideV = new ILHook(onPlayerOnCollideVMethod, MaxHelpingHand_onPlayerOnCollideV);
             }
         }
 
@@ -52,6 +58,8 @@ namespace Celeste.Mod.GravityHelper.Hooks.ThirdParty
             hook_MaxHelpingHand_UpsideDownJumpThru_updateClimbMove = null;
             hook_MaxHelpingHand_UpsideDownJumpThru_onJumpthruHasPlayerRider?.Dispose();
             hook_MaxHelpingHand_UpsideDownJumpThru_onJumpthruHasPlayerRider = null;
+            hook_MaxHelpingHand_UpsideDownJumpThru_onPlayerOnCollideV?.Dispose();
+            hook_MaxHelpingHand_UpsideDownJumpThru_onPlayerOnCollideV = null;
         }
 
         private static int MaxHelpingHand_UpsideDownJumpThru_updateClimbMove(Func<Player, int, int> orig, Player player, int lastClimbMove) =>
@@ -68,6 +76,18 @@ namespace Celeste.Mod.GravityHelper.Hooks.ThirdParty
             cursor.Emit(OpCodes.Ldarg_1);
             cursor.EmitDelegate<Func<On.Celeste.JumpThru.orig_HasPlayerRider, JumpThru, bool>>((orig, self) => orig(self));
             cursor.Emit(OpCodes.Ret);
+        });
+
+        private static void MaxHelpingHand_onPlayerOnCollideV(ILContext il) => HookUtils.SafeHook(() =>
+        {
+            var cursor = new ILCursor(il);
+            var cursor2 = cursor.Clone();
+            if (!cursor2.TryGotoNext(
+                instr => instr.MatchLdarg(0),
+                instr => instr.MatchLdarg(1),
+                instr => instr.MatchLdarg(2)))
+                throw new HookException("Couldn't find orig call");
+            cursor.Emit(OpCodes.Br_S, cursor2.Next);
         });
     }
 }
