@@ -13,7 +13,31 @@ namespace Celeste.Mod.GravityHelper.Hooks
     public static class BadelineOldsiteHooks
     {
         // Used for determining when the BadelineChaser. Is set in Player.ctor so this shouldn't be a problem ever.
-        public static Dictionary<Player.ChaserState, GravityType> ChaserStateGravity;
+        public static readonly Dictionary<int, GravityType> ChaserStateGravity = new();
+
+        public static GravityType GravityTypeForState(float timestamp, GravityType defaultValue = GravityType.Normal)
+        {
+            var key = (int)(timestamp * 1000);
+            return ChaserStateGravity.TryGetValue(key, out var value) ? value : defaultValue;
+        }
+
+        public static bool TryGravityTypeForState(float timestamp, out GravityType value)
+        {
+            var key = (int)(timestamp * 1000);
+            return ChaserStateGravity.TryGetValue(key, out value);
+        }
+
+        public static void SetGravityTypeForState(float timestamp, GravityType value)
+        {
+            var key = (int)(timestamp * 1000);
+            ChaserStateGravity[key] = value;
+        }
+
+        public static void RemoveGravityTypeForState(float timestamp)
+        {
+            var key = (int)(timestamp * 1000);
+            ChaserStateGravity.Remove(key);
+        }
 
         public static void Load()
         {
@@ -41,7 +65,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             cursor.Emit(OpCodes.Ldloc, chaserState);
             cursor.EmitDelegate<Action<BadelineOldsite, Player.ChaserState>>((self, pcs) =>
             {
-                if (ChaserStateGravity.TryGetValue(pcs, out GravityType gravityType))
+                if (TryGravityTypeForState(pcs.TimeStamp, out var gravityType))
                     badelineOldsiteModifyForGravity(self, gravityType);
             });
         });

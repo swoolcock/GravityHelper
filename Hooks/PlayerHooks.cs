@@ -951,15 +951,15 @@ namespace Celeste.Mod.GravityHelper.Hooks
         private static void Player_UpdateChaserStates(ILContext il) => HookUtils.SafeHook(() =>
         {
             var cursor = new ILCursor(il);
-            if (!(cursor.TryGotoNext(MoveType.After, instr => instr.MatchCallvirt("System.Collections.Generic.List`1<Celeste.Player/ChaserState>", "RemoveAt")) && cursor.TryGotoNext(MoveType.After, instr => instr.MatchCallvirt("System.Collections.Generic.List`1<Celeste.Player/ChaserState>", "Add"))))
-                throw new HookException("Couldn't find Add or RemoveAt functions."); //This is fine :catstare:
 
-            cursor.GotoPrev(MoveType.Before, instr => instr.MatchCallvirt("System.Collections.Generic.List`1<Celeste.Player/ChaserState>", "RemoveAt"));
+            if (!cursor.TryGotoNext(instr => instr.MatchCallvirt("System.Collections.Generic.List`1<Celeste.Player/ChaserState>", "RemoveAt")))
+                throw new HookException("Couldn't find RemoveAt");
+
             cursor.Emit(OpCodes.Ldarg_0);
             cursor.EmitDelegate<Func<int, Player, int>>((i, p) =>
             {
-                BadelineOldsiteHooks.ChaserStateGravity.Remove(p.ChaserStates[0]);
-                return 0;
+                BadelineOldsiteHooks.RemoveGravityTypeForState(p.ChaserStates[i].TimeStamp);
+                return i;
             });
 
             //This ideally would be an infix Func<int,Player,int> hook here but it doesn't matter since who is gonna change the RemoveAt of 0 in this, realistically.
@@ -967,7 +967,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             cursor.GotoNext(MoveType.Before, instr => instr.MatchCallvirt("System.Collections.Generic.List`1<Celeste.Player/ChaserState>", "Add"));
             cursor.EmitDelegate<Func<Player.ChaserState, Player.ChaserState>>(p =>
             {
-                BadelineOldsiteHooks.ChaserStateGravity.Add(p, GravityHelperModule.PlayerComponent.CurrentGravity);
+                BadelineOldsiteHooks.SetGravityTypeForState(p.TimeStamp, GravityHelperModule.PlayerComponent.CurrentGravity);
                 return p;
             });
         });
@@ -1009,7 +1009,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
         {
             orig(self, position, spriteMode);
 
-            BadelineOldsiteHooks.ChaserStateGravity = new Dictionary<Player.ChaserState, GravityType>();
+            BadelineOldsiteHooks.ChaserStateGravity.Clear();
             GravityRefill.NumberOfCharges = 0;
 
             var refillIndicator = new GravityRefill.Indicator
