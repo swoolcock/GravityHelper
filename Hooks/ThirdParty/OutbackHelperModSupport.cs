@@ -39,9 +39,9 @@ namespace Celeste.Mod.GravityHelper.Hooks.ThirdParty
 
             // reset and re-invert gravity for the player, making sure we don't trigger any controller events
             // using SetGravity ensures that the hitbox and position will be what the portal expects
-            GravityHelperModule.PlayerComponent.SetGravity(GravityType.Normal, 1f, false);
+            GravityHelperModule.PlayerComponent?.SetGravity(GravityType.Normal, 1f, false);
             orig(self, player);
-            GravityHelperModule.PlayerComponent.SetGravity(GravityType.Inverted, 1f, false);
+            GravityHelperModule.PlayerComponent?.SetGravity(GravityType.Inverted, 1f, false);
         }
     }
 }

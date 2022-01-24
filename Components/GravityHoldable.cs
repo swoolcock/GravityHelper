@@ -55,7 +55,7 @@ namespace Celeste.Mod.GravityHelper.Components
             if (holdable.IsHeld)
             {
                 ResetInvertTime();
-                gravityComponent.SetGravity(GravityHelperModule.PlayerComponent.CurrentGravity);
+                gravityComponent.SetGravity(GravityHelperModule.PlayerComponent?.CurrentGravity ?? GravityType.Normal);
             }
             else if (InvertTime > 0 && _invertTimeRemaining > 0 && gravityComponent.CurrentGravity == GravityType.Inverted)
             {

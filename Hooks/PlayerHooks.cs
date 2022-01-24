@@ -2,6 +2,7 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Celeste.Mod.GravityHelper.Components;
@@ -40,6 +41,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             IL.Celeste.Player.ClimbUpdate += Player_ClimbUpdate;
             IL.Celeste.Player.CreateWallSlideParticles += Player_CreateWallSlideParticles;
             IL.Celeste.Player.DashUpdate += Player_DashUpdate;
+            IL.Celeste.Player.GetChasePosition += Player_GetChasePosition;
             IL.Celeste.Player._IsOverWater += Player_IsOverWater;
             IL.Celeste.Player.Jump += Player_Jump;
             IL.Celeste.Player.LaunchedBoostCheck += Player_LaunchedBoostCheck;
@@ -59,6 +61,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             IL.Celeste.Player.SwimRiseCheck += Player_SwimRiseCheck;
             IL.Celeste.Player.SwimUnderwaterCheck += Player_SwimUnderwaterCheck;
             IL.Celeste.Player.UpdateCarry += Player_UpdateCarry;
+            IL.Celeste.Player.UpdateChaserStates += Player_UpdateChaserStates;
 
             On.Celeste.Player.ctor += Player_ctor;
             On.Celeste.Player.Added += Player_Added;
@@ -109,6 +112,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             IL.Celeste.Player.ClimbUpdate -= Player_ClimbUpdate;
             IL.Celeste.Player.CreateWallSlideParticles -= Player_CreateWallSlideParticles;
             IL.Celeste.Player.DashUpdate -= Player_DashUpdate;
+            IL.Celeste.Player.GetChasePosition -= Player_GetChasePosition;
             IL.Celeste.Player._IsOverWater -= Player_IsOverWater;
             IL.Celeste.Player.Jump -= Player_Jump;
             IL.Celeste.Player.LaunchedBoostCheck -= Player_LaunchedBoostCheck;
@@ -128,6 +132,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             IL.Celeste.Player.SwimRiseCheck -= Player_SwimRiseCheck;
             IL.Celeste.Player.SwimUnderwaterCheck -= Player_SwimUnderwaterCheck;
             IL.Celeste.Player.UpdateCarry -= Player_UpdateCarry;
+            IL.Celeste.Player.UpdateChaserStates -= Player_UpdateChaserStates;
 
             On.Celeste.Player.ctor -= Player_ctor;
             On.Celeste.Player.Added -= Player_Added;
@@ -412,6 +417,23 @@ namespace Celeste.Mod.GravityHelper.Hooks
                 return !didCollideJumpthrus && collideJumpthrus(self);
             });
         });
+
+        private static void Player_GetChasePosition(ILContext il) => HookUtils.SafeHook(() =>
+        {
+            //Weird ordering, but this does make sense
+            var cursor = new ILCursor(il);
+            VariableDefinition counter = new VariableDefinition(il.Import(typeof(int)));
+            il.Body.Variables.Add(counter);
+            ILLabel label = null;
+            if (!cursor.TryGotoNext(instr => instr.MatchStloc(out int _), instr => instr.MatchBr(out label))) //Because we know we have a set value for label, it's safe to use.
+                throw new HookException("Start of loop in Player::GetChasePosition not found");
+            cursor.Index++; //to before Br
+            cursor.Emit(OpCodes.Ldc_I4_M1); // load -1 to stack
+            cursor.Emit(OpCodes.Stloc, counter); // set counter to -1
+            if (!cursor.TryGotoNext(instr => instr.MatchLdloca(1), instr => instr.MatchCall("System.Collections.Generic.List`1/Enumerator<Celeste.Player/ChaserState>", "MoveNext")))
+                throw new HookException("MoveNext in loop not found.");
+        });
+
 
         private static void Player_IsOverWater(ILContext il) => HookUtils.SafeHook(() =>
         {
@@ -926,6 +948,31 @@ namespace Celeste.Mod.GravityHelper.Hooks
             cursor.EmitInvertVectorDelegate();
         });
 
+        private static void Player_UpdateChaserStates(ILContext il) => HookUtils.SafeHook(() =>
+        {
+            var cursor = new ILCursor(il);
+
+            if (!cursor.TryGotoNext(instr => instr.MatchCallvirt("System.Collections.Generic.List`1<Celeste.Player/ChaserState>", "RemoveAt")))
+                throw new HookException("Couldn't find RemoveAt");
+
+            cursor.Emit(OpCodes.Ldarg_0);
+            cursor.EmitDelegate<Func<int, Player, int>>((i, p) =>
+            {
+                BadelineOldsiteHooks.RemoveGravityTypeForState(p.ChaserStates[i].TimeStamp);
+                return i;
+            });
+
+            //This ideally would be an infix Func<int,Player,int> hook here but it doesn't matter since who is gonna change the RemoveAt of 0 in this, realistically.
+
+            cursor.GotoNext(MoveType.Before, instr => instr.MatchCallvirt("System.Collections.Generic.List`1<Celeste.Player/ChaserState>", "Add"));
+            cursor.EmitDelegate<Func<Player.ChaserState, Player.ChaserState>>(p =>
+            {
+                BadelineOldsiteHooks.SetGravityTypeForState(p.TimeStamp, GravityHelperModule.PlayerComponent?.CurrentGravity ?? GravityType.Normal);
+                return p;
+            });
+        });
+
+
         #endregion
 
         #region On Hooks
@@ -949,17 +996,20 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
             SpawnGravityTrigger trigger = self.CollideFirstOrDefault<SpawnGravityTrigger>();
             if (trigger?.FireOnBubbleReturn ?? false)
-                GravityHelperModule.PlayerComponent.SetGravity(trigger.GravityType);
+                GravityHelperModule.PlayerComponent?.SetGravity(trigger.GravityType);
         }
 
         private static bool Player_ClimbCheck(On.Celeste.Player.orig_ClimbCheck orig, Player self, int dir, int yAdd) =>
             orig(self, dir, GravityHelperModule.ShouldInvertPlayer ? -yAdd : yAdd);
+
+        public static void InvertHitbox(Hitbox hitbox) => hitbox.Position.Y = -hitbox.Position.Y - hitbox.Height;
 
         private static void Player_ctor(On.Celeste.Player.orig_ctor orig, Player self, Vector2 position,
             PlayerSpriteMode spriteMode)
         {
             orig(self, position, spriteMode);
 
+            BadelineOldsiteHooks.ChaserStateGravity.Clear();
             GravityRefill.NumberOfCharges = 0;
 
             var refillIndicator = new GravityRefill.Indicator
@@ -1000,13 +1050,13 @@ namespace Celeste.Mod.GravityHelper.Hooks
                     UpdateColliders = args =>
                     {
                         if (!args.Changed) return;
-                        void invertHitbox(Hitbox hitbox) => hitbox.Position.Y = -hitbox.Position.Y - hitbox.Height;
-                        invertHitbox(self.GetNormalHitbox());
-                        invertHitbox(self.GetNormalHurtbox());
-                        invertHitbox(self.GetDuckHitbox());
-                        invertHitbox(self.GetDuckHurtbox());
-                        invertHitbox(self.GetStarFlyHitbox());
-                        invertHitbox(self.GetStarFlyHurtbox());
+
+                        InvertHitbox(self.GetNormalHitbox());
+                        InvertHitbox(self.GetNormalHurtbox());
+                        InvertHitbox(self.GetDuckHitbox());
+                        InvertHitbox(self.GetDuckHurtbox());
+                        InvertHitbox(self.GetStarFlyHitbox());
+                        InvertHitbox(self.GetStarFlyHurtbox());
                     },
                     UpdateSpeed = args =>
                     {
@@ -1023,7 +1073,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
                         if (GravityRefill.NumberOfCharges == 0)
                             return;
                         GravityRefill.NumberOfCharges--;
-                        GravityHelperModule.PlayerComponent.SetGravity(GravityType.Toggle);
+                        GravityHelperModule.PlayerComponent?.SetGravity(GravityType.Toggle);
                     },
                 },
                 refillIndicator
@@ -1138,7 +1188,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
         private static void Player_StartCassetteFly(On.Celeste.Player.orig_StartCassetteFly orig, Player self, Vector2 targetPosition, Vector2 control)
         {
-            GravityHelperModule.PlayerComponent.SetGravity(GravityType.Normal, playerTriggered: false);
+            GravityHelperModule.PlayerComponent?.SetGravity(GravityType.Normal, playerTriggered: false);
             orig(self, targetPosition, control);
         }
 
@@ -1165,7 +1215,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
                 if (jumpPressed && self.OnGround())
                 {
-                    GravityHelperModule.PlayerComponent.SetGravity(GravityType.Toggle);
+                    GravityHelperModule.PlayerComponent?.SetGravity(GravityType.Toggle);
                     self.Speed.Y = 160f * (self.SceneAs<Level>().InSpace ? 0.6f : 1f);
                 }
             }

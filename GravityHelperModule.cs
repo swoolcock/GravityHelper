@@ -35,6 +35,13 @@ namespace Celeste.Mod.GravityHelper
         public static bool ShouldInvertPlayer => PlayerComponent?.ShouldInvert ?? false;
         public static bool ShouldInvertPlayerChecked => PlayerComponent?.ShouldInvertChecked ?? false;
 
+        public static bool AreHooksRequiredForSession(Session session) =>
+            session.MapData?.Levels?
+                .Any(level => (level.Triggers?.Any(IsHookRequiredForEntityData) ?? false) ||
+                    (level.Entities?.Any(IsHookRequiredForEntityData) ?? false)) ?? false;
+
+        public static bool IsHookRequiredForEntityData(EntityData data) => data.Name.StartsWith("GravityHelper");
+
         public GravityHelperModule()
         {
             Instance = this;
@@ -90,6 +97,7 @@ namespace Celeste.Mod.GravityHelper
             On.Celeste.Mod.AssetReloadHelper.ReloadLevel += AssetReloadHelper_ReloadLevel;
 
             ActorHooks.Load();
+            BadelineOldsiteHooks.Load();
             BoosterHooks.Load();
             BounceBlockHooks.Load();
             BumperHooks.Load();
@@ -123,6 +131,7 @@ namespace Celeste.Mod.GravityHelper
             On.Celeste.Mod.AssetReloadHelper.ReloadLevel -= AssetReloadHelper_ReloadLevel;
 
             ActorHooks.Unload();
+            BadelineOldsiteHooks.Unload();
             BoosterHooks.Unload();
             BounceBlockHooks.Unload();
             BumperHooks.Unload();
@@ -167,7 +176,7 @@ namespace Celeste.Mod.GravityHelper
         {
             orig(self, session, startposition);
 
-            if (Settings.AllowInAllMaps || EntityHookChecker.IsHookRequiredForSession(session))
+            if (Settings.AllowInAllMaps || AreHooksRequiredForSession(session))
                 activateHooks();
             else
                 deactivateHooks();

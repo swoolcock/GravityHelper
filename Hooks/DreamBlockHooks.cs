@@ -24,7 +24,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
         private static void DreamBlock_OnPlayerExit(On.Celeste.DreamBlock.orig_OnPlayerExit orig, DreamBlock self, Player player)
         {
             if (self is GravityDreamBlock gravityDreamBlock)
-                GravityHelperModule.PlayerComponent.SetGravity(gravityDreamBlock.GravityType);
+                GravityHelperModule.PlayerComponent?.SetGravity(gravityDreamBlock.GravityType);
             orig(self, player);
         }
 

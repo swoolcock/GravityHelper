@@ -24,7 +24,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             orig(self);
 
             if (self is GravityBooster gravityBooster)
-                GravityHelperModule.PlayerComponent.SetGravity(gravityBooster.GravityType);
+                GravityHelperModule.PlayerComponent?.SetGravity(gravityBooster.GravityType);
         }
     }
 }

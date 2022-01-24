@@ -1,7 +1,10 @@
 // Copyright (c) Shane Woolcock. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+using System;
 using Celeste.Mod.GravityHelper.Extensions;
+using Microsoft.Xna.Framework;
+using Mono.Cecil.Cil;
 using MonoMod.Cil;
 
 // ReSharper disable InconsistentNaming
@@ -33,10 +36,10 @@ namespace Celeste.Mod.GravityHelper.Hooks
             void invertAdditions()
             {
                 cursor.GotoNextAddition();
-                cursor.EmitInvertVectorDelegate();
+                EmitInvertVecForPlayerHair(cursor);
                 cursor.Index += 2;
                 cursor.GotoNextAddition();
-                cursor.EmitInvertVectorDelegate();
+                EmitInvertVecForPlayerHair(cursor);
             }
 
             // this.Nodes[0] = this.Sprite.RenderPosition + new Vector2(0.0f, -9f * this.Sprite.Scale.Y) + this.Sprite.HairOffset * new Vector2((float) this.Facing, 1f);
@@ -57,11 +60,24 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
             // Vector2 hairScale = this.GetHairScale(index);
             cursor.GotoNext(MoveType.After, instr => instr.MatchCallvirt<PlayerHair>("GetHairScale"));
-            cursor.EmitInvertVectorDelegate();
+            EmitInvertVecForPlayerHair(cursor);
 
             // this.GetHairTexture(index).Draw(this.Nodes[index], origin, this.GetHairColor(index), this.GetHairScale(index));
             cursor.GotoNext(MoveType.After, instr => instr.MatchCallvirt<PlayerHair>("GetHairScale"));
-            cursor.EmitInvertVectorDelegate();
+            EmitInvertVecForPlayerHair(cursor);
         });
+
+        private static void EmitInvertVecForPlayerHair(ILCursor cursor)
+        {
+            cursor.Emit(OpCodes.Ldarg_0);
+            cursor.EmitDelegate<Func<Vector2, PlayerHair, Vector2>>((v,p) => {
+                if (p.Entity is Player)
+                    return GravityHelperModule.ShouldInvertPlayer ? new Vector2(v.X, -v.Y) : v;
+                else if(p.Entity is BadelineOldsite baddy)
+                {
+                    return baddy.Sprite.Scale.Y == -1f ? new Vector2(v.X, -v.Y) : v;
+                }
+                return v;});
+        }
     }
 }

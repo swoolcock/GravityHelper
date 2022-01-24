@@ -51,7 +51,7 @@ namespace Celeste.Mod.GravityHelper.Triggers
             if (GravityType == GravityType.None || !AffectsPlayer || !ShouldAffectPlayer)
                 return;
 
-            GravityHelperModule.PlayerComponent.SetGravity(GravityType, MomentumMultiplier);
+            GravityHelperModule.PlayerComponent?.SetGravity(GravityType, MomentumMultiplier);
         }
 
         public override void OnStay(Player player)
@@ -67,10 +67,10 @@ namespace Celeste.Mod.GravityHelper.Triggers
             if (!AffectsPlayer || !ShouldAffectPlayer ||
                 GravityType == GravityType.None ||
                 GravityType == GravityType.Toggle ||
-                GravityType == GravityHelperModule.PlayerComponent.CurrentGravity)
+                GravityType == GravityHelperModule.PlayerComponent?.CurrentGravity)
                 return;
 
-            GravityHelperModule.PlayerComponent.SetGravity(GravityType, MomentumMultiplier);
+            GravityHelperModule.PlayerComponent?.SetGravity(GravityType, MomentumMultiplier);
         }
 
         public override void OnLeave(Player player)

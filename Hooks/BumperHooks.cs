@@ -39,7 +39,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             cursor.EmitDelegate<Action<Bumper>>(self =>
             {
                 if (self is GravityBumper gravityBumper)
-                    GravityHelperModule.PlayerComponent.SetGravity(gravityBumper.GravityType);
+                    GravityHelperModule.PlayerComponent?.SetGravity(gravityBumper.GravityType);
             });
 
             cursor.Index++;
