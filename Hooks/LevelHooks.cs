@@ -172,7 +172,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             {
                 GravityHelperModule.InvalidateRun();
                 GravityHelperModule.Settings.ToggleInvertGravity.ConsumePress();
-                GravityHelperModule.PlayerComponent.SetGravity(GravityType.Toggle);
+                GravityHelperModule.PlayerComponent?.SetGravity(GravityType.Toggle);
             }
 
             orig(self);

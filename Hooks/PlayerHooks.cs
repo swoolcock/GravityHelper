@@ -967,7 +967,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             cursor.GotoNext(MoveType.Before, instr => instr.MatchCallvirt("System.Collections.Generic.List`1<Celeste.Player/ChaserState>", "Add"));
             cursor.EmitDelegate<Func<Player.ChaserState, Player.ChaserState>>(p =>
             {
-                BadelineOldsiteHooks.SetGravityTypeForState(p.TimeStamp, GravityHelperModule.PlayerComponent.CurrentGravity);
+                BadelineOldsiteHooks.SetGravityTypeForState(p.TimeStamp, GravityHelperModule.PlayerComponent?.CurrentGravity ?? GravityType.Normal);
                 return p;
             });
         });
@@ -996,7 +996,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
             SpawnGravityTrigger trigger = self.CollideFirstOrDefault<SpawnGravityTrigger>();
             if (trigger?.FireOnBubbleReturn ?? false)
-                GravityHelperModule.PlayerComponent.SetGravity(trigger.GravityType);
+                GravityHelperModule.PlayerComponent?.SetGravity(trigger.GravityType);
         }
 
         private static bool Player_ClimbCheck(On.Celeste.Player.orig_ClimbCheck orig, Player self, int dir, int yAdd) =>
@@ -1073,7 +1073,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
                         if (GravityRefill.NumberOfCharges == 0)
                             return;
                         GravityRefill.NumberOfCharges--;
-                        GravityHelperModule.PlayerComponent.SetGravity(GravityType.Toggle);
+                        GravityHelperModule.PlayerComponent?.SetGravity(GravityType.Toggle);
                     },
                 },
                 refillIndicator
@@ -1188,7 +1188,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
         private static void Player_StartCassetteFly(On.Celeste.Player.orig_StartCassetteFly orig, Player self, Vector2 targetPosition, Vector2 control)
         {
-            GravityHelperModule.PlayerComponent.SetGravity(GravityType.Normal, playerTriggered: false);
+            GravityHelperModule.PlayerComponent?.SetGravity(GravityType.Normal, playerTriggered: false);
             orig(self, targetPosition, control);
         }
 
@@ -1215,7 +1215,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
                 if (jumpPressed && self.OnGround())
                 {
-                    GravityHelperModule.PlayerComponent.SetGravity(GravityType.Toggle);
+                    GravityHelperModule.PlayerComponent?.SetGravity(GravityType.Toggle);
                     self.Speed.Y = 160f * (self.SceneAs<Level>().InSpace ? 0.6f : 1f);
                 }
             }

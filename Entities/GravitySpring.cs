@@ -166,7 +166,7 @@ namespace Celeste.Mod.GravityHelper.Entities
             // set gravity and cooldown if not on cooldown
             if (GravityType != GravityType.None && _cooldownRemaining == 0f)
             {
-                GravityHelperModule.PlayerComponent.SetGravity(GravityType);
+                GravityHelperModule.PlayerComponent?.SetGravity(GravityType);
                 _cooldownRemaining = Cooldown;
                 // TODO: update sprite to show cooldown
             }
