@@ -84,7 +84,9 @@ namespace Celeste.Mod.GravityHelper
         public override void Initialize()
         {
             base.Initialize();
+#if FORCE_LOAD_HOOKS
             ThirdPartyHooks.Load();
+#endif
         }
 
         private static bool hooksActive;
@@ -93,6 +95,10 @@ namespace Celeste.Mod.GravityHelper
         {
             if (hooksActive) return;
             hooksActive = true;
+
+#if !FORCE_LOAD_HOOKS
+            ThirdPartyHooks.Load();
+#endif
 
             On.Celeste.Mod.AssetReloadHelper.ReloadLevel += AssetReloadHelper_ReloadLevel;
 
@@ -127,6 +133,10 @@ namespace Celeste.Mod.GravityHelper
         {
             if (!hooksActive) return;
             hooksActive = false;
+
+#if !FORCE_LOAD_HOOKS
+            ThirdPartyHooks.Unload();
+#endif
 
             On.Celeste.Mod.AssetReloadHelper.ReloadLevel -= AssetReloadHelper_ReloadLevel;
 
