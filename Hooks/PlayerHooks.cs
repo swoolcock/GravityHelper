@@ -757,7 +757,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
                 cursor.EmitInvertFloatDelegate();
 
                 cursor.GotoNext(instr => instr.MatchCallGeneric<Entity>(nameof(Entity.CollideCheck), out _));
-                cursor.Remove();
+                cursor.Remove(); // TODO: NOT REMOVE
                 cursor.EmitDelegate<Func<Player, Vector2, bool>>((self, at) =>
                     !GravityHelperModule.ShouldInvertPlayer
                         ? self.CollideCheck<JumpThru>(at)
