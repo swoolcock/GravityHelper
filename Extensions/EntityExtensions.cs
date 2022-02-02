@@ -187,6 +187,9 @@ namespace Celeste.Mod.GravityHelper.Extensions
         public static Rectangle ToRectangle(this Collider collider) =>
             new Rectangle((int)collider.Left, (int)collider.Top, (int)collider.Width, (int)collider.Height);
 
+        public static void SetShouldInvert(this Entity entity, bool invert) =>
+            new DynData<Entity>(entity).Data[GravityComponent.INVERTED_KEY] = invert;
+
         public static bool ShouldInvert(this Entity entity) =>
             new DynData<Entity>(entity).Data.TryGetValue(GravityComponent.INVERTED_KEY, out var value) && (bool)value;
 

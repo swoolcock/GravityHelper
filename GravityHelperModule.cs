@@ -118,6 +118,7 @@ namespace Celeste.Mod.GravityHelper
             PlayerDeadBodyHooks.Load();
             PlayerHairHooks.Load();
             PlayerHooks.Load();
+            PlayerSpriteHooks.Load();
             PufferHooks.Load();
             SeekerHooks.Load();
             SnowballHooks.Load();
@@ -156,6 +157,7 @@ namespace Celeste.Mod.GravityHelper
             PlayerDeadBodyHooks.Unload();
             PlayerHairHooks.Unload();
             PlayerHooks.Unload();
+            PlayerSpriteHooks.Unload();
             PufferHooks.Unload();
             SeekerHooks.Unload();
             SnowballHooks.Unload();

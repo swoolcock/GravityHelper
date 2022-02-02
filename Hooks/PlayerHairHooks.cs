@@ -73,14 +73,19 @@ namespace Celeste.Mod.GravityHelper.Hooks
             cursor.Emit(OpCodes.Ldarg_0);
             cursor.EmitDelegate<Func<Vector2, PlayerHair, Vector2>>((v, p) =>
             {
+                var inverted = new Vector2(v.X, -v.Y);
+
                 // do player check by itself since this is a hot path
                 if (p.Entity is Player)
-                    return GravityHelperModule.ShouldInvertPlayer ? new Vector2(v.X, -v.Y) : v;
+                    return GravityHelperModule.ShouldInvertPlayer ? inverted : v;
 
-                return p.Entity is PlayerDeadBody && GravityComponent.PlayerGravityBeforeRemoval == GravityType.Inverted ||
-                    p.Entity is BadelineOldsite baddy && baddy.Sprite.Scale.Y < 0f
-                        ? new Vector2(v.X, -v.Y)
-                        : v;
+                if (p.Entity is PlayerDeadBody)
+                    return GravityComponent.PlayerGravityBeforeRemoval == GravityType.Inverted ? inverted : v;
+
+                if (p.Entity is BadelineOldsite baddy)
+                    return baddy.ShouldInvert() ? inverted : v;
+
+                return v;
             });
         }
     }
