@@ -10,6 +10,7 @@ namespace Celeste.Mod.GravityHelper.Components
     [Tracked]
     public class GravityComponent : Component
     {
+        internal static GravityType PlayerGravityBeforeRemoval;
         internal const string INVERTED_KEY = "GravityHelper_Inverted";
 
         private GravityType _currentGravity;
@@ -53,6 +54,8 @@ namespace Celeste.Mod.GravityHelper.Components
         public override void Removed(Entity entity)
         {
             base.Removed(entity);
+
+            if (entity is Player) PlayerGravityBeforeRemoval = CurrentGravity;
 
             updateGravity(new GravityChangeArgs(GravityType.Normal, CurrentGravity, playerTriggered: false));
 
