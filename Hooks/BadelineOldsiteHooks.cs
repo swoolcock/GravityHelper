@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Celeste.Mod.GravityHelper.Extensions;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using Monocle;
@@ -74,7 +75,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
         {
             var invert = gravityType == GravityType.Inverted;
             baddy.Collider = new Hitbox(6f, 6f, -3f, invert ? 1f : -7f);
-            baddy.Sprite.Scale.Y = invert ? -1f : 1f;
+            baddy.SetShouldInvert(invert);
         }
     }
 }

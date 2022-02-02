@@ -32,7 +32,7 @@ namespace Celeste.Mod.GravityHelper.Extensions
                 if (count >= 0) cursor.GotoNext(predicate);
                 if (count > 0) count--;
 
-                cursor.Remove();
+                cursor.Remove(); // TODO: NOT REMOVE
                 cursor.EmitDelegate(del);
             }
         }
