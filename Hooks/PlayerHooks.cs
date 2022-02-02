@@ -1032,6 +1032,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
                         self.SetNormalLightOffset(args.NewValue == GravityType.Normal ? normalLightOffset : -normalLightOffset);
                         self.SetDuckingLightOffset(args.NewValue == GravityType.Normal ? duckingLightOffset : -duckingLightOffset);
+                        self.Light.Position = self.Ducking ? duckingLightOffset : normalLightOffset;
 
                         var starFlyBloom = self.GetStarFlyBloom();
                         if (starFlyBloom != null)
