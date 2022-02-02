@@ -55,14 +55,18 @@ namespace Celeste.Mod.GravityHelper.Components
         {
             base.Removed(entity);
 
-            if (entity is Player) PlayerGravityBeforeRemoval = CurrentGravity;
-
             updateGravity(new GravityChangeArgs(GravityType.Normal, CurrentGravity, playerTriggered: false));
 
             _data.Data[INVERTED_KEY] = false;
             _data = null;
 
             if (entity is Player) GravityHelperModule.PlayerComponent = null;
+        }
+
+        public override void EntityRemoved(Scene scene)
+        {
+            if (Entity is Player) PlayerGravityBeforeRemoval = CurrentGravity;
+            base.EntityRemoved(scene);
         }
 
         public override void EntityAwake()
