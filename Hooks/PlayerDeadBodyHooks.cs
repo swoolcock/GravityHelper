@@ -1,8 +1,10 @@
 // Copyright (c) Shane Woolcock. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+using System;
 using Celeste.Mod.GravityHelper.Extensions;
 using Microsoft.Xna.Framework;
+using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
 using MonoMod.Utils;
@@ -19,7 +21,9 @@ namespace Celeste.Mod.GravityHelper.Hooks
         {
             Logger.Log(nameof(GravityHelperModule), $"Loading {nameof(PlayerDeadBody)} hooks...");
 
+            On.Celeste.PlayerDeadBody.ctor += PlayerDeadBody_ctor;
             IL.Celeste.PlayerDeadBody.Render += PlayerDeadBody_Render;
+
             hook_PlayerDeadBody_DeathRoutine = new ILHook(ReflectionCache.PlayerDeadBody_DeathRoutine.GetStateMachineTarget(), PlayerDeadBody_DeathRoutine);
         }
 
@@ -27,9 +31,17 @@ namespace Celeste.Mod.GravityHelper.Hooks
         {
             Logger.Log(nameof(GravityHelperModule), $"Unloading {nameof(PlayerDeadBody)} hooks...");
 
+            On.Celeste.PlayerDeadBody.ctor -= PlayerDeadBody_ctor;
             IL.Celeste.PlayerDeadBody.Render -= PlayerDeadBody_Render;
+
             hook_PlayerDeadBody_DeathRoutine?.Dispose();
             hook_PlayerDeadBody_DeathRoutine = null;
+        }
+
+        private static void PlayerDeadBody_ctor(On.Celeste.PlayerDeadBody.orig_ctor orig, PlayerDeadBody self, Player player, Vector2 direction)
+        {
+            orig(self, player, direction);
+            self.SetShouldInvert(player.ShouldInvert());
         }
 
         private static void PlayerDeadBody_DeathRoutine(ILContext il) => HookUtils.SafeHook(() =>
@@ -52,7 +64,8 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
             // this.sprite.Scale.Y = this.scale;
             cursor.GotoNext(instr => instr.MatchStfld<Vector2>(nameof(Vector2.Y)));
-            cursor.EmitInvertFloatDelegate();
+            cursor.Emit(OpCodes.Ldarg_0);
+            cursor.EmitDelegate<Func<float, PlayerDeadBody, float>>((f, self) => self.ShouldInvert() ? -f : f);
         });
     }
 }
