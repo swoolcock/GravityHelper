@@ -73,6 +73,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             On.Celeste.Player.DustParticleFromSurfaceIndex += Player_DustParticleFromSurfaceIndex;
             On.Celeste.Player.JumpThruBoostBlockedCheck += Player_JumpThruBoostBlockedCheck;
             On.Celeste.Player.ReflectBounce += Player_ReflectBounce;
+            On.Celeste.Player.Render += Player_Render;
             On.Celeste.Player.StarFlyBegin += Player_StarFlyBegin;
             On.Celeste.Player.StartCassetteFly += Player_StartCassetteFly;
             On.Celeste.Player.TransitionTo += Player_TransitionTo;
@@ -143,6 +144,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             On.Celeste.Player.DustParticleFromSurfaceIndex -= Player_DustParticleFromSurfaceIndex;
             On.Celeste.Player.JumpThruBoostBlockedCheck -= Player_JumpThruBoostBlockedCheck;
             On.Celeste.Player.ReflectBounce -= Player_ReflectBounce;
+            On.Celeste.Player.Render -= Player_Render;
             On.Celeste.Player.StarFlyBegin -= Player_StarFlyBegin;
             On.Celeste.Player.StartCassetteFly -= Player_StartCassetteFly;
             On.Celeste.Player.TransitionTo -= Player_TransitionTo;
@@ -1159,6 +1161,16 @@ namespace Celeste.Mod.GravityHelper.Hooks
         private static void Player_ReflectBounce(On.Celeste.Player.orig_ReflectBounce orig, Player self,
             Vector2 direction) =>
             orig(self, GravityHelperModule.ShouldInvertPlayer ? new Vector2(direction.X, -direction.Y) : direction);
+
+        private static void Player_Render(On.Celeste.Player.orig_Render orig, Player self)
+        {
+            var scaleY = self.Sprite.Scale.Y;
+            var invert = GravityHelperModule.ShouldInvertPlayer;
+
+            if (invert) self.Sprite.Scale.Y = -scaleY;
+            orig(self);
+            if (invert) self.Sprite.Scale.Y = scaleY;
+        }
 
         private static void Player_StarFlyBegin(On.Celeste.Player.orig_StarFlyBegin orig, Player self)
         {

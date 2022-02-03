@@ -7,6 +7,7 @@ using Celeste.Mod.GravityHelper.Extensions;
 using Microsoft.Xna.Framework;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
+using MonoMod.Utils;
 
 // ReSharper disable InconsistentNaming
 
@@ -79,8 +80,8 @@ namespace Celeste.Mod.GravityHelper.Hooks
                 if (p.Entity is Player)
                     return GravityHelperModule.ShouldInvertPlayer ? inverted : v;
 
-                if (p.Entity is PlayerDeadBody)
-                    return GravityComponent.PlayerGravityBeforeRemoval == GravityType.Inverted ? inverted : v;
+                if (p.Entity is PlayerDeadBody playerDeadBody)
+                    return playerDeadBody.ShouldInvert() ? inverted : v;
 
                 if (p.Entity is BadelineOldsite baddy)
                     return baddy.ShouldInvert() ? inverted : v;
