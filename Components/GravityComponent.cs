@@ -10,6 +10,9 @@ namespace Celeste.Mod.GravityHelper.Components
     [Tracked]
     public class GravityComponent : Component
     {
+        private static int _nextId;
+        public readonly int GlobalId = _nextId++;
+
         internal const string INVERTED_KEY = "GravityHelper_Inverted";
 
         private GravityType _currentGravity;

@@ -122,6 +122,11 @@ A `DreamBlock` that will change Madeline's gravity upon exit.
 A subclass of `GravityTrigger` that will display seeker barrier-style particles and overlaid arrow decals.
 Can be configured to support Madeline and/or any holdable/non-holdable `Actor`.
 
+#### GravityLine
+A line entity (position + one node) that will trigger a gravity change when Madeline (or a supported Actor) crosses it.
+Similar to VVVVVV inversion planes.  Can be any orientation, even oblique.  Traversal checks are done by checking which side of the line the entity is on this frame rather than using collisions.
+This means that it's theoretically "uncheesable" since you can't warp through it without triggering it, regardless of your speed.
+
 #### GravityRefill
 A `Refill` that provides a single 'charge' that causes the next dash to toggle gravity.
 Has a cool sprite and animated indicator above Madeline's head.
