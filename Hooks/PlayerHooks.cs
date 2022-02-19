@@ -1066,6 +1066,8 @@ namespace Celeste.Mod.GravityHelper.Hooks
                         self.DashDir.Y *= -1;
                         self.SetVarJumpTimer(0f);
                     },
+                    GetSpeed = () => self.Speed,
+                    SetSpeed = value => self.Speed = value,
                 },
                 new DashListener
                 {

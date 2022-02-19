@@ -1,6 +1,7 @@
 // Copyright (c) Shane Woolcock. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+using System;
 using System.Collections.Generic;
 using Celeste.Mod.Entities;
 using Celeste.Mod.GravityHelper.Components;
@@ -17,6 +18,8 @@ namespace Celeste.Mod.GravityHelper.Entities
         public float MomentumMultiplier { get; }
         public float Cooldown { get; }
         public bool CancelDash { get; }
+        public bool DisableUntilExit { get; }
+        public bool OnlyWhileFalling { get; }
         public TriggeredEntityTypes EntityTypes { get; }
 
         private readonly Dictionary<int, ComponentTracking> _trackedComponents = new();
@@ -29,6 +32,8 @@ namespace Celeste.Mod.GravityHelper.Entities
             MomentumMultiplier = data.Float("momentumMultiplier", 1f);
             Cooldown = data.Float("cooldown");
             CancelDash = data.Bool("cancelDash");
+            DisableUntilExit = data.Bool("disableUntilExit");
+            OnlyWhileFalling = data.Bool("onlyWhileFalling");
             Depth = Depths.Above;
 
             var affectsPlayer = data.Bool("affectsPlayer", true);
@@ -60,21 +65,34 @@ namespace Celeste.Mod.GravityHelper.Entities
                     // find the projection onto the line
                     var projectedScalar = Vector2.Dot(entity.Center - Position, TargetOffset) / Vector2.Dot(TargetOffset, TargetOffset);
                     var projectedPoint = Position + TargetOffset * projectedScalar;
-                    var offsetVector = projectedPoint - entity.Center;
-                    var isRightOrDown = TargetOffset.Y == 0 ? offsetVector.Y > 0 : offsetVector.X > 0;
+                    var normal = projectedPoint - entity.Center;
+                    var angleSign = Math.Sign(normal.Angle());
 
                     if (_trackedComponents.TryGetValue(gravityComponent.GlobalId, out var tracked))
                     {
-                        if (tracked.CooldownRemaining <= 0 && projectedScalar >= 0 && projectedScalar <= 1 && tracked.IsRightOrDown != isRightOrDown)
+                        // if we crossed the line and it's not on cooldown and we're collidable
+                        if (projectedScalar >= 0 && projectedScalar <= 1 && tracked.CooldownRemaining <= 0 && tracked.Collidable && angleSign != tracked.LastAngleSign)
                         {
+                            // turn the line off until we leave it, if we must
+                            if (DisableUntilExit)
+                                tracked.Collidable = false;
+
+                            // cancel dash if we must
                             if (entity is Player player && CancelDash && player.StateMachine.State == Player.StDash)
                                 player.StateMachine.State = Player.StNormal;
 
-                            gravityComponent.SetGravity(GravityType, MomentumMultiplier);
+                            // flip gravity or apply momentum modifier
+                            var speed = gravityComponent.EntitySpeed;
+                            if (!OnlyWhileFalling || speed.Y > 0)
+                                gravityComponent.SetGravity(GravityType, MomentumMultiplier);
+                            else
+                                gravityComponent.EntitySpeed = new Vector2(speed.X, -speed.Y * MomentumMultiplier);
+
                             tracked.CooldownRemaining = Cooldown;
                         }
 
-                        tracked.IsRightOrDown = isRightOrDown;
+                        tracked.Collidable = tracked.Collidable || !entity.CollideLine(Position, Position + TargetOffset);
+                        tracked.LastAngleSign = angleSign;
                         tracked.ProjectedScalar = projectedScalar;
                         tracked.ProjectedPoint = projectedPoint;
                         tracked.EntityCenter = entity.Center;
@@ -83,7 +101,7 @@ namespace Celeste.Mod.GravityHelper.Entities
                     {
                         _trackedComponents[gravityComponent.GlobalId] = new ComponentTracking
                         {
-                            IsRightOrDown = isRightOrDown,
+                            LastAngleSign = angleSign,
                             CooldownRemaining = 0f,
                             ProjectedScalar = projectedScalar,
                             ProjectedPoint = projectedPoint,
@@ -113,14 +131,16 @@ namespace Celeste.Mod.GravityHelper.Entities
 
             foreach (var tracked in _trackedComponents.Values)
             {
+                var color = tracked.CooldownRemaining <= 0 && tracked.Collidable ? Color.Red : Color.DarkRed;
                 if (tracked.ProjectedScalar >= 0 && tracked.ProjectedScalar <= 1)
-                    Draw.Line(tracked.ProjectedPoint.Round(), tracked.EntityCenter.Round(), Color.Red);
+                    Draw.Line(tracked.ProjectedPoint.Round(), tracked.EntityCenter.Round(), color);
             }
         }
 
         private class ComponentTracking
         {
-            public bool IsRightOrDown;
+            public int LastAngleSign;
+            public bool Collidable = true;
             public float CooldownRemaining;
             public float ProjectedScalar;
             public Vector2 ProjectedPoint;

@@ -6,28 +6,39 @@ using ..Ahorn, Maple
     x1::Integer, y1::Integer,
     x2::Integer=x1+16, y2::Integer=y1,
     gravityType::Integer=2, momentumMultiplier::Real=1,
-    cooldown::Real=0, cancelDash::Bool=false,
+    cooldown::Real=0, cancelDash::Bool=false, disableUntilExit::Bool=false, onlyWhileFalling::Bool=false,
     affectsPlayer::Bool=true, affectsHoldableActors::Bool=false, affectsOtherActors::Bool=false
 ) = Entity("GravityHelper/GravityLine",
     x = x1, y = y1,
     gravityType = gravityType, momentumMultiplier = momentumMultiplier,
-    cooldown = cooldown, cancelDash = cancelDash,
+    cooldown = cooldown, cancelDash = cancelDash, disableUntilExit = disableUntilExit, onlyWhileFalling = onlyWhileFalling,
     affectsPlayer=affectsPlayer, affectsHoldableActors=affectsHoldableActors, affectsOtherActors=affectsOtherActors,
     nodes=Tuple{Int, Int}[(x2, y2)]
 )
 
 const placements = Ahorn.PlacementDict(
-    "Gravity Line (Instant) (GravityHelper)" => Ahorn.EntityPlacement(
-        GravityLine,
-        "line"
-    ),
-    "Gravity Line (Cooldown) (GravityHelper)" => Ahorn.EntityPlacement(
+    "Gravity Line (Crossable) (GravityHelper)" => Ahorn.EntityPlacement(
         GravityLine,
         "line",
         Dict{String, Any}(
-            "cooldown" => 1.5,
+            "cooldown" => 0,
+            "momentumMultiplier" => 1,
+            "cancelDash" => false,
+            "gravityType" => 2,
+            "disableUntilExit" => false,
+            "onlyWhileFalling" => false,
+        )
+    ),
+    "Gravity Line (Uncrossable) (GravityHelper)" => Ahorn.EntityPlacement(
+        GravityLine,
+        "line",
+        Dict{String, Any}(
+            "cooldown" => 0,
             "momentumMultiplier" => 0.1,
             "cancelDash" => true,
+            "gravityType" => 2,
+            "disableUntilExit" => true,
+            "onlyWhileFalling" => true,
         )
     )
 )
