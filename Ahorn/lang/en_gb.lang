@@ -26,6 +26,18 @@ placements.entities.GravityHelper/GravityController.tooltips.holdableResetTime=T
 placements.entities.GravityHelper/GravityController.tooltips.gravityMusicParam=The music parameter that should be set to 0 or 1 depending on whether gravity is currently normal or inverted.
 placements.entities.GravityHelper/GravityController.tooltips.vvvvvv=Enables VVVVVV mode. Dash and grab are disabled, and jump will toggle gravity instantly. Jump can only be pressed on safe ground.
 
+# Gravity Line
+placements.entities.GravityHelper/GravityLine.tooltips.gravityType=The gravity type to set when Madeline or a supported actor touches the line. 0: Normal, 1: Inverted, 2: Toggle. Defaults to 2.
+placements.entities.GravityHelper/GravityLine.tooltips.momentumMultiplier=The multiplier to apply to Madeline's Y velocity when gravity flips. 0 means instantly change, positive values give a gradual change. Defaults to 1 for crossable and 0.1 for uncrossable.
+placements.entities.GravityHelper/GravityLine.tooltips.cooldown=How long in seconds it will take for the line to reenable after triggering. Defaults to 0.
+placements.entities.GravityHelper/GravityLine.tooltips.cancelDash=Whether or not touching the line should immediately cancel Madeline's dash. Defaults to false for crossable, true for uncrossable.
+placements.entities.GravityHelper/GravityLine.tooltips.disableUntilExit=Whether or not the line should be disabled once triggered, until the actor is no longer colliding. Defaults to false for crossable, true for uncrossable.
+placements.entities.GravityHelper/GravityLine.tooltips.onlyWhileFalling=If true, the gravity type will only be applied if a supported actor has a positive Y component to the speed vector. Note that the line still "triggers", applying momentum and playing sounds, etc. Defaults to false for crossable and true for uncrossable.
+placements.entities.GravityHelper/GravityLine.tooltips.affectsPlayer=Whether the line will affect Madeline. Defaults to true.
+placements.entities.GravityHelper/GravityLine.tooltips.affectsHoldableActors=Whether the line affects Actors with a Holdable component while they are not being held. Defaults to false.
+placements.entities.GravityHelper/GravityLine.tooltips.affectsOtherActors=Whether the line affects non-holdable Actors. Defaults to false.
+placements.entities.GravityHelper/GravityLine.tooltips.playSound=The sound that should be played. Defaults to an embedded sound, set your own or clear it for no sound.
+
 # Gravity Refill
 placements.entities.GravityHelper/GravityRefill.tooltips.charges=The number of gravity charges that this refill will provide.
 placements.entities.GravityHelper/GravityRefill.tooltips.oneUse=Whether the gravity refill has a single use and will not respawn.

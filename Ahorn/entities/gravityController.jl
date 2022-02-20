@@ -5,6 +5,7 @@ using ..Ahorn, Maple
 const default_normal_gravity_sound = "event:/ui/game/lookout_off"
 const default_inverted_gravity_sound = "event:/ui/game/lookout_on"
 const default_gravity_music_param = "flip"
+const default_vvvvvv_sound = "event:/gravityhelper/toggle"
 
 @mapdef Entity "GravityHelper/GravityController" GravityController(
     x::Integer, y::Integer,
@@ -15,7 +16,7 @@ const default_gravity_music_param = "flip"
     arrowOpacity::Real=0.5, fieldOpacity::Real=0.15, particleOpacity::Real=0.5,
     holdableResetTime::Real=2.0,
     gravityMusicParam::String=default_gravity_music_param,
-    vvvvvv::Bool=false
+    vvvvvv::Bool=false, vvvvvvSound::String=default_vvvvvv_sound
 )
 
 const placements = Ahorn.PlacementDict(

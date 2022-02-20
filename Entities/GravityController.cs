@@ -18,13 +18,16 @@ namespace Celeste.Mod.GravityHelper.Entities
         private const float sound_muffle_time_seconds = 0.25f;
         private const string default_normal_gravity_sound = "event:/char/madeline/climb_ledge";
         private const string default_inverted_gravity_sound = "event:/char/madeline/crystaltheo_lift";
+        private const string default_vvvvvv_sound = "event:/gravityhelper/toggle";
         private const string vvvvvv_mode_flag = "GravityHelper_vvvvvv_mode";
 
         public static bool VVVVVV
         {
             get => (Engine.Scene as Level)?.Session.GetFlag(vvvvvv_mode_flag) ?? false;
-            set => (Engine.Scene as Level)?.Session.SetFlag(vvvvvv_mode_flag, value);
+            private set => (Engine.Scene as Level)?.Session.SetFlag(vvvvvv_mode_flag, value);
         }
+
+        public static string VVVVVVSound { get; private set; }
 
         public string NormalGravitySound { get; }
         public string InvertedGravitySound { get; }
@@ -38,6 +41,7 @@ namespace Celeste.Mod.GravityHelper.Entities
 
         private static PlayerInventory _previousInventory = PlayerInventory.Default;
         private readonly bool _vvvvvv;
+        private readonly string _vvvvvvSound;
 
         public GravityController(EntityData data, Vector2 offset)
             : base(data.Position + offset)
@@ -45,6 +49,8 @@ namespace Celeste.Mod.GravityHelper.Entities
             NormalGravitySound = data.Attr("normalGravitySound", default_normal_gravity_sound);
             InvertedGravitySound = data.Attr("invertedGravitySound", default_inverted_gravity_sound);
             ToggleGravitySound = data.Attr("toggleGravitySound");
+            _vvvvvvSound = data.Attr("vvvvvvSound", default_vvvvvv_sound);
+
             AlwaysTrigger = data.Bool("alwaysTrigger");
             ArrowOpacity = Calc.Clamp(data.Float("arrowOpacity", GravityField.DEFAULT_ARROW_OPACITY), 0f, 1f);
             FieldOpacity = Calc.Clamp(data.Float("fieldOpacity", GravityField.DEFAULT_FIELD_OPACITY), 0f, 1f);
@@ -90,6 +96,7 @@ namespace Celeste.Mod.GravityHelper.Entities
                         level.Session.Inventory = new PlayerInventory(0);
                         player.Dashes = 0;
                         VVVVVV = true;
+                        VVVVVVSound = _vvvvvvSound;
                     }
                 },
                 OnOutBegin = () =>
@@ -100,6 +107,7 @@ namespace Celeste.Mod.GravityHelper.Entities
                         player.RefillDash();
                         _previousInventory = default;
                         VVVVVV = false;
+                        VVVVVVSound = null;
                     }
                 }
             });

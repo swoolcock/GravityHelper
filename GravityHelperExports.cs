@@ -1,5 +1,6 @@
 using System;
 using Celeste.Mod.GravityHelper.Components;
+using Microsoft.Xna.Framework;
 using Monocle;
 using MonoMod.ModInterop;
 
@@ -24,6 +25,8 @@ namespace Celeste.Mod.GravityHelper {
             Action<int, bool, float> updateColliders,
             Action<int, bool, float> updateSpeed,
             Action<int, bool, float> updateVisuals,
+            Func<Vector2> getSpeed,
+            Action<Vector2> setSpeed,
             Func<bool> checkInvert)
         {
             static Action<GravityChangeArgs> makeClosure(Action<int, bool, float> action) =>
@@ -36,6 +39,8 @@ namespace Celeste.Mod.GravityHelper {
                 UpdateSpeed = makeClosure(updateSpeed),
                 UpdateVisuals = makeClosure(updateVisuals),
                 CheckInvert = checkInvert,
+                GetSpeed = getSpeed,
+                SetSpeed = setSpeed,
             };
         }
 

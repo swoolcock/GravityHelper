@@ -2,6 +2,7 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System;
+using Microsoft.Xna.Framework;
 using Monocle;
 using MonoMod.Utils;
 
@@ -10,6 +11,9 @@ namespace Celeste.Mod.GravityHelper.Components
     [Tracked]
     public class GravityComponent : Component
     {
+        private static int _nextId;
+        public readonly int GlobalId = _nextId++;
+
         internal const string INVERTED_KEY = "GravityHelper_Inverted";
 
         private GravityType _currentGravity;
@@ -31,6 +35,15 @@ namespace Celeste.Mod.GravityHelper.Components
         public Action<GravityChangeArgs> UpdateColliders;
         public Action<GravityChangeArgs> UpdatePosition;
         public Action<GravityChangeArgs> UpdateSpeed;
+
+        public Func<Vector2> GetSpeed;
+        public Action<Vector2> SetSpeed;
+
+        public Vector2 EntitySpeed
+        {
+            get => GetSpeed?.Invoke() ?? Vector2.Zero;
+            set => SetSpeed?.Invoke(value);
+        }
 
         public bool ShouldInvert => _currentGravity == GravityType.Inverted;
         public bool ShouldInvertChecked => _currentGravity == GravityType.Inverted && (CheckInvert?.Invoke() ?? true);

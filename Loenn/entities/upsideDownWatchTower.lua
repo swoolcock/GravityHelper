@@ -1,4 +1,11 @@
 local drawableSprite = require("structs.drawable_sprite")
+local helpers = require("mods").requireFromPlugin("helpers")
+local consts = require("mods").requireFromPlugin("consts")
+
+local placementData = helpers.createPlacementData('1', {
+    summit = false,
+    onlyY = false,
+})
 
 local upsideDownWatchTower = {
     name = "GravityHelper/UpsideDownWatchTower",
@@ -6,13 +13,11 @@ local upsideDownWatchTower = {
     justification = {0.5, 1.0},
     nodeLineRenderType = "line",
     nodeLimits = {0, -1},
+    ignoredFields = consts.ignoredFields,
     placements = {
         {
             name = "normal",
-            data = {
-                summit = false,
-                onlyY = false,
-            },
+            data = helpers.union(placementData),
         },
     },
 }
