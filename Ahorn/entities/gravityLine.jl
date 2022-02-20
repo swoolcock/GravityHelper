@@ -2,13 +2,15 @@ module GravityHelperGravityLine
 
 using ..Ahorn, Maple
 
+const default_sound = "event:/gravityhelper/gravity_line"
+
 @pardef GravityLine(
     x1::Integer, y1::Integer,
     x2::Integer=x1+16, y2::Integer=y1,
     gravityType::Integer=2, momentumMultiplier::Real=1,
     cooldown::Real=0, cancelDash::Bool=false, disableUntilExit::Bool=false, onlyWhileFalling::Bool=false,
     affectsPlayer::Bool=true, affectsHoldableActors::Bool=false, affectsOtherActors::Bool=false,
-    playSound::Bool=true
+    playSound::String=default_sound
 ) = Entity("GravityHelper/GravityLine",
     x = x1, y = y1,
     gravityType=gravityType, momentumMultiplier=momentumMultiplier,
