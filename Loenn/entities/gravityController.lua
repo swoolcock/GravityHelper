@@ -12,6 +12,7 @@ local placementData = helpers.createPlacementData('1', {
     holdableResetTime = 2.0,
     gravityMusicParam = "flip",
     vvvvvv = false,
+    vvvvvv_sound = "event:/gravityhelper/toggle",
 })
 
 local gravityController = {

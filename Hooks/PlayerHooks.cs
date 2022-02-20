@@ -1215,8 +1215,10 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
                 if (jumpPressed && self.OnGround())
                 {
-                    GravityHelperModule.PlayerComponent?.SetGravity(GravityType.Toggle);
+                    GravityHelperModule.PlayerComponent?.SetGravity(GravityType.Toggle, playerTriggered: false);
                     self.Speed.Y = 160f * (self.SceneAs<Level>().InSpace ? 0.6f : 1f);
+                    if (!string.IsNullOrEmpty(GravityController.VVVVVVSound))
+                        Audio.Play(GravityController.VVVVVVSound);
                 }
             }
 
