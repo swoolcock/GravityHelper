@@ -2,7 +2,7 @@ local consts = require("mods").requireFromPlugin("consts")
 local helpers = require("mods").requireFromPlugin("helpers")
 local colors = require("consts.xna_colors")
 
-local placementData = {
+local placementData = helpers.createPlacementData('1', {
     width = 8,
     height = 8,
     gravityType = consts.gravityTypes.normal.index,
@@ -15,16 +15,17 @@ local placementData = {
     affectsPlayer = true,
     affectsHoldableActors = false,
     affectsOtherActors = false,
-}
+})
 
 local gravityField = {
     name = "GravityHelper/GravityField",
     depth = -8500,
     borderColor = colors.White,
+    ignoredFields = consts.ignoredFields,
     placements = {
         {
             name = "normal",
-            data = placementData,
+            data = helpers.union(placementData),
         },
         {
             name = "attachedIndicator",
@@ -48,7 +49,7 @@ local gravityField = {
 }
 
 function gravityField.fillColor(room, entity)
-    local type = consts:gravityTypeForIndex(entity.gravityType)
+    local type = consts.gravityTypeForIndex(entity.gravityType)
     return helpers.colorWithAlpha(type.color, 0.5)
 end
 

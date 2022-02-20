@@ -1,5 +1,12 @@
 local consts = require("mods").requireFromPlugin("consts")
+local helpers = require("mods").requireFromPlugin("helpers")
 local utils = require("utils")
+
+local placementData = helpers.createPlacementData('1', {
+    playerCanUse = true,
+    gravityType = consts.gravityTypes.normal.index,
+    cooldown = 1.0,
+})
 
 local function makeSpring(name, rotation, xOffset, yOffset, width, height, gravityType)
     return {
@@ -7,21 +14,20 @@ local function makeSpring(name, rotation, xOffset, yOffset, width, height, gravi
         rotation = rotation,
         depth = -8501,
         justification = {0.5, 1.0},
+        ignoredFields = consts.ignoredFields,
         selection = function(room, entity)
             return utils.rectangle(entity.x + xOffset, entity.y + yOffset, width, height)
         end,
         texture = function(room, entity)
-            local type = consts:gravityTypeForIndex(entity.gravityType)
+            local type = consts.gravityTypeForIndex(entity.gravityType)
             return type.springTexture
         end,
         placements = {
             name = "normal",
-            data = {
-                playerCanUse = true,
+            data = helpers.union(placementData, {
                 gravityType = gravityType,
-                cooldown = 1.0,
-            }
-        }
+            }),
+        },
     }
 end
 

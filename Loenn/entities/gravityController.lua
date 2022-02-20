@@ -1,7 +1,7 @@
 local consts = require("mods").requireFromPlugin("consts")
 local helpers = require("mods").requireFromPlugin("helpers")
 
-local placementData = {
+local placementData = helpers.createPlacementData('1', {
     alwaysTrigger = false,
     normalGravitySound = consts.gravityTypes.normal.sound,
     invertedGravitySound = consts.gravityTypes.inverted.sound,
@@ -12,16 +12,17 @@ local placementData = {
     holdableResetTime = 2.0,
     gravityMusicParam = "flip",
     vvvvvv = false,
-}
+})
 
 local gravityController = {
     name = "GravityHelper/GravityController",
     depth = -8500,
     texture = "objects/GravityHelper/gravityController/icon",
+    ignoredFields = consts.ignoredFields,
     placements = {
         {
             name = "normal",
-            data = placementData,
+            data = helpers.union(placementData),
         },
         {
             name = "vvvvvv",

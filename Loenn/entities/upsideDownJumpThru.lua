@@ -1,4 +1,6 @@
 local drawableSpriteStruct = require("structs.drawable_sprite")
+local helpers = require("mods").requireFromPlugin("helpers")
+local consts = require("mods").requireFromPlugin("consts")
 local utils = require("utils")
 
 -- For future use I guess?
@@ -8,20 +10,25 @@ local function getTexture(entity)
     return entity.texture and entity.texture ~= "default" and entity.texture or "wood"
 end
 
-local upsideDownJumpThru = {}
+local placementData = helpers.createPlacementData('1', {
+    width = 8,
+    texture = "wood",
+})
 
-upsideDownJumpThru.name = "GravityHelper/UpsideDownJumpThru"
-upsideDownJumpThru.depth = -9000
-upsideDownJumpThru.canResize = {true, false}
-upsideDownJumpThru.placements = {}
+local upsideDownJumpThru = {
+    name = "GravityHelper/UpsideDownJumpThru",
+    depth = -9000,
+    canResize = {true, false},
+    ignoredFields = consts.ignoredFields,
+    placements = {},
+}
 
 for i, texture in ipairs(textures) do
     upsideDownJumpThru.placements[i] = {
         name = texture,
-        data = {
-            width = 8,
-            texture = texture
-        }
+        data = helpers.union(placementData, {
+            texture = texture,
+        }),
     }
 end
 

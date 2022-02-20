@@ -1,6 +1,11 @@
 local colors = require("consts.xna_colors")
 
 local consts = {
+    modVersion = "1.0.40",
+    ignoredFields = {
+        "modVersion",
+        "pluginVersion",
+    },
     gravityTypes = {
         -- regular gravity
         normal = {
@@ -45,8 +50,8 @@ local consts = {
     },
 }
 
-function consts:gravityTypeForIndex(index)
-    for _,v in pairs(self.gravityTypes) do
+function consts.gravityTypeForIndex(index)
+    for _,v in pairs(consts.gravityTypes) do
         if v.index == index then return v end
     end
     return nil

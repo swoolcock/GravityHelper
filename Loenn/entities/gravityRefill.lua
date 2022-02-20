@@ -1,19 +1,25 @@
 local utils = require("utils")
+local consts = require("mods").requireFromPlugin("consts")
+local helpers = require("mods").requireFromPlugin("helpers")
+
+local placementData = helpers.createPlacementData('1', {
+    charges = 1,
+    oneUse = false,
+    refillsDash = true,
+    refillsStamina = true,
+    respawnTime = 2.5,
+})
 
 local gravityRefill = {
     name = "GravityHelper/GravityRefill",
     depth = -100,
     texture = "objects/GravityHelper/gravityRefill/idle00",
+    ignoredFields = consts.ignoredFields,
     placements = {
         {
             name = "normal",
-            data = {
-                charges = 1,
-                oneUse = false,
-                refillsDash = true,
-                refillsStamina = true,
-                respawnTime = 2.5,
-            }
+            ignoredFields = consts.ignoredFields,
+            data = helpers.union(placementData),
         },
     },
 }

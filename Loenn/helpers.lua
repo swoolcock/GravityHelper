@@ -1,14 +1,25 @@
+local consts = require("mods").requireFromPlugin("consts")
+
 local helpers = {}
 
-function helpers.union(first, second)
+function helpers.union(...)
     local tbl = {}
-    for k,v in pairs(first) do tbl[k] = v end
-    for k,v in pairs(second) do tbl[k] = v end
+    local source = {...}
+    for _,t in ipairs(source) do
+        for k,v in pairs(t) do tbl[k] = v end
+    end
     return tbl
 end
 
 function helpers.colorWithAlpha(color, alpha)
     return { color[1], color[2], color[3], alpha }
+end
+
+function helpers.createPlacementData(pluginVersion, data)
+    return helpers.union({
+        modVersion = consts.modVersion,
+        pluginVersion = pluginVersion,
+    }, data)
 end
 
 return helpers
