@@ -25,6 +25,11 @@ namespace Celeste.Mod.GravityHelper.Entities
 
         private readonly Dictionary<int, ComponentTracking> _trackedComponents = new();
 
+        private float _minAlpha = 0.45f;
+        private float _maxAlpha = 0.95f;
+        private float _flashTime = 0.35f;
+        private float _flashTimeRemaining;
+
         public GravityLine(EntityData data, Vector2 offset)
             : base(data.Position + offset)
         {
@@ -49,6 +54,9 @@ namespace Celeste.Mod.GravityHelper.Entities
         public override void Update()
         {
             base.Update();
+
+            if (_flashTimeRemaining > 0)
+                _flashTimeRemaining -= Engine.DeltaTime;
 
             var components = Scene.Tracker.GetComponents<GravityComponent>();
             foreach (var component in components)
@@ -93,6 +101,8 @@ namespace Celeste.Mod.GravityHelper.Entities
                             if (PlaySound)
                                 Audio.Play("event:/gravityhelper/gravity_line");
 
+                            _flashTimeRemaining = _flashTime;
+
                             tracked.CooldownRemaining = Cooldown;
                         }
 
@@ -127,7 +137,8 @@ namespace Celeste.Mod.GravityHelper.Entities
         {
             base.Render();
 
-            Draw.Line(Position.Round(), (Position + TargetOffset).Round(), Color.White * 0.5f, 2f);
+            var alpha = Calc.LerpClamp(_minAlpha, _maxAlpha, _flashTimeRemaining / _flashTime);
+            Draw.Line(Position.Round(), (Position + TargetOffset).Round(), Color.White * alpha, 2f);
         }
 
         public override void DebugRender(Camera camera)
