@@ -26,5 +26,6 @@ jobs:
           everest.yaml
           bin/GravityHelper.dll
           Ahorn/**/*
+          Audio/**/*
           Dialog/**/*
           Graphics/**/*

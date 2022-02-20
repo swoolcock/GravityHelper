@@ -20,6 +20,7 @@ namespace Celeste.Mod.GravityHelper.Entities
         public bool CancelDash { get; }
         public bool DisableUntilExit { get; }
         public bool OnlyWhileFalling { get; }
+        public bool PlaySound { get; }
         public TriggeredEntityTypes EntityTypes { get; }
 
         private readonly Dictionary<int, ComponentTracking> _trackedComponents = new();
@@ -34,6 +35,7 @@ namespace Celeste.Mod.GravityHelper.Entities
             CancelDash = data.Bool("cancelDash");
             DisableUntilExit = data.Bool("disableUntilExit");
             OnlyWhileFalling = data.Bool("onlyWhileFalling");
+            PlaySound = data.Bool("playSound", true);
             Depth = Depths.Above;
 
             var affectsPlayer = data.Bool("affectsPlayer", true);
@@ -87,6 +89,9 @@ namespace Celeste.Mod.GravityHelper.Entities
                                 gravityComponent.SetGravity(GravityType, MomentumMultiplier);
                             else
                                 gravityComponent.EntitySpeed = new Vector2(speed.X, -speed.Y * MomentumMultiplier);
+
+                            if (PlaySound)
+                                Audio.Play("event:/gravityhelper/gravity_line");
 
                             tracked.CooldownRemaining = Cooldown;
                         }

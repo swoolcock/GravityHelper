@@ -7,12 +7,14 @@ using ..Ahorn, Maple
     x2::Integer=x1+16, y2::Integer=y1,
     gravityType::Integer=2, momentumMultiplier::Real=1,
     cooldown::Real=0, cancelDash::Bool=false, disableUntilExit::Bool=false, onlyWhileFalling::Bool=false,
-    affectsPlayer::Bool=true, affectsHoldableActors::Bool=false, affectsOtherActors::Bool=false
+    affectsPlayer::Bool=true, affectsHoldableActors::Bool=false, affectsOtherActors::Bool=false,
+    playSound::Bool=true
 ) = Entity("GravityHelper/GravityLine",
     x = x1, y = y1,
-    gravityType = gravityType, momentumMultiplier = momentumMultiplier,
-    cooldown = cooldown, cancelDash = cancelDash, disableUntilExit = disableUntilExit, onlyWhileFalling = onlyWhileFalling,
+    gravityType=gravityType, momentumMultiplier=momentumMultiplier,
+    cooldown=cooldown, cancelDash=cancelDash, disableUntilExit=disableUntilExit, onlyWhileFalling=onlyWhileFalling,
     affectsPlayer=affectsPlayer, affectsHoldableActors=affectsHoldableActors, affectsOtherActors=affectsOtherActors,
+    playSound=playSound,
     nodes=Tuple{Int, Int}[(x2, y2)]
 )
 
