@@ -1,7 +1,7 @@
 local colors = require("consts.xna_colors")
 
 local consts = {
-    modVersion = "1.0.40",
+    modVersion = "1.0.41",
     ignoredFields = {
         "modVersion",
         "pluginVersion",
