@@ -15,6 +15,9 @@ local function makeSpring(name, rotation, xOffset, yOffset, width, height, gravi
         depth = -8501,
         justification = {0.5, 1.0},
         ignoredFields = consts.ignoredFields,
+        fieldInformation = {
+            gravityType = consts.fieldInformation.gravityType,
+        },
         selection = function(room, entity)
             return utils.rectangle(entity.x + xOffset, entity.y + yOffset, width, height)
         end,

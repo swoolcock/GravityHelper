@@ -10,6 +10,9 @@ local gravityBooster = {
     name = "GravityHelper/GravityBooster",
     depth = -8500,
     ignoredFields = consts.ignoredFields,
+    fieldInformation = {
+        gravityType = consts.fieldInformation.gravityType,
+    },
     placements = {
         {
             name = "normal",

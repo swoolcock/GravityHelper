@@ -22,6 +22,11 @@ local gravityField = {
     depth = -8500,
     borderColor = colors.White,
     ignoredFields = consts.ignoredFields,
+    fieldInformation = {
+        gravityType = consts.fieldInformation.gravityType,
+        arrowType = consts.fieldInformation.gravityType,
+        fieldType = consts.fieldInformation.gravityType,
+    },
     placements = {
         {
             name = "normal",
