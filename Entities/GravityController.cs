@@ -1,6 +1,7 @@
 // Copyright (c) Shane Woolcock. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+using System;
 using Celeste.Mod.Entities;
 using Celeste.Mod.GravityHelper.Components;
 using Celeste.Mod.GravityHelper.Extensions;
@@ -13,6 +14,9 @@ namespace Celeste.Mod.GravityHelper.Entities
     [Tracked]
     public class GravityController : Entity
     {
+        private readonly Version _modVersion;
+        private readonly Version _pluginVersion;
+
         private static float _soundMuffleRemaining;
 
         private const float sound_muffle_time_seconds = 0.25f;
@@ -46,6 +50,9 @@ namespace Celeste.Mod.GravityHelper.Entities
         public GravityController(EntityData data, Vector2 offset)
             : base(data.Position + offset)
         {
+            _modVersion = data.ModVersion();
+            _pluginVersion = data.PluginVersion();
+
             NormalGravitySound = data.Attr("normalGravitySound", default_normal_gravity_sound);
             InvertedGravitySound = data.Attr("invertedGravitySound", default_inverted_gravity_sound);
             ToggleGravitySound = data.Attr("toggleGravitySound");

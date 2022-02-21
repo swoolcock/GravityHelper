@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using Celeste.Mod.Entities;
 using Celeste.Mod.GravityHelper.Components;
+using Celeste.Mod.GravityHelper.Extensions;
 using Microsoft.Xna.Framework;
 using Monocle;
 
@@ -23,6 +24,9 @@ namespace Celeste.Mod.GravityHelper.Entities
         public string PlaySound { get; }
         public TriggeredEntityTypes EntityTypes { get; }
 
+        private readonly Version _modVersion;
+        private readonly Version _pluginVersion;
+
         private readonly Dictionary<int, ComponentTracking> _trackedComponents = new();
 
         private float _minAlpha = 0.45f;
@@ -33,6 +37,9 @@ namespace Celeste.Mod.GravityHelper.Entities
         public GravityLine(EntityData data, Vector2 offset)
             : base(data.Position + offset)
         {
+            _modVersion = data.ModVersion();
+            _pluginVersion = data.PluginVersion();
+
             TargetOffset = (data.FirstNodeNullable() ?? Position) - Position;
             GravityType = data.Enum("gravityType", GravityType.Toggle);
             MomentumMultiplier = data.Float("momentumMultiplier", 1f);

@@ -3,6 +3,7 @@
 
 using System;
 using Celeste.Mod.Entities;
+using Celeste.Mod.GravityHelper.Extensions;
 using Microsoft.Xna.Framework;
 using Monocle;
 using MonoMod.Utils;
@@ -36,6 +37,9 @@ namespace Celeste.Mod.GravityHelper.Entities
             _ => id,
         };
 
+        private readonly Version _modVersion;
+        private readonly Version _pluginVersion;
+
         private Sprite _sprite;
         private Wiggler _wiggler;
         private StaticMover _staticMover;
@@ -56,6 +60,9 @@ namespace Celeste.Mod.GravityHelper.Entities
         public GravitySpring(EntityData data, Vector2 offset, Orientations orientation)
             : base(data.Position + offset)
         {
+            _modVersion = data.ModVersion();
+            _pluginVersion = data.PluginVersion();
+
             PlayerCanUse = data.Bool("playerCanUse", true);
             GravityType = data.Enum<GravityType>("gravityType");
             Cooldown = data.Float("cooldown", 1f);
