@@ -18,6 +18,9 @@ namespace Celeste.Mod.GravityHelper.Entities
         private static readonly Type dream_particle_type = typeof(DreamBlock).GetNestedType("DreamParticle", BindingFlags.NonPublic);
         private static readonly FieldInfo dream_particle_color_fieldinfo = dream_particle_type.GetField("Color", BindingFlags.Instance | BindingFlags.Public);
 
+        private readonly Version _modVersion;
+        private readonly Version _pluginVersion;
+
         private readonly DynData<DreamBlock> _dreamBlockData;
 
         public GravityType GravityType { get; }
@@ -25,6 +28,9 @@ namespace Celeste.Mod.GravityHelper.Entities
         public GravityDreamBlock(EntityData data, Vector2 offset)
             : base(data, offset)
         {
+            _modVersion = data.ModVersion();
+            _pluginVersion = data.PluginVersion();
+
             GravityType = (GravityType)data.Int("gravityType");
             _dreamBlockData = new DynData<DreamBlock>(this);
 

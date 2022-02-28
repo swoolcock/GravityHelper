@@ -18,6 +18,9 @@ local gravityDreamBlock = {
     --nodeLimits = {0, 1},
     --nodeLineRenderType = "line",
     ignoredFields = consts.ignoredFields,
+    fieldInformation = {
+        gravityType = consts.fieldInformation.gravityType,
+    },
     placements = {
         {
             name = "normal",

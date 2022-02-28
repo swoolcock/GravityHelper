@@ -1,6 +1,7 @@
 // Copyright (c) Shane Woolcock. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+using System;
 using Celeste.Mod.Entities;
 using Celeste.Mod.GravityHelper.Extensions;
 using Microsoft.Xna.Framework;
@@ -20,11 +21,17 @@ namespace Celeste.Mod.GravityHelper.Entities
         private static ParticleType P_Launch_Toggle;
         // ReSharper restore InconsistentNaming
 
+        private readonly Version _modVersion;
+        private readonly Version _pluginVersion;
+
         public GravityType GravityType { get; }
 
         public GravityBumper(EntityData data, Vector2 offset)
             : base(data, offset)
         {
+            _modVersion = data.ModVersion();
+            _pluginVersion = data.PluginVersion();
+
             GravityType = (GravityType)data.Int("gravityType");
         }
 

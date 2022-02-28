@@ -14,6 +14,9 @@ local placementData = helpers.createPlacementData('1', {
 local gravityTrigger = {
     name = "GravityHelper/GravityTrigger",
     ignoredFields = consts.ignoredFields,
+    fieldInformation = {
+        gravityType = consts.fieldInformation.gravityType,
+    },
     placements = {
         {
             name = "normal",

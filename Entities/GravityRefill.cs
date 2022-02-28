@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using Celeste.Mod.Entities;
+using Celeste.Mod.GravityHelper.Extensions;
 using Microsoft.Xna.Framework;
 using Monocle;
 
@@ -18,6 +19,9 @@ namespace Celeste.Mod.GravityHelper.Entities
         public bool RefillsDash { get; }
         public bool RefillsStamina { get; }
         public float RespawnTime { get; }
+
+        private readonly Version _modVersion;
+        private readonly Version _pluginVersion;
 
         // components
         private readonly Sprite _sprite;
@@ -65,14 +69,17 @@ namespace Celeste.Mod.GravityHelper.Entities
             set => (Engine.Scene as Level)?.Session.SetCounter(gravity_toggle_charges, value);
         }
 
-        public GravityRefill(Vector2 position, int charges, bool oneUse, bool refillsDash, bool refillsStamina, float respawnTime)
-            : base(position)
+        public GravityRefill(EntityData data, Vector2 offset)
+            : base(data.Position + offset)
         {
-            Charges = charges;
-            OneUse = oneUse;
-            RefillsDash = refillsDash;
-            RefillsStamina = refillsStamina;
-            RespawnTime = respawnTime;
+            _modVersion = data.ModVersion();
+            _pluginVersion = data.PluginVersion();
+
+            Charges = data.Int("charges", 1);
+            OneUse = data.Bool("oneUse");
+            RefillsDash = data.Bool("refillsDash", true);
+            RefillsStamina = data.Bool("refillsStamina", true);
+            RespawnTime = data.Float("respawnTime", 2.5f);
 
             Collider = new Hitbox(16f, 16f, -8f, -8f);
             Depth = -100;
@@ -96,16 +103,6 @@ namespace Celeste.Mod.GravityHelper.Entities
             _arrows.OnFinish = _ => _arrows.Visible = false;
 
             updateY();
-        }
-
-        public GravityRefill(EntityData data, Vector2 offset)
-            : this(data.Position + offset,
-                data.Int("charges", 1),
-                data.Bool("oneUse"),
-                data.Bool("refillsDash", true),
-                data.Bool("refillsStamina", true),
-                data.Float("respawnTime", 2.5f))
-        {
         }
 
         public override void Added(Scene scene)

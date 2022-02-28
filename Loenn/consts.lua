@@ -1,10 +1,21 @@
 local colors = require("consts.xna_colors")
 
 local consts = {
-    modVersion = "1.0.41",
+    modVersion = "1.0.42",
     ignoredFields = {
         "modVersion",
         "pluginVersion",
+    },
+    fieldInformation = {
+        gravityType = {
+            options = {
+                {"Normal", 0},
+                {"Inverted", 1},
+                {"Toggle", 2},
+                {"None", -1},
+                {"Default", -2},
+            }
+        }
     },
     gravityTypes = {
         -- regular gravity

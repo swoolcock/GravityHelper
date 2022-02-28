@@ -220,6 +220,9 @@ namespace Celeste.Mod.GravityHelper
             // fix upside down jumpthru tracking
             foreach (var udjt in Engine.Scene.Entities.Where(e => e is UpsideDownJumpThru))
                 ((UpsideDownJumpThru)udjt).EnsureCorrectTracking();
+
+            // fix player component
+            PlayerComponent = level.Tracker.GetEntity<Player>()?.Get<GravityComponent>();
         }
 
         public static void InvalidateRun()

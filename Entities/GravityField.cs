@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Celeste.Mod.Entities;
+using Celeste.Mod.GravityHelper.Extensions;
 using Celeste.Mod.GravityHelper.Triggers;
 using Microsoft.Xna.Framework;
 using Monocle;
@@ -44,6 +45,9 @@ namespace Celeste.Mod.GravityHelper.Entities
         private GravityType arrowGravityType => ArrowType == VisualType.Default ? GravityType : (GravityType) ArrowType;
         private GravityType fieldGravityType => FieldType == VisualType.Default ? GravityType : (GravityType) FieldType;
 
+        private readonly Version _modVersion;
+        private readonly Version _pluginVersion;
+
         private readonly bool _shouldDrawArrows;
         private readonly bool _shouldDrawField;
         private readonly MTexture _arrowTexture;
@@ -62,6 +66,9 @@ namespace Celeste.Mod.GravityHelper.Entities
         public GravityField(EntityData data, Vector2 offset)
             : base(data, offset)
         {
+            _modVersion = data.ModVersion();
+            _pluginVersion = data.PluginVersion();
+
             AttachToSolids = data.Bool("attachToSolids");
             ArrowType = (VisualType)data.Int("arrowType", (int) VisualType.Default);
             FieldType = (VisualType)data.Int("fieldType", (int) VisualType.Default);

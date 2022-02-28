@@ -1,7 +1,9 @@
 // Copyright (c) Shane Woolcock. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+using System;
 using Celeste.Mod.Entities;
+using Celeste.Mod.GravityHelper.Extensions;
 using Microsoft.Xna.Framework;
 using Monocle;
 
@@ -14,9 +16,15 @@ namespace Celeste.Mod.GravityHelper.Triggers
         public GravityType GravityType { get; }
         public bool FireOnBubbleReturn { get; }
 
+        private readonly Version _modVersion;
+        private readonly Version _pluginVersion;
+
         public SpawnGravityTrigger(EntityData data, Vector2 offset)
             : base(data.Position + offset)
         {
+            _modVersion = data.ModVersion();
+            _pluginVersion = data.PluginVersion();
+
             GravityType = (GravityType)data.Int("gravityType");
             FireOnBubbleReturn = data.Bool("fireOnBubbleReturn", true);
             Collider = new Hitbox(data.Width, data.Height);

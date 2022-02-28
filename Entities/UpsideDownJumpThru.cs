@@ -1,8 +1,10 @@
 // Copyright (c) Shane Woolcock. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+using System;
 using System.Collections.Generic;
 using Celeste.Mod.Entities;
+using Celeste.Mod.GravityHelper.Extensions;
 using Microsoft.Xna.Framework;
 using Monocle;
 
@@ -12,18 +14,24 @@ namespace Celeste.Mod.GravityHelper.Entities
     [Tracked]
     public class UpsideDownJumpThru : JumpThru
     {
+        private readonly Version _modVersion;
+        private readonly Version _pluginVersion;
+
         private readonly int _columns;
         private readonly string _overrideTexture;
         private readonly int _overrideSoundIndex;
 
         private Vector2 _shakeOffset;
 
-        public UpsideDownJumpThru(Vector2 position, int width, string overrideTexture, int overrideSoundIndex = -1)
-            : base(position, width, true)
+        public UpsideDownJumpThru(EntityData data, Vector2 offset)
+            : base(data.Position + offset, data.Width, true)
         {
-            _columns = width / 8;
-            _overrideTexture = overrideTexture;
-            _overrideSoundIndex = overrideSoundIndex;
+            _modVersion = data.ModVersion();
+            _pluginVersion = data.PluginVersion();
+
+            _columns = data.Width / 8;
+            _overrideTexture = data.Attr("texture", "default");
+            _overrideSoundIndex = data.Int("surfaceIndex", -1);
 
             Depth = -60;
             Collider.Top = 3;
@@ -38,13 +46,6 @@ namespace Celeste.Mod.GravityHelper.Entities
                 },
                 OnShake = v => _shakeOffset += v,
             });
-        }
-
-        public UpsideDownJumpThru(EntityData data, Vector2 offset)
-            : this(data.Position + offset, data.Width,
-                data.Attr("texture", "default"),
-                data.Int("surfaceIndex", -1))
-        {
         }
 
         public override void Awake(Scene scene)

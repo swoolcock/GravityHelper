@@ -10,6 +10,9 @@ local gravityBumper = {
     name = "GravityHelper/GravityBumper",
     depth = 0,
     ignoredFields = consts.ignoredFields,
+    fieldInformation = {
+        gravityType = consts.fieldInformation.gravityType,
+    },
     placements = {
         {
             name = "normal",

@@ -24,6 +24,9 @@ local gravityLine = {
     nodeLineRenderType = "line",
     nodeLimits = {1, 1},
     ignoredFields = consts.ignoredFields,
+    fieldInformation = {
+        gravityType = consts.fieldInformation.gravityType,
+    },
     placements = {
         {
             name = "crossable",
