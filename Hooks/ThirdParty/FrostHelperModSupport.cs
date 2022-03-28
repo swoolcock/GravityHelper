@@ -5,6 +5,7 @@ using System;
 using System.Reflection;
 using Celeste.Mod.GravityHelper.Entities;
 using Celeste.Mod.GravityHelper.Extensions;
+using Microsoft.Xna.Framework;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
@@ -36,9 +37,13 @@ namespace Celeste.Mod.GravityHelper.Hooks.ThirdParty
         {
             var cursor = new ILCursor(il);
 
-            // invert first Speed.Y check
-            if (!cursor.TryGotoNext(instr => instr.MatchLdcR4(0), instr => instr.MatchBltUn(out _)))
-                throw new HookException("Couldn't find first Speed.Y check.");
+            // invert first Speed check
+            if (!cursor.TryGotoNext(MoveType.After,
+                instr => instr.MatchLdflda<Player>(nameof(Player.Speed)),
+                instr => instr.MatchLdfld<Vector2>(nameof(Vector2.Y)),
+                instr => instr.MatchLdcR4(0f)))
+                throw new HookException("Couldn't find first Speed check.");
+            cursor.Index--;
             cursor.EmitInvertFloatDelegate();
 
             // replace SuperBounce with GravityHelper version
@@ -49,9 +54,13 @@ namespace Celeste.Mod.GravityHelper.Hooks.ThirdParty
             cursor.EmitDelegate<Action<Player, float>>(GravitySpring.InvertedSuperBounce);
             cursor.Emit(OpCodes.Br_S, cursor.Next.Next);
 
-            // invert second Speed.Y check
-            if (!cursor.TryGotoNext(instr => instr.MatchLdcR4(0), instr => instr.MatchBgtUn(out _)))
-                throw new HookException("Couldn't find second Speed.Y check.");
+            // invert second Speed check
+            if (!cursor.TryGotoNext(MoveType.After,
+                instr => instr.MatchLdflda<Player>(nameof(Player.Speed)),
+                instr => instr.MatchLdfld<Vector2>(nameof(Vector2.Y)),
+                instr => instr.MatchLdcR4(0f)))
+                throw new HookException("Couldn't find second Speed check.");
+            cursor.Index--;
             cursor.EmitInvertFloatDelegate();
 
             // replace SuperBounce with GravityHelper version
@@ -63,8 +72,12 @@ namespace Celeste.Mod.GravityHelper.Hooks.ThirdParty
             cursor.Emit(OpCodes.Br_S, cursor.Next.Next);
 
             // cancel the negative
-            if (!cursor.TryGotoNext(instr => instr.MatchNeg()))
+            if (!cursor.TryGotoNext(MoveType.After,
+                instr => instr.MatchLdflda(ReflectionCache.FrostHelperCustomSpringType, "speedMult"),
+                instr => instr.MatchLdfld<Vector2>(nameof(Vector2.Y)),
+                instr => instr.MatchNeg()))
                 throw new HookException("Couldn't find neg");
+            cursor.Index--;
             cursor.EmitLoadShouldInvert();
             cursor.Emit(OpCodes.Brfalse_S, cursor.Next);
             cursor.Emit(OpCodes.Neg);
