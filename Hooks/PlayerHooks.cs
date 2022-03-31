@@ -69,6 +69,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             On.Celeste.Player.CassetteFlyEnd += Player_CassetteFlyEnd;
             On.Celeste.Player.CreateTrail += Player_CreateTrail;
             On.Celeste.Player.DreamDashCheck += Player_DreamDashCheck;
+            On.Celeste.Player.DreamDashEnd += Player_DreamDashEnd;
             On.Celeste.Player.DreamDashUpdate += Player_DreamDashUpdate;
             On.Celeste.Player.DustParticleFromSurfaceIndex += Player_DustParticleFromSurfaceIndex;
             On.Celeste.Player.JumpThruBoostBlockedCheck += Player_JumpThruBoostBlockedCheck;
@@ -140,6 +141,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             On.Celeste.Player.ClimbCheck -= Player_ClimbCheck;
             On.Celeste.Player.CreateTrail -= Player_CreateTrail;
             On.Celeste.Player.DreamDashCheck -= Player_DreamDashCheck;
+            On.Celeste.Player.DreamDashEnd -= Player_DreamDashEnd;
             On.Celeste.Player.DreamDashUpdate -= Player_DreamDashUpdate;
             On.Celeste.Player.DustParticleFromSurfaceIndex -= Player_DustParticleFromSurfaceIndex;
             On.Celeste.Player.JumpThruBoostBlockedCheck -= Player_JumpThruBoostBlockedCheck;
@@ -1111,6 +1113,15 @@ namespace Celeste.Mod.GravityHelper.Hooks
             self.DashDir.Y *= -1;
 
             return rv;
+        }
+
+        private static void Player_DreamDashEnd(On.Celeste.Player.orig_DreamDashEnd orig, Player self)
+        {
+            var data = new DynData<Player>(self);
+            var dreamBlock = data.Get<DreamBlock>("dreamBlock");
+            if (dreamBlock is GravityDreamBlock gravityDreamBlock)
+                GravityHelperModule.PlayerComponent?.SetGravity(gravityDreamBlock.GravityType, 0f);
+            orig(self);
         }
 
         private static int Player_DreamDashUpdate(On.Celeste.Player.orig_DreamDashUpdate orig, Player self)

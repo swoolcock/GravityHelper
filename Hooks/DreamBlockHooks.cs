@@ -10,22 +10,13 @@ namespace Celeste.Mod.GravityHelper.Hooks
         public static void Load()
         {
             Logger.Log(nameof(GravityHelperModule), $"Loading {nameof(DreamBlock)} hooks...");
-            On.Celeste.DreamBlock.OnPlayerExit += DreamBlock_OnPlayerExit;
             On.Celeste.DreamBlock.Setup += DreamBlock_Setup;
         }
 
         public static void Unload()
         {
             Logger.Log(nameof(GravityHelperModule), $"Unloading {nameof(DreamBlock)} hooks...");
-            On.Celeste.DreamBlock.OnPlayerExit -= DreamBlock_OnPlayerExit;
             On.Celeste.DreamBlock.Setup -= DreamBlock_Setup;
-        }
-
-        private static void DreamBlock_OnPlayerExit(On.Celeste.DreamBlock.orig_OnPlayerExit orig, DreamBlock self, Player player)
-        {
-            if (self is GravityDreamBlock gravityDreamBlock)
-                GravityHelperModule.PlayerComponent?.SetGravity(gravityDreamBlock.GravityType);
-            orig(self, player);
         }
 
         private static void DreamBlock_Setup(On.Celeste.DreamBlock.orig_Setup orig, DreamBlock self)

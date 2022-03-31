@@ -53,6 +53,8 @@ placements.entities.GravityHelper/GravityBumper.tooltips.gravityType=The gravity
 
 # Gravity Booster
 placements.entities.GravityHelper/GravityBooster.tooltips.gravityType=The gravity type to set when Madeline leaves the booster (bubble).
+placements.entities.GravityHelper/GravityBooster.tooltips.red=Whether to act the same as a Mirror Temple bubble, where travel ends upon hitting a solid. Defaults to false.
+placements.entities.GravityHelper/GravityBooster.tooltips.useTintedSprites=Whether to use red, blue, or purple tinted sprites rather than just vanilla. Defaults to true.
 
 # Gravity Spring (Floor)
 placements.entities.GravityHelper/GravitySpringFloor.tooltips.playerCanUse=Whether the spring will activate for the player.

@@ -3,6 +3,7 @@
 
 using Celeste.Mod.GravityHelper.Entities;
 using Celeste.Mod.GravityHelper.Extensions;
+using Microsoft.Xna.Framework;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
 using MonoMod.Utils;
@@ -18,7 +19,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
         {
             Logger.Log(nameof(GravityHelperModule), $"Loading {nameof(Booster)} hooks...");
 
-            On.Celeste.Booster.PlayerReleased += Booster_PlayerReleased;
+            On.Celeste.Booster.PlayerBoosted += Booster_PlayerBoosted;
             IL.Celeste.Booster.Update += Booster_Update;
 
             hook_Booster_BoostRoutine = new ILHook(ReflectionCache.Booster_BoostRoutine.GetStateMachineTarget(), Booster_BoostRoutine);
@@ -28,17 +29,16 @@ namespace Celeste.Mod.GravityHelper.Hooks
         {
             Logger.Log(nameof(GravityHelperModule), $"Unloading {nameof(Booster)} hooks...");
 
-            On.Celeste.Booster.PlayerReleased -= Booster_PlayerReleased;
+            On.Celeste.Booster.PlayerBoosted -= Booster_PlayerBoosted;
             IL.Celeste.Booster.Update -= Booster_Update;
 
             hook_Booster_BoostRoutine?.Dispose();
             hook_Booster_BoostRoutine = null;
         }
 
-        private static void Booster_PlayerReleased(On.Celeste.Booster.orig_PlayerReleased orig, Booster self)
+        private static void Booster_PlayerBoosted(On.Celeste.Booster.orig_PlayerBoosted orig, Booster self, Player player, Vector2 direction)
         {
-            orig(self);
-
+            orig(self, player, direction);
             if (self is GravityBooster gravityBooster)
                 GravityHelperModule.PlayerComponent?.SetGravity(gravityBooster.GravityType);
         }
