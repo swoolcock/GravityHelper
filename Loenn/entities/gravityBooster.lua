@@ -4,6 +4,8 @@ local drawableSprite = require("structs.drawable_sprite")
 
 local placementData = helpers.createPlacementData('1', {
     gravityType = consts.gravityTypes.normal.index,
+    red = false,
+    useTintedSprites = true,
 })
 
 local gravityBooster = {
@@ -22,9 +24,14 @@ local gravityBooster = {
 }
 
 function gravityBooster.sprite(room, entity)
-    local sprite = drawableSprite.fromTexture("objects/booster/booster00", entity)
-    local type = consts.gravityTypeForIndex(entity.gravityType)
-    sprite:setColor(type.color)
+    local spriteTexture = entity.red and "objects/booster/boosterRed00" or "objects/booster/booster00"
+    local sprite = drawableSprite.fromTexture(spriteTexture, entity)
+
+    if entity.useTintedSprites then
+        local type = consts.gravityTypeForIndex(entity.gravityType)
+        sprite:setColor(type.color)
+    end
+
     return sprite
 end
 

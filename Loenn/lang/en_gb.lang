@@ -1,6 +1,8 @@
 # Gravity Booster (Bubble)
 entities.GravityHelper/GravityBooster.placements.name.normal=Gravity Booster (GravityHelper)
 entities.GravityHelper/GravityBooster.attributes.description.gravityType=The gravity type to set when Madeline leaves the booster (bubble). 0: Normal, 1: Inverted, 2: Toggle. -1: None (ignore).
+entities.GravityHelper/GravityBooster.attributes.red=Whether to act the same as a Mirror Temple bubble, where travel ends upon hitting a solid. Defaults to false.
+entities.GravityHelper/GravityBooster.attributes.useTintedSprites=Whether to use red, blue, or purple tinted sprites rather than just vanilla. Defaults to true.
 
 # Gravity Bumper
 entities.GravityHelper/GravityBumper.placements.name.normal=Gravity Bumper (GravityHelper)

@@ -17,21 +17,29 @@ namespace Celeste.Mod.GravityHelper.Entities
         private readonly Version _pluginVersion;
 
         public GravityType GravityType { get; }
+        public bool UseTintedSprites { get; }
 
         private readonly DynData<Booster> _data;
 
         public GravityBooster(EntityData data, Vector2 offset)
-            : base(data.Position + offset, false)
+            : base(data.Position + offset, data.Bool("red"))
         {
             _modVersion = data.ModVersion();
             _pluginVersion = data.PluginVersion();
 
             _data = new DynData<Booster>(this);
             GravityType = (GravityType)data.Int("gravityType");
+            UseTintedSprites = data.Bool("useTintedSprites", true);
         }
 
         public override void Render()
         {
+            if (!UseTintedSprites)
+            {
+                base.Render();
+                return;
+            }
+
             var sprite = _data.Get<Sprite>("sprite");
             var oldColor = sprite.Color;
             sprite.Color = GravityType.Color();
