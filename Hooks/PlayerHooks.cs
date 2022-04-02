@@ -1074,7 +1074,10 @@ namespace Celeste.Mod.GravityHelper.Hooks
                 },
                 new GravityComponent
                 {
-                    CheckInvert = () => self.StateMachine.State != Player.StDreamDash && self.CurrentBooster == null,
+                    CheckInvert = () =>
+                        self.StateMachine.State != Player.StDreamDash &&
+                        self.StateMachine.State != Player.StDummy &&
+                        self.CurrentBooster == null,
                     UpdateVisuals = args =>
                     {
                         if (!args.Changed) return;
