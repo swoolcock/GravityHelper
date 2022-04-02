@@ -61,7 +61,7 @@ const placements = Ahorn.PlacementDict(
     )
 )
 
-Ahorn.editingOptions(trigger::GravityField) = Dict{String, Any}(
+Ahorn.editingOptions(entity::GravityField) = Dict{String, Any}(
     "gravityType" => gravityTypes,
     "arrowType" => visualTypes,
     "fieldType" => visualTypes

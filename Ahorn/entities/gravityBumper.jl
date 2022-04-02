@@ -24,7 +24,7 @@ const gravityColors = Dict{Integer, Tuple{Real, Real, Real, Real}}(
 
 Ahorn.nodeLimits(entity::GravityBumper) = 0, 1
 
-Ahorn.editingOptions(trigger::GravityBumper) = Dict{String, Any}(
+Ahorn.editingOptions(entity::GravityBumper) = Dict{String, Any}(
     "gravityType" => gravityTypes,
 )
 

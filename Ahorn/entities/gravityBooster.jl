@@ -27,7 +27,7 @@ const gravityColors = Dict{Integer, Tuple{Real, Real, Real, Real}}(
     2 => (0.5, 0.0, 0.5, 0.5),
 )
 
-Ahorn.editingOptions(trigger::GravityBooster) = Dict{String, Any}(
+Ahorn.editingOptions(entity::GravityBooster) = Dict{String, Any}(
     "gravityType" => gravityTypes,
 )
 
