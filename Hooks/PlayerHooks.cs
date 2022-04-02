@@ -22,6 +22,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
     {
         // ReSharper disable InconsistentNaming
         private static IDetour hook_Player_DashCoroutine;
+        private static IDetour hook_Player_IntroJumpCoroutine;
         private static IDetour hook_Player_orig_Update;
         private static IDetour hook_Player_orig_UpdateSprite;
         private static IDetour hook_Player_orig_WallJump;
@@ -85,6 +86,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
                 hook_Player_orig_Update = new ILHook(ReflectionCache.Player_OrigUpdate, Player_orig_Update);
 
             hook_Player_DashCoroutine = new ILHook(ReflectionCache.Player_DashCoroutine.GetStateMachineTarget(), Player_DashCoroutine);
+            hook_Player_IntroJumpCoroutine = new ILHook(ReflectionCache.Player_IntroJumpCoroutine.GetStateMachineTarget(), Player_IntroJumpCoroutine);
             hook_Player_orig_UpdateSprite = new ILHook(ReflectionCache.Player_OrigUpdateSprite, Player_orig_UpdateSprite);
             hook_Player_orig_WallJump = new ILHook(ReflectionCache.Player_OrigWallJump, Player_orig_WallJump);
             hook_Player_get_CanUnDuck = new ILHook(ReflectionCache.Player_CanUnDuck, Player_get_CanUnDuck);
@@ -155,6 +157,9 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
             hook_Player_DashCoroutine?.Dispose();
             hook_Player_DashCoroutine = null;
+
+            hook_Player_IntroJumpCoroutine?.Dispose();
+            hook_Player_IntroJumpCoroutine = null;
 
             hook_Player_orig_Update?.Dispose();
             hook_Player_orig_Update = null;
@@ -436,6 +441,49 @@ namespace Celeste.Mod.GravityHelper.Hooks
                 throw new HookException("MoveNext in loop not found.");
         });
 
+        private static void Player_IntroJumpCoroutine(ILContext il) => HookUtils.SafeHook(() =>
+        {
+            var cursor = new ILCursor(il);
+            var playerVar = il.Body.Variables.First(v => v.VariableType.FullName == typeof(Player).FullName);
+
+            // player.Y = (float) (player.level.Bounds.Bottom + 16);
+            if (!cursor.TryGotoNext(instr => instr.MatchCallvirt<Entity>("set_Y")))
+                throw new HookException("Couldn't find Entity.set_Y");
+            cursor.Emit(OpCodes.Ldloc, playerVar);
+            cursor.EmitDelegate<Func<float, Player, float>>((y, self) =>
+                GravityHelperModule.ShouldInvertPlayer ? self.SceneAs<Level>().Bounds.Top - 16 : y);
+
+            // start.Y = (float) (player.level.Bounds.Bottom - 24);
+            if (!cursor.TryGotoNext(instr => instr.MatchStfld<Vector2>(nameof(Vector2.Y))))
+                throw new HookException("Couldn't find stfld Vector2.Y");
+            cursor.Emit(OpCodes.Ldloc, playerVar);
+            cursor.EmitDelegate<Func<float, Player, float>>((y, self) =>
+            {
+                if (!GravityHelperModule.ShouldInvertPlayer) return y;
+                var data = new DynData<Player>(self);
+                var level = data.Get<Level>("level");
+                return level.Bounds.Top + 24;
+            });
+
+            // player.Y += -120f * Engine.DeltaTime;
+            if (!cursor.TryGotoNext(MoveType.After, instr => instr.MatchLdcR4(-120f)))
+                throw new HookException("Couldn't find -120");
+            cursor.EmitInvertFloatDelegate();
+
+            // while ((double) player.Y > (double) start.Y - 8.0)
+            if (!cursor.TryGotoNext(instr => instr.MatchLdcR4(8), instr => instr.MatchSub()))
+                throw new HookException("Couldn't find 8");
+            cursor.Index++;
+            cursor.EmitInvertFloatDelegate();
+
+            ILLabel bgtLabel = null;
+            if (!cursor.TryGotoNext(instr => instr.MatchBgt(out bgtLabel)))
+                throw new HookException("Couldn't find bgt");
+            cursor.EmitLoadShouldInvert();
+            cursor.Emit(OpCodes.Brfalse_S, cursor.Next);
+            cursor.Emit(OpCodes.Blt_S, bgtLabel);
+            cursor.Emit(OpCodes.Br_S, cursor.Next.Next);
+        });
 
         private static void Player_IsOverWater(ILContext il) => HookUtils.SafeHook(() =>
         {
