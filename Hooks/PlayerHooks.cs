@@ -190,6 +190,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
                     return false;
 
                 // copied from Player.BeforeUpTransition
+                if (self.StateMachine.State != Player.StRedDash)
                 self.Speed.X = 0.0f;
                 if (self.StateMachine.State != Player.StRedDash && self.StateMachine.State != Player.StReflectionFall &&
                     self.StateMachine.State != Player.StStarFly)
