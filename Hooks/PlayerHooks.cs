@@ -22,11 +22,13 @@ namespace Celeste.Mod.GravityHelper.Hooks
     {
         // ReSharper disable InconsistentNaming
         private static IDetour hook_Player_DashCoroutine;
+        private static IDetour hook_Player_IntroJumpCoroutine;
         private static IDetour hook_Player_orig_Update;
         private static IDetour hook_Player_orig_UpdateSprite;
         private static IDetour hook_Player_orig_WallJump;
         private static IDetour hook_Player_ctor_OnFrameChange;
         private static IDetour hook_Player_get_CanUnDuck;
+        private static IDetour hook_Player_get_CameraTarget;
         // ReSharper restore InconsistentNaming
 
         public static void Load()
@@ -68,8 +70,8 @@ namespace Celeste.Mod.GravityHelper.Hooks
             On.Celeste.Player.ClimbCheck += Player_ClimbCheck;
             On.Celeste.Player.CassetteFlyEnd += Player_CassetteFlyEnd;
             On.Celeste.Player.CreateTrail += Player_CreateTrail;
+            On.Celeste.Player.DreamDashBegin += Player_DreamDashBegin;
             On.Celeste.Player.DreamDashCheck += Player_DreamDashCheck;
-            On.Celeste.Player.DreamDashEnd += Player_DreamDashEnd;
             On.Celeste.Player.DreamDashUpdate += Player_DreamDashUpdate;
             On.Celeste.Player.DustParticleFromSurfaceIndex += Player_DustParticleFromSurfaceIndex;
             On.Celeste.Player.JumpThruBoostBlockedCheck += Player_JumpThruBoostBlockedCheck;
@@ -85,9 +87,11 @@ namespace Celeste.Mod.GravityHelper.Hooks
                 hook_Player_orig_Update = new ILHook(ReflectionCache.Player_OrigUpdate, Player_orig_Update);
 
             hook_Player_DashCoroutine = new ILHook(ReflectionCache.Player_DashCoroutine.GetStateMachineTarget(), Player_DashCoroutine);
+            hook_Player_IntroJumpCoroutine = new ILHook(ReflectionCache.Player_IntroJumpCoroutine.GetStateMachineTarget(), Player_IntroJumpCoroutine);
             hook_Player_orig_UpdateSprite = new ILHook(ReflectionCache.Player_OrigUpdateSprite, Player_orig_UpdateSprite);
             hook_Player_orig_WallJump = new ILHook(ReflectionCache.Player_OrigWallJump, Player_orig_WallJump);
             hook_Player_get_CanUnDuck = new ILHook(ReflectionCache.Player_CanUnDuck, Player_get_CanUnDuck);
+            hook_Player_get_CameraTarget = new ILHook(ReflectionCache.Player_CameraTarget, Player_get_CameraTarget);
 
             // we assume the first .ctor method that accepts (string) is Sprite.OnFrameChange +=
             var spriteOnFrameChange = typeof(Player).GetRuntimeMethods().FirstOrDefault(m =>
@@ -140,8 +144,8 @@ namespace Celeste.Mod.GravityHelper.Hooks
             On.Celeste.Player.CassetteFlyEnd -= Player_CassetteFlyEnd;
             On.Celeste.Player.ClimbCheck -= Player_ClimbCheck;
             On.Celeste.Player.CreateTrail -= Player_CreateTrail;
+            On.Celeste.Player.DreamDashBegin -= Player_DreamDashBegin;
             On.Celeste.Player.DreamDashCheck -= Player_DreamDashCheck;
-            On.Celeste.Player.DreamDashEnd -= Player_DreamDashEnd;
             On.Celeste.Player.DreamDashUpdate -= Player_DreamDashUpdate;
             On.Celeste.Player.DustParticleFromSurfaceIndex -= Player_DustParticleFromSurfaceIndex;
             On.Celeste.Player.JumpThruBoostBlockedCheck -= Player_JumpThruBoostBlockedCheck;
@@ -155,6 +159,9 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
             hook_Player_DashCoroutine?.Dispose();
             hook_Player_DashCoroutine = null;
+
+            hook_Player_IntroJumpCoroutine?.Dispose();
+            hook_Player_IntroJumpCoroutine = null;
 
             hook_Player_orig_Update?.Dispose();
             hook_Player_orig_Update = null;
@@ -170,6 +177,9 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
             hook_Player_get_CanUnDuck?.Dispose();
             hook_Player_get_CanUnDuck = null;
+
+            hook_Player_get_CameraTarget?.Dispose();
+            hook_Player_get_CameraTarget = null;
         }
 
         #region IL Hooks
@@ -185,6 +195,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
                     return false;
 
                 // copied from Player.BeforeUpTransition
+                if (self.StateMachine.State != Player.StRedDash)
                 self.Speed.X = 0.0f;
                 if (self.StateMachine.State != Player.StRedDash && self.StateMachine.State != Player.StReflectionFall &&
                     self.StateMachine.State != Player.StStarFly)
@@ -420,6 +431,28 @@ namespace Celeste.Mod.GravityHelper.Hooks
             });
         });
 
+        private static void Player_get_CameraTarget(ILContext il) => HookUtils.SafeHook(() =>
+        {
+            var cursor = new ILCursor(il);
+
+            // invert feather offset
+            if (!cursor.TryGotoNext(MoveType.After, instr => instr.MatchLdcR4(0.2f)) ||
+                !cursor.TryGotoNext(MoveType.After, instr => instr.MatchLdcR4(0.2f)))
+                throw new HookException("Couldn't find second 0.2f");
+            cursor.EmitInvertFloatDelegate();
+
+            // invert red dash offset
+            if (!cursor.TryGotoNext(MoveType.After, instr => instr.MatchLdcI4(48)) ||
+                !cursor.TryGotoNext(MoveType.After, instr => instr.MatchLdcI4(48)))
+                throw new HookException("Couldn't find second 48");
+            cursor.EmitInvertIntDelegate();
+
+            // invert summit launch offset
+            if (!cursor.TryGotoNext(MoveType.After, instr => instr.MatchLdcR4(64f)))
+                throw new HookException("Couldn't find 64");
+            cursor.EmitInvertFloatDelegate();
+        });
+
         private static void Player_GetChasePosition(ILContext il) => HookUtils.SafeHook(() =>
         {
             //Weird ordering, but this does make sense
@@ -436,6 +469,76 @@ namespace Celeste.Mod.GravityHelper.Hooks
                 throw new HookException("MoveNext in loop not found.");
         });
 
+        private static void Player_IntroJumpCoroutine(ILContext il) => HookUtils.SafeHook(() =>
+        {
+            var cursor = new ILCursor(il);
+            var playerVar = il.Body.Variables.First(v => v.VariableType.FullName == typeof(Player).FullName);
+
+            // player.Y = (float) (player.level.Bounds.Bottom + 16);
+            if (!cursor.TryGotoNext(instr => instr.MatchCallvirt<Entity>("set_Y")))
+                throw new HookException("Couldn't find Entity.set_Y");
+            cursor.Emit(OpCodes.Ldloc, playerVar);
+            cursor.EmitDelegate<Func<float, Player, float>>((y, self) =>
+                GravityHelperModule.ShouldInvertPlayer ? self.SceneAs<Level>().Bounds.Top - 16 : y);
+
+            // start.Y = (float) (player.level.Bounds.Bottom - 24);
+            if (!cursor.TryGotoNext(instr => instr.MatchStfld<Vector2>(nameof(Vector2.Y))))
+                throw new HookException("Couldn't find stfld Vector2.Y");
+            cursor.Emit(OpCodes.Ldloc, playerVar);
+            cursor.EmitDelegate<Func<float, Player, float>>((y, self) =>
+            {
+                if (!GravityHelperModule.ShouldInvertPlayer) return y;
+                var data = new DynData<Player>(self);
+                var level = data.Get<Level>("level");
+                return level.Bounds.Top + 24;
+            });
+
+            // player.Y += -120f * Engine.DeltaTime;
+            if (!cursor.TryGotoNext(MoveType.After, instr => instr.MatchLdcR4(-120f)))
+                throw new HookException("Couldn't find -120");
+            cursor.EmitInvertFloatDelegate();
+
+            // while ((double) player.Y > (double) start.Y - 8.0)
+            if (!cursor.TryGotoNext(instr => instr.MatchLdcR4(8), instr => instr.MatchSub()))
+                throw new HookException("Couldn't find 8");
+            cursor.Index++;
+            cursor.EmitInvertFloatDelegate();
+
+            ILLabel bgtLabel = null;
+            if (!cursor.TryGotoNext(instr => instr.MatchBgt(out bgtLabel)))
+                throw new HookException("Couldn't find bgt");
+            cursor.EmitLoadShouldInvert();
+            cursor.Emit(OpCodes.Brfalse_S, cursor.Next);
+            cursor.Emit(OpCodes.Blt_S, bgtLabel);
+            cursor.Emit(OpCodes.Br_S, cursor.Next.Next);
+
+            // find the start of particles
+            cursor.TryGotoNext(instr => instr.MatchLdloc(1),
+                instr => instr.MatchLdfld<Player>("level"),
+                instr => instr.MatchLdfld<Level>(nameof(Level.Particles)));
+
+            // find the end of particles
+            var cursor2 = cursor.Clone();
+            cursor2.TryGotoNext(instr => instr.MatchLdarg(0),
+                instr => instr.MatchLdcR4(0.35f));
+
+            // emit new particles if required (easier than editing)
+            cursor.EmitLoadShouldInvert();
+            cursor.Emit(OpCodes.Brfalse_S, cursor.Next);
+            cursor.Emit(OpCodes.Ldloc, playerVar);
+            cursor.EmitDelegate<Action<Player>>(self =>
+            {
+                var data = new DynData<Player>(self);
+                var level = data.Get<Level>("level");
+                var particles = level.Particles;
+                var particlesBG = level.ParticlesBG;
+                particles.Emit(Player.P_SummitLandA, 12, self.TopCenter, Vector2.UnitX * 3f, (float)Math.PI / 2f);
+                particles.Emit(_invertedSummitLandBParticle.Value, 8, self.TopCenter - Vector2.UnitX * 2f, Vector2.UnitX * 2f, -(float)Math.PI * 13f / 12f);
+                particles.Emit(_invertedSummitLandBParticle.Value, 8, self.TopCenter + Vector2.UnitX * 2f, Vector2.UnitX * 2f, (float)Math.PI / 12f);
+                particlesBG.Emit(_invertedSummitLandCParticle.Value, 30, self.TopCenter, Vector2.UnitX * 5f);
+            });
+            cursor.Emit(OpCodes.Br_S, cursor2.Next);
+        });
 
         private static void Player_IsOverWater(ILContext il) => HookUtils.SafeHook(() =>
         {
@@ -1025,7 +1128,10 @@ namespace Celeste.Mod.GravityHelper.Hooks
                 },
                 new GravityComponent
                 {
-                    CheckInvert = () => self.StateMachine.State != Player.StDreamDash && self.CurrentBooster == null,
+                    CheckInvert = () =>
+                        self.StateMachine.State != Player.StDreamDash &&
+                        self.StateMachine.State != Player.StDummy &&
+                        self.CurrentBooster == null,
                     UpdateVisuals = args =>
                     {
                         if (!args.Changed) return;
@@ -1099,6 +1205,16 @@ namespace Celeste.Mod.GravityHelper.Hooks
             self.Sprite.Scale.Y = scaleY;
         }
 
+        private static void Player_DreamDashBegin(On.Celeste.Player.orig_DreamDashBegin orig, Player self)
+        {
+            orig(self);
+
+            var data = new DynData<Player>(self);
+            var dreamBlock = data.Get<DreamBlock>("dreamBlock");
+            if (dreamBlock is GravityDreamBlock gravityDreamBlock)
+                GravityHelperModule.PlayerComponent?.SetGravity(gravityDreamBlock.GravityType);
+        }
+
         private static bool Player_DreamDashCheck(On.Celeste.Player.orig_DreamDashCheck orig, Player self, Vector2 dir)
         {
             if (!GravityHelperModule.ShouldInvertPlayer)
@@ -1113,15 +1229,6 @@ namespace Celeste.Mod.GravityHelper.Hooks
             self.DashDir.Y *= -1;
 
             return rv;
-        }
-
-        private static void Player_DreamDashEnd(On.Celeste.Player.orig_DreamDashEnd orig, Player self)
-        {
-            var data = new DynData<Player>(self);
-            var dreamBlock = data.Get<DreamBlock>("dreamBlock");
-            if (dreamBlock is GravityDreamBlock gravityDreamBlock)
-                GravityHelperModule.PlayerComponent?.SetGravity(gravityDreamBlock.GravityType, 0f);
-            orig(self);
         }
 
         private static int Player_DreamDashUpdate(On.Celeste.Player.orig_DreamDashUpdate orig, Player self)
@@ -1336,6 +1443,15 @@ namespace Celeste.Mod.GravityHelper.Hooks
             Direction = -(float)Math.PI / 2f,
         });
 
+        private static Lazy<ParticleType> _invertedSummitLandBParticle = new Lazy<ParticleType>(() => new ParticleType(Player.P_SummitLandB)
+        {
+            Acceleration = Vector2.UnitY * 60f,
+        });
 
+        private static Lazy<ParticleType> _invertedSummitLandCParticle = new Lazy<ParticleType>(() => new ParticleType(Player.P_SummitLandC)
+        {
+            Acceleration = Vector2.UnitY * -20f,
+            Direction = (float)Math.PI / 2f,
+        });
     }
 }

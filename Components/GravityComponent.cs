@@ -83,6 +83,9 @@ namespace Celeste.Mod.GravityHelper.Components
 
         public void SetGravity(GravityType newValue, float momentumMultiplier = 1f, bool playerTriggered = true)
         {
+            // bail for placeholder cases
+            if (newValue < 0) return;
+
             var oldGravity = _currentGravity;
             var newGravity = newValue == GravityType.Toggle ? _currentGravity.Opposite() : newValue;
             var args = new GravityChangeArgs(newGravity, oldGravity, momentumMultiplier, playerTriggered, newValue == GravityType.Toggle);

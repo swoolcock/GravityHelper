@@ -1,3 +1,9 @@
+# Gravity Badeline Boost
+entities.GravityHelper/GravityBadelineBoost.placements.name.normal=Gravity Badeline Boost (GravityHelper)
+entities.GravityHelper/GravityBadelineBoost.attributes.gravityType=The gravity type to set when Madeline enters the orb. Defaults to None, which will respect Madeline's current gravity.
+entities.GravityHelper/GravityBadelineBoost.attributes.lockCamera=Upon activation, the camera cannot pan away from the entity. Defaults to true.
+entities.GravityHelper/GravityBadelineBoost.attributes.canSkip=Badeline will skip to the next position if the player is too far to the right of the current one (100 pixels). Defaults to false.
+
 # Gravity Booster (Bubble)
 entities.GravityHelper/GravityBooster.placements.name.normal=Gravity Booster (GravityHelper)
 entities.GravityHelper/GravityBooster.attributes.description.gravityType=The gravity type to set when Madeline leaves the booster (bubble). 0: Normal, 1: Inverted, 2: Toggle. -1: None (ignore).

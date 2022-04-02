@@ -103,6 +103,7 @@ namespace Celeste.Mod.GravityHelper
             On.Celeste.Mod.AssetReloadHelper.ReloadLevel += AssetReloadHelper_ReloadLevel;
 
             ActorHooks.Load();
+            BadelineBoostHooks.Load();
             BadelineOldsiteHooks.Load();
             BoosterHooks.Load();
             BounceBlockHooks.Load();
@@ -142,6 +143,7 @@ namespace Celeste.Mod.GravityHelper
             On.Celeste.Mod.AssetReloadHelper.ReloadLevel -= AssetReloadHelper_ReloadLevel;
 
             ActorHooks.Unload();
+            BadelineBoostHooks.Unload();
             BadelineOldsiteHooks.Unload();
             BoosterHooks.Unload();
             BounceBlockHooks.Unload();
