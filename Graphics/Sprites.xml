@@ -27,4 +27,9 @@
         <Justify x="0.5" y="0.5" />
         <Loop id="loop" path="indicator" delay="0.1" frames="0-4" />
     </gravityRefillIndicator>
+
+    <gravityBadelineBoost path="objects/GravityHelper/gravityBadelineBoost/">
+        <Justify x="0.5" y="0.5" />
+        <Loop id="ripple" path="ripple" delay="0.1" frames="0-8" />
+    </gravityBadelineBoost>
 </Sprites>

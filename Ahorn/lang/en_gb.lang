@@ -1,3 +1,8 @@
+# Gravity Badeline Boost
+placements.entities.GravityHelper/GravityBadelineBoost.tooltips.gravityType=The gravity type to set when Madeline enters the orb. Defaults to None, which will respect Madeline's current gravity.
+placements.entities.GravityHelper/GravityBadelineBoost.tooltips.lockCamera=Upon activation, the camera cannot pan away from the entity. Defaults to true.
+placements.entities.GravityHelper/GravityBadelineBoost.tooltips.canSkip=Badeline will skip to the next position if the player is too far to the right of the current one (100 pixels). Defaults to false.
+
 # Gravity Trigger
 placements.triggers.GravityHelper/GravityTrigger.tooltips.gravityType=The gravity type to set when Madeline enters the trigger.
 
