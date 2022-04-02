@@ -484,6 +484,33 @@ namespace Celeste.Mod.GravityHelper.Hooks
             cursor.Emit(OpCodes.Brfalse_S, cursor.Next);
             cursor.Emit(OpCodes.Blt_S, bgtLabel);
             cursor.Emit(OpCodes.Br_S, cursor.Next.Next);
+
+            // find the start of particles
+            cursor.TryGotoNext(instr => instr.MatchLdloc(1),
+                instr => instr.MatchLdfld<Player>("level"),
+                instr => instr.MatchLdfld<Level>(nameof(Level.Particles)));
+
+            // find the end of particles
+            var cursor2 = cursor.Clone();
+            cursor2.TryGotoNext(instr => instr.MatchLdarg(0),
+                instr => instr.MatchLdcR4(0.35f));
+
+            // emit new particles if required (easier than editing)
+            cursor.EmitLoadShouldInvert();
+            cursor.Emit(OpCodes.Brfalse_S, cursor.Next);
+            cursor.Emit(OpCodes.Ldloc, playerVar);
+            cursor.EmitDelegate<Action<Player>>(self =>
+            {
+                var data = new DynData<Player>(self);
+                var level = data.Get<Level>("level");
+                var particles = level.Particles;
+                var particlesBG = level.ParticlesBG;
+                particles.Emit(Player.P_SummitLandA, 12, self.TopCenter, Vector2.UnitX * 3f, (float)Math.PI / 2f);
+                particles.Emit(_invertedSummitLandBParticle.Value, 8, self.TopCenter - Vector2.UnitX * 2f, Vector2.UnitX * 2f, -(float)Math.PI * 13f / 12f);
+                particles.Emit(_invertedSummitLandBParticle.Value, 8, self.TopCenter + Vector2.UnitX * 2f, Vector2.UnitX * 2f, (float)Math.PI / 12f);
+                particlesBG.Emit(_invertedSummitLandCParticle.Value, 30, self.TopCenter, Vector2.UnitX * 5f);
+            });
+            cursor.Emit(OpCodes.Br_S, cursor2.Next);
         });
 
         private static void Player_IsOverWater(ILContext il) => HookUtils.SafeHook(() =>
@@ -1389,6 +1416,15 @@ namespace Celeste.Mod.GravityHelper.Hooks
             Direction = -(float)Math.PI / 2f,
         });
 
+        private static Lazy<ParticleType> _invertedSummitLandBParticle = new Lazy<ParticleType>(() => new ParticleType(Player.P_SummitLandB)
+        {
+            Acceleration = Vector2.UnitY * 60f,
+        });
 
+        private static Lazy<ParticleType> _invertedSummitLandCParticle = new Lazy<ParticleType>(() => new ParticleType(Player.P_SummitLandC)
+        {
+            Acceleration = Vector2.UnitY * -20f,
+            Direction = (float)Math.PI / 2f,
+        });
     }
 }
