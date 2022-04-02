@@ -38,6 +38,7 @@ namespace Celeste.Mod.GravityHelper
         public static readonly FieldInfo Player_VarJumpSpeed = typeof(Player).GetField("varJumpSpeed", BindingFlags.Instance | BindingFlags.NonPublic);
         public static readonly FieldInfo Player_VarJumpTimer = typeof(Player).GetField("varJumpTimer", BindingFlags.Instance | BindingFlags.NonPublic);
         public static readonly MethodInfo Player_CanUnDuck = typeof(Player).GetMethod("get_CanUnDuck", BindingFlags.Instance | BindingFlags.Public);
+        public static readonly MethodInfo Player_CameraTarget = typeof(Player).GetMethod("get_CameraTarget", BindingFlags.Instance | BindingFlags.Public);
         public static readonly MethodInfo Player_DashCoroutine = typeof(Player).GetMethod("DashCoroutine", BindingFlags.Instance | BindingFlags.NonPublic);
         public static readonly MethodInfo Player_DashCorrectCheck = typeof(Player).GetMethod("DashCorrectCheck", BindingFlags.Instance | BindingFlags.NonPublic);
         public static readonly MethodInfo Player_IntroJumpCoroutine = typeof(Player).GetMethod("IntroJumpCoroutine", BindingFlags.Instance | BindingFlags.NonPublic);

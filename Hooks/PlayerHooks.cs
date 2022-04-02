@@ -28,6 +28,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
         private static IDetour hook_Player_orig_WallJump;
         private static IDetour hook_Player_ctor_OnFrameChange;
         private static IDetour hook_Player_get_CanUnDuck;
+        private static IDetour hook_Player_get_CameraTarget;
         // ReSharper restore InconsistentNaming
 
         public static void Load()
@@ -90,6 +91,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             hook_Player_orig_UpdateSprite = new ILHook(ReflectionCache.Player_OrigUpdateSprite, Player_orig_UpdateSprite);
             hook_Player_orig_WallJump = new ILHook(ReflectionCache.Player_OrigWallJump, Player_orig_WallJump);
             hook_Player_get_CanUnDuck = new ILHook(ReflectionCache.Player_CanUnDuck, Player_get_CanUnDuck);
+            hook_Player_get_CameraTarget = new ILHook(ReflectionCache.Player_CameraTarget, Player_get_CameraTarget);
 
             // we assume the first .ctor method that accepts (string) is Sprite.OnFrameChange +=
             var spriteOnFrameChange = typeof(Player).GetRuntimeMethods().FirstOrDefault(m =>
@@ -175,6 +177,9 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
             hook_Player_get_CanUnDuck?.Dispose();
             hook_Player_get_CanUnDuck = null;
+
+            hook_Player_get_CameraTarget?.Dispose();
+            hook_Player_get_CameraTarget = null;
         }
 
         #region IL Hooks
@@ -424,6 +429,28 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
                 return !didCollideJumpthrus && collideJumpthrus(self);
             });
+        });
+
+        private static void Player_get_CameraTarget(ILContext il) => HookUtils.SafeHook(() =>
+        {
+            var cursor = new ILCursor(il);
+
+            // invert feather offset
+            if (!cursor.TryGotoNext(MoveType.After, instr => instr.MatchLdcR4(0.2f)) ||
+                !cursor.TryGotoNext(MoveType.After, instr => instr.MatchLdcR4(0.2f)))
+                throw new HookException("Couldn't find second 0.2f");
+            cursor.EmitInvertFloatDelegate();
+
+            // invert red dash offset
+            if (!cursor.TryGotoNext(MoveType.After, instr => instr.MatchLdcI4(48)) ||
+                !cursor.TryGotoNext(MoveType.After, instr => instr.MatchLdcI4(48)))
+                throw new HookException("Couldn't find second 48");
+            cursor.EmitInvertIntDelegate();
+
+            // invert summit launch offset
+            if (!cursor.TryGotoNext(MoveType.After, instr => instr.MatchLdcR4(64f)))
+                throw new HookException("Couldn't find 64");
+            cursor.EmitInvertFloatDelegate();
         });
 
         private static void Player_GetChasePosition(ILContext il) => HookUtils.SafeHook(() =>
