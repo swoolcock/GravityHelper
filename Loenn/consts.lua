@@ -5,6 +5,8 @@ local consts = {
     ignoredFields = {
         "modVersion",
         "pluginVersion",
+        "_name",
+        "_id",
     },
     fieldInformation = {
         gravityType = {
