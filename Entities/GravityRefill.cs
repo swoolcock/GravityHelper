@@ -208,6 +208,8 @@ namespace Celeste.Mod.GravityHelper.Entities
 
         public class Indicator : Sprite
         {
+            private const int columns = 3;
+
             public Indicator() : base(null, string.Empty)
             {
                 GFX.SpriteBank.CreateOn(this, "gravityRefillIndicator");
@@ -225,6 +227,39 @@ namespace Celeste.Mod.GravityHelper.Entities
                     Play("loop", true);
 
                 Visible = hasCharges;
+            }
+
+            public override void Render()
+            {
+                var numberOfCharges = NumberOfCharges;
+                if (numberOfCharges == 0) return;
+
+                var rows = (int)Math.Ceiling(numberOfCharges / (float)columns);
+                var finalRowItems = numberOfCharges % columns;
+                if (finalRowItems == 0) finalRowItems = columns;
+                var yOffset = (int)Height;
+                var xHalfOffset = (int)Math.Ceiling(Width / 2f + 1);
+
+                if (!GravityHelperModule.ShouldInvertPlayer)
+                    yOffset = -yOffset;
+
+                var oldPosition = Position;
+
+                for (int row = 0; row < rows; row++)
+                {
+                    Position.Y = oldPosition.Y + row * yOffset;
+                    int x = (columns - 1) * -xHalfOffset;
+                    int rowItems = row < rows - 1 ? columns : finalRowItems;
+                    x += (columns - rowItems) * xHalfOffset;
+                    for (int column = 0; column < rowItems; column++)
+                    {
+                        Position.X = oldPosition.X + x;
+                        x += 2 * xHalfOffset;
+                        base.Render();
+                    }
+                }
+
+                Position = oldPosition;
             }
         }
     }

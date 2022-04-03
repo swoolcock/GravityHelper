@@ -1093,6 +1093,9 @@ namespace Celeste.Mod.GravityHelper.Hooks
                 GravityHelperModule.Session.InitialGravity,
                 playerTriggered: false);
             GravityHelperModule.Instance.GravityBeforeReload = null;
+
+            if (self.Get<GravityRefill.Indicator>() is { } refillIndicator)
+                refillIndicator.Visible = GravityRefill.NumberOfCharges > 0;
         }
 
         private static void Player_CassetteFlyEnd(On.Celeste.Player.orig_CassetteFlyEnd orig, Player self)
