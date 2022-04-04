@@ -1094,8 +1094,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
                 playerTriggered: false);
             GravityHelperModule.Instance.GravityBeforeReload = null;
 
-            if (self.Get<GravityRefill.Indicator>() is { } refillIndicator)
-                refillIndicator.Visible = GravityRefill.NumberOfCharges > 0;
+            scene.Add(new GravityRefillIndicator());
         }
 
         private static void Player_CassetteFlyEnd(On.Celeste.Player.orig_CassetteFlyEnd orig, Player self)
@@ -1120,11 +1119,6 @@ namespace Celeste.Mod.GravityHelper.Hooks
             BadelineOldsiteHooks.ChaserStateGravity.Clear();
             GravityRefill.NumberOfCharges = 0;
 
-            var refillIndicator = new GravityRefill.Indicator
-            {
-                Position = new Vector2(0f, -20f),
-            };
-
             self.Add(new TransitionListener
                 {
                     OnOutBegin = () => GravityHelperModule.Session.InitialGravity = GravityHelperModule.PlayerComponent?.CurrentGravity ?? GravityType.Normal,
@@ -1148,8 +1142,6 @@ namespace Celeste.Mod.GravityHelper.Hooks
                         var starFlyBloom = self.GetStarFlyBloom();
                         if (starFlyBloom != null)
                             starFlyBloom.Y = Math.Abs(starFlyBloom.Y) * (args.NewValue == GravityType.Inverted ? 1 : -1);
-
-                        refillIndicator.Y = Math.Abs(refillIndicator.Y) * (args.NewValue == GravityType.Inverted ? 1 : -1);
                     },
                     UpdatePosition = args =>
                     {
@@ -1189,8 +1181,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
                         GravityRefill.NumberOfCharges--;
                         GravityHelperModule.PlayerComponent?.SetGravity(GravityType.Toggle);
                     },
-                },
-                refillIndicator
+                }
             );
         }
 
