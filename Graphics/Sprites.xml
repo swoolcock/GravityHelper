@@ -25,7 +25,8 @@
 
     <gravityRefillIndicator path="objects/GravityHelper/gravityRefill/">
         <Justify x="0.5" y="0.5" />
-        <Loop id="loop" path="indicator" delay="0.1" frames="0-4" />
+        <Loop id="down" path="indicator" delay="0.1" frames="0-7" />
+        <Loop id="up" path="indicator" delay="0.1" frames="0-3,8-11" />
     </gravityRefillIndicator>
 
     <gravityBadelineBoost path="objects/GravityHelper/gravityBadelineBoost/">

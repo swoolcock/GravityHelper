@@ -108,6 +108,7 @@ namespace Celeste.Mod.GravityHelper
             BoosterHooks.Load();
             BounceBlockHooks.Load();
             BumperHooks.Load();
+            CrushBlockHooks.Load();
             DreamBlockHooks.Load();
             FloatySpaceBlockHooks.Load();
             FlyFeatherHooks.Load();
@@ -148,6 +149,7 @@ namespace Celeste.Mod.GravityHelper
             BoosterHooks.Unload();
             BounceBlockHooks.Unload();
             BumperHooks.Unload();
+            CrushBlockHooks.Unload();
             DreamBlockHooks.Unload();
             FloatySpaceBlockHooks.Unload();
             FlyFeatherHooks.Unload();

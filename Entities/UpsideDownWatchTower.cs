@@ -11,6 +11,7 @@ using Monocle;
 namespace Celeste.Mod.GravityHelper.Entities
 {
     [CustomEntity("GravityHelper/UpsideDownWatchTower")]
+    [TrackedAs(typeof(Lookout))]
     public class UpsideDownWatchTower : Lookout
     {
         private static readonly string[] prefixes = {"", "badeline_", "nobackpack_"};

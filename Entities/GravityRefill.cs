@@ -205,27 +205,5 @@ namespace Celeste.Mod.GravityHelper.Entities
             if (refill.OneUse)
                 refill.RemoveSelf();
         }
-
-        public class Indicator : Sprite
-        {
-            public Indicator() : base(null, string.Empty)
-            {
-                GFX.SpriteBank.CreateOn(this, "gravityRefillIndicator");
-            }
-
-            public override void Update()
-            {
-                base.Update();
-
-                var hasCharges = NumberOfCharges > 0;
-
-                if (Visible && !hasCharges)
-                    Stop();
-                else if (!Visible && hasCharges)
-                    Play("loop", true);
-
-                Visible = hasCharges;
-            }
-        }
     }
 }
