@@ -40,7 +40,7 @@ namespace Celeste.Mod.GravityHelper.Entities
             _modVersion = data.ModVersion();
             _pluginVersion = data.PluginVersion();
 
-            TargetOffset = (data.FirstNodeNullable() ?? Position) - Position;
+            TargetOffset = (data.FirstNodeNullable() ?? data.Position) - data.Position;
             GravityType = data.Enum("gravityType", GravityType.Toggle);
             MomentumMultiplier = data.Float("momentumMultiplier", 1f);
             Cooldown = data.Float("cooldown");
