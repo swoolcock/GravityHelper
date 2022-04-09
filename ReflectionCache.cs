@@ -78,6 +78,7 @@ namespace Celeste.Mod.GravityHelper
         public static Type CatelineModuleType { get; private set; }
         public static FieldInfo CatelineModuleInstanceFieldInfo { get; private set; }
         public static FieldInfo CatelineModuleTailNodesFieldInfo { get; private set; }
+        public static Type DashTrailAllTheTimeType { get; private set; }
 
         public static void LoadThirdPartyTypes()
         {
@@ -90,6 +91,7 @@ namespace Celeste.Mod.GravityHelper
             CatelineModuleType = GetModdedTypeByName("Cateline", "Celeste.Mod.Cateline.CatelineModule");
             CatelineModuleInstanceFieldInfo = CatelineModuleType?.GetField("Instance", BindingFlags.Static | BindingFlags.Public);
             CatelineModuleTailNodesFieldInfo = CatelineModuleType?.GetField("tailNodes", BindingFlags.Instance | BindingFlags.NonPublic);
+            DashTrailAllTheTimeType = GetModdedTypeByName("ExtendedVariantMode", "ExtendedVariants.Variants.DashTrailAllTheTime");
         }
 
         #endregion
