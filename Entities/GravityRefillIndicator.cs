@@ -19,6 +19,9 @@ namespace Celeste.Mod.GravityHelper.Entities
         public GravityRefillIndicator()
         {
             Depth = Depths.Top;
+
+            Tag = Tags.Persistent;
+
             Add(_sprite = GFX.SpriteBank.Create("gravityRefillIndicator"));
         }
 
