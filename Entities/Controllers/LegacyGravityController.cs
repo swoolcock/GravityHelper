@@ -90,24 +90,28 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
                         gh.InvertTime = HoldableResetTime;
                     }
 
-                    if (_vvvvvv && Scene is Level level && level.Tracker.GetEntity<Player>() is { } player)
+                    GravityHelperModule.Session.FieldOpacity = FieldOpacity;
+                    GravityHelperModule.Session.ArrowOpacity = ArrowOpacity;
+                    GravityHelperModule.Session.ParticleOpacity = ParticleOpacity;
+                    GravityHelperModule.Session.NormalSound = NormalGravitySound;
+                    GravityHelperModule.Session.InvertedSound = InvertedGravitySound;
+                    GravityHelperModule.Session.ToggleSound = ToggleGravitySound;
+
+                    if (_vvvvvv)
                     {
-                        _previousInventory = level.Session.Inventory;
-                        level.Session.Inventory = new PlayerInventory(0);
-                        player.Dashes = 0;
-                        VVVVVV = true;
-                        VVVVVVSound = _vvvvvvSound;
+                        GravityHelperModule.Session.VvvvvvMode = VvvvvvMode.On;
+                        GravityHelperModule.Session.VvvvvvDisableDash = true;
+                        GravityHelperModule.Session.VvvvvvDisableGrab = true;
+                        GravityHelperModule.Session.VvvvvvFlipSound = _vvvvvvSound;
+                        VvvvvvGravityController.UpdateInventory();
                     }
                 },
                 OnOutBegin = () =>
                 {
-                    if (_vvvvvv && Scene is Level level && level.Tracker.GetEntity<Player>() is { } player)
+                    if (_vvvvvv)
                     {
-                        level.Session.Inventory = _previousInventory;
-                        player.RefillDash();
-                        _previousInventory = default;
-                        VVVVVV = false;
-                        VVVVVVSound = null;
+                        GravityHelperModule.Session.VvvvvvMode = VvvvvvMode.Off;
+                        VvvvvvGravityController.UpdateInventory();
                     }
                 }
             });
