@@ -4,12 +4,46 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Celeste.Mod.GravityHelper.Entities.Controllers;
 using Monocle;
 
 namespace Celeste.Mod.GravityHelper.Extensions
 {
     public static class TrackerExtensions
     {
+        public static TController GetController<TController>(this Tracker tracker, bool persistentFallback = true, TController exclude = default)
+            where TController : BaseGravityController =>
+            tracker.GetController(typeof(TController), persistentFallback, exclude) as TController;
+
+        public static BaseGravityController GetController(this Tracker tracker, Type controllerType, bool persistentFallback = true, BaseGravityController exclude = default, string levelName = default)
+        {
+            if (!tracker.Entities.TryGetValue(controllerType, out var list))
+                return default;
+            BaseGravityController controller = default;
+            // find the first non-persistent one
+            controller = (BaseGravityController)list.FirstOrDefault(e => !((BaseGravityController)e).Persistent && e != exclude);
+            // find the first persistent if we should
+            if (persistentFallback)
+                controller ??= (BaseGravityController)list.FirstOrDefault(e => ((BaseGravityController)e).Persistent && e != exclude);
+            return controller;
+        }
+
+        public static TController GetController<TController>(this Scene scene, bool persistentFallback = true, TController exclude = default)
+            where TController : BaseGravityController =>
+            scene.GetController(typeof(TController), persistentFallback, exclude) as TController;
+
+        public static BaseGravityController GetController(this Scene scene, Type controllerType, bool persistentFallback = true, BaseGravityController exclude = default, string levelName = default)
+        {
+            var entities = scene.Entities.Concat(scene.Entities.ToAdd).OfType<BaseGravityController>().ToList();
+            BaseGravityController controller = default;
+            // find the first non-persistent one
+            controller = entities.FirstOrDefault(e => !e.Persistent && e != exclude);
+            // find the first persistent if we should
+            if (persistentFallback)
+                controller ??= entities.FirstOrDefault(e => e.Persistent && e != exclude);
+            return controller;
+        }
+
         public static T GetEntityOrDefault<T>(this Tracker tracker, Func<T, bool> predicate = null)
             where T : Entity
         {

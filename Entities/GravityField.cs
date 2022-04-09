@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Celeste.Mod.Entities;
+using Celeste.Mod.GravityHelper.Entities.Controllers;
 using Celeste.Mod.GravityHelper.Extensions;
 using Celeste.Mod.GravityHelper.Triggers;
 using Microsoft.Xna.Framework;
@@ -152,24 +153,14 @@ namespace Celeste.Mod.GravityHelper.Entities
             _fieldGroup.Semaphore--;
         }
 
-        private GravityController getController(Scene scene)
-        {
-            if (scene == null) return null;
-            var controller = scene.Entities.OfType<GravityController>().FirstOrDefault() ??
-                             scene.Entities.ToAdd.OfType<GravityController>().FirstOrDefault();
-            return controller;
-        }
-
         public override void Added(Scene scene)
         {
             base.Added(scene);
 
-            if (getController(scene) is { } controller)
-            {
-                _arrowOpacity ??= controller.ArrowOpacity;
-                _fieldOpacity ??= controller.FieldOpacity;
-                _particleOpacity ??= controller.ParticleOpacity;
-            }
+            var controller = scene.GetController<FieldGravityController>();
+            _arrowOpacity ??= controller?.ArrowOpacity;
+            _fieldOpacity ??= controller?.FieldOpacity;
+            _particleOpacity ??= controller?.ParticleOpacity;
 
             if (_shouldDrawField)
                 this.GetConnectedFieldRenderer<GravityFieldRenderer, GravityField>(scene, true);

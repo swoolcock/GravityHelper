@@ -4,6 +4,8 @@
 using System;
 using System.Reflection;
 using Celeste.Mod.GravityHelper.Entities;
+using Celeste.Mod.GravityHelper.Entities.Controllers;
+using Monocle;
 using MonoMod.RuntimeDetour;
 
 namespace Celeste.Mod.GravityHelper.Hooks
@@ -29,6 +31,13 @@ namespace Celeste.Mod.GravityHelper.Hooks
             hook_Input_GrabCheck = null;
         }
 
-        private static bool Input_GrabCheck(Func<bool> orig) => !GravityController.VVVVVV && orig();
+        private static bool Input_GrabCheck(Func<bool> orig)
+        {
+            if (GravityHelperModule.Session.VvvvvvDisableGrab &&
+                (GravityHelperModule.Session.VvvvvvMode == VvvvvvMode.TriggerBased && GravityHelperModule.Session.VvvvvvTrigger ||
+                GravityHelperModule.Session.VvvvvvMode == VvvvvvMode.On))
+                return false;
+            return orig();
+        }
     }
 }

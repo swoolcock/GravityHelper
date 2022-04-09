@@ -20,15 +20,8 @@ const default_vvvvvv_sound = "event:/gravityhelper/toggle"
 )
 
 const placements = Ahorn.PlacementDict(
-    "Gravity Controller (GravityHelper)" => Ahorn.EntityPlacement(
+    "Legacy Gravity Controller (GravityHelper)" => Ahorn.EntityPlacement(
         GravityController,
-    ),
-    "Gravity Controller (VVVVVV) (GravityHelper)" => Ahorn.EntityPlacement(
-        GravityController,
-        "point",
-        Dict{String, Any}(
-            "vvvvvv" => true,
-        )
     ),
 )
 

@@ -105,6 +105,13 @@ namespace Celeste.Mod.GravityHelper.Entities
                             else
                                 gravityComponent.EntitySpeed = new Vector2(speed.X, -speed.Y * MomentumMultiplier);
 
+                            // if vvvvvv mode, set vertical speed to at least falling speed
+                            if (GravityHelperModule.Session.IsVvvvvv)
+                            {
+                                var newY = 160f * (SceneAs<Level>().InSpace ? 0.6f : 1f);
+                                gravityComponent.EntitySpeed = new Vector2(speed.X, Math.Max(newY, Math.Abs(speed.Y)));
+                            }
+
                             if (!string.IsNullOrEmpty(PlaySound))
                                 Audio.Play(PlaySound);
 

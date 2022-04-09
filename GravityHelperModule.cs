@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Celeste.Mod.GravityHelper.Components;
 using Celeste.Mod.GravityHelper.Entities;
+using Celeste.Mod.GravityHelper.Entities.Controllers;
 using Celeste.Mod.GravityHelper.Hooks;
 using Monocle;
 using MonoMod.ModInterop;
@@ -102,6 +103,8 @@ namespace Celeste.Mod.GravityHelper
 
             On.Celeste.Mod.AssetReloadHelper.ReloadLevel += AssetReloadHelper_ReloadLevel;
 
+            BaseGravityController.LoadHooks();
+
             ActorHooks.Load();
             BadelineBoostHooks.Load();
             BadelineOldsiteHooks.Load();
@@ -142,6 +145,8 @@ namespace Celeste.Mod.GravityHelper
 #endif
 
             On.Celeste.Mod.AssetReloadHelper.ReloadLevel -= AssetReloadHelper_ReloadLevel;
+
+            BaseGravityController.UnloadHooks();
 
             ActorHooks.Unload();
             BadelineBoostHooks.Unload();

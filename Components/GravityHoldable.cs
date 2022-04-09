@@ -3,6 +3,7 @@
 
 using System.Linq;
 using Celeste.Mod.GravityHelper.Entities;
+using Celeste.Mod.GravityHelper.Entities.Controllers;
 using Monocle;
 
 namespace Celeste.Mod.GravityHelper.Components
@@ -39,7 +40,7 @@ namespace Celeste.Mod.GravityHelper.Components
         {
             base.EntityAdded(scene);
 
-            var controller = Scene.Entities.ToAdd.Concat(Scene.Entities).OfType<GravityController>().FirstOrDefault();
+            var controller = Scene.Entities.ToAdd.Concat(Scene.Entities).OfType<LegacyGravityController>().FirstOrDefault();
             if (controller != null)
                 InvertTime = controller.HoldableResetTime;
         }

@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reflection;
 using Celeste.Mod.GravityHelper.Components;
 using Celeste.Mod.GravityHelper.Entities;
+using Celeste.Mod.GravityHelper.Entities.Controllers;
 using Celeste.Mod.GravityHelper.Extensions;
 using Celeste.Mod.GravityHelper.Triggers;
 using Microsoft.Xna.Framework;
@@ -1324,7 +1325,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             var moveY = Input.MoveY.Value;
             var gliderMoveY = Input.GliderMoveY.Value;
 
-            if (GravityController.VVVVVV)
+            if (GravityHelperModule.Session.IsVvvvvv)
             {
                 var jumpPressed = Input.Jump.Pressed;
                 Input.Jump.ConsumePress();
@@ -1333,8 +1334,8 @@ namespace Celeste.Mod.GravityHelper.Hooks
                 {
                     GravityHelperModule.PlayerComponent?.SetGravity(GravityType.Toggle, playerTriggered: false);
                     self.Speed.Y = 160f * (self.SceneAs<Level>().InSpace ? 0.6f : 1f);
-                    if (!string.IsNullOrEmpty(GravityController.VVVVVVSound))
-                        Audio.Play(GravityController.VVVVVVSound);
+                    if (!string.IsNullOrEmpty(GravityHelperModule.Session.VvvvvvFlipSound))
+                        Audio.Play(GravityHelperModule.Session.VvvvvvFlipSound);
                 }
             }
 
@@ -1389,7 +1390,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
                 if (!GravityHelperModule.ShouldInvertPlayer)
                     return false;
 
-                var ghUdjt = self.Scene.Tracker.GetEntitiesOrEmpty<UpsideDownJumpThru>().Cast<Entity>();
+                var ghUdjt = self.Scene.Tracker.GetEntitiesOrEmpty<UpsideDownJumpThru>();
                 var mhhUdjt = self.Scene.Tracker.GetEntitiesOrEmpty(ReflectionCache.MaxHelpingHandUpsideDownJumpThruType);
                 var entities = ghUdjt.Concat(mhhUdjt);
 

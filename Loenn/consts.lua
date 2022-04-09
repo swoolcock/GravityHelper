@@ -26,6 +26,13 @@ local consts = {
                 {"None", -1},
             }
         },
+        vvvvvvMode = {
+            options = {
+                {"Trigger-based", 0},
+                {"Off", 1},
+                {"On", 2},
+            }
+        }
     },
     gravityTypes = {
         -- regular gravity
