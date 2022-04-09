@@ -55,33 +55,38 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
 
         public static void LoadHooks()
         {
-            Everest.Events.Level.OnLoadLevel += Level_OnLoadLevel;
+            On.Celeste.Level.LoadLevel += Level_LoadLevel;
         }
 
         public static void UnloadHooks()
         {
-            Everest.Events.Level.OnLoadLevel -= Level_OnLoadLevel;
+            On.Celeste.Level.LoadLevel -= Level_LoadLevel;
         }
 
         /// <summary>
         /// This is hooked to ensure that LoadLevel will create and add all persistent controllers on the entire map,
         /// and only once when the map is first loaded, regardless of the current room.
         /// </summary>
-        private static void Level_OnLoadLevel(Level level, Player.IntroTypes playerintro, bool isfromloader)
+        private static void Level_LoadLevel(On.Celeste.Level.orig_LoadLevel orig, Level self, Player.IntroTypes playerintro, bool isfromloader)
         {
-            if (!isfromloader) return;
+            if (!isfromloader)
+            {
+                orig(self, playerintro, false);
+                return;
+            }
 
             // find all persistent gravity controllers
-            var entities = level.Session.MapData?.Levels?.SelectMany(l => l.Entities) ?? Enumerable.Empty<EntityData>();
+            var entities = self.Session.MapData?.Levels?.SelectMany(l => l.Entities) ?? Enumerable.Empty<EntityData>();
             var controllers = entities.Where(d => d.Name.StartsWith("GravityHelper") && d.Name.Contains("Controller"));
             var persistent = controllers.Where(d => d.Bool("persistent"));
 
             foreach (var data in persistent)
             {
-                // prevent the level loader from loading them, and do it manually
-                level.Session.DoNotLoad.Add(new EntityID(level.Session.LevelData.Name, data.ID));
-                Level.LoadCustomEntity(data, level);
+                self.Session.DoNotLoad.Add(new EntityID(self.Session.LevelData.Name, data.ID));
+                Level.LoadCustomEntity(data, self);
             }
+
+            orig(self, playerintro, true);
         }
     }
 }

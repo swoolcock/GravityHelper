@@ -113,7 +113,7 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
                         GravityHelperModule.Session.VvvvvvMode = VvvvvvMode.Off;
                         VvvvvvGravityController.UpdateInventory();
                     }
-                }
+                },
             });
         }
 

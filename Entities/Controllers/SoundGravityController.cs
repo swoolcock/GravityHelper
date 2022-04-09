@@ -51,7 +51,7 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
                             _soundMuffleRemaining = sound_muffle_time_seconds;
                             Audio.Play(soundName);
                         }
-                    }
+                    },
                 });
             }
         }

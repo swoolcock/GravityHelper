@@ -34,13 +34,17 @@ namespace Celeste.Mod.GravityHelper.Extensions
 
         public static BaseGravityController GetController(this Scene scene, Type controllerType, bool persistentFallback = true, BaseGravityController exclude = default, string levelName = default)
         {
-            var entities = scene.Entities.Concat(scene.Entities.ToAdd).OfType<BaseGravityController>().ToList();
+            var entities = scene.Entities
+                .Concat(scene.Entities.ToAdd)
+                .Where(e => e != exclude && e.GetType() == controllerType)
+                .Cast<BaseGravityController>()
+                .ToList();
             BaseGravityController controller = default;
             // find the first non-persistent one
-            controller = entities.FirstOrDefault(e => !e.Persistent && e != exclude);
+            controller = entities.FirstOrDefault(e => !e.Persistent);
             // find the first persistent if we should
             if (persistentFallback)
-                controller ??= entities.FirstOrDefault(e => e.Persistent && e != exclude);
+                controller ??= entities.FirstOrDefault(e => e.Persistent);
             return controller;
         }
 
