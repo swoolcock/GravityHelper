@@ -1094,6 +1094,13 @@ namespace Celeste.Mod.GravityHelper.Hooks
                 playerTriggered: false);
             GravityHelperModule.Instance.GravityBeforeReload = null;
 
+            if (self.CollideFirstOrDefault<VvvvvvTrigger>() is { } vvvvvvTrigger && vvvvvvTrigger.OnlyOnSpawn)
+            {
+                GravityHelperModule.Session.VvvvvvTrigger = vvvvvvTrigger.Enable;
+                if (scene.Tracker.GetEntityOrDefault<VvvvvvGravityController>() is { } vvvvvvGravityController)
+                    vvvvvvGravityController.Apply();
+            }
+
             scene.Add(new GravityRefillIndicator());
         }
 

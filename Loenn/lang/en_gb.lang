@@ -14,20 +14,6 @@ entities.GravityHelper/GravityBooster.attributes.useTintedSprites=Whether to use
 entities.GravityHelper/GravityBumper.placements.name.normal=Gravity Bumper (GravityHelper)
 entities.GravityHelper/GravityBumper.attributes.description.gravityType=The gravity type to set when Madeline touches the bumper. 0: Normal, 1: Inverted, 2: Toggle. -1: None (ignore).
 
-# Gravity Controller
-entities.GravityHelper/GravityController.placements.name.normal=Gravity Controller (GravityHelper)
-entities.GravityHelper/GravityController.placements.name.vvvvvv=Gravity Controller (VVVVVV) (GravityHelper)
-entities.GravityHelper/GravityController.attributes.description.alwaysTrigger=Whether or not gravity sound effects should always play when gravity is set, even if the gravity didn't actually change. Defaults to false.
-entities.GravityHelper/GravityController.attributes.description.normalGravitySound=The sound to play when gravity resets to normal. Defaults to event:/ui/game/lookout_off (the sound when cancelling a watch tower).
-entities.GravityHelper/GravityController.attributes.description.invertedGravitySound=The sound to play when gravity inverts. Defaults to event:/ui/game/lookout_on (the sound when first using a watch tower).
-entities.GravityHelper/GravityController.attributes.description.toggleGravitySound=Whether this and connected fields should attach to solids.
-entities.GravityHelper/GravityController.attributes.description.fieldOpacity=The default opacity of shimmering field effects, if enabled. Ranges from 0 (invisible) to 1 (fully opaque). Defaults to 0.15.
-entities.GravityHelper/GravityController.attributes.description.arrowOpacity=The default opacity of arrows, if enabled. Ranges from 0 (invisible) to 1 (fully opaque). Defaults to 0.5.
-entities.GravityHelper/GravityController.attributes.description.particleOpacity=The default opacity of moving particles, if enabled. Ranges from 0 (invisible) to 1 (fully opaque). Defaults to 0.5.
-entities.GravityHelper/GravityController.attributes.description.holdableResetTime=The amount of time in seconds a holdable will take to reset after being dropped. If <= 0, the holdable will never reset. Defaults to 2.
-entities.GravityHelper/GravityController.attributes.description.gravityMusicParam=The music parameter that should be set to 0 or 1 depending on whether gravity is currently normal or inverted.
-entities.GravityHelper/GravityController.attributes.description.vvvvvv=Enables VVVVVV mode. Dash and grab are disabled, and jump will toggle gravity instantly. Jump can only be pressed on safe ground.
-
 # Gravity Dream Block
 entities.GravityHelper/GravityDreamBlock.placements.name.normal=Gravity Dream Block (GravityHelper)
 entities.GravityHelper/GravityDreamBlock.attributes.description.gravityType=The gravity type to set when Madeline exits the dream block.
@@ -117,3 +103,31 @@ triggers.GravityHelper/GravityTrigger.attributes.description.affectsOtherActors=
 triggers.GravityHelper/SpawnGravityTrigger.placements.name.normal=Spawn Gravity Trigger (GravityHelper)
 triggers.GravityHelper/SpawnGravityTrigger.attributes.description.gravityType=The gravity type to set when Madeline spawns inside the trigger. 0: Normal, 1: Inverted, 2: Toggle. -1: None (ignore).
 triggers.GravityHelper/SpawnGravityTrigger.attributes.description.fireOnBubbleReturn=Whether gravity should be applied if Madeline is sent to the spawn trigger via a cassette or berry return bubble.
+
+# Field Gravity Controller
+entities.GravityHelper/FieldGravityController.placements.name.normal=Field Gravity Controller (GravityHelper)
+entities.GravityHelper/FieldGravityController.attributes.description.persistent=Whether this controller should be considered the default for its type. There should only ever be one persistent in your map, and not in a room with another controller of the same type.
+entities.GravityHelper/FieldGravityController.attributes.description.fieldOpacity=The default opacity of shimmering field effects, if enabled. Ranges from 0 (invisible) to 1 (fully opaque). Defaults to 0.15.
+entities.GravityHelper/FieldGravityController.attributes.description.arrowOpacity=The default opacity of arrows, if enabled. Ranges from 0 (invisible) to 1 (fully opaque). Defaults to 0.5.
+entities.GravityHelper/FieldGravityController.attributes.description.particleOpacity=The default opacity of moving particles, if enabled. Ranges from 0 (invisible) to 1 (fully opaque). Defaults to 0.5.
+
+# Sound Gravity Controller
+entities.GravityHelper/SoundGravityController.placements.name.normal=Sound Gravity Controller (GravityHelper)
+entities.GravityHelper/SoundGravityController.attributes.description.persistent=Whether this controller should be considered the default for its type. There should only ever be one persistent in your map, and not in a room with another controller of the same type.
+entities.GravityHelper/SoundGravityController.attributes.description.normalSound=The sound to play when gravity resets to normal. Defaults to event:/ui/game/lookout_off (the sound when cancelling a watch tower).
+entities.GravityHelper/SoundGravityController.attributes.description.invertedSound=The sound to play when gravity inverts. Defaults to event:/ui/game/lookout_on (the sound when first using a watch tower).
+entities.GravityHelper/SoundGravityController.attributes.description.toggleSound=Whether this and connected fields should attach to solids.
+entities.GravityHelper/SoundGravityController.attributes.description.musicParam=The music parameter that should be set to 0 or 1 depending on whether gravity is currently normal or inverted.
+
+# VVVVVV Gravity Controller
+entities.GravityHelper/VvvvvvGravityController.placements.name.normal=VVVVVV Gravity Controller (GravityHelper)
+entities.GravityHelper/VvvvvvGravityController.attributes.description.persistent=Whether this controller should be considered the default for its type. There should only ever be one persistent in your map, and not in a room with another controller of the same type.
+entities.GravityHelper/VvvvvvGravityController.attributes.description.mode=On, Off, or Trigger-based control. When on, regular jumping is disabled and replaced with instant gravity flipping if on the ground. Defaults to On.
+entities.GravityHelper/VvvvvvGravityController.attributes.description.disableGrab=Whether grabbing should be disabled while vvvvvv mode is enabled. Defaults to true.
+entities.GravityHelper/VvvvvvGravityController.attributes.description.disableDash=Whether dashing should be disabled while vvvvvv mode is enabled. Defaults to true.
+entities.GravityHelper/VvvvvvGravityController.attributes.description.flipSound=The sound to play when the player flips. Defaults to a custom sound.
+
+# VVVVVV Trigger
+triggers.GravityHelper/VvvvvvTrigger.placements.name.normal=VVVVVV Trigger (GravityHelper)
+triggers.GravityHelper/VvvvvvTrigger.attributes.description.enable=Whether this trigger should enable VVVVVV mode. Defaults to true.
+triggers.GravityHelper/VvvvvvTrigger.attributes.description.onlyOnSpawn=Whether this trigger should only activate when Madeline spawns within it. Defaults to false.
