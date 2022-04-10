@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using Celeste.Mod.Entities;
 using Celeste.Mod.GravityHelper.Components;
+using Celeste.Mod.GravityHelper.Entities.Controllers;
 using Celeste.Mod.GravityHelper.Extensions;
 using Microsoft.Xna.Framework;
 using Monocle;
@@ -65,6 +66,7 @@ namespace Celeste.Mod.GravityHelper.Entities
             if (_flashTimeRemaining > 0)
                 _flashTimeRemaining -= Engine.DeltaTime;
 
+            var vvvvvv = Scene.Tracker.GetEntityOrDefault<VvvvvvGravityController>();
             var components = Scene.Tracker.GetComponents<GravityComponent>();
             foreach (var component in components)
             {
@@ -106,7 +108,7 @@ namespace Celeste.Mod.GravityHelper.Entities
                                 gravityComponent.EntitySpeed = new Vector2(speed.X, -speed.Y * MomentumMultiplier);
 
                             // if vvvvvv mode, set vertical speed to at least falling speed
-                            if (GravityHelperModule.Session.IsVvvvvv)
+                            if (vvvvvv?.IsVvvvvv ?? false)
                             {
                                 var newY = 160f * (SceneAs<Level>().InSpace ? 0.6f : 1f);
                                 gravityComponent.EntitySpeed = new Vector2(speed.X, Math.Max(newY, Math.Abs(speed.Y)));

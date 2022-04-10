@@ -2,6 +2,7 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Celeste.Mod.GravityHelper.Extensions;
 using Microsoft.Xna.Framework;
@@ -16,6 +17,8 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
 
         public bool Persistent { get; }
 
+        protected BaseGravityController CurrentChild { get; private set; }
+
         protected BaseGravityController(EntityData data, Vector2 offset)
             : base(data.Position + offset)
         {
@@ -27,25 +30,51 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
             if (Persistent)
             {
                 AddTag(Tags.Persistent);
-            }
-            else
-            {
+
+                // note that we must use OnOutBegin since OnInBegin will only be called on
+                // entities that are part of the newly loaded room
                 Add(new TransitionListener
                 {
-                    OnInBegin = () => ApplyCurrent(GetType()),
-                    OnOutBegin = () => ApplyCurrent(GetType(), this),
+                    OnOutBegin = applyCurrent,
                 });
             }
         }
 
-        protected static void ApplyCurrent(Type type, BaseGravityController exclude = default)
+        private void applyCurrent()
         {
-            var controller = (Engine.Scene as Level)?.GetController(type, exclude: exclude);
-            controller?.Apply();
+            var level = SceneAs<Level>();
+            CurrentChild = level.Entities.FirstOrDefault(e =>
+                e.GetType() == GetType() &&
+                (e as BaseGravityController)?.Persistent == false &&
+                level.IsInBounds(e)) as BaseGravityController;
+            Logger.Log(nameof(GravityHelperModule), $"applyCurrent: CurrentChild is {CurrentChild}");
+            Apply();
         }
 
-        protected virtual void Apply()
+        public override void Added(Scene scene)
         {
+            base.Added(scene);
+
+            // only persistent controllers should be tracked
+            if (Persistent)
+            {
+                if (!scene.Tracker.Entities.TryGetValue(GetType(), out var list))
+                    list = scene.Tracker.Entities[GetType()] = new List<Entity>();
+                if (!list.Contains(this))
+                    list.Add(this);
+            }
+        }
+
+        public virtual void Apply()
+        {
+        }
+
+        public override void Update()
+        {
+            base.Update();
+
+            if (Persistent && CurrentChild != null && CurrentChild.Scene == null)
+                CurrentChild = null;
         }
 
         public static void LoadHooks()
@@ -83,19 +112,11 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
 
             orig(self, playerintro, true);
 
-            // apply persistent that aren't in this room
+            // apply all persistent controllers (they will defer to the current room)
             foreach (var controller in self.Entities
                 .OfType<BaseGravityController>()
-                .Where(c => c.Persistent && !self.IsInBounds(c)))
-                controller.Apply();
-
-            // apply all controllers in this room
-            // note that this could conflict if a persistent and non-persistent of the same type are in the first room
-            // please don't do that! :panicline:
-            foreach (var controller in self.Entities
-                .OfType<BaseGravityController>()
-                .Where(self.IsInBounds))
-                controller.Apply();
+                .Where(c => c.Persistent))
+                controller.applyCurrent();
         }
     }
 }

@@ -89,30 +89,6 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
                         var gh = (GravityHoldable)comp;
                         gh.InvertTime = HoldableResetTime;
                     }
-
-                    GravityHelperModule.Session.FieldOpacity = FieldOpacity;
-                    GravityHelperModule.Session.ArrowOpacity = ArrowOpacity;
-                    GravityHelperModule.Session.ParticleOpacity = ParticleOpacity;
-                    GravityHelperModule.Session.NormalSound = NormalGravitySound;
-                    GravityHelperModule.Session.InvertedSound = InvertedGravitySound;
-                    GravityHelperModule.Session.ToggleSound = ToggleGravitySound;
-
-                    if (_vvvvvv)
-                    {
-                        GravityHelperModule.Session.VvvvvvMode = VvvvvvMode.On;
-                        GravityHelperModule.Session.VvvvvvDisableDash = true;
-                        GravityHelperModule.Session.VvvvvvDisableGrab = true;
-                        GravityHelperModule.Session.VvvvvvFlipSound = _vvvvvvSound;
-                        VvvvvvGravityController.UpdateInventory();
-                    }
-                },
-                OnOutBegin = () =>
-                {
-                    if (_vvvvvv)
-                    {
-                        GravityHelperModule.Session.VvvvvvMode = VvvvvvMode.Off;
-                        VvvvvvGravityController.UpdateInventory();
-                    }
                 },
             });
         }

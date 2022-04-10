@@ -2,7 +2,6 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Celeste.Mod.GravityHelper.Components;
@@ -1325,7 +1324,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             var moveY = Input.MoveY.Value;
             var gliderMoveY = Input.GliderMoveY.Value;
 
-            if (GravityHelperModule.Session.IsVvvvvv)
+            if (self.Scene.Tracker.GetEntityOrDefault<VvvvvvGravityController>() is { } controller && controller.IsVvvvvv)
             {
                 var jumpPressed = Input.Jump.Pressed;
                 Input.Jump.ConsumePress();
@@ -1334,8 +1333,8 @@ namespace Celeste.Mod.GravityHelper.Hooks
                 {
                     GravityHelperModule.PlayerComponent?.SetGravity(GravityType.Toggle, playerTriggered: false);
                     self.Speed.Y = 160f * (self.SceneAs<Level>().InSpace ? 0.6f : 1f);
-                    if (!string.IsNullOrEmpty(GravityHelperModule.Session.VvvvvvFlipSound))
-                        Audio.Play(GravityHelperModule.Session.VvvvvvFlipSound);
+                    if (!string.IsNullOrEmpty(controller.FlipSound))
+                        Audio.Play(controller.FlipSound);
                 }
             }
 
