@@ -18,16 +18,14 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
         public string MusicParam { get; }
 
         private const float sound_muffle_time_seconds = 0.25f;
-        private const string default_normal_sound = "event:/char/madeline/climb_ledge";
-        private const string default_inverted_sound = "event:/char/madeline/crystaltheo_lift";
 
         private static float _soundMuffleRemaining;
 
         public SoundGravityController(EntityData data, Vector2 offset)
             : base(data, offset)
         {
-            NormalSound = data.Attr("normalSound", default_normal_sound);
-            InvertedSound = data.Attr("invertedSound", default_inverted_sound);
+            NormalSound = data.Attr("normalSound", string.Empty);
+            InvertedSound = data.Attr("invertedSound", string.Empty);
             ToggleSound = data.Attr("toggleSound", string.Empty);
             MusicParam = data.Attr("musicParam", string.Empty);
 
