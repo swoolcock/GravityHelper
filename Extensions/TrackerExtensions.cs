@@ -28,21 +28,21 @@ namespace Celeste.Mod.GravityHelper.Extensions
             return controller;
         }
 
-        public static TController GetController<TController>(this Scene scene, bool persistentFallback = true, TController exclude = default)
+        public static TController GetController<TController>(this Level level, bool persistentFallback = true, TController exclude = default)
             where TController : BaseGravityController =>
-            scene.GetController(typeof(TController), persistentFallback, exclude) as TController;
+            level.GetController(typeof(TController), persistentFallback, exclude) as TController;
 
-        public static BaseGravityController GetController(this Scene scene, Type controllerType, bool persistentFallback = true, BaseGravityController exclude = default, string levelName = default)
+        public static BaseGravityController GetController(this Level level, Type controllerType, bool persistentFallback = true, BaseGravityController exclude = default, string levelName = default)
         {
-            var entities = scene.Entities
-                .Concat(scene.Entities.ToAdd)
+            var entities = level.Entities
+                .Concat(level.Entities.ToAdd)
                 .Where(e => e != exclude && e.GetType() == controllerType)
                 .Cast<BaseGravityController>()
                 .ToList();
             BaseGravityController controller = default;
-            // find the first non-persistent one
-            controller = entities.FirstOrDefault(e => !e.Persistent);
-            // find the first persistent if we should
+            // find the first non-persistent one in the room bounds
+            controller = entities.FirstOrDefault(e => !e.Persistent && level.IsInBounds(e));
+            // fallback to the first persistent if we should
             if (persistentFallback)
                 controller ??= entities.FirstOrDefault(e => e.Persistent);
             return controller;

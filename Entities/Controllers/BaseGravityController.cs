@@ -32,6 +32,7 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
             {
                 Add(new TransitionListener
                 {
+                    OnInBegin = () => ApplyCurrent(GetType()),
                     OnOutBegin = () => ApplyCurrent(GetType(), this),
                 });
             }
@@ -39,14 +40,8 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
 
         protected static void ApplyCurrent(Type type, BaseGravityController exclude = default)
         {
-            var controller = Engine.Scene.GetController(type, exclude: exclude);
+            var controller = (Engine.Scene as Level)?.GetController(type, exclude: exclude);
             controller?.Apply();
-        }
-
-        public override void Added(Scene scene)
-        {
-            base.Added(scene);
-            ApplyCurrent(GetType());
         }
 
         protected virtual void Apply()
@@ -87,6 +82,20 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
             }
 
             orig(self, playerintro, true);
+
+            // apply persistent that aren't in this room
+            foreach (var controller in self.Entities
+                .OfType<BaseGravityController>()
+                .Where(c => c.Persistent && !self.IsInBounds(c)))
+                controller.Apply();
+
+            // apply all controllers in this room
+            // note that this could conflict if a persistent and non-persistent of the same type are in the first room
+            // please don't do that! :panicline:
+            foreach (var controller in self.Entities
+                .OfType<BaseGravityController>()
+                .Where(self.IsInBounds))
+                controller.Apply();
         }
     }
 }
