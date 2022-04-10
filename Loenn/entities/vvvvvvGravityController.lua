@@ -1,5 +1,6 @@
 local consts = require("mods").requireFromPlugin("consts")
 local helpers = require("mods").requireFromPlugin("helpers")
+local drawableSprite = require("structs.drawable_sprite")
 
 local placementData = helpers.createPlacementData('1', {
     persistent = false,
@@ -9,10 +10,9 @@ local placementData = helpers.createPlacementData('1', {
     disableDash = true,
 })
 
-local gravityController = {
-    name = "GravityHelper/GravityController",
+local vvvvvvGravityController = {
+    name = "GravityHelper/VvvvvvGravityController",
     depth = -8500,
-    texture = "objects/GravityHelper/gravityController/icon",
     ignoredFields = consts.ignoredFields,
     placements = {
         {
@@ -22,4 +22,11 @@ local gravityController = {
     },
 }
 
-return gravityController
+function vvvvvvGravityController.sprite(room, entity)
+    local spriteName = entity.persistent and "objects/GravityHelper/gravityController/icon_dot" or "objects/GravityHelper/gravityController/icon"
+    local iconSprite = drawableSprite.fromTexture(spriteName, entity)
+    local typeSprite = drawableSprite.fromTexture("objects/GravityHelper/gravityController/spikes", entity)
+    return {iconSprite, typeSprite}
+end
+
+return vvvvvvGravityController

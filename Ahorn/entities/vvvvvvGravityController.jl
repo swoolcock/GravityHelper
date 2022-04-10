@@ -29,13 +29,19 @@ Ahorn.editingOptions(entity::VvvvvvGravityController) = Dict{String, Any}(
     "mode" => vvvvvvModes
 )
 
-const sprite = "objects/GravityHelper/gravityController/icon"
+const sprite = "objects/GravityHelper/gravityController/circle"
+const sprite_dot = "objects/GravityHelper/gravityController/circle_dot"
+const sprite_spikes = "objects/GravityHelper/gravityController/spikes"
 
 function Ahorn.selection(entity::VvvvvvGravityController)
     x, y = Ahorn.position(entity)
     return Ahorn.getSpriteRectangle(sprite, x, y)
 end
 
-Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::VvvvvvGravityController) = Ahorn.drawSprite(ctx, sprite, 0, 0)
+function Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::VvvvvvGravityController)
+    icon = get(entity.data, "persistent", false) ? sprite_dot : sprite
+    Ahorn.drawSprite(ctx, icon, 0, 0)
+    Ahorn.drawSprite(ctx, sprite_spikes, 0, 0)
+end
 
 end
