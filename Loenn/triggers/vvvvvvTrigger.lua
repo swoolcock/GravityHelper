@@ -5,7 +5,7 @@ local placementData = helpers.createPlacementData('1', {
     width = 8,
     height = 8,
     enable = true,
-    onlyOnSpawn = true,
+    onlyOnSpawn = false,
 })
 
 local vvvvvvTrigger = {

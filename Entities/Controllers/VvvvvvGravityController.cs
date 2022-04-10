@@ -26,6 +26,8 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
 
         public bool IsVvvvvv => Mode == VvvvvvMode.TriggerBased && GravityHelperModule.Session.VvvvvvTrigger || Mode == VvvvvvMode.On;
 
+        private bool _dashDisabled;
+
         public VvvvvvGravityController(EntityData data, Vector2 offset)
             : base(data, offset)
         {
@@ -39,8 +41,17 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
         {
             DisableGrabCache = DisableGrab;
             ModeCache = Mode;
+        }
 
-            UpdateInventory();
+        public override void Update()
+        {
+            base.Update();
+
+            if (Persistent && _dashDisabled != IsVvvvvv && DisableDash)
+            {
+                _dashDisabled = IsVvvvvv && DisableDash;
+                UpdateInventory();
+            }
         }
 
         public void UpdateInventory()
@@ -48,18 +59,13 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
             if (Scene is not Level level || level.Tracker.GetEntity<Player>() is not { } player)
                 return;
 
-            if (IsVvvvvv && DisableDash)
+            if (_dashDisabled)
             {
                 level.Session.Inventory = PlayerInventory.Prologue;
                 player.Dashes = 0;
             }
-            else if (level.Session.Inventory.Dashes == 0)
+            else
             {
-                // Logger.Log(nameof(GravityHelperModule), $"inventory: {level.Session.MapData.Meta.Inventory}");
-                // var startInventoryString = level.Session.MapData.Meta.Inventory;
-                // var startInventoryField = typeof(PlayerInventory).GetField(startInventoryString, BindingFlags.Public | BindingFlags.Static);
-                // var startInventory = (PlayerInventory)startInventoryField.GetValue(null);
-                // level.Session.Inventory = startInventory;
                 // TODO: not force default
                 level.Session.Inventory = PlayerInventory.Default;
             }

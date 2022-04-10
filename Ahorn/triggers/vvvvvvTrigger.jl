@@ -6,7 +6,7 @@ using ..Ahorn, Maple
     x::Integer, y::Integer,
     width::Integer=Maple.defaultTriggerWidth, height::Integer=Maple.defaultTriggerHeight,
     enable::Bool=true,
-    onlyOnSpawn::Bool=true
+    onlyOnSpawn::Bool=false
 )
 
 const placements = Ahorn.PlacementDict(
