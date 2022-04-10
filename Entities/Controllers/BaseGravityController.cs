@@ -29,7 +29,7 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
 
             if (Persistent)
             {
-                AddTag(Tags.Persistent);
+                AddTag(Tags.Global);
 
                 // note that we must use OnOutBegin since OnInBegin will only be called on
                 // entities that are part of the newly loaded room
