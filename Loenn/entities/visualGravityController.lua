@@ -3,14 +3,14 @@ local helpers = require("mods").requireFromPlugin("helpers")
 local drawableSprite = require("structs.drawable_sprite")
 
 local placementData = helpers.createPlacementData('1', {
-    persistent = false,
-    arrowOpacity = 0.5,
-    fieldOpacity = 0.15,
-    particleOpacity = 0.5,
+    persistent = true,
+    fieldArrowOpacity = 0.5,
+    fieldBackgroundOpacity = 0.15,
+    fieldParticleOpacity = 0.5,
 })
 
-local fieldGravityController = {
-    name = "GravityHelper/FieldGravityController",
+local visualGravityController = {
+    name = "GravityHelper/VisualGravityController",
     depth = -8500,
     ignoredFields = consts.ignoredFields,
     placements = {
@@ -21,11 +21,11 @@ local fieldGravityController = {
     },
 }
 
-function fieldGravityController.sprite(room, entity)
+function visualGravityController.sprite(room, entity)
     local spriteName = entity.persistent and "objects/GravityHelper/gravityController/icon_dot" or "objects/GravityHelper/gravityController/icon"
     local iconSprite = drawableSprite.fromTexture(spriteName, entity)
     local typeSprite = drawableSprite.fromTexture("objects/GravityHelper/gravityController/field", entity)
     return {iconSprite, typeSprite}
 end
 
-return fieldGravityController
+return visualGravityController

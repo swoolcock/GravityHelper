@@ -7,7 +7,7 @@ const default_inverted_gravity_sound = "event:/ui/game/lookout_on"
 
 @mapdef Entity "GravityHelper/SoundGravityController" SoundGravityController(
     x::Integer, y::Integer,
-    persistent::Bool=false,
+    persistent::Bool=true,
     normalSound::String=default_normal_gravity_sound,
     invertedSound::String=default_inverted_gravity_sound,
     toggleSound::String="",

@@ -157,10 +157,10 @@ namespace Celeste.Mod.GravityHelper.Entities
         {
             base.Added(scene);
 
-            var controller = (scene as Level)?.GetController<FieldGravityController>();
-            _arrowOpacity ??= controller?.ArrowOpacity;
-            _fieldOpacity ??= controller?.FieldOpacity;
-            _particleOpacity ??= controller?.ParticleOpacity;
+            var controller = (scene as Level)?.GetController<VisualGravityController>();
+            _arrowOpacity ??= controller?.FieldArrowOpacity;
+            _fieldOpacity ??= controller?.FieldBackgroundOpacity;
+            _particleOpacity ??= controller?.FieldParticleOpacity;
 
             if (_shouldDrawField)
                 this.GetConnectedFieldRenderer<GravityFieldRenderer, GravityField>(scene, true);

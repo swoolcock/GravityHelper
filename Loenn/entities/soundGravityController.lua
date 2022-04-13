@@ -3,7 +3,7 @@ local helpers = require("mods").requireFromPlugin("helpers")
 local drawableSprite = require("structs.drawable_sprite")
 
 local placementData = helpers.createPlacementData('1', {
-    persistent = false,
+    persistent = true,
     normalSound = consts.gravityTypes.normal.sound,
     invertedSound = consts.gravityTypes.inverted.sound,
     toggleSound = consts.gravityTypes.toggle.sound,

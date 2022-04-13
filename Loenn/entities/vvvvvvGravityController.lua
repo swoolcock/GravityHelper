@@ -3,7 +3,7 @@ local helpers = require("mods").requireFromPlugin("helpers")
 local drawableSprite = require("structs.drawable_sprite")
 
 local placementData = helpers.createPlacementData('1', {
-    persistent = false,
+    persistent = true,
     mode = 2, -- On
     flipSound = "event:/gravityhelper/toggle",
     disableGrab = true,

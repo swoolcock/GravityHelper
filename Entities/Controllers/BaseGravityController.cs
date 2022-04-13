@@ -25,7 +25,7 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
             ModVersion = data.ModVersion();
             PluginVersion = data.PluginVersion();
 
-            Persistent = data.Bool("persistent");
+            Persistent = data.Bool("persistent", true);
 
             if (Persistent)
             {

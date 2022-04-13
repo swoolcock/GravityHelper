@@ -6,7 +6,7 @@ const default_vvvvvv_sound = "event:/gravityhelper/toggle"
 
 @mapdef Entity "GravityHelper/VvvvvvGravityController" VvvvvvGravityController(
     x::Integer, y::Integer,
-    persistent::Bool=false,
+    persistent::Bool=true,
     mode::Integer=2,
     disableGrab::Bool=true,
     disableDash::Bool=true,
