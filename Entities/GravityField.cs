@@ -74,14 +74,9 @@ namespace Celeste.Mod.GravityHelper.Entities
             ArrowType = (VisualType)data.Int("arrowType", (int) VisualType.Default);
             FieldType = (VisualType)data.Int("fieldType", (int) VisualType.Default);
 
-            if (float.TryParse(data.Attr("arrowOpacity"), out var arrowOpacity))
-                _arrowOpacity = Calc.Clamp(arrowOpacity, 0f, 1f);
-
-            if (float.TryParse(data.Attr("particleOpacity"), out var particleOpacity))
-                _particleOpacity = Calc.Clamp(particleOpacity, 0f, 1f);
-
-            if (float.TryParse(data.Attr("fieldOpacity"), out var fieldOpacity))
-                _fieldOpacity = Calc.Clamp(fieldOpacity, 0f, 1f);
+            _arrowOpacity = data.NullableFloat("arrowOpacity")?.Clamp(0f, 1f);
+            _particleOpacity = data.NullableFloat("particleOpacity")?.Clamp(0f, 1f);
+            _fieldOpacity = data.NullableFloat("fieldOpacity")?.Clamp(0f, 1f);
 
             _shouldDrawArrows = !(ArrowType == VisualType.None || ArrowType == VisualType.Default && GravityType == GravityType.None);
             _shouldDrawField = !(FieldType == VisualType.None || FieldType == VisualType.Default && GravityType == GravityType.None);

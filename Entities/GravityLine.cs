@@ -15,6 +15,10 @@ namespace Celeste.Mod.GravityHelper.Entities
     [CustomEntity("GravityHelper/GravityLine")]
     public class GravityLine : Entity
     {
+        public const float DEFAULT_MIN_ALPHA = 0.45f;
+        public const float DEFAULT_MAX_ALPHA = 0.95f;
+        public const float DEFAULT_FLASH_TIME = 0.35f;
+
         public Vector2 TargetOffset { get; }
         public GravityType GravityType { get; }
         public float MomentumMultiplier { get; }
@@ -30,9 +34,10 @@ namespace Celeste.Mod.GravityHelper.Entities
 
         private readonly Dictionary<int, ComponentTracking> _trackedComponents = new();
 
-        private float _minAlpha = 0.45f;
-        private float _maxAlpha = 0.95f;
-        private float _flashTime = 0.35f;
+        private float? _minAlpha;
+        private float? _maxAlpha;
+        private float? _flashTime;
+
         private float _flashTimeRemaining;
 
         public GravityLine(EntityData data, Vector2 offset)
@@ -50,6 +55,10 @@ namespace Celeste.Mod.GravityHelper.Entities
             OnlyWhileFalling = data.Bool("onlyWhileFalling");
             PlaySound = data.Attr("playSound", "event:/gravityhelper/gravity_line");
             Depth = Depths.Above;
+
+            _minAlpha = data.NullableFloat("minAlpha")?.Clamp(0f, 1f);
+            _maxAlpha = data.NullableFloat("maxAlpha")?.Clamp(0f, 1f);
+            _flashTime = data.NullableFloat("flashTime")?.ClampLower(0f);
 
             var affectsPlayer = data.Bool("affectsPlayer", true);
             var affectsHoldableActors = data.Bool("affectsHoldableActors");
@@ -117,7 +126,7 @@ namespace Celeste.Mod.GravityHelper.Entities
                             if (!string.IsNullOrEmpty(PlaySound))
                                 Audio.Play(PlaySound);
 
-                            _flashTimeRemaining = _flashTime;
+                            _flashTimeRemaining = _flashTime ?? DEFAULT_FLASH_TIME;
 
                             tracked.CooldownRemaining = Cooldown;
                         }
@@ -149,11 +158,25 @@ namespace Celeste.Mod.GravityHelper.Entities
             }
         }
 
+        public override void Added(Scene scene)
+        {
+            base.Added(scene);
+
+            var controller = (scene as Level)?.GetController<VisualGravityController>();
+            _minAlpha ??= controller?.LineMinAlpha ?? DEFAULT_MIN_ALPHA;
+            _maxAlpha ??= controller?.LineMaxAlpha ?? DEFAULT_MAX_ALPHA;
+            _flashTime ??= controller?.LineFlashTime ?? DEFAULT_FLASH_TIME;
+        }
+
         public override void Render()
         {
             base.Render();
 
-            var alpha = Calc.LerpClamp(_minAlpha, _maxAlpha, _flashTimeRemaining / _flashTime);
+            var minAlpha = _minAlpha ?? DEFAULT_MIN_ALPHA;
+            var maxAlpha = _maxAlpha ?? DEFAULT_MAX_ALPHA;
+            var flashTime = _flashTime ?? DEFAULT_FLASH_TIME;
+            var alpha = Calc.LerpClamp(minAlpha, maxAlpha, _flashTimeRemaining / flashTime);
+
             Draw.Line(Position.Round(), (Position + TargetOffset).Round(), Color.White * alpha, 2f);
         }
 

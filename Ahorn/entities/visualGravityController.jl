@@ -7,7 +7,10 @@ using ..Ahorn, Maple
     persistent::Bool=true,
     fieldArrowOpacity::Real=0.5,
     fieldBackgroundOpacity::Real=0.15,
-    fieldParticleOpacity::Real=0.5
+    fieldParticleOpacity::Real=0.5,
+    lineMinAlpha::Real=0.45,
+    lineMaxAlpha::Real=0.95,
+    lineFlashTime::Real=0.35
 )
 
 const placements = Ahorn.PlacementDict(

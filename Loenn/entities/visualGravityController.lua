@@ -7,6 +7,9 @@ local placementData = helpers.createPlacementData('1', {
     fieldArrowOpacity = 0.5,
     fieldBackgroundOpacity = 0.15,
     fieldParticleOpacity = 0.5,
+    lineMinAlpha = 0.45,
+    lineMaxAlpha = 0.95,
+    lineFlashTime = 0.35
 })
 
 local visualGravityController = {
