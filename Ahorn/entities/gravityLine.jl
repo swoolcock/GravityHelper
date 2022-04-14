@@ -10,13 +10,13 @@ const default_sound = "event:/gravityhelper/gravity_line"
     gravityType::Integer=2, momentumMultiplier::Real=1,
     cooldown::Real=0, cancelDash::Bool=false, disableUntilExit::Bool=false, onlyWhileFalling::Bool=false,
     affectsPlayer::Bool=true, affectsHoldableActors::Bool=false, affectsOtherActors::Bool=false,
-    playSound::String=default_sound
+    playSound::String=default_sound, minAlpha::String="", maxAlpha::String="", flashTime::String=""
 ) = Entity("GravityHelper/GravityLine",
     x = x1, y = y1,
     gravityType=gravityType, momentumMultiplier=momentumMultiplier,
     cooldown=cooldown, cancelDash=cancelDash, disableUntilExit=disableUntilExit, onlyWhileFalling=onlyWhileFalling,
     affectsPlayer=affectsPlayer, affectsHoldableActors=affectsHoldableActors, affectsOtherActors=affectsOtherActors,
-    playSound=playSound,
+    playSound=playSound, minAlpha=minAlpha, maxAlpha=maxAlpha, flashTime=flashTime,
     nodes=Tuple{Int, Int}[(x2, y2)]
 )
 

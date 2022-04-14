@@ -16,6 +16,9 @@ local placementData = helpers.createPlacementData('1', {
     affectsHoldableActors = false,
     affectsOtherActors = false,
     playSound = "event:/gravityhelper/gravity_line",
+    minAlpha = nil,
+    maxAlpha = nil,
+    flashTime = nil,
 })
 
 local gravityLine = {
