@@ -3,6 +3,7 @@
 
 using System;
 using Celeste.Mod.Entities;
+using Celeste.Mod.GravityHelper.Entities.Controllers;
 using Celeste.Mod.GravityHelper.Extensions;
 using Microsoft.Xna.Framework;
 using Monocle;
@@ -26,7 +27,6 @@ namespace Celeste.Mod.GravityHelper.Entities
         public bool PlayerCanUse { get; }
         public Orientations Orientation { get; }
         public GravityType GravityType { get; }
-        public float Cooldown { get; }
 
         private string getAnimId(string id) => GravityType switch
         {
@@ -40,10 +40,12 @@ namespace Celeste.Mod.GravityHelper.Entities
         private readonly Version _modVersion;
         private readonly Version _pluginVersion;
 
-        private Sprite _sprite;
-        private Wiggler _wiggler;
-        private StaticMover _staticMover;
+        private readonly Sprite _sprite;
+        private readonly Wiggler _wiggler;
+        private readonly StaticMover _staticMover;
         private float _cooldownRemaining;
+
+        private float? _gravityCooldown;
 
         public static Entity LoadFloor(Level level, LevelData levelData, Vector2 offset, EntityData entityData) =>
             new GravitySpring(entityData, offset, Orientations.Floor);
@@ -65,7 +67,12 @@ namespace Celeste.Mod.GravityHelper.Entities
 
             PlayerCanUse = data.Bool("playerCanUse", true);
             GravityType = data.Enum<GravityType>("gravityType");
-            Cooldown = data.Float("cooldown", 1f);
+
+            _gravityCooldown = data.NullableFloat("gravityCooldown");
+
+            // handle legacy spring settings
+            if (_gravityCooldown == null && data.TryFloat("cooldown", out var cooldown))
+                _gravityCooldown = cooldown;
 
             Orientation = orientation;
 
@@ -123,6 +130,14 @@ namespace Celeste.Mod.GravityHelper.Entities
             Add(_wiggler = Wiggler.Create(1f, 4f, v => _sprite.Scale.Y = 1 + v * 0.2f));
         }
 
+        public override void Added(Scene scene)
+        {
+            base.Added(scene);
+
+            var controller = (scene as Level)?.GetController<BehaviorGravityController>();
+            _gravityCooldown ??= controller.SpringCooldown;
+        }
+
         private void OnEnable()
         {
             Visible = Collidable = true;
@@ -171,10 +186,10 @@ namespace Celeste.Mod.GravityHelper.Entities
             }
 
             // set gravity and cooldown if not on cooldown
-            if (GravityType != GravityType.None && _cooldownRemaining == 0f)
+            if (GravityType != GravityType.None && (_cooldownRemaining == 0f || !_gravityCooldown.HasValue))
             {
                 GravityHelperModule.PlayerComponent?.SetGravity(GravityType);
-                _cooldownRemaining = Cooldown;
+                _cooldownRemaining = _gravityCooldown ?? 0f;
                 // TODO: update sprite to show cooldown
             }
 

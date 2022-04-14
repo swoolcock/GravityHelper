@@ -5,7 +5,7 @@ local utils = require("utils")
 local placementData = helpers.createPlacementData('1', {
     playerCanUse = true,
     gravityType = consts.gravityTypes.normal.index,
-    cooldown = 1.0,
+    gravityCooldown = nil,
 })
 
 local function makeSpring(name, rotation, xOffset, yOffset, width, height, gravityType)

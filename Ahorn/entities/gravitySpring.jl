@@ -2,10 +2,10 @@ module GravityHelperGravitySpring
 
 using ..Ahorn, Maple
 
-@mapdef Entity "GravityHelper/GravitySpringFloor" GravitySpringFloor(x::Integer, y::Integer, playerCanUse::Bool=true, gravityType::Integer=0, cooldown::Float64=1.0)
-@mapdef Entity "GravityHelper/GravitySpringWallLeft" GravitySpringWallLeft(x::Integer, y::Integer, playerCanUse::Bool=true, gravityType::Integer=2, cooldown::Float64=1.0)
-@mapdef Entity "GravityHelper/GravitySpringWallRight" GravitySpringWallRight(x::Integer, y::Integer, playerCanUse::Bool=true, gravityType::Integer=2, cooldown::Float64=1.0)
-@mapdef Entity "GravityHelper/GravitySpringCeiling" GravitySpringCeiling(x::Integer, y::Integer, playerCanUse::Bool=true, gravityType::Integer=1, cooldown::Float64=1.0)
+@mapdef Entity "GravityHelper/GravitySpringFloor" GravitySpringFloor(x::Integer, y::Integer, playerCanUse::Bool=true, gravityType::Integer=0, gravityCooldown::String="")
+@mapdef Entity "GravityHelper/GravitySpringWallLeft" GravitySpringWallLeft(x::Integer, y::Integer, playerCanUse::Bool=true, gravityType::Integer=2, gravityCooldown::String="")
+@mapdef Entity "GravityHelper/GravitySpringWallRight" GravitySpringWallRight(x::Integer, y::Integer, playerCanUse::Bool=true, gravityType::Integer=2, gravityCooldown::String="")
+@mapdef Entity "GravityHelper/GravitySpringCeiling" GravitySpringCeiling(x::Integer, y::Integer, playerCanUse::Bool=true, gravityType::Integer=1, gravityCooldown::String="")
 
 const gravityTypes = Dict{String, Integer}(
     "None" => -1,
