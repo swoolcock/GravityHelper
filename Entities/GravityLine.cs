@@ -75,8 +75,9 @@ namespace Celeste.Mod.GravityHelper.Entities
             if (_flashTimeRemaining > 0)
                 _flashTimeRemaining -= Engine.DeltaTime;
 
-            var vvvvvv = Scene.Tracker.GetEntityOrDefault<VvvvvvGravityController>();
+            var vvvvvv = Scene.GetActiveController<VvvvvvGravityController>();
             var components = Scene.Tracker.GetComponents<GravityComponent>();
+
             foreach (var component in components)
             {
                 var entity = component.Entity;
@@ -162,10 +163,10 @@ namespace Celeste.Mod.GravityHelper.Entities
         {
             base.Added(scene);
 
-            var controller = (scene as Level)?.GetController<VisualGravityController>();
-            _minAlpha ??= controller?.LineMinAlpha ?? DEFAULT_MIN_ALPHA;
-            _maxAlpha ??= controller?.LineMaxAlpha ?? DEFAULT_MAX_ALPHA;
-            _flashTime ??= controller?.LineFlashTime ?? DEFAULT_FLASH_TIME;
+            var controller = Scene.GetActiveController<VisualGravityController>();
+            _minAlpha ??= controller?.LineMinAlpha;
+            _maxAlpha ??= controller?.LineMaxAlpha;
+            _flashTime ??= controller?.LineFlashTime;
         }
 
         public override void Render()
@@ -175,7 +176,7 @@ namespace Celeste.Mod.GravityHelper.Entities
             var minAlpha = _minAlpha ?? DEFAULT_MIN_ALPHA;
             var maxAlpha = _maxAlpha ?? DEFAULT_MAX_ALPHA;
             var flashTime = _flashTime ?? DEFAULT_FLASH_TIME;
-            var alpha = Calc.LerpClamp(minAlpha, maxAlpha, _flashTimeRemaining / flashTime);
+            var alpha = flashTime == 0 ? maxAlpha : Calc.LerpClamp(minAlpha, maxAlpha, _flashTimeRemaining / flashTime);
 
             Draw.Line(Position.Round(), (Position + TargetOffset).Round(), Color.White * alpha, 2f);
         }

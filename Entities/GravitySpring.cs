@@ -134,8 +134,8 @@ namespace Celeste.Mod.GravityHelper.Entities
         {
             base.Added(scene);
 
-            var controller = (scene as Level)?.GetController<BehaviorGravityController>();
-            _gravityCooldown ??= controller.SpringCooldown;
+            var controller = Scene.GetActiveController<BehaviorGravityController>();
+            _gravityCooldown ??= controller?.SpringCooldown;
         }
 
         private void OnEnable()

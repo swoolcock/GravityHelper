@@ -3,26 +3,21 @@
 
 using Celeste.Mod.Entities;
 using Microsoft.Xna.Framework;
+using Monocle;
 
 namespace Celeste.Mod.GravityHelper.Entities.Controllers
 {
     [CustomEntity("GravityHelper/VvvvvvGravityController")]
-    public class VvvvvvGravityController : BaseGravityController
+    [Tracked]
+    public class VvvvvvGravityController : BaseGravityController<VvvvvvGravityController>
     {
         public static bool DisableGrabCache;
         public static VvvvvvMode ModeCache;
 
-        private readonly VvvvvvMode _mode;
-        private readonly string _flipSound;
-        private readonly bool _disableGrab;
-        private readonly bool _disableDash;
-
-        protected new VvvvvvGravityController CurrentChild => base.CurrentChild as VvvvvvGravityController;
-
-        public VvvvvvMode Mode => CurrentChild?.Mode ?? _mode;
-        public string FlipSound => CurrentChild?.FlipSound ?? _flipSound;
-        public bool DisableGrab => CurrentChild?.DisableGrab ?? _disableGrab;
-        public bool DisableDash => CurrentChild?.DisableDash ?? _disableDash;
+        public VvvvvvMode Mode { get; }
+        public string FlipSound { get; }
+        public bool DisableGrab { get; }
+        public bool DisableDash { get; }
 
         public bool IsVvvvvv => Mode == VvvvvvMode.TriggerBased && GravityHelperModule.Session.VvvvvvTrigger || Mode == VvvvvvMode.On;
 
@@ -31,30 +26,55 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
         public VvvvvvGravityController(EntityData data, Vector2 offset)
             : base(data, offset)
         {
-            _mode = data.Enum("mode", VvvvvvMode.TriggerBased);
-            _flipSound = data.Attr("flipSound", string.Empty);
-            _disableGrab = data.Bool("disableGrab", true);
-            _disableDash = data.Bool("disableDash", true);
+            Mode = data.Enum("mode", VvvvvvMode.TriggerBased);
+            FlipSound = data.Attr("flipSound", string.Empty);
+            DisableGrab = data.Bool("disableGrab", true);
+            DisableDash = data.Bool("disableDash", true);
         }
 
-        public override void Apply()
+        public override void Transitioned()
         {
-            DisableGrabCache = DisableGrab;
-            ModeCache = Mode;
+            if (!Persistent) return;
+
+            var active = ActiveController;
+            DisableGrabCache = active.DisableGrab;
+            ModeCache = active.Mode;
+        }
+
+        public void CheckJump(Player player)
+        {
+            if (!Persistent) return;
+
+            var active = ActiveController;
+            if (!active.IsVvvvvv) return;
+
+            var jumpPressed = Input.Jump.Pressed;
+            Input.Jump.ConsumePress();
+
+            if (jumpPressed && player.OnGround())
+            {
+                GravityHelperModule.PlayerComponent?.SetGravity(GravityType.Toggle, playerTriggered: false);
+                player.Speed.Y = 160f * (player.SceneAs<Level>().InSpace ? 0.6f : 1f);
+                if (!string.IsNullOrEmpty(active.FlipSound))
+                    Audio.Play(active.FlipSound);
+            }
         }
 
         public override void Update()
         {
             base.Update();
+            if (!Persistent) return;
 
-            if (Persistent && _dashDisabled != IsVvvvvv && DisableDash)
+            var active = ActiveController;
+
+            if (_dashDisabled != active.IsVvvvvv && active.DisableDash)
             {
-                _dashDisabled = IsVvvvvv && DisableDash;
-                UpdateInventory();
+                _dashDisabled = active.IsVvvvvv && active.DisableDash;
+                updateInventory();
             }
         }
 
-        public void UpdateInventory()
+        private void updateInventory()
         {
             if (Scene is not Level level || level.Tracker.GetEntity<Player>() is not { } player)
                 return;

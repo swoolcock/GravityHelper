@@ -1097,9 +1097,6 @@ namespace Celeste.Mod.GravityHelper.Hooks
             if (self.CollideFirstOrDefault<VvvvvvTrigger>() is { } vvvvvvTrigger && vvvvvvTrigger.OnlyOnSpawn)
                 GravityHelperModule.Session.VvvvvvTrigger = vvvvvvTrigger.Enable;
 
-            if (scene.Tracker.GetEntityOrDefault<VvvvvvGravityController>() is { } vvvvvvGravityController)
-                vvvvvvGravityController.Apply();
-
             scene.Add(new GravityRefillIndicator());
         }
 
@@ -1330,19 +1327,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             var moveY = Input.MoveY.Value;
             var gliderMoveY = Input.GliderMoveY.Value;
 
-            if (self.Scene.Tracker.GetEntityOrDefault<VvvvvvGravityController>() is { } controller && controller.IsVvvvvv)
-            {
-                var jumpPressed = Input.Jump.Pressed;
-                Input.Jump.ConsumePress();
-
-                if (jumpPressed && self.OnGround())
-                {
-                    GravityHelperModule.PlayerComponent?.SetGravity(GravityType.Toggle, playerTriggered: false);
-                    self.Speed.Y = 160f * (self.SceneAs<Level>().InSpace ? 0.6f : 1f);
-                    if (!string.IsNullOrEmpty(controller.FlipSound))
-                        Audio.Play(controller.FlipSound);
-                }
-            }
+            self.Scene.GetPersistentController<VvvvvvGravityController>()?.CheckJump(self);
 
             if (GravityHelperModule.ShouldInvertPlayer)
             {

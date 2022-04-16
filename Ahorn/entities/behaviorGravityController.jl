@@ -17,7 +17,7 @@ const placements = Ahorn.PlacementDict(
 
 const sprite = "objects/GravityHelper/gravityController/circle"
 const sprite_dot = "objects/GravityHelper/gravityController/circle_dot"
-const sprite_field = "objects/GravityHelper/gravityController/field"
+const sprite_wrench = "objects/GravityHelper/gravityController/wrench"
 
 function Ahorn.selection(entity::BehaviorGravityController)
     x, y = Ahorn.position(entity)
@@ -27,7 +27,7 @@ end
 function Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::BehaviorGravityController)
     icon = get(entity.data, "persistent", false) ? sprite_dot : sprite
     Ahorn.drawSprite(ctx, icon, 0, 0)
-    Ahorn.drawSprite(ctx, sprite_field, 0, 0)
+    Ahorn.drawSprite(ctx, sprite_wrench, 0, 0)
 end
 
 end

@@ -15,9 +15,9 @@ placements.entities.GravityHelper/GravityField.tooltips.gravityType=The gravity 
 placements.entities.GravityHelper/GravityField.tooltips.arrowType=The gravity type to use when rendering arrows. "None" disables arrows, and "Default" will use the current value of gravityType.
 placements.entities.GravityHelper/GravityField.tooltips.fieldType=The gravity type to use when rendering the field. "None" disables field rendering, and "Default" will use the current value of gravityType.
 placements.entities.GravityHelper/GravityField.tooltips.attachToSolids=Whether this and connected fields should attach to solids.
-placements.entities.GravityHelper/GravityField.tooltips.fieldOpacity=The opacity of the shimmering field effect, if enabled. Ranges from 0 (invisible) to 1 (fully opaque). If empty and a FieldGravityController exists, it will use the value provided from that, otherwise 0.15.
-placements.entities.GravityHelper/GravityField.tooltips.arrowOpacity=The opacity of the arrows, if enabled. Ranges from 0 (invisible) to 1 (fully opaque). If empty and a FieldGravityController exists, it will use the value provided from that, otherwise 0.5.
-placements.entities.GravityHelper/GravityField.tooltips.particleOpacity=The opacity of the moving particles, if the field effect is enabled. Ranges from 0 (invisible) to 1 (fully opaque). If empty and a FieldGravityController exists, it will use the value provided from that, otherwise 0.5.
+placements.entities.GravityHelper/GravityField.tooltips.fieldOpacity=The opacity of the shimmering field effect, if enabled. Ranges from 0 (invisible) to 1 (fully opaque). If empty and a VisualGravityController exists, it will use the value provided from that, otherwise 0.15.
+placements.entities.GravityHelper/GravityField.tooltips.arrowOpacity=The opacity of the arrows, if enabled. Ranges from 0 (invisible) to 1 (fully opaque). If empty and a VisualGravityController exists, it will use the value provided from that, otherwise 0.5.
+placements.entities.GravityHelper/GravityField.tooltips.particleOpacity=The opacity of the moving particles, if the field effect is enabled. Ranges from 0 (invisible) to 1 (fully opaque). If empty and a VisualGravityController exists, it will use the value provided from that, otherwise 0.5.
 
 # Gravity Line
 placements.entities.GravityHelper/GravityLine.tooltips.gravityType=The gravity type to set when Madeline or a supported actor touches the line. 0: Normal, 1: Inverted, 2: Toggle. Defaults to 2.

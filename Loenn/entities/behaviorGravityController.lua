@@ -23,7 +23,7 @@ local behaviorGravityController = {
 function behaviorGravityController.sprite(room, entity)
     local spriteName = entity.persistent and "objects/GravityHelper/gravityController/icon_dot" or "objects/GravityHelper/gravityController/icon"
     local iconSprite = drawableSprite.fromTexture(spriteName, entity)
-    local typeSprite = drawableSprite.fromTexture("objects/GravityHelper/gravityController/field", entity)
+    local typeSprite = drawableSprite.fromTexture("objects/GravityHelper/gravityController/wrench", entity)
     return {iconSprite, typeSprite}
 end
 

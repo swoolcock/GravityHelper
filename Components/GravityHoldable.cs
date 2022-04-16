@@ -47,7 +47,7 @@ namespace Celeste.Mod.GravityHelper.Components
 
         private void updateInvertTime(Scene scene)
         {
-            var controller = (scene as Level)?.GetController<BehaviorGravityController>();
+            var controller = Scene.GetActiveController<BehaviorGravityController>();
             InvertTime = controller?.HoldableResetTime ?? 2f;
         }
 

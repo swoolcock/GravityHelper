@@ -9,30 +9,25 @@ using Monocle;
 namespace Celeste.Mod.GravityHelper.Entities.Controllers
 {
     [CustomEntity("GravityHelper/SoundGravityController")]
-    public class SoundGravityController : BaseGravityController
+    [Tracked]
+    public class SoundGravityController : BaseGravityController<SoundGravityController>
     {
-        public string NormalSound => CurrentChild?.NormalSound ?? _normalSound;
-        public string InvertedSound => CurrentChild?.InvertedSound ?? _invertedSound;
-        public string ToggleSound => CurrentChild?.ToggleSound ?? _toggleSound;
-        public string MusicParam => CurrentChild?.MusicParam ?? _musicParam;
-
-        protected new SoundGravityController CurrentChild => base.CurrentChild as SoundGravityController;
-
         private const float sound_muffle_time_seconds = 0.25f;
 
-        private static float _soundMuffleRemaining;
-        private readonly string _normalSound;
-        private readonly string _invertedSound;
-        private readonly string _toggleSound;
-        private readonly string _musicParam;
+        private float _soundMuffleRemaining;
+
+        public string NormalSound { get; }
+        public string InvertedSound { get; }
+        public string ToggleSound { get; }
+        public string MusicParam { get; }
 
         public SoundGravityController(EntityData data, Vector2 offset)
             : base(data, offset)
         {
-            _normalSound = data.Attr("normalSound", string.Empty);
-            _invertedSound = data.Attr("invertedSound", string.Empty);
-            _toggleSound = data.Attr("toggleSound", string.Empty);
-            _musicParam = data.Attr("musicParam", string.Empty);
+            NormalSound = data.Attr("normalSound", string.Empty);
+            InvertedSound = data.Attr("invertedSound", string.Empty);
+            ToggleSound = data.Attr("toggleSound", string.Empty);
+            MusicParam = data.Attr("musicParam", string.Empty);
 
             if (Persistent)
             {
@@ -40,14 +35,16 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
                 {
                     GravityChanged = (_, args) =>
                     {
-                        setParam();
+                        var active = ActiveController;
+
+                        setParam(active.MusicParam);
 
                         if (!args.Changed)
                             return;
 
-                        var soundName = args.WasToggled ? ToggleSound : string.Empty;
+                        var soundName = args.WasToggled ? active.ToggleSound : string.Empty;
                         if (string.IsNullOrEmpty(soundName))
-                            soundName = args.NewValue == GravityType.Normal ? NormalSound : InvertedSound;
+                            soundName = args.NewValue == GravityType.Normal ? active.NormalSound : active.InvertedSound;
 
                         if (!string.IsNullOrEmpty(soundName) && _soundMuffleRemaining <= 0 && args.PlayerTriggered)
                         {
@@ -62,21 +59,24 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
         public override void Awake(Scene scene)
         {
             base.Awake(scene);
-            if (Persistent)
-                setParam();
+            if (!Persistent) return;
+
+            setParam(ActiveController.MusicParam);
         }
 
         public override void Update()
         {
             base.Update();
+            if (!Persistent) return;
+
             if (_soundMuffleRemaining > 0)
                 _soundMuffleRemaining -= Engine.DeltaTime;
         }
 
-        private void setParam()
+        private static void setParam(string param)
         {
-            if (!string.IsNullOrEmpty(MusicParam))
-                Audio.SetMusicParam(MusicParam, GravityHelperModule.ShouldInvertPlayer ? 1 : 0);
+            if (!string.IsNullOrEmpty(param))
+                Audio.SetMusicParam(param, GravityHelperModule.ShouldInvertPlayer ? 1 : 0);
         }
     }
 }

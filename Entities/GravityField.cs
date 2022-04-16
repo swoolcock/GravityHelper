@@ -152,7 +152,7 @@ namespace Celeste.Mod.GravityHelper.Entities
         {
             base.Added(scene);
 
-            var controller = (scene as Level)?.GetController<VisualGravityController>();
+            var controller = Scene.GetActiveController<VisualGravityController>();
             _arrowOpacity ??= controller?.FieldArrowOpacity;
             _fieldOpacity ??= controller?.FieldBackgroundOpacity;
             _particleOpacity ??= controller?.FieldParticleOpacity;

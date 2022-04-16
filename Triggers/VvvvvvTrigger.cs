@@ -29,8 +29,8 @@ namespace Celeste.Mod.GravityHelper.Triggers
 
             GravityHelperModule.Session.VvvvvvTrigger = Enable;
 
-            if (Scene.Tracker.GetEntityOrDefault<VvvvvvGravityController>() is { } vvvvvvGravityController)
-                vvvvvvGravityController.Apply();
+            if (Scene.GetPersistentController<VvvvvvGravityController>() is { } vvvvvvGravityController)
+                vvvvvvGravityController.Transitioned();
         }
     }
 }
