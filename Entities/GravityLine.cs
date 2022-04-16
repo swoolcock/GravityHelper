@@ -94,7 +94,10 @@ namespace Celeste.Mod.GravityHelper.Entities
                     // find the projection onto the line
                     var projectedScalar = Vector2.Dot(entity.Center - Position, TargetOffset) / Vector2.Dot(TargetOffset, TargetOffset);
                     var projectedPoint = Position + TargetOffset * projectedScalar;
-                    var normal = projectedPoint - entity.Center;
+                    var normal = (projectedPoint - entity.Center).SafeNormalize();
+
+                    // if the normal is really close to horizontal, snap it so that the sign will be consistent
+                    if (Math.Abs(normal.Y) < 0.0001f) normal.Y = 0;
                     var angleSign = Math.Sign(normal.Angle());
 
                     if (_trackedComponents.TryGetValue(gravityComponent.GlobalId, out var tracked))
