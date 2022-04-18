@@ -42,7 +42,7 @@ namespace Celeste.Mod.GravityHelper.Components
                 : Target?.Get<GravityComponent>();
 
             if (component != null)
-                GravityChanged?.Invoke(Target, new GravityChangeArgs(component.CurrentGravity, playerTriggered: false));
+                GravityChanged?.Invoke(Target, new GravityChangeArgs(component.CurrentGravity));
         }
 
         public void OnGravityChanged(Entity entity, GravityChangeArgs args)

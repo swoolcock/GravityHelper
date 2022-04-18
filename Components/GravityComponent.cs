@@ -67,7 +67,7 @@ namespace Celeste.Mod.GravityHelper.Components
         {
             base.Removed(entity);
 
-            updateGravity(new GravityChangeArgs(GravityType.Normal, CurrentGravity, playerTriggered: false));
+            updateGravity(new GravityChangeArgs(GravityType.Normal, CurrentGravity));
 
             _data.Data[INVERTED_KEY] = false;
             _data = null;
@@ -78,17 +78,17 @@ namespace Celeste.Mod.GravityHelper.Components
         public override void EntityAwake()
         {
             base.EntityAwake();
-            triggerGravityListeners(new GravityChangeArgs(CurrentGravity, playerTriggered: false));
+            triggerGravityListeners(new GravityChangeArgs(CurrentGravity));
         }
 
-        public void SetGravity(GravityType newValue, float momentumMultiplier = 1f, bool playerTriggered = true)
+        public void SetGravity(GravityType newValue, float momentumMultiplier = 1f)
         {
             // bail for placeholder cases
             if (newValue < 0) return;
 
             var oldGravity = _currentGravity;
             var newGravity = newValue == GravityType.Toggle ? _currentGravity.Opposite() : newValue;
-            var args = new GravityChangeArgs(newGravity, oldGravity, momentumMultiplier, playerTriggered, newValue == GravityType.Toggle);
+            var args = new GravityChangeArgs(newGravity, oldGravity, momentumMultiplier, newValue == GravityType.Toggle);
 
             CurrentGravity = newGravity;
 

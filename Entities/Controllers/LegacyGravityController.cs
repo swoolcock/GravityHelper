@@ -73,11 +73,11 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
                     if (string.IsNullOrEmpty(soundName))
                         soundName = args.NewValue == GravityType.Normal ? NormalGravitySound : InvertedGravitySound;
 
-                    if (!string.IsNullOrEmpty(soundName) && _soundMuffleRemaining <= 0 && args.PlayerTriggered)
-                    {
-                        _soundMuffleRemaining = sound_muffle_time_seconds;
-                        Audio.Play(soundName);
-                    }
+                    // if (!string.IsNullOrEmpty(soundName) && _soundMuffleRemaining <= 0 && !string.IsNullOrEmpty(args.Source))
+                    // {
+                    //     _soundMuffleRemaining = sound_muffle_time_seconds;
+                    //     Audio.Play(soundName);
+                    // }
                 },
             }, new TransitionListener
             {
