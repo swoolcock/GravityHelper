@@ -19,6 +19,7 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
         public string NormalSound { get; }
         public string InvertedSound { get; }
         public string ToggleSound { get; }
+        public string LineSound { get; }
         public string MusicParam { get; }
 
         public SoundGravityController(EntityData data, Vector2 offset)
@@ -27,6 +28,7 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
             NormalSound = data.Attr("normalSound", DEFAULT_NORMAL_SOUND);
             InvertedSound = data.Attr("invertedSound", DEFAULT_INVERTED_SOUND);
             ToggleSound = data.Attr("toggleSound", DEFAULT_TOGGLE_SOUND);
+            LineSound = data.Attr("lineSound", GravityLine.DEFAULT_SOUND);
             MusicParam = data.Attr("musicParam", string.Empty);
 
             if (Persistent)

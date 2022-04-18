@@ -18,6 +18,9 @@ namespace Celeste.Mod.GravityHelper.Entities
         public const float DEFAULT_MIN_ALPHA = 0.45f;
         public const float DEFAULT_MAX_ALPHA = 0.95f;
         public const float DEFAULT_FLASH_TIME = 0.35f;
+        public const string DEFAULT_SOUND = "event:/gravityhelper/gravity_line";
+
+        private const float audio_muffle_seconds = 0.2f;
 
         public Vector2 TargetOffset { get; }
         public GravityType GravityType { get; }
@@ -26,7 +29,6 @@ namespace Celeste.Mod.GravityHelper.Entities
         public bool CancelDash { get; }
         public bool DisableUntilExit { get; }
         public bool OnlyWhileFalling { get; }
-        public string PlaySound { get; }
         public TriggeredEntityTypes EntityTypes { get; }
 
         private readonly Version _modVersion;
@@ -37,8 +39,10 @@ namespace Celeste.Mod.GravityHelper.Entities
         private float? _minAlpha;
         private float? _maxAlpha;
         private float? _flashTime;
+        private string _sound;
 
         private float _flashTimeRemaining;
+        private float _audioMuffleSecondsRemaining;
 
         public GravityLine(EntityData data, Vector2 offset)
             : base(data.Position + offset)
@@ -53,12 +57,12 @@ namespace Celeste.Mod.GravityHelper.Entities
             CancelDash = data.Bool("cancelDash");
             DisableUntilExit = data.Bool("disableUntilExit");
             OnlyWhileFalling = data.Bool("onlyWhileFalling");
-            PlaySound = data.Attr("playSound", "event:/gravityhelper/gravity_line");
             Depth = Depths.Above;
 
             _minAlpha = data.NullableFloat("minAlpha")?.Clamp(0f, 1f);
             _maxAlpha = data.NullableFloat("maxAlpha")?.Clamp(0f, 1f);
             _flashTime = data.NullableFloat("flashTime")?.ClampLower(0f);
+            _sound = data.NullableAttr("sound");
 
             var affectsPlayer = data.Bool("affectsPlayer", true);
             var affectsHoldableActors = data.Bool("affectsHoldableActors");
@@ -74,6 +78,9 @@ namespace Celeste.Mod.GravityHelper.Entities
 
             if (_flashTimeRemaining > 0)
                 _flashTimeRemaining -= Engine.DeltaTime;
+
+            if (_audioMuffleSecondsRemaining > 0)
+                _audioMuffleSecondsRemaining -= Engine.DeltaTime;
 
             var vvvvvv = Scene.GetActiveController<VvvvvvGravityController>();
             var components = Scene.Tracker.GetComponents<GravityComponent>();
@@ -127,8 +134,11 @@ namespace Celeste.Mod.GravityHelper.Entities
                                 gravityComponent.EntitySpeed = new Vector2(speed.X, Math.Max(newY, Math.Abs(speed.Y)));
                             }
 
-                            if (!string.IsNullOrEmpty(PlaySound))
-                                Audio.Play(PlaySound);
+                            if (!string.IsNullOrEmpty(_sound) && _audioMuffleSecondsRemaining <= 0)
+                            {
+                                Audio.Play(_sound);
+                                _audioMuffleSecondsRemaining = audio_muffle_seconds;
+                            }
 
                             _flashTimeRemaining = _flashTime ?? DEFAULT_FLASH_TIME;
 
@@ -166,10 +176,13 @@ namespace Celeste.Mod.GravityHelper.Entities
         {
             base.Added(scene);
 
-            var controller = Scene.GetActiveController<VisualGravityController>();
-            _minAlpha ??= controller?.LineMinAlpha;
-            _maxAlpha ??= controller?.LineMaxAlpha;
-            _flashTime ??= controller?.LineFlashTime;
+            var visual = Scene.GetActiveController<VisualGravityController>();
+            _minAlpha ??= visual?.LineMinAlpha;
+            _maxAlpha ??= visual?.LineMaxAlpha;
+            _flashTime ??= visual?.LineFlashTime;
+
+            var sound = Scene.GetActiveController<SoundGravityController>();
+            _sound ??= sound?.LineSound;
         }
 
         public override void Render()
