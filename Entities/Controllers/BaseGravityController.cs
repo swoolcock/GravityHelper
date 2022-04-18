@@ -38,13 +38,13 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
             PluginVersion = data.PluginVersion();
             Position = data.Level.Position + new Vector2(16, 16);
 
+            Visible = Collidable = false;
             Active = Persistent = data.Bool("persistent", true);
 
             AddTag(Tags.Global);
 
             if (Persistent)
             {
-
                 // note that we must use OnOutBegin since OnInBegin will only be called on
                 // entities that are part of the newly loaded room
                 Add(new TransitionListener
