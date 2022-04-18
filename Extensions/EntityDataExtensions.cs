@@ -67,8 +67,11 @@ namespace Celeste.Mod.GravityHelper.Extensions
             return self.Has(key);
         }
 
-        public static string NullableAttr(this EntityData self, string key) =>
-            self.Attr(key, null);
+        public static string NullableAttr(this EntityData self, string key)
+        {
+            var value = self.Attr(key, null);
+            return string.IsNullOrEmpty(value) ? null : value;
+        }
 
         public static float? NullableFloat(this EntityData self, string key) =>
             float.TryParse(self.Attr(key), out var value) ? value : null;

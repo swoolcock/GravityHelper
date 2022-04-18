@@ -31,9 +31,10 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
         private static bool Input_GrabCheck(Func<bool> orig)
         {
-            if (VvvvvvGravityController.DisableGrabCache &&
-                (VvvvvvGravityController.ModeCache == VvvvvvMode.TriggerBased && GravityHelperModule.Session.VvvvvvTrigger ||
-                VvvvvvGravityController.ModeCache == VvvvvvMode.On))
+            var session = GravityHelperModule.Session;
+            if (session.DisableGrab &&
+                (session.VvvvvvMode == VvvvvvMode.TriggerBased && session.VvvvvvTrigger ||
+                session.VvvvvvMode == VvvvvvMode.On))
                 return false;
             return orig();
         }

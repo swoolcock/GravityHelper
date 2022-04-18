@@ -11,9 +11,6 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
     [Tracked]
     public class VvvvvvGravityController : BaseGravityController<VvvvvvGravityController>
     {
-        public static bool DisableGrabCache;
-        public static VvvvvvMode ModeCache;
-
         public VvvvvvMode Mode { get; }
         public string FlipSound { get; }
         public bool DisableGrab { get; }
@@ -37,8 +34,9 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
             if (!Persistent) return;
 
             var active = ActiveController;
-            DisableGrabCache = active.DisableGrab;
-            ModeCache = active.Mode;
+            var session = GravityHelperModule.Session;
+            session.DisableGrab = active.DisableGrab;
+            session.VvvvvvMode = active.Mode;
         }
 
         public void CheckJump(Player player)
@@ -53,7 +51,7 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
 
             if (jumpPressed && player.OnGround())
             {
-                GravityHelperModule.PlayerComponent?.SetGravity(GravityType.Toggle, playerTriggered: false);
+                GravityHelperModule.PlayerComponent?.SetGravity(GravityType.Toggle);
                 player.Speed.Y = 160f * (player.SceneAs<Level>().InSpace ? 0.6f : 1f);
                 if (!string.IsNullOrEmpty(active.FlipSound))
                     Audio.Play(active.FlipSound);
