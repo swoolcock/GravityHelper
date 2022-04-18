@@ -34,7 +34,7 @@ namespace Celeste.Mod.GravityHelper.Entities
         // We'll always handle it ourselves to cover connected fields
         public override bool ShouldAffectPlayer => false;
 
-        public Color FieldColor => fieldGravityType.Color() * (_fieldOpacity ?? DEFAULT_FIELD_OPACITY);
+        public Color FieldColor { get; private set; }
 
         private GravityType arrowGravityType => ArrowType == VisualType.Default ? GravityType : (GravityType) ArrowType;
         private GravityType fieldGravityType => FieldType == VisualType.Default ? GravityType : (GravityType) FieldType;
@@ -60,6 +60,9 @@ namespace Celeste.Mod.GravityHelper.Entities
         private float? _arrowOpacity;
         private float? _fieldOpacity;
         private float? _particleOpacity;
+        private string _arrowColor;
+        private string _fieldColor;
+        private string _particleColor;
         private string _sound;
 
         private float _audioMuffleSecondsRemaining;
@@ -77,6 +80,9 @@ namespace Celeste.Mod.GravityHelper.Entities
             _arrowOpacity = data.NullableFloat("arrowOpacity")?.Clamp(0f, 1f);
             _particleOpacity = data.NullableFloat("particleOpacity")?.Clamp(0f, 1f);
             _fieldOpacity = data.NullableFloat("fieldOpacity")?.Clamp(0f, 1f);
+            _arrowColor = data.NullableAttr("arrowColor");
+            _fieldColor = data.NullableAttr("fieldColor");
+            _particleColor = data.NullableAttr("particleColor");
             _sound = data.NullableAttr("sound");
 
             _shouldDrawArrows = !(ArrowType == VisualType.None || ArrowType == VisualType.Default && GravityType == GravityType.None);
@@ -162,9 +168,22 @@ namespace Celeste.Mod.GravityHelper.Entities
             base.Added(scene);
 
             var visual = Scene.GetActiveController<VisualGravityController>();
-            _arrowOpacity ??= visual?.FieldArrowOpacity;
-            _fieldOpacity ??= visual?.FieldBackgroundOpacity;
-            _particleOpacity ??= visual?.FieldParticleOpacity;
+            _arrowOpacity ??= visual?.FieldArrowOpacity ?? DEFAULT_ARROW_OPACITY;
+            _fieldOpacity ??= visual?.FieldBackgroundOpacity ?? DEFAULT_FIELD_OPACITY;
+            _particleOpacity ??= visual?.FieldParticleOpacity ?? DEFAULT_PARTICLE_OPACITY;
+
+            _fieldColor ??= GravityType switch
+            {
+                GravityType.Normal => visual?.FieldNormalColor,
+                GravityType.Inverted => visual?.FieldInvertedColor,
+                GravityType.Toggle => visual?.FieldToggleColor,
+                _ => null,
+            };
+
+            FieldColor = (string.IsNullOrEmpty(_fieldColor) ? GravityType.Color() : Calc.HexToColor(_fieldColor)) * _fieldOpacity.Value;
+
+            _arrowColor ??= visual?.FieldArrowColor;
+            _particleColor ??= visual?.FieldParticleColor;
 
             if (_sound == null && Scene.GetActiveController<SoundGravityController>() is { } soundController)
             {
@@ -233,7 +252,7 @@ namespace Celeste.Mod.GravityHelper.Entities
 
             if (_shouldDrawField)
             {
-                Color color = Color.White * particleOpacity;
+                var color = (string.IsNullOrWhiteSpace(_particleColor) ? Color.White : Calc.HexToColor(_particleColor)) * particleOpacity;
                 foreach (Vector2 particle in _particles)
                     Draw.Pixel.Draw(Position + particle, Vector2.Zero, color);
             }
@@ -250,7 +269,7 @@ namespace Celeste.Mod.GravityHelper.Entities
                 // if width or height is 1, scale down the arrows
                 var texture = widthInTiles == 1 || heightInTiles == 1 ? _arrowSmallTexture : _arrowTexture;
                 var origin = widthInTiles == 1 || heightInTiles == 1 ? _arrowSmallOrigin : _arrowOrigin;
-                var color = _shouldDrawField ? Color.White * arrowOpacity : Color.White;
+                var color = (string.IsNullOrWhiteSpace(_arrowColor) ? Color.White : Calc.HexToColor(_arrowColor)) * arrowOpacity;
 
                 // arrows should be centre aligned in each 2x2 box
                 // offset by half a tile if the width or height is odd

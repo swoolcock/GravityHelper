@@ -19,6 +19,7 @@ local placementData = helpers.createPlacementData('1', {
     minAlpha = nil,
     maxAlpha = nil,
     flashTime = nil,
+    lineColor = nil,
 })
 
 local gravityLine = {

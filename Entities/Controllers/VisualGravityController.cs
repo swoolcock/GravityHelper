@@ -15,9 +15,15 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
         public float FieldArrowOpacity { get; }
         public float FieldBackgroundOpacity { get; }
         public float FieldParticleOpacity { get; }
+        public string FieldNormalColor { get; }
+        public string FieldInvertedColor { get; }
+        public string FieldToggleColor { get; }
+        public string FieldArrowColor { get; }
+        public string FieldParticleColor { get; }
         public float LineMinAlpha { get; }
         public float LineMaxAlpha { get; }
         public float LineFlashTime { get; }
+        public string LineColor { get; }
 
         public VisualGravityController(EntityData data, Vector2 offset)
             : base(data, offset)
@@ -25,9 +31,15 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
             FieldArrowOpacity = data.Float("fieldArrowOpacity", GravityField.DEFAULT_ARROW_OPACITY).Clamp(0f, 1f);
             FieldBackgroundOpacity = data.Float("fieldBackgroundOpacity", GravityField.DEFAULT_FIELD_OPACITY).Clamp(0f, 1f);
             FieldParticleOpacity = data.Float("fieldParticleOpacity", GravityField.DEFAULT_PARTICLE_OPACITY).Clamp(0f, 1f);
+            FieldNormalColor = data.NullableAttr("fieldNormalColor");
+            FieldInvertedColor = data.NullableAttr("fieldInvertedColor");
+            FieldToggleColor = data.NullableAttr("fieldToggleColor");
+            FieldArrowColor = data.NullableAttr("fieldArrowColor");
+            FieldParticleColor = data.NullableAttr("fieldParticleColor");
             LineMinAlpha = data.Float("lineMinAlpha", GravityLine.DEFAULT_MIN_ALPHA).Clamp(0f, 1f);
             LineMaxAlpha = data.Float("lineMaxAlpha", GravityLine.DEFAULT_MAX_ALPHA).Clamp(0f, 1f);
             LineFlashTime = data.Float("lineFlashTime", GravityLine.DEFAULT_FLASH_TIME).Clamp(0f, 1f);
+            LineColor = data.NullableAttr("lineColor");
         }
     }
 }

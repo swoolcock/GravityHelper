@@ -40,6 +40,7 @@ namespace Celeste.Mod.GravityHelper.Entities
         private float? _maxAlpha;
         private float? _flashTime;
         private string _sound;
+        private string _lineColor;
 
         private float _flashTimeRemaining;
         private float _audioMuffleSecondsRemaining;
@@ -63,6 +64,7 @@ namespace Celeste.Mod.GravityHelper.Entities
             _maxAlpha = data.NullableFloat("maxAlpha")?.Clamp(0f, 1f);
             _flashTime = data.NullableFloat("flashTime")?.ClampLower(0f);
             _sound = data.NullableAttr("sound");
+            _lineColor = data.NullableAttr("lineColor");
 
             var affectsPlayer = data.Bool("affectsPlayer", true);
             var affectsHoldableActors = data.Bool("affectsHoldableActors");
@@ -180,6 +182,7 @@ namespace Celeste.Mod.GravityHelper.Entities
             _minAlpha ??= visual?.LineMinAlpha;
             _maxAlpha ??= visual?.LineMaxAlpha;
             _flashTime ??= visual?.LineFlashTime;
+            _lineColor ??= visual?.LineColor;
 
             var sound = Scene.GetActiveController<SoundGravityController>();
             _sound ??= sound?.LineSound;
@@ -193,8 +196,9 @@ namespace Celeste.Mod.GravityHelper.Entities
             var maxAlpha = _maxAlpha ?? DEFAULT_MAX_ALPHA;
             var flashTime = _flashTime ?? DEFAULT_FLASH_TIME;
             var alpha = flashTime == 0 ? maxAlpha : Calc.LerpClamp(minAlpha, maxAlpha, _flashTimeRemaining / flashTime);
+            var lineColor = string.IsNullOrWhiteSpace(_lineColor) ? Color.White : Calc.HexToColor(_lineColor);
 
-            Draw.Line(Position.Round(), (Position + TargetOffset).Round(), Color.White * alpha, 2f);
+            Draw.Line(Position.Round(), (Position + TargetOffset).Round(), lineColor * alpha, 2f);
         }
 
         public override void DebugRender(Camera camera)
