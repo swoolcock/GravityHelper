@@ -12,9 +12,9 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
     [Tracked]
     public class SoundGravityController : BaseGravityController<SoundGravityController>
     {
-        private const float sound_muffle_time_seconds = 0.25f;
-
-        private float _soundMuffleRemaining;
+        public const string DEFAULT_NORMAL_SOUND = "event:/ui/game/lookout_off";
+        public const string DEFAULT_INVERTED_SOUND = "event:/ui/game/lookout_on";
+        public const string DEFAULT_TOGGLE_SOUND = "";
 
         public string NormalSound { get; }
         public string InvertedSound { get; }
@@ -24,9 +24,9 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
         public SoundGravityController(EntityData data, Vector2 offset)
             : base(data, offset)
         {
-            NormalSound = data.Attr("normalSound", string.Empty);
-            InvertedSound = data.Attr("invertedSound", string.Empty);
-            ToggleSound = data.Attr("toggleSound", string.Empty);
+            NormalSound = data.Attr("normalSound", DEFAULT_NORMAL_SOUND);
+            InvertedSound = data.Attr("invertedSound", DEFAULT_INVERTED_SOUND);
+            ToggleSound = data.Attr("toggleSound", DEFAULT_TOGGLE_SOUND);
             MusicParam = data.Attr("musicParam", string.Empty);
 
             if (Persistent)
@@ -36,21 +36,7 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
                     GravityChanged = (_, args) =>
                     {
                         var active = ActiveController;
-
                         setParam(active.MusicParam);
-
-                        if (!args.Changed)
-                            return;
-
-                        var soundName = args.WasToggled ? active.ToggleSound : string.Empty;
-                        if (string.IsNullOrEmpty(soundName))
-                            soundName = args.NewValue == GravityType.Normal ? active.NormalSound : active.InvertedSound;
-
-                        if (!string.IsNullOrEmpty(soundName) && _soundMuffleRemaining <= 0 && args.PlayerTriggered)
-                        {
-                            _soundMuffleRemaining = sound_muffle_time_seconds;
-                            Audio.Play(soundName);
-                        }
                     },
                 });
             }
@@ -62,15 +48,6 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
             if (!Persistent) return;
 
             setParam(ActiveController.MusicParam);
-        }
-
-        public override void Update()
-        {
-            base.Update();
-            if (!Persistent) return;
-
-            if (_soundMuffleRemaining > 0)
-                _soundMuffleRemaining -= Engine.DeltaTime;
         }
 
         private static void setParam(string param)
