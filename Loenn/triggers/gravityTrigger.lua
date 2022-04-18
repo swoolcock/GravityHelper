@@ -6,6 +6,7 @@ local placementData = helpers.createPlacementData('1', {
     height = 8,
     gravityType = consts.gravityTypes.normal.index,
     momentumMultiplier = 1.0,
+    sound = nil,
     affectsPlayer = true,
     affectsHoldableActors = false,
     affectsOtherActors = false,

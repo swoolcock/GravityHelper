@@ -6,7 +6,7 @@ using ..Ahorn, Maple
     x::Integer, y::Integer,
     width::Integer=Maple.defaultBlockWidth, height::Integer=Maple.defaultBlockHeight,
     gravityType::Integer=0, attachToSolids::Bool=false,
-    arrowType::Integer=-2, fieldType::Integer=-2,
+    arrowType::Integer=-2, fieldType::Integer=-2, sound::String="",
     arrowOpacity::String="", fieldOpacity::String="", particleOpacity::String="",
     affectsPlayer::Bool=true, affectsHoldableActors::Bool=false, affectsOtherActors::Bool=false,
     momentumMultiplier::Real=1.0

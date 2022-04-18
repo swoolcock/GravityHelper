@@ -9,6 +9,7 @@ local placementData = helpers.createPlacementData('1', {
     attachToSolids = false,
     arrowType = consts.gravityTypes.default.index,
     fieldType = consts.gravityTypes.default.index,
+    sound = nil,
     arrowOpacity = nil,
     fieldOpacity = nil,
     particleOpacity = nil,
