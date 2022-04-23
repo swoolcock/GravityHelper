@@ -23,7 +23,7 @@ local vvvvvvGravityController = {
 }
 
 function vvvvvvGravityController.sprite(room, entity)
-    local spriteName = entity.persistent and "objects/GravityHelper/gravityController/icon_dot" or "objects/GravityHelper/gravityController/icon"
+    local spriteName = entity.persistent and "objects/GravityHelper/gravityController/circle_dot" or "objects/GravityHelper/gravityController/circle"
     local iconSprite = drawableSprite.fromTexture(spriteName, entity)
     local typeSprite = drawableSprite.fromTexture("objects/GravityHelper/gravityController/spikes", entity)
     return {iconSprite, typeSprite}
