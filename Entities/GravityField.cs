@@ -20,6 +20,8 @@ namespace Celeste.Mod.GravityHelper.Entities
         public const float DEFAULT_ARROW_OPACITY = 0.5f;
         public const float DEFAULT_FIELD_OPACITY = 0.15f;
         public const float DEFAULT_PARTICLE_OPACITY = 0.5f;
+        public const string DEFAULT_ARROW_COLOR = "FFFFFF";
+        public const string DEFAULT_PARTICLE_COLOR = "FFFFFF";
 
         private const float audio_muffle_seconds = 0.2f;
 
@@ -35,6 +37,12 @@ namespace Celeste.Mod.GravityHelper.Entities
         public override bool ShouldAffectPlayer => false;
 
         public Color FieldColor { get; private set; }
+        public float ArrowOpacity { get; private set; }
+        public float FieldOpacity { get; private set; }
+        public float ParticleOpacity { get; private set; }
+        public Color ArrowColor { get; private set; }
+        public Color ParticleColor { get; private set; }
+        public string Sound { get; private set; }
 
         private GravityType arrowGravityType => ArrowType == VisualType.Default ? GravityType : (GravityType) ArrowType;
         private GravityType fieldGravityType => FieldType == VisualType.Default ? GravityType : (GravityType) FieldType;
@@ -57,13 +65,13 @@ namespace Celeste.Mod.GravityHelper.Entities
         private readonly float[] _speeds = {12f, 20f, 40f};
         private GravityFieldGroup _fieldGroup;
 
-        private float? _arrowOpacity;
-        private float? _fieldOpacity;
-        private float? _particleOpacity;
-        private string _arrowColor;
-        private string _fieldColor;
-        private string _particleColor;
-        private string _sound;
+        private readonly float? _arrowOpacity;
+        private readonly float? _fieldOpacity;
+        private readonly float? _particleOpacity;
+        private readonly string _arrowColor;
+        private readonly string _fieldColor;
+        private readonly string _particleColor;
+        private readonly string _sound;
 
         private float _audioMuffleSecondsRemaining;
 
@@ -77,9 +85,9 @@ namespace Celeste.Mod.GravityHelper.Entities
             ArrowType = (VisualType)data.Int("arrowType", (int) VisualType.Default);
             FieldType = (VisualType)data.Int("fieldType", (int) VisualType.Default);
 
-            _arrowOpacity = data.NullableFloat("arrowOpacity")?.Clamp(0f, 1f);
-            _particleOpacity = data.NullableFloat("particleOpacity")?.Clamp(0f, 1f);
-            _fieldOpacity = data.NullableFloat("fieldOpacity")?.Clamp(0f, 1f);
+            _arrowOpacity = data.NullableFloat("arrowOpacity");
+            _particleOpacity = data.NullableFloat("particleOpacity");
+            _fieldOpacity = data.NullableFloat("fieldOpacity");
             _arrowColor = data.NullableAttr("arrowColor");
             _fieldColor = data.NullableAttr("fieldColor");
             _particleColor = data.NullableAttr("particleColor");
@@ -140,9 +148,9 @@ namespace Celeste.Mod.GravityHelper.Entities
             {
                 var previousGravity = playerComponent.CurrentGravity;
                 playerComponent.SetGravity(GravityType, MomentumMultiplier);
-                if (!string.IsNullOrWhiteSpace(_sound) && playerComponent.CurrentGravity != previousGravity && _audioMuffleSecondsRemaining <= 0)
+                if (!string.IsNullOrWhiteSpace(Sound) && playerComponent.CurrentGravity != previousGravity && _audioMuffleSecondsRemaining <= 0)
                 {
-                    Audio.Play(_sound);
+                    Audio.Play(Sound);
                     _audioMuffleSecondsRemaining = audio_muffle_seconds;
                 }
             }
@@ -168,11 +176,11 @@ namespace Celeste.Mod.GravityHelper.Entities
             base.Added(scene);
 
             var visual = Scene.GetActiveController<VisualGravityController>();
-            _arrowOpacity ??= visual?.FieldArrowOpacity ?? DEFAULT_ARROW_OPACITY;
-            _fieldOpacity ??= visual?.FieldBackgroundOpacity ?? DEFAULT_FIELD_OPACITY;
-            _particleOpacity ??= visual?.FieldParticleOpacity ?? DEFAULT_PARTICLE_OPACITY;
+            ArrowOpacity = (_arrowOpacity ?? visual?.FieldArrowOpacity ?? DEFAULT_ARROW_OPACITY).Clamp(0f, 1f);
+            FieldOpacity = (_fieldOpacity ?? visual?.FieldBackgroundOpacity ?? DEFAULT_FIELD_OPACITY).Clamp(0f, 1f);
+            ParticleOpacity = (_particleOpacity ?? visual?.FieldParticleOpacity ?? DEFAULT_PARTICLE_OPACITY).Clamp(0f, 1f);
 
-            _fieldColor ??= GravityType switch
+            var coalescedColor = _fieldColor ?? GravityType switch
             {
                 GravityType.Normal => visual?.FieldNormalColor,
                 GravityType.Inverted => visual?.FieldInvertedColor,
@@ -180,20 +188,22 @@ namespace Celeste.Mod.GravityHelper.Entities
                 _ => null,
             };
 
-            FieldColor = (string.IsNullOrEmpty(_fieldColor) ? GravityType.Color() : Calc.HexToColor(_fieldColor)) * _fieldOpacity.Value;
+            FieldColor = (string.IsNullOrWhiteSpace(coalescedColor) ? GravityType.Color() : Calc.HexToColor(coalescedColor)) * FieldOpacity;
+            ArrowColor = Calc.HexToColor(_arrowColor ?? visual?.FieldArrowColor ?? DEFAULT_ARROW_COLOR);
+            ParticleColor = Calc.HexToColor(_particleColor ?? visual?.FieldParticleColor ?? DEFAULT_PARTICLE_COLOR);
 
-            _arrowColor ??= visual?.FieldArrowColor;
-            _particleColor ??= visual?.FieldParticleColor;
-
+            string controllerSound = null;
             if (_sound == null && Scene.GetActiveController<SoundGravityController>() is { } soundController)
             {
                 if (GravityType == GravityType.Normal)
-                    _sound = soundController.NormalSound;
+                    controllerSound = soundController.NormalSound;
                 else if (GravityType == GravityType.Inverted)
-                    _sound = soundController.InvertedSound;
+                    controllerSound = soundController.InvertedSound;
                 else if (GravityType == GravityType.Toggle)
-                    _sound = soundController.ToggleSound;
+                    controllerSound = soundController.ToggleSound;
             }
+
+            Sound = _sound ?? controllerSound;
 
             if (_shouldDrawField)
                 this.GetConnectedFieldRenderer<GravityFieldRenderer, GravityField>(scene, true);
@@ -247,12 +257,9 @@ namespace Celeste.Mod.GravityHelper.Entities
         {
             base.Render();
 
-            var particleOpacity = _particleOpacity ?? DEFAULT_PARTICLE_OPACITY;
-            var arrowOpacity = _arrowOpacity ?? DEFAULT_ARROW_OPACITY;
-
             if (_shouldDrawField)
             {
-                var color = (string.IsNullOrWhiteSpace(_particleColor) ? Color.White : Calc.HexToColor(_particleColor)) * particleOpacity;
+                var color = ParticleColor * ParticleOpacity;
                 foreach (Vector2 particle in _particles)
                     Draw.Pixel.Draw(Position + particle, Vector2.Zero, color);
             }
@@ -269,7 +276,7 @@ namespace Celeste.Mod.GravityHelper.Entities
                 // if width or height is 1, scale down the arrows
                 var texture = widthInTiles == 1 || heightInTiles == 1 ? _arrowSmallTexture : _arrowTexture;
                 var origin = widthInTiles == 1 || heightInTiles == 1 ? _arrowSmallOrigin : _arrowOrigin;
-                var color = (string.IsNullOrWhiteSpace(_arrowColor) ? Color.White : Calc.HexToColor(_arrowColor)) * arrowOpacity;
+                var color = ArrowColor * ArrowOpacity;
 
                 // arrows should be centre aligned in each 2x2 box
                 // offset by half a tile if the width or height is odd
