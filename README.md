@@ -6,7 +6,7 @@ Madeline's `Speed` vector always represents the direction to the floor, regardle
 This means that while inverted, her `Speed.Y` will be the opposite sign of her actual velocity as displayed in CelesteTAS.
 It was done this way to ensure that any tech will work on the ceiling since the game thinks it's the floor.
 
-The majority of hooks in GravityHelper (over 80!) are for entity interaction compatibility, or to ensure that collisions are done in
+The majority of hooks in GravityHelper (over 100!) are for entity interaction compatibility, or to ensure that collisions are done in
 the correct direction and from the correct corner of the hitbox.
 
 Implementing floor and corner correction were tricky, since it needs to check collisions in the opposite direction to movement
@@ -30,7 +30,7 @@ for `Actor`s that provide an `UpdateSpeed` action.
 
 Grabbing a `Holdable` while inverted will also invert that entity, even if you then release it.
 Gravity for that entity will reset after a short period of time (default is 2 seconds), but is configurable with a
-`GravityController`.
+`BehaviorGravityController`.
 
 Adding a `GravityListener` component to an entity will trigger an action when gravity changes for Madeline or another entity.
 This can be filtered by type using `GravityListener(typeof(SomeEntity))` or for a specific entity with `GravityListener(someEntity)`.
@@ -60,6 +60,9 @@ Note that these will be executed in the order listed.
 * `Glider` (jellies)
 
 ### Which third party entities/mods are already supported?
+
+#### Extended Variants
+* "Dash trail all the time" is correctly supported while inverted.
 
 #### FancyTileEntities
 * `FancyFallingBlock`
@@ -99,21 +102,39 @@ Will optionally apply this gravity setting when returning from a berry/cassette 
 since return bubbles will always set regular gravity when triggered.
 This was the safest solution given that return bubbles do not work well while inverted.
 
+#### GravityBadelineBoost
+A `BadelineBoost` (Badeline orb) that supports going downward instead of upward, and can optionally change
+Madeline's gravity on touch.
+
 #### GravityBooster
 A `Booster` (bubble) that will change Madeline's gravity when she is released.
-Currently lacks a decent sprite, the default bubble sprite is tinted instead.
+Currently lacks a decent sprite, the default bubble sprite is tinted instead (this can be disabled).
 
 #### GravityBumper
 A `Bumper` that will change Madeline's gravity upon touch.
 Currently lacks a decent sprite, only the particle colours are changed.
 
-#### GravityController
-A controller entity that manages gravity functionality for an entire room.  This includes:
-* Playing sounds on gravity flip.
-* Adjusting the visuals of all `GravityField`s in a room.
+#### BehaviorGravityController
+A controller entity that manages:
+* How long `Holdable`s stay inverted before resetting
+* The gravity change cooldown on `GravitySpring`s
+ 
+#### SoundGravityController
+A controller entity that manages:
+* The default sounds for gravity changes, if an entity supports it
 * Defining a music param to change upon gravity flip.
-* Defining the reset time of any `Holdable`s in the room.
-* Enabling "VVVVVV mode", which disables dash and grab and replaces the jump action with an instant gravity toggle while on safe ground.
+
+#### VisualGravityController
+A controller entity that manages:
+* Opacity of the background, arrows, and particles of `GravityField`s
+* Opacity of `GravityLine`s, including the flash time
+
+#### VvvvvvGravityController
+A controller entity that manages:
+* Enabling VVVVVV-mode, which allows Madeline to flip gravity at will by pressing jump while on the ground
+* The sound to play when flipping with jump
+* Whether or not to disable dash while VVVVVV mode is active (defaults to true)
+* Whether or not to disable grab while VVVVVV mode is active (defaults to true)
 
 #### GravityDreamBlock
 A `DreamBlock` that will change Madeline's gravity upon exit.
@@ -141,6 +162,20 @@ Similar to the entity of the same name in MaxHelpingHand, and both are supported
 #### UpsideDownWatchTower
 A `Lookout` (binoculars/watchtower) that is rendered upside-down and should be attached to the ceiling.
 
+#### VvvvvvTrigger
+A trigger that will enable, disable, or toggle VVVVVV-mode. Requires that a VVVVVV controller exist with mode set to "trigger-based".
+
+### How do controllers work?
+There are currently four different kinds of controller. Behavior, Visual, Sound, and VVVVVV.
+Most of the time you will only ever need exactly one of each of these types.
+
+Controllers flagged as "persistent" act as a global default setting, and will be loaded at all times,
+regardless of which room the controller is added to. You can customise individual rooms by adding a non-persistent controller
+of a given type, which will set the defaults for just that room.
+
+There must always be exactly one persistent controller in a map of a given type if you wish to use it.
+Additionally, you cannot have multiple controllers of the same type in a single room.
+
 ### What works?
 Most things.
 
@@ -157,11 +192,11 @@ I always welcome decent pull requests or even the occasional "me too" reply as l
 * JaThePlayer for the original inspiration.
 * Viv for being Viv.
 * max480 for putting up with my upside-down jumpthru complaints for months.
-* Cruor/Vexatos for Ahorn.
+* Cruor/Vexatos for Ahorn/Lönn.
 * 0x0ade and the Everest team for Everest.
 * The Strawberry Jam team.
 * The Celeste modding community for waiting patiently for years.
-* Maddy/Kevin/Lena and all the EXOK team for being amazing people and creating a work of art enjoyed by so many people around the world.
+* Maddy/Noel/Kevin/Lena and all the EXOK team for being amazing people and creating a work of art enjoyed by so many people around the world.
 * Anyone else I've missed.
 
 ### So... what now?
