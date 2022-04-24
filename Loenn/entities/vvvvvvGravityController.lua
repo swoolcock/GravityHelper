@@ -14,6 +14,9 @@ local vvvvvvGravityController = {
     name = "GravityHelper/VvvvvvGravityController",
     depth = -8500,
     ignoredFields = consts.ignoredFields,
+    fieldInformation = {
+        mode = consts.fieldInformation.vvvvvvMode,
+    },
     placements = {
         {
             name = "normal",

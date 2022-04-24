@@ -163,7 +163,7 @@ Similar to the entity of the same name in MaxHelpingHand, and both are supported
 A `Lookout` (binoculars/watchtower) that is rendered upside-down and should be attached to the ceiling.
 
 #### VvvvvvTrigger
-A trigger that will enable, disable, or toggle VVVVVV-mode. Requires that a VVVVVV controller exist with mode set to "trigger-based".
+A trigger that will enable or disable VVVVVV-mode. Requires that a VVVVVV controller exist with mode set to "trigger-based".
 
 ### How do controllers work?
 There are currently four different kinds of controller. Behavior, Visual, Sound, and VVVVVV.
