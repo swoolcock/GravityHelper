@@ -20,8 +20,8 @@ placements.entities.GravityHelper/GravityField.tooltips.arrowOpacity=The opacity
 placements.entities.GravityHelper/GravityField.tooltips.particleOpacity=The opacity of the moving particles, if the field effect is enabled. Ranges from 0 (invisible) to 1 (fully opaque). If empty and a VisualGravityController exists, it will use the value provided from that, otherwise 0.5.
 
 # Gravity Line
-placements.entities.GravityHelper/GravityLine.tooltips.gravityType=The gravity type to set when Madeline or a supported actor touches the line. 0: Normal, 1: Inverted, 2: Toggle. Defaults to 2.
-placements.entities.GravityHelper/GravityLine.tooltips.momentumMultiplier=The multiplier to apply to Madeline's Y velocity when gravity flips. 0 means instantly change, positive values give a gradual change. Defaults to 1 for crossable and 0.1 for uncrossable.
+placements.entities.GravityHelper/GravityLine.tooltips.gravityType=The gravity type to set when Madeline or a supported actor touches the line. Defaults to Toggle.
+placements.entities.GravityHelper/GravityLine.tooltips.momentumMultiplier=The multiplier to apply to Madeline's Y velocity when gravity flips. 0 means instantly change, positive values give a gradual change. Defaults to 1 for crossable and 0.1 for uncrossable. If VVVVVV mode is enabled, this is ignored.
 placements.entities.GravityHelper/GravityLine.tooltips.cooldown=How long in seconds it will take for the line to reenable after triggering. Defaults to 0.
 placements.entities.GravityHelper/GravityLine.tooltips.cancelDash=Whether or not touching the line should immediately cancel Madeline's dash. Defaults to false for crossable, true for uncrossable.
 placements.entities.GravityHelper/GravityLine.tooltips.disableUntilExit=Whether or not the line should be disabled once triggered, until the actor is no longer colliding. Defaults to false for crossable, true for uncrossable.

@@ -16,7 +16,7 @@ local gravityTrigger = {
     name = "GravityHelper/GravityTrigger",
     ignoredFields = consts.ignoredFields,
     fieldInformation = {
-        gravityType = consts.fieldInformation.gravityType,
+        gravityType = consts.fieldInformation.gravityType(),
     },
     placements = {
         {

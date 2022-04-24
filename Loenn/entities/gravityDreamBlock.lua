@@ -19,7 +19,7 @@ local gravityDreamBlock = {
     --nodeLineRenderType = "line",
     ignoredFields = consts.ignoredFields,
     fieldInformation = {
-        gravityType = consts.fieldInformation.gravityType,
+        gravityType = consts.fieldInformation.gravityType(),
     },
     placements = {
         {

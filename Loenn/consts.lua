@@ -1,5 +1,17 @@
 local colors = require("consts.xna_colors")
 
+local function makeOptions(options, defaults, ...)
+    local requested = {...}
+    if #requested == 0 then
+        requested = defaults
+    end
+    local tbl = {}
+    for _,v in ipairs(requested) do
+        table.insert(tbl, {options[v], v})
+    end
+    return tbl
+end
+
 local consts = {
     modVersion = "1.0.46",
     ignoredFields = {
@@ -9,23 +21,17 @@ local consts = {
         "_id",
     },
     fieldInformation = {
-        gravityType = {
-            options = {
-                {"Normal", 0},
-                {"Inverted", 1},
-                {"Toggle", 2},
-                {"None", -1},
-                {"Default", -2},
+        gravityType = function(...)
+            return {
+                options = makeOptions({
+                    [0] = "Normal",
+                    [1] = "Inverted",
+                    [2] = "Toggle",
+                    [-1] = "None",
+                    [-2] = "Default",
+                }, {0,1,2}, ...)
             }
-        },
-        gravityTypeNoDefault = {
-            options = {
-                {"Normal", 0},
-                {"Inverted", 1},
-                {"Toggle", 2},
-                {"None", -1},
-            }
-        },
+        end,
         vvvvvvMode = {
             options = {
                 {"Trigger-based", 0},
