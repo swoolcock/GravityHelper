@@ -6,6 +6,7 @@ local utils = require("utils")
 local drawableLine = require("structs.drawable_line")
 
 local placementData = helpers.createPlacementData('1', {
+    defaultToController = true,
     gravityType = consts.gravityTypes.toggle.index,
     momentumMultiplier = 1,
     cooldown = 0,
@@ -15,7 +16,11 @@ local placementData = helpers.createPlacementData('1', {
     affectsPlayer = true,
     affectsHoldableActors = false,
     affectsOtherActors = false,
-    playSound = "event:/gravityhelper/gravity_line",
+    sound = "event:/gravityhelper/gravity_line",
+    minAlpha = 0.45,
+    maxAlpha = 0.95,
+    flashTime = 0.35,
+    lineColor = "FFFFFF",
 })
 
 local gravityLine = {
@@ -25,7 +30,7 @@ local gravityLine = {
     nodeLimits = {1, 1},
     ignoredFields = consts.ignoredFields,
     fieldInformation = {
-        gravityType = consts.fieldInformation.gravityType,
+        gravityType = consts.fieldInformation.gravityType(),
     },
     placements = {
         {

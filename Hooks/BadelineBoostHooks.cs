@@ -41,10 +41,10 @@ namespace Celeste.Mod.GravityHelper.Hooks
             {
                 // update to the expected gravity if custom entity
                 if (self is GravityBadelineBoost gravityBadelineBoost)
-                    playerComponent.SetGravity(gravityBadelineBoost.CurrentDirection, 0f, false);
+                    playerComponent.SetGravity(gravityBadelineBoost.CurrentDirection, 0f);
                 // otherwise force normal gravity to prevent regular badeline boosts from breaking
                 else if (playerComponent.CurrentGravity != GravityType.Normal)
-                    playerComponent.SetGravity(GravityType.Normal, 0f, false);
+                    playerComponent.SetGravity(GravityType.Normal, 0f);
             }
 
             orig(self, player);

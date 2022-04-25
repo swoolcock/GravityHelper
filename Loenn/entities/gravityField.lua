@@ -5,16 +5,22 @@ local colors = require("consts.xna_colors")
 local placementData = helpers.createPlacementData('1', {
     width = 8,
     height = 8,
+    defaultToController = true,
     gravityType = consts.gravityTypes.normal.index,
     attachToSolids = false,
     arrowType = consts.gravityTypes.default.index,
     fieldType = consts.gravityTypes.default.index,
-    arrowOpacity = nil,
-    fieldOpacity = nil,
-    particleOpacity = nil,
+    sound = "",
+    arrowOpacity = 0.5,
+    fieldOpacity = 0.15,
+    particleOpacity = 0.5,
+    arrowColor = "FFFFFF",
+    fieldColor = "",
+    particleColor = "FFFFFF",
     affectsPlayer = true,
     affectsHoldableActors = false,
     affectsOtherActors = false,
+    momentumMultiplier = 1.0,
 })
 
 local gravityField = {
@@ -23,9 +29,9 @@ local gravityField = {
     borderColor = colors.White,
     ignoredFields = consts.ignoredFields,
     fieldInformation = {
-        gravityType = consts.fieldInformation.gravityType,
-        arrowType = consts.fieldInformation.gravityType,
-        fieldType = consts.fieldInformation.gravityType,
+        gravityType = consts.fieldInformation.gravityType(),
+        arrowType = consts.fieldInformation.gravityType(0,1,2,-1,-2),
+        fieldType = consts.fieldInformation.gravityType(0,1,2,-1,-2),
     },
     placements = {
         {

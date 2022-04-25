@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Celeste.Mod.Entities;
+using Celeste.Mod.GravityHelper.Entities.Controllers;
 using Celeste.Mod.GravityHelper.Extensions;
 using Celeste.Mod.GravityHelper.Triggers;
 using Microsoft.Xna.Framework;
@@ -19,6 +20,10 @@ namespace Celeste.Mod.GravityHelper.Entities
         public const float DEFAULT_ARROW_OPACITY = 0.5f;
         public const float DEFAULT_FIELD_OPACITY = 0.15f;
         public const float DEFAULT_PARTICLE_OPACITY = 0.5f;
+        public const string DEFAULT_ARROW_COLOR = "FFFFFF";
+        public const string DEFAULT_PARTICLE_COLOR = "FFFFFF";
+
+        private const float audio_muffle_seconds = 0.2f;
 
         #region Entity Properties
 
@@ -26,21 +31,15 @@ namespace Celeste.Mod.GravityHelper.Entities
         public VisualType FieldType { get; }
         public bool AttachToSolids { get; }
 
-        private float? _arrowOpacity;
-        public float ArrowOpacity => _arrowOpacity ?? DEFAULT_ARROW_OPACITY;
-
-        private float? _fieldOpacity;
-        public float FieldOpacity => _fieldOpacity ?? DEFAULT_FIELD_OPACITY;
-
-        private float? _particleOpacity;
-        public float ParticleOpacity => _particleOpacity ?? DEFAULT_PARTICLE_OPACITY;
-
         #endregion
 
         // We'll always handle it ourselves to cover connected fields
         public override bool ShouldAffectPlayer => false;
 
-        public Color FieldColor => fieldGravityType.Color() * FieldOpacity;
+        public Color FieldColor { get; private set; }
+        public Color ArrowColor { get; private set; }
+        public Color ParticleColor { get; private set; }
+        public string Sound { get; private set; }
 
         private GravityType arrowGravityType => ArrowType == VisualType.Default ? GravityType : (GravityType) ArrowType;
         private GravityType fieldGravityType => FieldType == VisualType.Default ? GravityType : (GravityType) FieldType;
@@ -48,12 +47,13 @@ namespace Celeste.Mod.GravityHelper.Entities
         private readonly Version _modVersion;
         private readonly Version _pluginVersion;
 
-        private readonly bool _shouldDrawArrows;
-        private readonly bool _shouldDrawField;
-        private readonly MTexture _arrowTexture;
-        private readonly MTexture _arrowSmallTexture;
-        private readonly Vector2 _arrowOrigin;
-        private readonly Vector2 _arrowSmallOrigin;
+        private bool shouldDrawArrows => !(ArrowType == VisualType.None || ArrowType == VisualType.Default && GravityType == GravityType.None);
+        private bool shouldDrawField => !(FieldType == VisualType.None || FieldType == VisualType.Default && GravityType == GravityType.None);
+
+        private MTexture _arrowTexture;
+        private MTexture _arrowSmallTexture;
+        private Vector2 _arrowOrigin;
+        private Vector2 _arrowSmallOrigin;
         private Vector2 _arrowShakeOffset;
 
         private readonly Hitbox _normalHitbox;
@@ -62,6 +62,17 @@ namespace Celeste.Mod.GravityHelper.Entities
         private readonly List<Vector2> _particles = new List<Vector2>();
         private readonly float[] _speeds = {12f, 20f, 40f};
         private GravityFieldGroup _fieldGroup;
+
+        private readonly bool _defaultToController;
+        private float _arrowOpacity;
+        private float _fieldOpacity;
+        private float _particleOpacity;
+        private string _arrowColor;
+        private string _fieldColor;
+        private string _particleColor;
+        private string _sound;
+
+        private float _audioMuffleSecondsRemaining;
 
         public GravityField(EntityData data, Vector2 offset)
             : base(data, offset)
@@ -73,25 +84,16 @@ namespace Celeste.Mod.GravityHelper.Entities
             ArrowType = (VisualType)data.Int("arrowType", (int) VisualType.Default);
             FieldType = (VisualType)data.Int("fieldType", (int) VisualType.Default);
 
-            if (float.TryParse(data.Attr("arrowOpacity"), out var arrowOpacity))
-                _arrowOpacity = Calc.Clamp(arrowOpacity, 0f, 1f);
+            _defaultToController = data.Bool("defaultToController");
+            _arrowOpacity = data.Float("arrowOpacity", DEFAULT_ARROW_OPACITY).Clamp(0f, 1f);
+            _particleOpacity = data.Float("particleOpacity", DEFAULT_PARTICLE_OPACITY).Clamp(0f, 1f);
+            _fieldOpacity = data.Float("fieldOpacity", DEFAULT_FIELD_OPACITY).Clamp(0f, 1f);
+            _arrowColor = data.Attr("arrowColor", DEFAULT_ARROW_COLOR);
+            _fieldColor = data.Attr("fieldColor", string.Empty);
+            _particleColor = data.Attr("particleColor", DEFAULT_PARTICLE_COLOR);
+            _sound = data.Attr("sound", string.Empty);
 
-            if (float.TryParse(data.Attr("particleOpacity"), out var particleOpacity))
-                _particleOpacity = Calc.Clamp(particleOpacity, 0f, 1f);
-
-            if (float.TryParse(data.Attr("fieldOpacity"), out var fieldOpacity))
-                _fieldOpacity = Calc.Clamp(fieldOpacity, 0f, 1f);
-
-            _shouldDrawArrows = !(ArrowType == VisualType.None || ArrowType == VisualType.Default && GravityType == GravityType.None);
-            _shouldDrawField = !(FieldType == VisualType.None || FieldType == VisualType.Default && GravityType == GravityType.None);
-
-            Visible = _shouldDrawArrows || _shouldDrawField;
             Collider = _normalHitbox = new Hitbox(data.Width, data.Height);
-
-            if (_shouldDrawArrows && !_shouldDrawField)
-                Depth = Depths.FGDecals - 1;
-            else
-                Depth = Depths.Player + 1;
 
             _staticMoverHitbox = new Hitbox(data.Width + 2, data.Height + 2, -1, -1);
 
@@ -105,26 +107,7 @@ namespace Celeste.Mod.GravityHelper.Entities
                 });
             }
 
-            if (_shouldDrawArrows)
-            {
-                var prefix = arrowGravityType switch
-                {
-                    GravityType.Normal => "down",
-                    GravityType.Inverted => "up",
-                    _ => "double",
-                };
-
-                _arrowTexture = GFX.Game[$"objects/GravityHelper/gravityField/{prefix}Arrow"];
-                _arrowSmallTexture = GFX.Game[$"objects/GravityHelper/gravityField/{prefix}ArrowSmall"];
-                _arrowOrigin = new Vector2(_arrowTexture.Width / 2f, _arrowTexture.Height / 2f);
-                _arrowSmallOrigin = new Vector2(_arrowSmallTexture.Width / 2f, _arrowSmallTexture.Height / 2f);
-            }
-
-            if (_shouldDrawField)
-            {
-                for (int index = 0; index < Width * (double) Height / 16.0; ++index)
-                    _particles.Add(new Vector2(Calc.Random.NextFloat(Width - 1f), Calc.Random.NextFloat(Height - 1f)));
-            }
+            updateProperties(null);
         }
 
         protected override void HandleOnEnter(Player player)
@@ -133,8 +116,16 @@ namespace Celeste.Mod.GravityHelper.Entities
 
             _fieldGroup.Semaphore++;
 
-            if (_fieldGroup.Semaphore == 1)
-                GravityHelperModule.PlayerComponent?.SetGravity(GravityType, MomentumMultiplier);
+            if (_fieldGroup.Semaphore == 1 && GravityHelperModule.PlayerComponent is { } playerComponent)
+            {
+                var previousGravity = playerComponent.CurrentGravity;
+                playerComponent.SetGravity(GravityType, MomentumMultiplier);
+                if (!string.IsNullOrWhiteSpace(Sound) && playerComponent.CurrentGravity != previousGravity && _audioMuffleSecondsRemaining <= 0)
+                {
+                    Audio.Play(Sound);
+                    _audioMuffleSecondsRemaining = audio_muffle_seconds;
+                }
+            }
         }
 
         protected override void HandleOnStay(Player player)
@@ -152,37 +143,89 @@ namespace Celeste.Mod.GravityHelper.Entities
             _fieldGroup.Semaphore--;
         }
 
-        private GravityController getController(Scene scene)
+        private void updateProperties(Scene scene)
         {
-            if (scene == null) return null;
-            var controller = scene.Entities.OfType<GravityController>().FirstOrDefault() ??
-                             scene.Entities.ToAdd.OfType<GravityController>().FirstOrDefault();
-            return controller;
+            Visible = shouldDrawArrows || shouldDrawField;
+
+            if (shouldDrawArrows && !shouldDrawField)
+                Depth = Depths.FGDecals - 1;
+            else
+                Depth = Depths.Player + 1;
+
+            if (shouldDrawArrows)
+            {
+                var prefix = arrowGravityType switch
+                {
+                    GravityType.Normal => "down",
+                    GravityType.Inverted => "up",
+                    _ => "double",
+                };
+
+                _arrowTexture = GFX.Game[$"objects/GravityHelper/gravityField/{prefix}Arrow"];
+                _arrowSmallTexture = GFX.Game[$"objects/GravityHelper/gravityField/{prefix}ArrowSmall"];
+                _arrowOrigin = new Vector2(_arrowTexture.Width / 2f, _arrowTexture.Height / 2f);
+                _arrowSmallOrigin = new Vector2(_arrowSmallTexture.Width / 2f, _arrowSmallTexture.Height / 2f);
+            }
+
+            if (shouldDrawField && scene != null)
+            {
+                this.GetConnectedFieldRenderer<GravityFieldRenderer, GravityField>(scene, true);
+            }
+
+            if (shouldDrawField && !_particles.Any())
+            {
+                for (int index = 0; index < Width * (double) Height / 16.0; ++index)
+                    _particles.Add(new Vector2(Calc.Random.NextFloat(Width - 1f), Calc.Random.NextFloat(Height - 1f)));
+            }
         }
 
         public override void Added(Scene scene)
         {
             base.Added(scene);
 
-            if (getController(scene) is { } controller)
+            if (_defaultToController && Scene.GetActiveController<VisualGravityController>() is { } visualController)
             {
-                _arrowOpacity ??= controller.ArrowOpacity;
-                _fieldOpacity ??= controller.FieldOpacity;
-                _particleOpacity ??= controller.ParticleOpacity;
+                _arrowOpacity = visualController.FieldArrowOpacity.Clamp(0f, 1f);
+                _fieldOpacity = visualController.FieldBackgroundOpacity.Clamp(0f, 1f);
+                _particleOpacity = visualController.FieldParticleOpacity.Clamp(0f, 1f);
+                _arrowColor = visualController.FieldArrowColor;
+                _particleColor = visualController.FieldParticleColor;
+                _fieldColor = GravityType switch
+                {
+                    GravityType.Normal => visualController.FieldNormalColor,
+                    GravityType.Inverted => visualController.FieldInvertedColor,
+                    GravityType.Toggle => visualController.FieldToggleColor,
+                    _ => null,
+                };
             }
 
-            if (_shouldDrawField)
-                this.GetConnectedFieldRenderer<GravityFieldRenderer, GravityField>(scene, true);
+            FieldColor = (string.IsNullOrWhiteSpace(_fieldColor) ? GravityType.Color() : Calc.HexToColor(_fieldColor)) * _fieldOpacity;
+            ArrowColor = Calc.HexToColor(!string.IsNullOrWhiteSpace(_arrowColor) ? _arrowColor : DEFAULT_ARROW_COLOR);
+            ParticleColor = Calc.HexToColor(!string.IsNullOrWhiteSpace(_particleColor) ? _particleColor : DEFAULT_PARTICLE_COLOR);
+
+            if (_defaultToController && Scene.GetActiveController<SoundGravityController>() is { } soundController)
+            {
+                if (GravityType == GravityType.Normal)
+                    _sound = soundController.NormalSound;
+                else if (GravityType == GravityType.Inverted)
+                    _sound = soundController.InvertedSound;
+                else if (GravityType == GravityType.Toggle)
+                    _sound = soundController.ToggleSound;
+            }
+
+            Sound = _sound;
 
             _arrowShakeOffset = Vector2.Zero;
             _fieldGroup = null;
+
+            updateProperties(scene);
         }
 
         public override void Removed(Scene scene)
         {
             base.Removed(scene);
 
-            if (_shouldDrawField)
+            if (shouldDrawField)
                 this.GetConnectedFieldRenderer<GravityFieldRenderer, GravityField>(scene, false);
 
             _fieldGroup = null;
@@ -196,6 +239,9 @@ namespace Celeste.Mod.GravityHelper.Entities
 
         public override void Update()
         {
+            if (_audioMuffleSecondsRemaining > 0)
+                _audioMuffleSecondsRemaining -= Engine.DeltaTime;
+
             int length = _speeds.Length;
             float height = Height;
             int index = 0;
@@ -220,14 +266,14 @@ namespace Celeste.Mod.GravityHelper.Entities
         {
             base.Render();
 
-            if (_shouldDrawField)
+            if (shouldDrawField)
             {
-                Color color = Color.White * ParticleOpacity;
+                var color = ParticleColor * _particleOpacity;
                 foreach (Vector2 particle in _particles)
                     Draw.Pixel.Draw(Position + particle, Vector2.Zero, color);
             }
 
-            if (_shouldDrawArrows)
+            if (shouldDrawArrows)
             {
                 int widthInTiles = (int) (Width / 8);
                 int heightInTiles = (int) (Height / 8);
@@ -239,7 +285,7 @@ namespace Celeste.Mod.GravityHelper.Entities
                 // if width or height is 1, scale down the arrows
                 var texture = widthInTiles == 1 || heightInTiles == 1 ? _arrowSmallTexture : _arrowTexture;
                 var origin = widthInTiles == 1 || heightInTiles == 1 ? _arrowSmallOrigin : _arrowOrigin;
-                var color = _shouldDrawField ? Color.White * ArrowOpacity : Color.White;
+                var color = ArrowColor * _arrowOpacity;
 
                 // arrows should be centre aligned in each 2x2 box
                 // offset by half a tile if the width or height is odd

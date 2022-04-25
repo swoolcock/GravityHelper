@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using Celeste.Mod.Entities;
 using Celeste.Mod.GravityHelper.Components;
+using Celeste.Mod.GravityHelper.Entities.Controllers;
 using Celeste.Mod.GravityHelper.Extensions;
 using Microsoft.Xna.Framework;
 using Monocle;
@@ -14,6 +15,14 @@ namespace Celeste.Mod.GravityHelper.Entities
     [CustomEntity("GravityHelper/GravityLine")]
     public class GravityLine : Entity
     {
+        public const float DEFAULT_MIN_ALPHA = 0.45f;
+        public const float DEFAULT_MAX_ALPHA = 0.95f;
+        public const float DEFAULT_FLASH_TIME = 0.35f;
+        public const string DEFAULT_SOUND = "event:/gravityhelper/gravity_line";
+        public const string DEFAULT_LINE_COLOR = "FFFFFF";
+
+        private const float audio_muffle_seconds = 0.2f;
+
         public Vector2 TargetOffset { get; }
         public GravityType GravityType { get; }
         public float MomentumMultiplier { get; }
@@ -21,18 +30,28 @@ namespace Celeste.Mod.GravityHelper.Entities
         public bool CancelDash { get; }
         public bool DisableUntilExit { get; }
         public bool OnlyWhileFalling { get; }
-        public string PlaySound { get; }
         public TriggeredEntityTypes EntityTypes { get; }
+
+        public float MinAlpha { get; private set; }
+        public float MaxAlpha { get; private set; }
+        public float FlashTime { get; private set; }
+        public string Sound { get; private set; }
+        public Color LineColor { get; private set; }
 
         private readonly Version _modVersion;
         private readonly Version _pluginVersion;
 
         private readonly Dictionary<int, ComponentTracking> _trackedComponents = new();
 
-        private float _minAlpha = 0.45f;
-        private float _maxAlpha = 0.95f;
-        private float _flashTime = 0.35f;
+        private readonly bool _defaultToController;
+        private float _minAlpha;
+        private float _maxAlpha;
+        private float _flashTime;
+        private string _sound;
+        private string _lineColor;
+
         private float _flashTimeRemaining;
+        private float _audioMuffleSecondsRemaining;
 
         public GravityLine(EntityData data, Vector2 offset)
             : base(data.Position + offset)
@@ -47,8 +66,14 @@ namespace Celeste.Mod.GravityHelper.Entities
             CancelDash = data.Bool("cancelDash");
             DisableUntilExit = data.Bool("disableUntilExit");
             OnlyWhileFalling = data.Bool("onlyWhileFalling");
-            PlaySound = data.Attr("playSound", "event:/gravityhelper/gravity_line");
             Depth = Depths.Above;
+
+            _defaultToController = data.Bool("defaultToController");
+            _minAlpha = data.Float("minAlpha", DEFAULT_MIN_ALPHA);
+            _maxAlpha = data.Float("maxAlpha", DEFAULT_MAX_ALPHA);
+            _flashTime = data.Float("flashTime", DEFAULT_FLASH_TIME);
+            _sound = data.Attr("sound", string.Empty);
+            _lineColor = data.Attr("lineColor", string.Empty);
 
             var affectsPlayer = data.Bool("affectsPlayer", true);
             var affectsHoldableActors = data.Bool("affectsHoldableActors");
@@ -65,7 +90,12 @@ namespace Celeste.Mod.GravityHelper.Entities
             if (_flashTimeRemaining > 0)
                 _flashTimeRemaining -= Engine.DeltaTime;
 
+            if (_audioMuffleSecondsRemaining > 0)
+                _audioMuffleSecondsRemaining -= Engine.DeltaTime;
+
+            var vvvvvv = Scene.GetActiveController<VvvvvvGravityController>();
             var components = Scene.Tracker.GetComponents<GravityComponent>();
+
             foreach (var component in components)
             {
                 var entity = component.Entity;
@@ -108,10 +138,20 @@ namespace Celeste.Mod.GravityHelper.Entities
                             else
                                 gravityComponent.EntitySpeed = new Vector2(speed.X, -speed.Y * MomentumMultiplier);
 
-                            if (!string.IsNullOrEmpty(PlaySound))
-                                Audio.Play(PlaySound);
+                            // if vvvvvv mode, set vertical speed to at least falling speed
+                            if (vvvvvv?.IsVvvvvv ?? false)
+                            {
+                                var newY = 160f * (SceneAs<Level>().InSpace ? 0.6f : 1f);
+                                gravityComponent.EntitySpeed = new Vector2(speed.X, Math.Max(newY, Math.Abs(speed.Y)));
+                            }
 
-                            _flashTimeRemaining = _flashTime;
+                            if (!string.IsNullOrWhiteSpace(Sound) && _audioMuffleSecondsRemaining <= 0)
+                            {
+                                Audio.Play(Sound);
+                                _audioMuffleSecondsRemaining = audio_muffle_seconds;
+                            }
+
+                            _flashTimeRemaining = FlashTime;
 
                             tracked.CooldownRemaining = Cooldown;
                         }
@@ -143,12 +183,37 @@ namespace Celeste.Mod.GravityHelper.Entities
             }
         }
 
+        public override void Added(Scene scene)
+        {
+            base.Added(scene);
+
+            if (_defaultToController && Scene.GetActiveController<VisualGravityController>() is { } visualController)
+            {
+                _minAlpha = visualController.LineMinAlpha.Clamp(0f, 1f);
+                _maxAlpha = visualController.LineMaxAlpha.Clamp(0f, 1f);
+                _flashTime = visualController.LineFlashTime.ClampLower(0f);
+                _lineColor = visualController.LineColor;
+            }
+
+            MinAlpha = _minAlpha.Clamp(0f, 1f);
+            MaxAlpha = _maxAlpha.Clamp(0f, 1f);
+            FlashTime = _flashTime.ClampLower(0f);
+            LineColor = Calc.HexToColor(!string.IsNullOrWhiteSpace(_lineColor) ? _lineColor : DEFAULT_LINE_COLOR);
+
+            if (_defaultToController && Scene.GetActiveController<SoundGravityController>() is { } soundController)
+            {
+                _sound = soundController.LineSound;
+            }
+
+            Sound = _sound;
+        }
+
         public override void Render()
         {
             base.Render();
 
-            var alpha = Calc.LerpClamp(_minAlpha, _maxAlpha, _flashTimeRemaining / _flashTime);
-            Draw.Line(Position.Round(), (Position + TargetOffset).Round(), Color.White * alpha, 2f);
+            var alpha = FlashTime == 0 ? MaxAlpha : Calc.LerpClamp(MinAlpha, MaxAlpha, _flashTimeRemaining / FlashTime);
+            Draw.Line(Position.Round(), (Position + TargetOffset).Round(), LineColor * alpha, 2f);
         }
 
         public override void DebugRender(Camera camera)

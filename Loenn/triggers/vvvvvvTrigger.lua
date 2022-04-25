@@ -4,16 +4,13 @@ local helpers = require("mods").requireFromPlugin("helpers")
 local placementData = helpers.createPlacementData('1', {
     width = 8,
     height = 8,
-    gravityType = consts.gravityTypes.normal.index,
-    fireOnBubbleReturn = true,
+    enable = true,
+    onlyOnSpawn = false,
 })
 
-local spawnGravityTrigger = {
-    name = "GravityHelper/SpawnGravityTrigger",
+local vvvvvvTrigger = {
+    name = "GravityHelper/VvvvvvTrigger",
     ignoredFields = consts.ignoredFields,
-    fieldInformation = {
-        gravityType = consts.fieldInformation.gravityType(),
-    },
     placements = {
         {
             name = "normal",
@@ -22,4 +19,4 @@ local spawnGravityTrigger = {
     },
 }
 
-return spawnGravityTrigger
+return vvvvvvTrigger

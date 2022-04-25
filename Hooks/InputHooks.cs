@@ -3,7 +3,7 @@
 
 using System;
 using System.Reflection;
-using Celeste.Mod.GravityHelper.Entities;
+using Celeste.Mod.GravityHelper.Entities.Controllers;
 using MonoMod.RuntimeDetour;
 
 namespace Celeste.Mod.GravityHelper.Hooks
@@ -29,6 +29,14 @@ namespace Celeste.Mod.GravityHelper.Hooks
             hook_Input_GrabCheck = null;
         }
 
-        private static bool Input_GrabCheck(Func<bool> orig) => !GravityController.VVVVVV && orig();
+        private static bool Input_GrabCheck(Func<bool> orig)
+        {
+            var session = GravityHelperModule.Session;
+            if (session.DisableGrab &&
+                (session.VvvvvvMode == VvvvvvMode.TriggerBased && session.VvvvvvTrigger ||
+                session.VvvvvvMode == VvvvvvMode.On))
+                return false;
+            return orig();
+        }
     }
 }

@@ -4,12 +4,45 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Celeste.Mod.GravityHelper.Entities.Controllers;
 using Monocle;
 
 namespace Celeste.Mod.GravityHelper.Extensions
 {
     public static class TrackerExtensions
     {
+        public static TController GetActiveController<TController>(this Scene scene)
+            where TController : BaseGravityController =>
+            GetActiveController(scene, typeof(TController)) as TController;
+
+        public static BaseGravityController GetActiveController(this Scene scene, Type controllerType)
+        {
+            if (!scene.Tracker.Entities.TryGetValue(controllerType, out var list)) return null;
+            var level = scene as Level;
+
+            BaseGravityController global = null;
+            foreach (var item in list)
+            {
+                if (item is not BaseGravityController controller)
+                    continue;
+                if (controller.Persistent)
+                    global = controller;
+                if (level?.IsInBounds(item) ?? false)
+                    return controller;
+            }
+            return global;
+        }
+
+        public static TController GetPersistentController<TController>(this Scene scene)
+            where TController : BaseGravityController =>
+            GetPersistentController(scene, typeof(TController)) as TController;
+
+        public static BaseGravityController GetPersistentController(this Scene scene, Type controllerType)
+        {
+            if (!scene.Tracker.Entities.TryGetValue(controllerType, out var list)) return null;
+            return list.FirstOrDefault(e => (e as BaseGravityController)?.Persistent == true) as BaseGravityController;
+        }
+
         public static T GetEntityOrDefault<T>(this Tracker tracker, Func<T, bool> predicate = null)
             where T : Entity
         {

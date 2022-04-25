@@ -2,11 +2,11 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Celeste.Mod.GravityHelper.Components;
 using Celeste.Mod.GravityHelper.Entities;
+using Celeste.Mod.GravityHelper.Entities.Controllers;
 using Celeste.Mod.GravityHelper.Extensions;
 using Celeste.Mod.GravityHelper.Triggers;
 using Microsoft.Xna.Framework;
@@ -1090,9 +1090,11 @@ namespace Celeste.Mod.GravityHelper.Hooks
             GravityHelperModule.PlayerComponent?.SetGravity(
                 GravityHelperModule.Instance.GravityBeforeReload ??
                 trigger?.GravityType ??
-                GravityHelperModule.Session.InitialGravity,
-                playerTriggered: false);
+                GravityHelperModule.Session.InitialGravity);
             GravityHelperModule.Instance.GravityBeforeReload = null;
+
+            if (self.CollideFirstOrDefault<VvvvvvTrigger>() is { } vvvvvvTrigger && vvvvvvTrigger.OnlyOnSpawn)
+                GravityHelperModule.Session.VvvvvvTrigger = vvvvvvTrigger.Enable;
 
             scene.Add(new GravityRefillIndicator());
         }
@@ -1304,7 +1306,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
         private static void Player_StartCassetteFly(On.Celeste.Player.orig_StartCassetteFly orig, Player self, Vector2 targetPosition, Vector2 control)
         {
-            GravityHelperModule.PlayerComponent?.SetGravity(GravityType.Normal, playerTriggered: false);
+            GravityHelperModule.PlayerComponent?.SetGravity(GravityType.Normal);
             orig(self, targetPosition, control);
         }
 
@@ -1324,19 +1326,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             var moveY = Input.MoveY.Value;
             var gliderMoveY = Input.GliderMoveY.Value;
 
-            if (GravityController.VVVVVV)
-            {
-                var jumpPressed = Input.Jump.Pressed;
-                Input.Jump.ConsumePress();
-
-                if (jumpPressed && self.OnGround())
-                {
-                    GravityHelperModule.PlayerComponent?.SetGravity(GravityType.Toggle, playerTriggered: false);
-                    self.Speed.Y = 160f * (self.SceneAs<Level>().InSpace ? 0.6f : 1f);
-                    if (!string.IsNullOrEmpty(GravityController.VVVVVVSound))
-                        Audio.Play(GravityController.VVVVVVSound);
-                }
-            }
+            self.Scene.GetPersistentController<VvvvvvGravityController>()?.CheckJump(self);
 
             if (GravityHelperModule.ShouldInvertPlayer)
             {
@@ -1389,7 +1379,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
                 if (!GravityHelperModule.ShouldInvertPlayer)
                     return false;
 
-                var ghUdjt = self.Scene.Tracker.GetEntitiesOrEmpty<UpsideDownJumpThru>().Cast<Entity>();
+                var ghUdjt = self.Scene.Tracker.GetEntitiesOrEmpty<UpsideDownJumpThru>();
                 var mhhUdjt = self.Scene.Tracker.GetEntitiesOrEmpty(ReflectionCache.MaxHelpingHandUpsideDownJumpThruType);
                 var entities = ghUdjt.Concat(mhhUdjt);
 

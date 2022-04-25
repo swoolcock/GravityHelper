@@ -1,8 +1,8 @@
 // Copyright (c) Shane Woolcock. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
-using System.Linq;
-using Celeste.Mod.GravityHelper.Entities;
+using Celeste.Mod.GravityHelper.Entities.Controllers;
+using Celeste.Mod.GravityHelper.Extensions;
 using Monocle;
 
 namespace Celeste.Mod.GravityHelper.Components
@@ -29,6 +29,10 @@ namespace Celeste.Mod.GravityHelper.Components
         {
             base.Added(entity);
 
+            // the entity may already be part of the scene before the component is added
+            if (entity.Scene != null)
+                updateInvertTime(entity.Scene);
+
             entity.Add(new GravityListener(entity)
             {
                 GravityChanged = (_, _) => ResetInvertTime(),
@@ -38,10 +42,13 @@ namespace Celeste.Mod.GravityHelper.Components
         public override void EntityAdded(Scene scene)
         {
             base.EntityAdded(scene);
+            updateInvertTime(scene);
+        }
 
-            var controller = Scene.Entities.ToAdd.Concat(Scene.Entities).OfType<GravityController>().FirstOrDefault();
-            if (controller != null)
-                InvertTime = controller.HoldableResetTime;
+        private void updateInvertTime(Scene scene)
+        {
+            var controller = Scene.GetActiveController<BehaviorGravityController>();
+            InvertTime = controller?.HoldableResetTime ?? 2f;
         }
 
         public override void Update()
