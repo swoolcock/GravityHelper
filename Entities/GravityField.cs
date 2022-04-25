@@ -37,9 +37,6 @@ namespace Celeste.Mod.GravityHelper.Entities
         public override bool ShouldAffectPlayer => false;
 
         public Color FieldColor { get; private set; }
-        public float ArrowOpacity { get; private set; }
-        public float FieldOpacity { get; private set; }
-        public float ParticleOpacity { get; private set; }
         public Color ArrowColor { get; private set; }
         public Color ParticleColor { get; private set; }
         public string Sound { get; private set; }
@@ -110,7 +107,7 @@ namespace Celeste.Mod.GravityHelper.Entities
                 });
             }
 
-            updateProperties();
+            updateProperties(null);
         }
 
         protected override void HandleOnEnter(Player player)
@@ -146,7 +143,7 @@ namespace Celeste.Mod.GravityHelper.Entities
             _fieldGroup.Semaphore--;
         }
 
-        private void updateProperties()
+        private void updateProperties(Scene scene)
         {
             Visible = shouldDrawArrows || shouldDrawField;
 
@@ -170,10 +167,13 @@ namespace Celeste.Mod.GravityHelper.Entities
                 _arrowSmallOrigin = new Vector2(_arrowSmallTexture.Width / 2f, _arrowSmallTexture.Height / 2f);
             }
 
-            if (shouldDrawField)
+            if (shouldDrawField && scene != null)
             {
-                this.GetConnectedFieldRenderer<GravityFieldRenderer, GravityField>(Scene, true);
+                this.GetConnectedFieldRenderer<GravityFieldRenderer, GravityField>(scene, true);
+            }
 
+            if (shouldDrawField && !_particles.Any())
+            {
                 for (int index = 0; index < Width * (double) Height / 16.0; ++index)
                     _particles.Add(new Vector2(Calc.Random.NextFloat(Width - 1f), Calc.Random.NextFloat(Height - 1f)));
             }
@@ -199,7 +199,7 @@ namespace Celeste.Mod.GravityHelper.Entities
                 };
             }
 
-            FieldColor = (string.IsNullOrWhiteSpace(_fieldColor) ? GravityType.Color() : Calc.HexToColor(_fieldColor)) * FieldOpacity;
+            FieldColor = (string.IsNullOrWhiteSpace(_fieldColor) ? GravityType.Color() : Calc.HexToColor(_fieldColor)) * _fieldOpacity;
             ArrowColor = Calc.HexToColor(!string.IsNullOrWhiteSpace(_arrowColor) ? _arrowColor : DEFAULT_ARROW_COLOR);
             ParticleColor = Calc.HexToColor(!string.IsNullOrWhiteSpace(_particleColor) ? _particleColor : DEFAULT_PARTICLE_COLOR);
 
@@ -218,7 +218,7 @@ namespace Celeste.Mod.GravityHelper.Entities
             _arrowShakeOffset = Vector2.Zero;
             _fieldGroup = null;
 
-            updateProperties();
+            updateProperties(scene);
         }
 
         public override void Removed(Scene scene)
@@ -268,7 +268,7 @@ namespace Celeste.Mod.GravityHelper.Entities
 
             if (shouldDrawField)
             {
-                var color = ParticleColor * ParticleOpacity;
+                var color = ParticleColor * _particleOpacity;
                 foreach (Vector2 particle in _particles)
                     Draw.Pixel.Draw(Position + particle, Vector2.Zero, color);
             }
@@ -285,7 +285,7 @@ namespace Celeste.Mod.GravityHelper.Entities
                 // if width or height is 1, scale down the arrows
                 var texture = widthInTiles == 1 || heightInTiles == 1 ? _arrowSmallTexture : _arrowTexture;
                 var origin = widthInTiles == 1 || heightInTiles == 1 ? _arrowSmallOrigin : _arrowOrigin;
-                var color = ArrowColor * ArrowOpacity;
+                var color = ArrowColor * _arrowOpacity;
 
                 // arrows should be centre aligned in each 2x2 box
                 // offset by half a tile if the width or height is odd
