@@ -7,13 +7,15 @@ const default_sound = "event:/gravityhelper/gravity_line"
 @pardef GravityLine(
     x1::Integer, y1::Integer,
     x2::Integer=x1+16, y2::Integer=y1,
+    defaultToController::Bool=true,
     gravityType::Integer=2, momentumMultiplier::Real=1,
     cooldown::Real=0, cancelDash::Bool=false, disableUntilExit::Bool=false, onlyWhileFalling::Bool=false,
     affectsPlayer::Bool=true, affectsHoldableActors::Bool=false, affectsOtherActors::Bool=false,
-    playSound::String=default_sound, minAlpha::String="", maxAlpha::String="", flashTime::String="",
-    lineColor::String=""
+    playSound::String=default_sound, minAlpha::Real=0.45, maxAlpha::Real=0.95, flashTime::Real=0.35,
+    lineColor::String="FFFFFF"
 ) = Entity("GravityHelper/GravityLine",
     x = x1, y = y1,
+    defaultToController=defaultToController,
     gravityType=gravityType, momentumMultiplier=momentumMultiplier,
     cooldown=cooldown, cancelDash=cancelDash, disableUntilExit=disableUntilExit, onlyWhileFalling=onlyWhileFalling,
     affectsPlayer=affectsPlayer, affectsHoldableActors=affectsHoldableActors, affectsOtherActors=affectsOtherActors,

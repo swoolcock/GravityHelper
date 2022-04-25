@@ -3,9 +3,10 @@ local helpers = require("mods").requireFromPlugin("helpers")
 local utils = require("utils")
 
 local placementData = helpers.createPlacementData('1', {
+    defaultToController = true,
     playerCanUse = true,
     gravityType = consts.gravityTypes.normal.index,
-    gravityCooldown = nil,
+    gravityCooldown = 0.1,
 })
 
 local function makeSpring(name, rotation, xOffset, yOffset, width, height, gravityType)

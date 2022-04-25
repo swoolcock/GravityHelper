@@ -43,11 +43,12 @@ namespace Celeste.Mod.GravityHelper.Entities
 
         private readonly Dictionary<int, ComponentTracking> _trackedComponents = new();
 
-        private readonly float? _minAlpha;
-        private readonly float? _maxAlpha;
-        private readonly float? _flashTime;
-        private readonly string _sound;
-        private readonly string _lineColor;
+        private readonly bool _defaultToController;
+        private float _minAlpha;
+        private float _maxAlpha;
+        private float _flashTime;
+        private string _sound;
+        private string _lineColor;
 
         private float _flashTimeRemaining;
         private float _audioMuffleSecondsRemaining;
@@ -67,11 +68,12 @@ namespace Celeste.Mod.GravityHelper.Entities
             OnlyWhileFalling = data.Bool("onlyWhileFalling");
             Depth = Depths.Above;
 
-            _minAlpha = data.NullableFloat("minAlpha");
-            _maxAlpha = data.NullableFloat("maxAlpha");
-            _flashTime = data.NullableFloat("flashTime");
-            _sound = data.NullableAttr("sound");
-            _lineColor = data.NullableAttr("lineColor");
+            _defaultToController = data.Bool("defaultToController");
+            _minAlpha = data.Float("minAlpha", DEFAULT_MIN_ALPHA);
+            _maxAlpha = data.Float("maxAlpha", DEFAULT_MAX_ALPHA);
+            _flashTime = data.Float("flashTime", DEFAULT_FLASH_TIME);
+            _sound = data.Attr("sound", string.Empty);
+            _lineColor = data.Attr("lineColor", string.Empty);
 
             var affectsPlayer = data.Bool("affectsPlayer", true);
             var affectsHoldableActors = data.Bool("affectsHoldableActors");
@@ -185,14 +187,25 @@ namespace Celeste.Mod.GravityHelper.Entities
         {
             base.Added(scene);
 
-            var visual = Scene.GetActiveController<VisualGravityController>();
-            MinAlpha = (_minAlpha ?? visual?.LineMinAlpha ?? DEFAULT_MIN_ALPHA).Clamp(0f, 1f);
-            MaxAlpha = (_maxAlpha ?? visual?.LineMaxAlpha ?? DEFAULT_MAX_ALPHA).Clamp(0f, 1f);
-            FlashTime = (_flashTime ?? visual?.LineFlashTime ?? DEFAULT_FLASH_TIME).ClampLower(0f);
-            LineColor = Calc.HexToColor(_lineColor ?? visual?.LineColor ?? DEFAULT_LINE_COLOR);
+            if (_defaultToController && Scene.GetActiveController<VisualGravityController>() is { } visualController)
+            {
+                _minAlpha = visualController.LineMinAlpha.Clamp(0f, 1f);
+                _maxAlpha = visualController.LineMaxAlpha.Clamp(0f, 1f);
+                _flashTime = visualController.LineFlashTime.ClampLower(0f);
+                _lineColor = visualController.LineColor;
+            }
 
-            var sound = Scene.GetActiveController<SoundGravityController>();
-            Sound = _sound ?? sound?.LineSound ?? DEFAULT_SOUND;
+            MinAlpha = _minAlpha.Clamp(0f, 1f);
+            MaxAlpha = _maxAlpha.Clamp(0f, 1f);
+            FlashTime = _flashTime.ClampLower(0f);
+            LineColor = Calc.HexToColor(!string.IsNullOrWhiteSpace(_lineColor) ? _lineColor : DEFAULT_LINE_COLOR);
+
+            if (_defaultToController && Scene.GetActiveController<SoundGravityController>() is { } soundController)
+            {
+                _sound = soundController.LineSound;
+            }
+
+            Sound = _sound;
         }
 
         public override void Render()

@@ -7,6 +7,7 @@ local placementData = helpers.createPlacementData('1', {
     normalSound = consts.gravityTypes.normal.sound,
     invertedSound = consts.gravityTypes.inverted.sound,
     toggleSound = consts.gravityTypes.toggle.sound,
+    lineSound = "event:/gravityhelper/gravity_line",
     musicParam = "",
 })
 

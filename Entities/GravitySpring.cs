@@ -45,7 +45,8 @@ namespace Celeste.Mod.GravityHelper.Entities
         private readonly StaticMover _staticMover;
         private float _cooldownRemaining;
 
-        private float? _gravityCooldown;
+        private float _gravityCooldown;
+        private readonly bool _defaultToController;
 
         public static Entity LoadFloor(Level level, LevelData levelData, Vector2 offset, EntityData entityData) =>
             new GravitySpring(entityData, offset, Orientations.Floor);
@@ -68,10 +69,11 @@ namespace Celeste.Mod.GravityHelper.Entities
             PlayerCanUse = data.Bool("playerCanUse", true);
             GravityType = data.Enum<GravityType>("gravityType");
 
-            _gravityCooldown = data.NullableFloat("gravityCooldown");
+            _defaultToController = data.Bool("defaultToController");
+            _gravityCooldown = data.Float("gravityCooldown", 0.5f);
 
             // handle legacy spring settings
-            if (_gravityCooldown == null && data.TryFloat("cooldown", out var cooldown))
+            if (data.TryFloat("cooldown", out var cooldown))
                 _gravityCooldown = cooldown;
 
             Orientation = orientation;
@@ -134,8 +136,10 @@ namespace Celeste.Mod.GravityHelper.Entities
         {
             base.Added(scene);
 
-            var controller = Scene.GetActiveController<BehaviorGravityController>();
-            _gravityCooldown ??= controller?.SpringCooldown;
+            if (_defaultToController && Scene.GetActiveController<BehaviorGravityController>() is { } behaviorController)
+            {
+                _gravityCooldown = behaviorController.SpringCooldown;
+            }
         }
 
         private void OnEnable()
@@ -186,10 +190,10 @@ namespace Celeste.Mod.GravityHelper.Entities
             }
 
             // set gravity and cooldown if not on cooldown
-            if (GravityType != GravityType.None && (_cooldownRemaining == 0f || !_gravityCooldown.HasValue))
+            if (GravityType != GravityType.None && (_cooldownRemaining <= 0f || _gravityCooldown <= 0f))
             {
                 GravityHelperModule.PlayerComponent?.SetGravity(GravityType);
-                _cooldownRemaining = _gravityCooldown ?? 0f;
+                _cooldownRemaining = _gravityCooldown;
                 // TODO: update sprite to show cooldown
             }
 

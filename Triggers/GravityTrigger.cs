@@ -26,6 +26,7 @@ namespace Celeste.Mod.GravityHelper.Triggers
         private readonly Version _modVersion;
         private readonly Version _pluginVersion;
 
+        private readonly bool _defaultToController;
         private string _sound;
         private float _audioMuffleSecondsRemaining;
 
@@ -41,7 +42,8 @@ namespace Celeste.Mod.GravityHelper.Triggers
             GravityType = (GravityType)data.Int("gravityType");
             MomentumMultiplier = data.Float("momentumMultiplier", 1f);
 
-            _sound = data.NullableAttr("sound");
+            _defaultToController = data.Bool("defaultToController", true);
+            _sound = data.Attr("sound", string.Empty);
 
             TriggeredEntityTypes types = TriggeredEntityTypes.None;
             if (AffectsHoldableActors) types |= TriggeredEntityTypes.HoldableActors;
@@ -61,7 +63,7 @@ namespace Celeste.Mod.GravityHelper.Triggers
         {
             base.Added(scene);
 
-            if (_sound == null && Scene.GetActiveController<SoundGravityController>() is { } soundController)
+            if (_defaultToController && Scene.GetActiveController<SoundGravityController>() is { } soundController)
             {
                 if (GravityType == GravityType.Normal)
                     _sound = soundController.NormalSound;

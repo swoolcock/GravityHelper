@@ -12,34 +12,34 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
     [Tracked]
     public class VisualGravityController : BaseGravityController<VisualGravityController>
     {
-        public float? FieldArrowOpacity { get; }
-        public float? FieldBackgroundOpacity { get; }
-        public float? FieldParticleOpacity { get; }
+        public float FieldArrowOpacity { get; }
+        public float FieldBackgroundOpacity { get; }
+        public float FieldParticleOpacity { get; }
         public string FieldNormalColor { get; }
         public string FieldInvertedColor { get; }
         public string FieldToggleColor { get; }
         public string FieldArrowColor { get; }
         public string FieldParticleColor { get; }
-        public float? LineMinAlpha { get; }
-        public float? LineMaxAlpha { get; }
-        public float? LineFlashTime { get; }
+        public float LineMinAlpha { get; }
+        public float LineMaxAlpha { get; }
+        public float LineFlashTime { get; }
         public string LineColor { get; }
 
         public VisualGravityController(EntityData data, Vector2 offset)
             : base(data, offset)
         {
-            FieldArrowOpacity = data.NullableFloat("fieldArrowOpacity");
-            FieldBackgroundOpacity = data.NullableFloat("fieldBackgroundOpacity");
-            FieldParticleOpacity = data.NullableFloat("fieldParticleOpacity");
-            FieldNormalColor = data.NullableAttr("fieldNormalColor");
-            FieldInvertedColor = data.NullableAttr("fieldInvertedColor");
-            FieldToggleColor = data.NullableAttr("fieldToggleColor");
-            FieldArrowColor = data.NullableAttr("fieldArrowColor");
-            FieldParticleColor = data.NullableAttr("fieldParticleColor");
-            LineMinAlpha = data.NullableFloat("lineMinAlpha");
-            LineMaxAlpha = data.NullableFloat("lineMaxAlpha");
-            LineFlashTime = data.NullableFloat("lineFlashTime");
-            LineColor = data.NullableAttr("lineColor");
+            FieldArrowOpacity = data.Float("fieldArrowOpacity");
+            FieldBackgroundOpacity = data.Float("fieldBackgroundOpacity");
+            FieldParticleOpacity = data.Float("fieldParticleOpacity");
+            FieldNormalColor = data.Attr("fieldNormalColor");
+            FieldInvertedColor = data.Attr("fieldInvertedColor");
+            FieldToggleColor = data.Attr("fieldToggleColor");
+            FieldArrowColor = data.Attr("fieldArrowColor");
+            FieldParticleColor = data.Attr("fieldParticleColor");
+            LineMinAlpha = data.Float("lineMinAlpha");
+            LineMaxAlpha = data.Float("lineMaxAlpha");
+            LineFlashTime = data.Float("lineFlashTime");
+            LineColor = data.Attr("lineColor");
         }
     }
 }

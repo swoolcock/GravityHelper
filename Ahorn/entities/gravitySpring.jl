@@ -2,10 +2,24 @@ module GravityHelperGravitySpring
 
 using ..Ahorn, Maple
 
-@mapdef Entity "GravityHelper/GravitySpringFloor" GravitySpringFloor(x::Integer, y::Integer, playerCanUse::Bool=true, gravityType::Integer=0, gravityCooldown::String="")
-@mapdef Entity "GravityHelper/GravitySpringWallLeft" GravitySpringWallLeft(x::Integer, y::Integer, playerCanUse::Bool=true, gravityType::Integer=2, gravityCooldown::String="")
-@mapdef Entity "GravityHelper/GravitySpringWallRight" GravitySpringWallRight(x::Integer, y::Integer, playerCanUse::Bool=true, gravityType::Integer=2, gravityCooldown::String="")
-@mapdef Entity "GravityHelper/GravitySpringCeiling" GravitySpringCeiling(x::Integer, y::Integer, playerCanUse::Bool=true, gravityType::Integer=1, gravityCooldown::String="")
+const default_cooldown = 0.1
+
+@mapdef Entity "GravityHelper/GravitySpringFloor" GravitySpringFloor(
+    x::Integer, y::Integer,
+    defaultToController::Bool=true,
+    playerCanUse::Bool=true, gravityType::Integer=0, gravityCooldown::Real=default_cooldown)
+@mapdef Entity "GravityHelper/GravitySpringWallLeft" GravitySpringWallLeft(
+    x::Integer, y::Integer,
+    defaultToController::Bool=true,
+    playerCanUse::Bool=true, gravityType::Integer=2, gravityCooldown::Real=default_cooldown)
+@mapdef Entity "GravityHelper/GravitySpringWallRight" GravitySpringWallRight(
+    x::Integer, y::Integer,
+    defaultToController::Bool=true,
+    playerCanUse::Bool=true, gravityType::Integer=2, gravityCooldown::Real=default_cooldown)
+@mapdef Entity "GravityHelper/GravitySpringCeiling" GravitySpringCeiling(
+    x::Integer, y::Integer,
+    defaultToController::Bool=true,
+    playerCanUse::Bool=true, gravityType::Integer=1, gravityCooldown::Real=default_cooldown)
 
 const gravityTypes = Dict{String, Integer}(
     "None" => -1,

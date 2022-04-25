@@ -6,6 +6,7 @@ local utils = require("utils")
 local drawableLine = require("structs.drawable_line")
 
 local placementData = helpers.createPlacementData('1', {
+    defaultToController = true,
     gravityType = consts.gravityTypes.toggle.index,
     momentumMultiplier = 1,
     cooldown = 0,
@@ -15,11 +16,11 @@ local placementData = helpers.createPlacementData('1', {
     affectsPlayer = true,
     affectsHoldableActors = false,
     affectsOtherActors = false,
-    sound = nil,
-    minAlpha = nil,
-    maxAlpha = nil,
-    flashTime = nil,
-    lineColor = nil,
+    sound = "event:/gravityhelper/gravity_line",
+    minAlpha = 0.45,
+    maxAlpha = 0.95,
+    flashTime = 0.35,
+    lineColor = "FFFFFF",
 })
 
 local gravityLine = {

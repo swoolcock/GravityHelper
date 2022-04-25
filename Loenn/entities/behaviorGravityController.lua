@@ -5,7 +5,7 @@ local drawableSprite = require("structs.drawable_sprite")
 local placementData = helpers.createPlacementData('1', {
     persistent = true,
     holdableResetTime = 2.0,
-    springCooldown = 1.0,
+    springCooldown = 0.1,
 })
 
 local behaviorGravityController = {

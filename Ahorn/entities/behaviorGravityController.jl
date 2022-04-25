@@ -6,7 +6,7 @@ using ..Ahorn, Maple
     x::Integer, y::Integer,
     persistent::Bool=true,
     holdableResetTime::Real=2.0,
-    springCooldown::Real=1.0
+    springCooldown::Real=0.1
 )
 
 const placements = Ahorn.PlacementDict(

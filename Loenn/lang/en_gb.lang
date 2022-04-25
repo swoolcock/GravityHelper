@@ -22,14 +22,15 @@ entities.GravityHelper/GravityDreamBlock.attributes.description.gravityType=The 
 entities.GravityHelper/GravityField.placements.name.normal=Gravity Field (GravityHelper)
 entities.GravityHelper/GravityField.placements.name.attachedIndicator=Gravity Field (Attached Indicator) (GravityHelper)
 entities.GravityHelper/GravityField.placements.name.visualOnly=Gravity Field (Visual Only) (GravityHelper)
+entities.GravityHelper/GravityField.attributes.description.defaultToController=If true (default), supported properties for this entity will use the value from the active controller.
 entities.GravityHelper/GravityField.attributes.description.gravityType=The gravity type to set when Madeline enters the field.
 entities.GravityHelper/GravityField.attributes.description.momentumMultiplier=The multiplier to apply to Madeline's Y velocity when gravity flips.\n0 means instantly change, positive values give a gradual change. Defaults to 1.
 entities.GravityHelper/GravityField.attributes.description.arrowType=The gravity type to use when rendering arrows.\n"None" disables arrows, and "Default" will use the current value of gravityType.
 entities.GravityHelper/GravityField.attributes.description.fieldType=The gravity type to use when rendering the field.\n"None" disables field rendering, and "Default" will use the current value of gravityType.
 entities.GravityHelper/GravityField.attributes.description.attachToSolids=Whether this and connected fields should attach to solids.
-entities.GravityHelper/GravityField.attributes.description.fieldOpacity=The opacity of the shimmering field effect, if enabled. Ranges from 0 (invisible) to 1 (fully opaque).\nIf empty and a VisualGravityController exists, it will use the value provided from that, otherwise 0.15.
-entities.GravityHelper/GravityField.attributes.description.arrowOpacity=The opacity of the arrows, if enabled. Ranges from 0 (invisible) to 1 (fully opaque).\nIf empty and a VisualGravityController exists, it will use the value provided from that, otherwise 0.5.
-entities.GravityHelper/GravityField.attributes.description.particleOpacity=The opacity of the moving particles, if the field effect is enabled. Ranges from 0 (invisible) to 1 (fully opaque).\nIf empty and a VisualGravityController exists, it will use the value provided from that, otherwise 0.5.
+entities.GravityHelper/GravityField.attributes.description.fieldOpacity=The opacity of the shimmering field effect, if enabled. Ranges from 0 (invisible) to 1 (fully opaque).\nDefaults to 0.15. Supports controllers.
+entities.GravityHelper/GravityField.attributes.description.arrowOpacity=The opacity of the arrows, if enabled. Ranges from 0 (invisible) to 1 (fully opaque).\nDefaults to 0.5. Supports controllers.
+entities.GravityHelper/GravityField.attributes.description.particleOpacity=The opacity of the moving particles, if the field effect is enabled. Ranges from 0 (invisible) to 1 (fully opaque).\nDefaults to 0.5. Supports controllers.
 entities.GravityHelper/GravityField.attributes.description.affectsPlayer=Whether the field affects Madeline. Defaults to true.
 entities.GravityHelper/GravityField.attributes.description.affectsHoldableActors=Whether the field affects Actors with a Holdable component while they are not being held. Defaults to false.
 entities.GravityHelper/GravityField.attributes.description.affectsOtherActors=Whether the field affects non-holdable Actors. Defaults to false.
@@ -37,8 +38,9 @@ entities.GravityHelper/GravityField.attributes.description.affectsOtherActors=Wh
 # Gravity Line
 entities.GravityHelper/GravityLine.placements.name.crossable=Gravity Line (Crossable) (GravityHelper)
 entities.GravityHelper/GravityLine.placements.name.uncrossable=Gravity Line (Uncrossable) (GravityHelper)
+entities.GravityHelper/GravityLine.attributes.description.defaultToController=If true (default), supported properties for this entity will use the value from the active controller.
 entities.GravityHelper/GravityLine.attributes.description.gravityType=The gravity type to set when Madeline or a supported actor touches the line. Defaults to Toggle.
-entities.GravityHelper/GravityLine.attributes.description.momentumMultiplier=The multiplier to apply to Madeline's Y velocity when gravity flips.\n0 means instantly change, positive values give a gradual change. Defaults to 1 for crossable and 0.1 for uncrossable.
+entities.GravityHelper/GravityLine.attributes.description.momentumMultiplier=The multiplier to apply to Madeline's Y velocity when gravity flips.\n0 means instantly change, positive values give a gradual change. Defaults to 1 for crossable and 0.1 for uncrossable.\nFlip is instant if VVVVVV mode is enabled.
 entities.GravityHelper/GravityLine.attributes.description.cooldown=How long in seconds it will take for the line to reenable after triggering. Defaults to 0.
 entities.GravityHelper/GravityLine.attributes.description.cancelDash=Whether or not touching the line should immediately cancel Madeline's dash.\nDefaults to false for crossable, true for uncrossable.
 entities.GravityHelper/GravityLine.attributes.description.disableUntilExit=Whether or not the line should be disabled once triggered, until the actor is no longer colliding.\nDefaults to false for crossable, true for uncrossable.
@@ -46,10 +48,10 @@ entities.GravityHelper/GravityLine.attributes.description.onlyWhileFalling=If tr
 entities.GravityHelper/GravityLine.attributes.description.affectsPlayer=Whether the line will affect Madeline. Defaults to true.
 entities.GravityHelper/GravityLine.attributes.description.affectsHoldableActors=Whether the line affects Actors with a Holdable component while they are not being held. Defaults to false.
 entities.GravityHelper/GravityLine.attributes.description.affectsOtherActors=Whether the line affects non-holdable Actors. Defaults to false.
-entities.GravityHelper/GravityLine.attributes.description.playSound=The sound that should be played. Defaults to an embedded sound, set your own or clear it for no sound.
-entities.GravityHelper/GravityLine.attributes.description.minAlpha=The alpha to display when not flashing. If empty (default) will use the active visual controller or fall back to 0.45.
-entities.GravityHelper/GravityLine.attributes.description.maxAlpha=The alpha to start a flash with. If empty (default) will use the active visual controller or fall back to 0.95.
-entities.GravityHelper/GravityLine.attributes.description.flashTime=The time in seconds taken to perform a flash when triggered.\nIf empty (default) will use the active visual controller or fall back to 0.35 seconds.\nIf set to 0 seconds, flashing is disabled.
+entities.GravityHelper/GravityLine.attributes.description.sound=The sound that should be played. Defaults to an embedded sound, set your own or clear it for no sound. Supports controllers.
+entities.GravityHelper/GravityLine.attributes.description.minAlpha=The alpha to display when not flashing. Defaults to 0.45. Supports controllers.
+entities.GravityHelper/GravityLine.attributes.description.maxAlpha=The alpha to start a flash with. Defaults to 0.95. Supports controllers.
+entities.GravityHelper/GravityLine.attributes.description.flashTime=The time in seconds taken to perform a flash when triggered.\nIf set to 0 seconds, flashing is disabled. Defaults to 0.35 seconds. Supports controllers.
 
 # Gravity Refill
 entities.GravityHelper/GravityRefill.placements.name.normal=Gravity Refill (GravityHelper)
@@ -64,18 +66,22 @@ entities.GravityHelper/GravitySpringFloor.placements.name.normal=Gravity Spring 
 entities.GravityHelper/GravitySpringCeiling.placements.name.normal=Gravity Spring (Ceiling) (GravityHelper)
 entities.GravityHelper/GravitySpringWallLeft.placements.name.normal=Gravity Spring (Wall Left) (GravityHelper)
 entities.GravityHelper/GravitySpringWallRight.placements.name.normal=Gravity Spring (Wall Right) (GravityHelper)
+entities.GravityHelper/GravitySpringFloor.attributes.description.defaultToController=If true (default), supported properties for this entity will use the value from the active controller.
 entities.GravityHelper/GravitySpringFloor.attributes.description.playerCanUse=Whether the spring will activate for the player.
 entities.GravityHelper/GravitySpringFloor.attributes.description.gravityType=The gravity type to set when Madeline activates the spring. Defaults to Normal.
-entities.GravityHelper/GravitySpringFloor.attributes.description.gravityCooldown=Time in seconds before the spring will change Madeline's gravity again (the bouncing component has no cooldown).\nIf empty (default) will use the active behaviour controller or fall back to 0.5 seconds.\nIf set to 0 seconds, cooldown is disabled.
+entities.GravityHelper/GravitySpringFloor.attributes.description.gravityCooldown=Time in seconds before the spring will change Madeline's gravity again (the bouncing component has no cooldown).\nIf set to 0 seconds, cooldown is disabled. Defaults to 0.1 seconds. Supports controllers.
+entities.GravityHelper/GravitySpringWallLeft.attributes.description.defaultToController=If true (default), supported properties for this entity will use the value from the active controller.
 entities.GravityHelper/GravitySpringWallLeft.attributes.description.playerCanUse=Whether the spring will activate for the player.
 entities.GravityHelper/GravitySpringWallLeft.attributes.description.gravityType=The gravity type to set when Madeline activates the spring. Defaults to Toggle.
-entities.GravityHelper/GravitySpringWallLeft.attributes.description.gravityCooldown=Time in seconds before the spring will change Madeline's gravity again (the bouncing component has no cooldown).\nIf empty (default) will use the active behaviour controller or fall back to 0.5 seconds.\nIf set to 0 seconds, cooldown is disabled.
+entities.GravityHelper/GravitySpringWallLeft.attributes.description.gravityCooldown=Time in seconds before the spring will change Madeline's gravity again (the bouncing component has no cooldown).\nIf set to 0 seconds, cooldown is disabled. Defaults to 0.1 seconds. Supports controllers.
+entities.GravityHelper/GravitySpringWallRight.attributes.description.defaultToController=If true (default), supported properties for this entity will use the value from the active controller.
 entities.GravityHelper/GravitySpringWallRight.attributes.description.playerCanUse=Whether the spring will activate for the player.
 entities.GravityHelper/GravitySpringWallRight.attributes.description.gravityType=The gravity type to set when Madeline activates the spring. Defaults to Toggle.
-entities.GravityHelper/GravitySpringWallRight.attributes.description.gravityCooldown=Time in seconds before the spring will change Madeline's gravity again (the bouncing component has no cooldown).\nIf empty (default) will use the active behaviour controller or fall back to 0.5 seconds.\nIf set to 0 seconds, cooldown is disabled.
+entities.GravityHelper/GravitySpringWallRight.attributes.description.gravityCooldown=Time in seconds before the spring will change Madeline's gravity again (the bouncing component has no cooldown).\nIf set to 0 seconds, cooldown is disabled. Defaults to 0.1 seconds. Supports controllers.
+entities.GravityHelper/GravitySpringCeiling.attributes.description.defaultToController=If true (default), supported properties for this entity will use the value from the active controller.
 entities.GravityHelper/GravitySpringCeiling.attributes.description.playerCanUse=Whether the spring will activate for the player.
 entities.GravityHelper/GravitySpringCeiling.attributes.description.gravityType=The gravity type to set when Madeline activates the spring. Defaults to Inverted.
-entities.GravityHelper/GravitySpringCeiling.attributes.description.gravityCooldown=Time in seconds before the spring will change Madeline's gravity again (the bouncing component has no cooldown).\nIf empty (default) will use the active behaviour controller or fall back to 0.5 seconds.\nIf set to 0 seconds, cooldown is disabled.
+entities.GravityHelper/GravitySpringCeiling.attributes.description.gravityCooldown=Time in seconds before the spring will change Madeline's gravity again (the bouncing component has no cooldown).\nIf set to 0 seconds, cooldown is disabled. Defaults to 0.1 seconds. Supports controllers.
 
 # Upside Down Jump Thru
 entities.GravityHelper/UpsideDownJumpThru.placements.name.wood=Upside Down Jump Through (Wood) (GravityHelper)
@@ -96,11 +102,13 @@ entities.GravityHelper/UpsideDownWatchTower.attributes.description.onlyY=Whether
 
 # Gravity Trigger
 triggers.GravityHelper/GravityTrigger.placements.name.normal=Gravity Trigger (GravityHelper)
+triggers.GravityHelper/GravitySpringCeiling.attributes.description.defaultToController=If true (default), supported properties for this trigger will use the value from the active controller.
 triggers.GravityHelper/GravityTrigger.attributes.description.gravityType=The gravity type to set when Madeline enters the trigger.
 triggers.GravityHelper/GravityTrigger.attributes.description.momentumMultiplier=The multiplier to apply to Madeline's Y velocity when gravity flips.\n0 means instantly change, positive values give a gradual change. Defaults to 1.
 triggers.GravityHelper/GravityTrigger.attributes.description.affectsPlayer=Whether the trigger affects Madeline. Defaults to true.
 triggers.GravityHelper/GravityTrigger.attributes.description.affectsHoldableActors=Whether the trigger affects Actors with a Holdable component while they are not being held. Defaults to false.
 triggers.GravityHelper/GravityTrigger.attributes.description.affectsOtherActors=Whether the trigger affects non-holdable Actors. Defaults to false.
+triggers.GravityHelper/GravityTrigger.attributes.description.sound=The sound that should be played. Defaults to an embedded sound, set your own or clear it for no sound. Supports controllers.
 
 # Spawn Gravity Trigger
 triggers.GravityHelper/SpawnGravityTrigger.placements.name.normal=Spawn Gravity Trigger (GravityHelper)
@@ -111,7 +119,7 @@ triggers.GravityHelper/SpawnGravityTrigger.attributes.description.fireOnBubbleRe
 entities.GravityHelper/BehaviorGravityController.placements.name.normal=Behaviour Gravity Controller (GravityHelper)
 entities.GravityHelper/BehaviorGravityController.attributes.description.persistent=Whether this controller should be considered the default for its type.\nThere should only ever be one persistent in your map, and not in a room with another controller of the same type.
 entities.GravityHelper/BehaviorGravityController.attributes.description.holdableResetTime=The amount of time in seconds a holdable will take to reset after being dropped.\nIf <= 0, the holdable will never reset. Defaults to 2.
-entities.GravityHelper/BehaviorGravityController.attributes.description.springCooldown=The global setting for GravitySpring gravityCooldown. Defaults to 1 second.
+entities.GravityHelper/BehaviorGravityController.attributes.description.springCooldown=The global setting for GravitySpring gravityCooldown. Defaults to 0.5 seconds.
 
 # Visual Gravity Controller
 entities.GravityHelper/VisualGravityController.placements.name.normal=Visual Gravity Controller (GravityHelper)

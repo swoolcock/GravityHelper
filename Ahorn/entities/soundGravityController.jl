@@ -4,6 +4,7 @@ using ..Ahorn, Maple
 
 const default_normal_gravity_sound = "event:/ui/game/lookout_off"
 const default_inverted_gravity_sound = "event:/ui/game/lookout_on"
+const default_line_sound = "event:/gravityhelper/gravity_line"
 
 @mapdef Entity "GravityHelper/SoundGravityController" SoundGravityController(
     x::Integer, y::Integer,
@@ -11,6 +12,7 @@ const default_inverted_gravity_sound = "event:/ui/game/lookout_on"
     normalSound::String=default_normal_gravity_sound,
     invertedSound::String=default_inverted_gravity_sound,
     toggleSound::String="",
+    lineSound::String=default_line_sound,
     musicParam::String=""
 )
 
