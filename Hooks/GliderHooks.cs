@@ -3,6 +3,7 @@
 
 using Celeste.Mod.GravityHelper.Components;
 using Celeste.Mod.GravityHelper.Extensions;
+using Microsoft.Xna.Framework;
 using Monocle;
 using MonoMod.Utils;
 
@@ -54,9 +55,13 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
             var data = new DynData<Glider>(self);
             var sprite = data.Get<Sprite>("sprite");
-            sprite.Scale.Y *= -1;
+            var oldScale = sprite.Scale;
+            var oldRotation = sprite.Rotation;
+            sprite.Scale = new Vector2(oldScale.X, -oldScale.Y);
+            sprite.Rotation = -oldRotation;
             orig(self);
-            sprite.Scale.Y *= -1;
+            sprite.Scale = oldScale;
+            sprite.Rotation = oldRotation;
         }
 
         private static void Glider_Update(On.Celeste.Glider.orig_Update orig, Glider self)
