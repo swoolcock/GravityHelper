@@ -1,1 +1,0 @@
-POSTCARD_GRAVITYHELPER_MHH_UDJT= This map contains upside-down jumpthru entities from MaxHelpingHand, which are currently incompatible with GravityHelper.{n}{n}Expect some quirkiness!

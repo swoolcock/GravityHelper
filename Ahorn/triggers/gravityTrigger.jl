@@ -4,8 +4,9 @@ using ..Ahorn, Maple
 
 @mapdef Trigger "GravityHelper/GravityTrigger" GravityTrigger(
     x::Integer, y::Integer,
+    defaultToController::Bool=true,
     width::Integer=Maple.defaultTriggerWidth, height::Integer=Maple.defaultTriggerHeight,
-    gravityType::Integer=0, momentumMultiplier::Real=1.0,
+    gravityType::Integer=0, momentumMultiplier::Real=1.0, sound::String="",
     affectsPlayer::Bool=true, affectsHoldableActors::Bool=false, affectsOtherActors::Bool=false
 )
 

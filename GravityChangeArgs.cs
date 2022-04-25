@@ -8,17 +8,15 @@ namespace Celeste.Mod.GravityHelper
         public GravityType NewValue;
         public GravityType? OldValue;
         public float MomentumMultiplier;
-        public bool PlayerTriggered;
         public bool WasToggled;
 
         public bool Changed => OldValue != null && NewValue != OldValue;
 
-        public GravityChangeArgs(GravityType newValue, GravityType? oldValue = null, float momentumMultiplier = 1f, bool playerTriggered = true, bool wasToggled = false)
+        public GravityChangeArgs(GravityType newValue, GravityType? oldValue = null, float momentumMultiplier = 1f, bool wasToggled = false)
         {
             NewValue = newValue;
             OldValue = oldValue;
             MomentumMultiplier = momentumMultiplier;
-            PlayerTriggered = playerTriggered;
             WasToggled = wasToggled;
         }
     }

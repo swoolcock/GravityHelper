@@ -5,9 +5,11 @@ using ..Ahorn, Maple
 @mapdef Entity "GravityHelper/GravityField" GravityField(
     x::Integer, y::Integer,
     width::Integer=Maple.defaultBlockWidth, height::Integer=Maple.defaultBlockHeight,
+    defaultToController::Bool=true,
     gravityType::Integer=0, attachToSolids::Bool=false,
-    arrowType::Integer=-2, fieldType::Integer=-2,
-    arrowOpacity::String="", fieldOpacity::String="", particleOpacity::String="",
+    arrowType::Integer=-2, fieldType::Integer=-2, sound::String="",
+    arrowOpacity::Real=0.5, fieldOpacity::Real=0.15, particleOpacity::Real=0.5,
+    arrowColor::String="FFFFFF", fieldColor::String="", particleColor::String="FFFFFF",
     affectsPlayer::Bool=true, affectsHoldableActors::Bool=false, affectsOtherActors::Bool=false,
     momentumMultiplier::Real=1.0
 )

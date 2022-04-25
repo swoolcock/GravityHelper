@@ -4,14 +4,18 @@
 using System;
 using Celeste.Mod.Entities;
 using Celeste.Mod.GravityHelper.Components;
+using Celeste.Mod.GravityHelper.Entities.Controllers;
 using Celeste.Mod.GravityHelper.Extensions;
 using Microsoft.Xna.Framework;
+using Monocle;
 
 namespace Celeste.Mod.GravityHelper.Triggers
 {
     [CustomEntity("GravityHelper/GravityTrigger")]
     public class GravityTrigger : Trigger
     {
+        private const float audio_muffle_seconds = 0.2f;
+
         public bool AffectsPlayer { get; }
         public bool AffectsHoldableActors { get; }
         public bool AffectsOtherActors { get; }
@@ -21,6 +25,10 @@ namespace Celeste.Mod.GravityHelper.Triggers
 
         private readonly Version _modVersion;
         private readonly Version _pluginVersion;
+
+        private readonly bool _defaultToController;
+        private string _sound;
+        private float _audioMuffleSecondsRemaining;
 
         public GravityTrigger(EntityData data, Vector2 offset)
             : base(data, offset)
@@ -33,6 +41,9 @@ namespace Celeste.Mod.GravityHelper.Triggers
             AffectsOtherActors = data.Bool("affectsOtherActors");
             GravityType = (GravityType)data.Int("gravityType");
             MomentumMultiplier = data.Float("momentumMultiplier", 1f);
+
+            _defaultToController = data.Bool("defaultToController", true);
+            _sound = data.Attr("sound", string.Empty);
 
             TriggeredEntityTypes types = TriggeredEntityTypes.None;
             if (AffectsHoldableActors) types |= TriggeredEntityTypes.HoldableActors;
@@ -48,6 +59,29 @@ namespace Celeste.Mod.GravityHelper.Triggers
             }
         }
 
+        public override void Added(Scene scene)
+        {
+            base.Added(scene);
+
+            if (_defaultToController && Scene.GetActiveController<SoundGravityController>() is { } soundController)
+            {
+                if (GravityType == GravityType.Normal)
+                    _sound = soundController.NormalSound;
+                else if (GravityType == GravityType.Inverted)
+                    _sound = soundController.InvertedSound;
+                else if (GravityType == GravityType.Toggle)
+                    _sound = soundController.ToggleSound;
+            }
+        }
+
+        public override void Update()
+        {
+            base.Update();
+
+            if (_audioMuffleSecondsRemaining > 0)
+                _audioMuffleSecondsRemaining -= Engine.DeltaTime;
+        }
+
         public override void OnEnter(Player player)
         {
             base.OnEnter(player);
@@ -59,7 +93,16 @@ namespace Celeste.Mod.GravityHelper.Triggers
             if (GravityType == GravityType.None || !AffectsPlayer || !ShouldAffectPlayer)
                 return;
 
-            GravityHelperModule.PlayerComponent?.SetGravity(GravityType, MomentumMultiplier);
+            if (GravityHelperModule.PlayerComponent is { } playerComponent)
+            {
+                var previousGravity = playerComponent.CurrentGravity;
+                playerComponent.SetGravity(GravityType, MomentumMultiplier);
+                if (!string.IsNullOrWhiteSpace(_sound) && playerComponent.CurrentGravity != previousGravity && _audioMuffleSecondsRemaining <= 0)
+                {
+                    Audio.Play(_sound);
+                    _audioMuffleSecondsRemaining = audio_muffle_seconds;
+                }
+            }
         }
 
         public override void OnStay(Player player)

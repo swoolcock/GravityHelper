@@ -11,7 +11,7 @@ local gravityBumper = {
     depth = 0,
     ignoredFields = consts.ignoredFields,
     fieldInformation = {
-        gravityType = consts.fieldInformation.gravityType,
+        gravityType = consts.fieldInformation.gravityType(),
     },
     placements = {
         {

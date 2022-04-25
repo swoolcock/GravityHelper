@@ -10,7 +10,7 @@ using ..Ahorn, Maple
 )
 
 const placements = Ahorn.PlacementDict(
-    "Gravity Booster (Gravity Helper)" => Ahorn.EntityPlacement(
+    "Gravity Booster (GravityHelper)" => Ahorn.EntityPlacement(
         GravityBooster
     ),
 )
