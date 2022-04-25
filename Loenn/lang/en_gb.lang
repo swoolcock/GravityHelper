@@ -135,9 +135,10 @@ entities.GravityHelper/VisualGravityController.attributes.description.lineFlashT
 entities.GravityHelper/SoundGravityController.placements.name.normal=Sound Gravity Controller (GravityHelper)
 entities.GravityHelper/SoundGravityController.attributes.description.persistent=Whether this controller should be considered the default for its type.\nThere should only ever be one persistent in your map, and not in a room with another controller of the same type.
 entities.GravityHelper/SoundGravityController.attributes.description.normalSound=The sound to play when gravity resets to normal.\nDefaults to event:/ui/game/lookout_off (the sound when cancelling a watch tower).
-entities.GravityHelper/SoundGravityController.attributes.description.invertedSound=The sound to play when gravity inverts.\n Defaults to event:/ui/game/lookout_on (the sound when first using a watch tower).
+entities.GravityHelper/SoundGravityController.attributes.description.invertedSound=The sound to play when gravity inverts.\nDefaults to event:/ui/game/lookout_on (the sound when first using a watch tower).
 entities.GravityHelper/SoundGravityController.attributes.description.toggleSound=Whether this and connected fields should attach to solids.
 entities.GravityHelper/SoundGravityController.attributes.description.musicParam=The music parameter that should be set to 0 or 1 depending on whether gravity is currently normal or inverted.
+entities.GravityHelper/SoundGravityController.attributes.description.lineSound=The sound to play when touching a GravityLine. Defaults to a custom sound.
 
 # VVVVVV Gravity Controller
 entities.GravityHelper/VvvvvvGravityController.placements.name.normal=VVVVVV Gravity Controller (GravityHelper)

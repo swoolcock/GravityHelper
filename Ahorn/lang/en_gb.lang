@@ -111,6 +111,7 @@ placements.entities.GravityHelper/SoundGravityController.tooltips.normalSound=Th
 placements.entities.GravityHelper/SoundGravityController.tooltips.invertedSound=The sound to play when gravity inverts. Defaults to event:/ui/game/lookout_on (the sound when first using a watch tower).
 placements.entities.GravityHelper/SoundGravityController.tooltips.toggleSound=Whether this and connected fields should attach to solids.
 placements.entities.GravityHelper/SoundGravityController.tooltips.musicParam=The music parameter that should be set to 0 or 1 depending on whether gravity is currently normal or inverted.
+placements.entities.GravityHelper/SoundGravityController.tooltips.lineSound=The sound to play when touching a GravityLine. Defaults to a custom sound.
 
 # VVVVVV Gravity Controller
 placements.entities.GravityHelper/VvvvvvGravityController.tooltips.persistent=Whether this controller should be considered the default for its type. There should only ever be one persistent in your map, and not in a room with another controller of the same type.
