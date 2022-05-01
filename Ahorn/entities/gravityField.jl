@@ -45,20 +45,20 @@ const placements = Ahorn.PlacementDict(
         GravityField,
         "rectangle",
         Dict{String, Any}(
+            "defaultToController" => false,
             "attachToSolids" => true,
-            "drawArrows" => true,
-            "drawField" => false,
-            "visualOnly" => true
+            "arrowOpacity" => 1,
+            "fieldOpacity" => 0,
+            "particleOpacity" => 0,
+            "fieldType" => -1,
+            "affectsPlayer" => false,
         )
     ),
     "Gravity Field (Visual Only) (GravityHelper)" => Ahorn.EntityPlacement(
         GravityField,
         "rectangle",
         Dict{String, Any}(
-            "attachToSolids" => false,
-            "drawArrows" => true,
-            "drawField" => true,
-            "visualOnly" => true
+            "affectsPlayer" => false,
         )
     )
 )

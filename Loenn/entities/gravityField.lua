@@ -41,19 +41,19 @@ local gravityField = {
         {
             name = "attachedIndicator",
             data = helpers.union(placementData, {
+                defaultToController = false,
                 attachToSolids = true,
-                drawArrows = true,
-                drawField = false,
-                visualOnly = true,
+                arrowOpacity = 1,
+                fieldOpacity = 0,
+                particleOpacity = 0,
+                fieldType = consts.gravityTypes.none.index,
+                affectsPlayer = false,
             }),
         },
         {
             name = "visualOnly",
             data = helpers.union(placementData, {
-                attachToSolids = false,
-                drawArrows = true,
-                drawField = true,
-                visualOnly = true,
+                affectsPlayer = false,
             }),
         },
     },
