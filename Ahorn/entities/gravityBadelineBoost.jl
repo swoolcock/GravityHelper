@@ -2,8 +2,11 @@ module GravityHelperGravityBadelineBoost
 
 using ..Ahorn, Maple
 
+const PLUGIN_VERSION = "1"
+
 @mapdef Entity "GravityHelper/GravityBadelineBoost" GravityBadelineBoost(
     x::Integer, y::Integer,
+    pluginVersion::String=PLUGIN_VERSION,
     gravityType::Integer=0,
     lockCamera::Bool=true,
     canSkip::Bool=false,
@@ -21,6 +24,8 @@ const gravityTypes = Dict{String, Integer}(
     "Toggle" => 2,
     "None" => -1,
 )
+
+Ahorn.editingIgnored(entity::GravityBadelineBoost, multiple::Bool=false) = String["modVersion", "pluginVersion"]
 
 Ahorn.editingOptions(entity::GravityBadelineBoost) = Dict{String, Any}(
     "gravityType" => gravityTypes,

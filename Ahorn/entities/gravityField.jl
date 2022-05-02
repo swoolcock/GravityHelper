@@ -2,9 +2,12 @@ module GravityHelperGravityField
 
 using ..Ahorn, Maple
 
+const PLUGIN_VERSION = "1"
+
 @mapdef Entity "GravityHelper/GravityField" GravityField(
     x::Integer, y::Integer,
     width::Integer=Maple.defaultBlockWidth, height::Integer=Maple.defaultBlockHeight,
+    pluginVersion::String=PLUGIN_VERSION,
     defaultToController::Bool=true,
     gravityType::Integer=0, attachToSolids::Bool=false,
     arrowType::Integer=-2, fieldType::Integer=-2, sound::String="",
@@ -62,6 +65,8 @@ const placements = Ahorn.PlacementDict(
         )
     )
 )
+
+Ahorn.editingIgnored(entity::GravityField, multiple::Bool=false) = String["modVersion", "pluginVersion"]
 
 Ahorn.editingOptions(entity::GravityField) = Dict{String, Any}(
     "gravityType" => gravityTypes,

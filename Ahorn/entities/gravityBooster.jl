@@ -2,8 +2,11 @@ module GravityHelperGravityBooster
 
 using ..Ahorn, Maple
 
+const PLUGIN_VERSION = "1"
+
 @mapdef Entity "GravityHelper/GravityBooster" GravityBooster(
     x::Integer, y::Integer,
+    pluginVersion::String=PLUGIN_VERSION,
     gravityType::Integer=0,
     red::Bool=false,
     useTintedSprites::Bool=true,
@@ -26,6 +29,8 @@ const gravityColors = Dict{Integer, Tuple{Real, Real, Real, Real}}(
     1 => (1.0, 0.0, 0.0, 0.5),
     2 => (0.5, 0.0, 0.5, 0.5),
 )
+
+Ahorn.editingIgnored(entity::GravityBooster, multiple::Bool=false) = String["modVersion", "pluginVersion"]
 
 Ahorn.editingOptions(entity::GravityBooster) = Dict{String, Any}(
     "gravityType" => gravityTypes,

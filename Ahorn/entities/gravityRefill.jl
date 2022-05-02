@@ -2,8 +2,11 @@ module GravityHelperGravityRefill
 
 using ..Ahorn, Maple
 
+const PLUGIN_VERSION = "1"
+
 @mapdef Entity "GravityHelper/GravityRefill" GravityRefill(
     x::Integer, y::Integer,
+    pluginVersion::String=PLUGIN_VERSION,
     charges::Integer=1,
     oneUse::Bool=false,
     refillsDash::Bool=true,
@@ -18,6 +21,8 @@ const placements = Ahorn.PlacementDict(
 )
 
 const sprite = "objects/GravityHelper/gravityRefill/idle00"
+
+Ahorn.editingIgnored(entity::GravityRefill, multiple::Bool=false) = String["modVersion", "pluginVersion"]
 
 function Ahorn.selection(entity::GravityRefill)
     x, y = Ahorn.position(entity)

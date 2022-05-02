@@ -2,12 +2,15 @@ module GravityHelperSoundGravityController
 
 using ..Ahorn, Maple
 
+const PLUGIN_VERSION = "1"
+
 const default_normal_gravity_sound = "event:/ui/game/lookout_off"
 const default_inverted_gravity_sound = "event:/ui/game/lookout_on"
 const default_line_sound = "event:/gravityhelper/gravity_line"
 
 @mapdef Entity "GravityHelper/SoundGravityController" SoundGravityController(
     x::Integer, y::Integer,
+    pluginVersion::String=PLUGIN_VERSION,
     persistent::Bool=true,
     normalSound::String=default_normal_gravity_sound,
     invertedSound::String=default_inverted_gravity_sound,
@@ -25,6 +28,8 @@ const placements = Ahorn.PlacementDict(
 const sprite = "objects/GravityHelper/gravityController/circle"
 const sprite_dot = "objects/GravityHelper/gravityController/circle_dot"
 const sprite_speaker = "objects/GravityHelper/gravityController/speaker"
+
+Ahorn.editingIgnored(entity::SoundGravityController, multiple::Bool=false) = String["modVersion", "pluginVersion"]
 
 function Ahorn.selection(entity::SoundGravityController)
     x, y = Ahorn.position(entity)

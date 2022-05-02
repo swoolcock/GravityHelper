@@ -2,11 +2,15 @@ module GravityHelperGravityDreamBlock
 
 using ..Ahorn, Maple
 
+const PLUGIN_VERSION = "1"
+
 @mapdef Entity "GravityHelper/GravityDreamBlock" GravityDreamBlock(
     x::Integer, y::Integer,
     width::Integer=8, height::Integer=8,
+    pluginVersion::String=PLUGIN_VERSION,
     fastMoving::Bool=false, oneUse::Bool=false, below::Bool=false,
-    gravityType::Integer=0)
+    gravityType::Integer=0
+)
 
 const placements = Ahorn.PlacementDict(
     "Gravity Dream Block (GravityHelper)" => Ahorn.EntityPlacement(
@@ -26,6 +30,8 @@ const gravityColors = Dict{Integer, Tuple{Real, Real, Real, Real}}(
     1 => (1.0, 0.0, 0.0, 0.5),
     2 => (0.5, 0.0, 0.5, 0.5),
 )
+
+Ahorn.editingIgnored(entity::GravityDreamBlock, multiple::Bool=false) = String["modVersion", "pluginVersion"]
 
 Ahorn.editingOptions(entity::GravityDreamBlock) = Dict{String, Any}(
     "gravityType" => gravityTypes,

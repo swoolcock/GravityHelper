@@ -2,24 +2,32 @@ module GravityHelperGravitySpring
 
 using ..Ahorn, Maple
 
+const PLUGIN_VERSION = "1"
+
 const default_cooldown = 0.1
 
 @mapdef Entity "GravityHelper/GravitySpringFloor" GravitySpringFloor(
     x::Integer, y::Integer,
+    pluginVersion::String=PLUGIN_VERSION,
     defaultToController::Bool=true,
     playerCanUse::Bool=true, gravityType::Integer=0, gravityCooldown::Real=default_cooldown)
 @mapdef Entity "GravityHelper/GravitySpringWallLeft" GravitySpringWallLeft(
     x::Integer, y::Integer,
+    pluginVersion::String=PLUGIN_VERSION,
     defaultToController::Bool=true,
     playerCanUse::Bool=true, gravityType::Integer=2, gravityCooldown::Real=default_cooldown)
 @mapdef Entity "GravityHelper/GravitySpringWallRight" GravitySpringWallRight(
     x::Integer, y::Integer,
+    pluginVersion::String=PLUGIN_VERSION,
     defaultToController::Bool=true,
     playerCanUse::Bool=true, gravityType::Integer=2, gravityCooldown::Real=default_cooldown)
 @mapdef Entity "GravityHelper/GravitySpringCeiling" GravitySpringCeiling(
     x::Integer, y::Integer,
+    pluginVersion::String=PLUGIN_VERSION,
     defaultToController::Bool=true,
     playerCanUse::Bool=true, gravityType::Integer=1, gravityCooldown::Real=default_cooldown)
+
+const gravitySpringUnion = Union{GravitySpringFloor, GravitySpringWallLeft, GravitySpringWallRight, GravitySpringCeiling}
 
 const gravityTypes = Dict{String, Integer}(
     "None" => -1,
@@ -50,6 +58,8 @@ const placements = Ahorn.PlacementDict(
     ),
 )
 
+Ahorn.editingIgnored(entity::gravitySpringUnion, multiple::Bool=false) = String["modVersion", "pluginVersion"]
+
 function Ahorn.selection(entity::GravitySpringFloor)
     x, y = Ahorn.position(entity)
     return Ahorn.Rectangle(x - 6, y - 3, 12, 5)
@@ -70,10 +80,7 @@ function Ahorn.selection(entity::GravitySpringWallRight)
     return Ahorn.Rectangle(x - 4, y - 6, 5, 12)
 end
 
-Ahorn.editingOptions(entity::GravitySpringFloor) = Dict{String, Any}( "gravityType" => gravityTypes )
-Ahorn.editingOptions(entity::GravitySpringCeiling) = Dict{String, Any}( "gravityType" => gravityTypes )
-Ahorn.editingOptions(entity::GravitySpringWallLeft) = Dict{String, Any}( "gravityType" => gravityTypes )
-Ahorn.editingOptions(entity::GravitySpringWallRight) = Dict{String, Any}( "gravityType" => gravityTypes )
+Ahorn.editingOptions(entity::gravitySpringUnion) = Dict{String, Any}( "gravityType" => gravityTypes )
 
 Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::GravitySpringFloor, room::Maple.Room) = Ahorn.drawSprite(ctx, sprites[get(entity.data, "gravityType", -1)], 0, 0, rot=0, jx=0.5, jy=1.0)
 Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::GravitySpringCeiling, room::Maple.Room) = Ahorn.drawSprite(ctx, sprites[get(entity.data, "gravityType", -1)], 0, 0, rot=0, sy=-1.0, jx=0.5, jy=1.0)

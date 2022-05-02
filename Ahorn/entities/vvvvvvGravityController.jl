@@ -2,10 +2,13 @@ module GravityHelperVvvvvvGravityController
 
 using ..Ahorn, Maple
 
+const PLUGIN_VERSION = "1"
+
 const default_vvvvvv_sound = "event:/gravityhelper/toggle"
 
 @mapdef Entity "GravityHelper/VvvvvvGravityController" VvvvvvGravityController(
     x::Integer, y::Integer,
+    pluginVersion::String=PLUGIN_VERSION,
     persistent::Bool=true,
     mode::Integer=2,
     disableGrab::Bool=true,
@@ -24,6 +27,8 @@ const vvvvvvModes = Dict{String, Integer}(
     "Off" => 1,
     "On" => 2,
 )
+
+Ahorn.editingIgnored(entity::VvvvvvGravityController, multiple::Bool=false) = String["modVersion", "pluginVersion"]
 
 Ahorn.editingOptions(entity::VvvvvvGravityController) = Dict{String, Any}(
     "mode" => vvvvvvModes
