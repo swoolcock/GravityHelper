@@ -10,6 +10,7 @@ const PLUGIN_VERSION = "1"
     gravityType::Integer=0,
     lockCamera::Bool=true,
     canSkip::Bool=false,
+    nodeGravityTypes::String="",
 )
 
 const placements = Ahorn.PlacementDict(
