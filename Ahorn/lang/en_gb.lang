@@ -1,3 +1,6 @@
+# Copyright (c) Shane Woolcock. Licensed under the MIT Licence.
+# See the LICENCE file in the repository root for full licence text.
+
 # Gravity Badeline Boost
 placements.entities.GravityHelper/GravityBadelineBoost.tooltips.gravityType=The gravity type to set when Madeline enters the orb. Defaults to None, which will respect Madeline's current gravity. If nodeGravityTypes has a value, this field is ignored.
 placements.entities.GravityHelper/GravityBadelineBoost.tooltips.lockCamera=Upon activation, the camera cannot pan away from the entity. Defaults to true.

@@ -1,4 +1,8 @@
+// Copyright (c) Shane Woolcock. Licensed under the MIT Licence.
+// See the LICENCE file in the repository root for full licence text.
+
 using Celeste.Mod.GravityHelper.Extensions;
+
 namespace Celeste.Mod.GravityHelper.Hooks
 {
     public static class PlayerSpriteHooks

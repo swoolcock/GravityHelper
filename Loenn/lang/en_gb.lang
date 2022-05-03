@@ -1,3 +1,6 @@
+# Copyright (c) Shane Woolcock. Licensed under the MIT Licence.
+# See the LICENCE file in the repository root for full licence text.
+
 # Gravity Badeline Boost
 entities.GravityHelper/GravityBadelineBoost.placements.name.normal=Gravity Badeline Boost (GravityHelper)
 entities.GravityHelper/GravityBadelineBoost.attributes.gravityType=The gravity type to set when Madeline enters the orb.\nDefaults to None, which will respect Madeline's current gravity.\nIf nodeGravityTypes has a value, this field is ignored.

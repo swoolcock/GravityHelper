@@ -3,6 +3,7 @@
 
 using System;
 using Monocle;
+
 namespace Celeste.Mod.GravityHelper.Extensions
 {
     public static class BasicExtensions

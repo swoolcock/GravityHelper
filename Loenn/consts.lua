@@ -1,3 +1,6 @@
+-- Copyright (c) Shane Woolcock. Licensed under the MIT Licence.
+-- See the LICENCE file in the repository root for full licence text.
+
 local colors = require("consts.xna_colors")
 
 local function makeOptions(options, defaults, ...)
