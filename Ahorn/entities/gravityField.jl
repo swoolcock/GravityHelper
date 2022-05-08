@@ -1,10 +1,16 @@
+# Copyright (c) Shane Woolcock. Licensed under the MIT Licence.
+# See the LICENCE file in the repository root for full licence text.
+
 module GravityHelperGravityField
 
 using ..Ahorn, Maple
 
+const PLUGIN_VERSION = "1"
+
 @mapdef Entity "GravityHelper/GravityField" GravityField(
     x::Integer, y::Integer,
     width::Integer=Maple.defaultBlockWidth, height::Integer=Maple.defaultBlockHeight,
+    pluginVersion::String=PLUGIN_VERSION,
     defaultToController::Bool=true,
     gravityType::Integer=0, attachToSolids::Bool=false,
     arrowType::Integer=-2, fieldType::Integer=-2, sound::String="",
@@ -45,23 +51,25 @@ const placements = Ahorn.PlacementDict(
         GravityField,
         "rectangle",
         Dict{String, Any}(
+            "defaultToController" => false,
             "attachToSolids" => true,
-            "drawArrows" => true,
-            "drawField" => false,
-            "visualOnly" => true
+            "arrowOpacity" => 1,
+            "fieldOpacity" => 0,
+            "particleOpacity" => 0,
+            "fieldType" => -1,
+            "affectsPlayer" => false,
         )
     ),
     "Gravity Field (Visual Only) (GravityHelper)" => Ahorn.EntityPlacement(
         GravityField,
         "rectangle",
         Dict{String, Any}(
-            "attachToSolids" => false,
-            "drawArrows" => true,
-            "drawField" => true,
-            "visualOnly" => true
+            "affectsPlayer" => false,
         )
     )
 )
+
+Ahorn.editingIgnored(entity::GravityField, multiple::Bool=false) = String["modVersion", "pluginVersion"]
 
 Ahorn.editingOptions(entity::GravityField) = Dict{String, Any}(
     "gravityType" => gravityTypes,

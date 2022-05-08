@@ -1,8 +1,12 @@
+# Copyright (c) Shane Woolcock. Licensed under the MIT Licence.
+# See the LICENCE file in the repository root for full licence text.
+
 # Gravity Badeline Boost
 entities.GravityHelper/GravityBadelineBoost.placements.name.normal=Gravity Badeline Boost (GravityHelper)
-entities.GravityHelper/GravityBadelineBoost.attributes.gravityType=The gravity type to set when Madeline enters the orb.\nDefaults to None, which will respect Madeline's current gravity.
+entities.GravityHelper/GravityBadelineBoost.attributes.gravityType=The gravity type to set when Madeline enters the orb.\nDefaults to None, which will respect Madeline's current gravity.\nIf nodeGravityTypes has a value, this field is ignored.
 entities.GravityHelper/GravityBadelineBoost.attributes.lockCamera=Upon activation, the camera cannot pan away from the entity. Defaults to true.
 entities.GravityHelper/GravityBadelineBoost.attributes.canSkip=Badeline will skip to the next position if the player is too far to the right of the current one (100 pixels). Defaults to false.
+entities.GravityHelper/GravityBadelineBoost.attributes.nodeGravityTypes=A comma-separated list of gravity types for individual nodes (including the first position).\n0 = normal, 1 = inverted, 2 = toggle. Defaults to empty string.
 
 # Gravity Booster (Bubble)
 entities.GravityHelper/GravityBooster.placements.name.normal=Gravity Booster (GravityHelper)

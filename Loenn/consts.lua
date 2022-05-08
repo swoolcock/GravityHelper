@@ -1,3 +1,6 @@
+-- Copyright (c) Shane Woolcock. Licensed under the MIT Licence.
+-- See the LICENCE file in the repository root for full licence text.
+
 local colors = require("consts.xna_colors")
 
 local function makeOptions(options, defaults, ...)
@@ -13,7 +16,7 @@ local function makeOptions(options, defaults, ...)
 end
 
 local consts = {
-    modVersion = "1.0.47",
+    modVersion = "1.0.48",
     ignoredFields = {
         "modVersion",
         "pluginVersion",

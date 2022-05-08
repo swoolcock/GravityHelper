@@ -1,3 +1,6 @@
+-- Copyright (c) Shane Woolcock. Licensed under the MIT Licence.
+-- See the LICENCE file in the repository root for full licence text.
+
 local drawableSprite = require("structs.drawable_sprite")
 local helpers = require("mods").requireFromPlugin("helpers")
 local consts = require("mods").requireFromPlugin("consts")

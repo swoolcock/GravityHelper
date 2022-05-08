@@ -1,3 +1,6 @@
+-- Copyright (c) Shane Woolcock. Licensed under the MIT Licence.
+-- See the LICENCE file in the repository root for full licence text.
+
 local consts = require("mods").requireFromPlugin("consts")
 local helpers = require("mods").requireFromPlugin("helpers")
 local colors = require("consts.xna_colors")
@@ -41,19 +44,19 @@ local gravityField = {
         {
             name = "attachedIndicator",
             data = helpers.union(placementData, {
+                defaultToController = false,
                 attachToSolids = true,
-                drawArrows = true,
-                drawField = false,
-                visualOnly = true,
+                arrowOpacity = 1,
+                fieldOpacity = 0,
+                particleOpacity = 0,
+                fieldType = consts.gravityTypes.none.index,
+                affectsPlayer = false,
             }),
         },
         {
             name = "visualOnly",
             data = helpers.union(placementData, {
-                attachToSolids = false,
-                drawArrows = true,
-                drawField = true,
-                visualOnly = true,
+                affectsPlayer = false,
             }),
         },
     },

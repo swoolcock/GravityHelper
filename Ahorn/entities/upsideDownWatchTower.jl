@@ -1,9 +1,15 @@
+# Copyright (c) Shane Woolcock. Licensed under the MIT Licence.
+# See the LICENCE file in the repository root for full licence text.
+
 module GravityHelperUpsideDownWatchTower
 
 using ..Ahorn, Maple
 
+const PLUGIN_VERSION = "1"
+
 @mapdef Entity "GravityHelper/UpsideDownWatchTower" UpsideDownWatchTower(
     x::Integer, y::Integer,
+    pluginVersion::String=PLUGIN_VERSION,
     summit::Bool=false, onlyY::Bool=false
 )
 
@@ -12,6 +18,8 @@ const placements = Ahorn.PlacementDict(
         UpsideDownWatchTower
     ),
 )
+
+Ahorn.editingIgnored(entity::UpsideDownWatchTower, multiple::Bool=false) = String["modVersion", "pluginVersion"]
 
 Ahorn.nodeLimits(entity::UpsideDownWatchTower) = 0, -1
 

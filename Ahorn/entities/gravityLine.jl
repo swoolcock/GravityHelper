@@ -1,6 +1,11 @@
+# Copyright (c) Shane Woolcock. Licensed under the MIT Licence.
+# See the LICENCE file in the repository root for full licence text.
+
 module GravityHelperGravityLine
 
 using ..Ahorn, Maple
+
+const PLUGIN_VERSION = "1"
 
 const default_sound = "event:/gravityhelper/gravity_line"
 
@@ -8,6 +13,7 @@ const default_sound = "event:/gravityhelper/gravity_line"
     x1::Integer, y1::Integer,
     x2::Integer=x1+16, y2::Integer=y1,
     defaultToController::Bool=true,
+    pluginVersion::String=PLUGIN_VERSION,
     gravityType::Integer=2, momentumMultiplier::Real=1,
     cooldown::Real=0, cancelDash::Bool=false, disableUntilExit::Bool=false, onlyWhileFalling::Bool=false,
     affectsPlayer::Bool=true, affectsHoldableActors::Bool=false, affectsOtherActors::Bool=false,
@@ -16,6 +22,7 @@ const default_sound = "event:/gravityhelper/gravity_line"
 ) = Entity("GravityHelper/GravityLine",
     x = x1, y = y1,
     defaultToController=defaultToController,
+    pluginVersion=pluginVersion,
     gravityType=gravityType, momentumMultiplier=momentumMultiplier,
     cooldown=cooldown, cancelDash=cancelDash, disableUntilExit=disableUntilExit, onlyWhileFalling=onlyWhileFalling,
     affectsPlayer=affectsPlayer, affectsHoldableActors=affectsHoldableActors, affectsOtherActors=affectsOtherActors,
@@ -62,7 +69,9 @@ const gravityColors = Dict{Integer, Tuple{Real, Real, Real, Real}}(
     2 => (0.5, 0.0, 0.5, 0.5),
 )
 
-Ahorn.editingOptions(trigger::GravityLine) = Dict{String, Any}(
+Ahorn.editingIgnored(entity::GravityLine, multiple::Bool=false) = String["modVersion", "pluginVersion"]
+
+Ahorn.editingOptions(entity::GravityLine) = Dict{String, Any}(
     "gravityType" => gravityTypes,
 )
 

@@ -1,9 +1,15 @@
+# Copyright (c) Shane Woolcock. Licensed under the MIT Licence.
+# See the LICENCE file in the repository root for full licence text.
+
 module GravityHelperVisualGravityController
 
 using ..Ahorn, Maple
 
+const PLUGIN_VERSION = "1"
+
 @mapdef Entity "GravityHelper/VisualGravityController" VisualGravityController(
     x::Integer, y::Integer,
+    pluginVersion::String=PLUGIN_VERSION,
     persistent::Bool=true,
     fieldArrowOpacity::Real=0.5,
     fieldBackgroundOpacity::Real=0.15,
@@ -28,6 +34,8 @@ const placements = Ahorn.PlacementDict(
 const sprite = "objects/GravityHelper/gravityController/circle"
 const sprite_dot = "objects/GravityHelper/gravityController/circle_dot"
 const sprite_field = "objects/GravityHelper/gravityController/field"
+
+Ahorn.editingIgnored(entity::VisualGravityController, multiple::Bool=false) = String["modVersion", "pluginVersion"]
 
 function Ahorn.selection(entity::VisualGravityController)
     x, y = Ahorn.position(entity)

@@ -32,8 +32,10 @@ namespace Celeste.Mod.GravityHelper.Hooks
         private static void Bumper_OnPlayer(ILContext il) => HookUtils.SafeHook(() =>
         {
             var cursor = new ILCursor(il);
-            if (!cursor.TryGotoNext(MoveType.Before, instr => instr.MatchCallvirt<Player>(nameof(Player.ExplodeLaunch))))
+            if (!cursor.TryGotoNext(MoveType.After, instr => instr.MatchCallvirt<Player>(nameof(Player.ExplodeLaunch))))
                 throw new HookException("Couldn't find ExplodeLaunch.");
+
+            cursor.EmitInvertVectorDelegate();
 
             cursor.Emit(OpCodes.Ldarg_0);
             cursor.EmitDelegate<Action<Bumper>>(self =>
@@ -41,10 +43,6 @@ namespace Celeste.Mod.GravityHelper.Hooks
                 if (self is GravityBumper gravityBumper)
                     GravityHelperModule.PlayerComponent?.SetGravity(gravityBumper.GravityType);
             });
-
-            cursor.Index++;
-
-            cursor.EmitInvertVectorDelegate();
 
             if (!cursor.TryGotoPrev(MoveType.After, instr => instr.MatchLdfld<Entity>(nameof(Entity.Position))))
                 throw new HookException("Couldn't find Entity.Position.");
