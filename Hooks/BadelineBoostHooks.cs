@@ -3,6 +3,7 @@
 
 using System;
 using Celeste.Mod.GravityHelper.Entities;
+using Celeste.Mod.GravityHelper.Extensions;
 using Monocle;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
@@ -58,11 +59,10 @@ namespace Celeste.Mod.GravityHelper.Hooks
                 instr => instr.MatchLdflda<GraphicsComponent>(nameof(GraphicsComponent.Scale))))
                 throw new HookException("Couldn't find BadelineDummy.Sprite.Scale");
 
-            // flip Badeline's sprite if Madeline is also flipped
+            // flip Badeline if Madeline is also flipped
             cursor.EmitDelegate<Func<BadelineDummy, BadelineDummy>>(dummy =>
             {
-                if (GravityHelperModule.ShouldInvertPlayer)
-                    dummy.Sprite.Scale.Y *= -1;
+                dummy.SetShouldInvert(GravityHelperModule.ShouldInvertPlayer);
                 return dummy;
             });
         });
