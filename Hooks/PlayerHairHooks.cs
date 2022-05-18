@@ -78,11 +78,8 @@ namespace Celeste.Mod.GravityHelper.Hooks
                 if (p.Entity is Player)
                     return GravityHelperModule.ShouldInvertPlayer ? inverted : v;
 
-                if (p.Entity is PlayerDeadBody playerDeadBody)
-                    return playerDeadBody.ShouldInvert() ? inverted : v;
-
-                if (p.Entity is BadelineOldsite baddy)
-                    return baddy.ShouldInvert() ? inverted : v;
+                if (p.Entity is PlayerDeadBody or BadelineDummy or BadelineOldsite)
+                    return p.Entity.ShouldInvert() ? inverted : v;
 
                 return v;
             });
