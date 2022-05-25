@@ -2,7 +2,10 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System;
+using System.Linq;
+using System.Reflection;
 using Celeste.Mod.Entities;
+using Celeste.Mod.GravityHelper.Components;
 using Celeste.Mod.GravityHelper.Entities.Controllers;
 using Celeste.Mod.GravityHelper.Extensions;
 using Microsoft.Xna.Framework;
@@ -16,7 +19,7 @@ namespace Celeste.Mod.GravityHelper.Entities
         "GravityHelper/GravitySpringCeiling = LoadCeiling",
         "GravityHelper/GravitySpringWallLeft = LoadWallLeft",
         "GravityHelper/GravitySpringWallRight = LoadWallRight")]
-    public class GravitySpring : Entity
+    public class GravitySpring : Spring
     {
         // ReSharper disable once UnusedMember.Global
         public static bool RequiresHooks(EntityData data) => data.Enum<GravityType>("gravityType").RequiresHooks();
@@ -41,12 +44,15 @@ namespace Celeste.Mod.GravityHelper.Entities
         private readonly Version _pluginVersion;
 
         private readonly Sprite _sprite;
-        private readonly Wiggler _wiggler;
         private readonly StaticMover _staticMover;
+
+        private readonly Wiggler _wiggler;
         private float _cooldownRemaining;
 
         private float _gravityCooldown;
         private readonly bool _defaultToController;
+
+        private readonly DynData<Spring> _springData;
 
         public static Entity LoadFloor(Level level, LevelData levelData, Vector2 offset, EntityData entityData) =>
             new GravitySpring(entityData, offset, Orientations.Floor);
@@ -61,8 +67,10 @@ namespace Celeste.Mod.GravityHelper.Entities
             new GravitySpring(entityData, offset, Orientations.WallRight);
 
         public GravitySpring(EntityData data, Vector2 offset, Orientations orientation)
-            : base(data.Position + offset)
+            : base(data.Position + offset, (Spring.Orientations)((int)orientation % 3), data.Bool("playerCanUse", true))
         {
+            _springData = new DynData<Spring>(this);
+
             _modVersion = data.ModVersion();
             _pluginVersion = data.PluginVersion();
 
@@ -78,58 +86,52 @@ namespace Celeste.Mod.GravityHelper.Entities
 
             Orientation = orientation;
 
-            Add(new PlayerCollider(OnCollide));
-            Add(_sprite = GFX.SpriteBank.Create("gravitySpring"));
-            _sprite.Play(getAnimId("idle"));
+            // get spring components
+            _sprite = _springData.Get<Sprite>("sprite");
+            _staticMover = _springData.Get<StaticMover>("staticMover");
+            _wiggler = _springData.Get<Wiggler>("wiggler");
+            var playerCollider = Get<PlayerCollider>();
+            var holdableCollider = Get<HoldableCollider>();
+            var pufferCollider = Get<PufferCollider>();
 
-            switch (Orientation)
+            // update sprite
+            GFX.SpriteBank.CreateOn(_sprite, "gravitySpring");
+            _sprite.Play(getAnimId("idle"));
+            _sprite.Origin.X = _sprite.Width / 2f;
+            _sprite.Origin.Y = _sprite.Height;
+
+            // update callbacks
+            _staticMover.OnEnable = OnEnable;
+            _staticMover.OnDisable = OnDisable;
+            playerCollider.OnCollide = OnCollide;
+            holdableCollider.OnCollide = OnHoldable;
+            pufferCollider.OnCollide = OnPuffer;
+
+            // update collider components
+
+            // update things by orientation
+            switch (orientation)
             {
                 case Orientations.Floor:
-                    _sprite.Rotation = 0;
-                    Collider = new Hitbox(16f, 6f, -8f, -6f);
+                    _sprite.Rotation = 0f;
                     break;
 
                 case Orientations.WallLeft:
-                    _sprite.Rotation = (float) Math.PI / 2f;
-                    Collider = new Hitbox(6, 16f, 0f, -8f);
+                    _sprite.Rotation = (float)(Math.PI / 2f);
                     break;
 
                 case Orientations.WallRight:
-                    _sprite.Rotation = (float) -Math.PI / 2f;
-                    Collider = new Hitbox(6, 16f, -6f, -8f);
+                    _sprite.Rotation = (float)(-Math.PI / 2f);
                     break;
 
                 case Orientations.Ceiling:
-                    _sprite.Rotation = (float) Math.PI;
-                    Collider = new Hitbox(16f, 6f, -8f, 0f);
+                    _sprite.Rotation = (float)Math.PI;
+                    Collider.Top += 6f;
+                    pufferCollider.Collider.Top += 6;
+                    _staticMover.SolidChecker = s => CollideCheck(s, Position - Vector2.UnitY);
+                    _staticMover.JumpThruChecker = jt => CollideCheck(jt, Position - Vector2.UnitY);
                     break;
             }
-
-            Depth = Depths.Above - 1;
-
-            Add(_staticMover = new StaticMover
-            {
-                OnAttach = p => Depth = p.Depth + 1,
-                SolidChecker = Orientation switch
-                {
-                    Orientations.WallLeft => s => CollideCheck(s, Position - Vector2.UnitX),
-                    Orientations.WallRight => s => CollideCheck(s, Position + Vector2.UnitX),
-                    Orientations.Ceiling => s => CollideCheck(s, Position - Vector2.UnitY),
-                    _ => s => CollideCheck(s, Position + Vector2.UnitY),
-                },
-                JumpThruChecker = Orientation switch
-                {
-                    Orientations.WallLeft => jt => CollideCheck(jt, Position - Vector2.UnitX),
-                    Orientations.WallRight => jt => CollideCheck(jt, Position + Vector2.UnitX),
-                    Orientations.Ceiling => jt => CollideCheck(jt, Position - Vector2.UnitY),
-                    _ => jt => CollideCheck(jt, Position + Vector2.UnitY),
-                },
-                OnShake = amount => _sprite.Position += amount,
-                OnEnable = OnEnable,
-                OnDisable = OnDisable,
-            });
-
-            Add(_wiggler = Wiggler.Create(1f, 4f, v => _sprite.Scale.Y = 1 + v * 0.2f));
         }
 
         public override void Added(Scene scene)
@@ -227,6 +229,108 @@ namespace Celeste.Mod.GravityHelper.Entities
             }
         }
 
+        private void OnHoldable(Holdable h)
+        {
+            var holdableGravity = h.Entity.GetGravity();
+            var relativeCeiling = holdableGravity == GravityType.Normal && Orientation == Orientations.Ceiling ||
+                holdableGravity == GravityType.Inverted && Orientation == Orientations.Floor;
+
+            if (relativeCeiling && !holdableHitCeilingSpring(h) ||
+                !relativeCeiling && !h.HitSpring(this))
+                return;
+
+            bounceAnimate();
+
+            // try to flip gravity i guess?
+            if (h.Entity.Get<GravityComponent>() is { } gravityComponent)
+                gravityComponent.SetGravity(GravityType);
+        }
+
+        private bool holdableHitCeilingSpring(Holdable h)
+        {
+            if (h.IsHeld) return false;
+
+            const float x_multiplier = 0.5f;
+            const float y_value = 160f;
+            const float no_gravity_timer = 0.15f;
+
+            // handle Theo
+            if (h.Entity is TheoCrystal theoCrystal)
+            {
+                // do nothing if moving away
+                if (theoCrystal.Speed.Y > 0) return false;
+                var data = new DynData<TheoCrystal>(theoCrystal);
+                theoCrystal.Speed.X *= x_multiplier;
+                theoCrystal.Speed.Y = y_value;
+                data["noGravityTimer"] = no_gravity_timer;
+                return true;
+            }
+
+            // handle jellies
+            if (h.Entity is Glider glider)
+            {
+                // do nothing if moving away
+                if (glider.Speed.Y > 0) return false;
+                var data = new DynData<Glider>(glider);
+                glider.Speed.X *= x_multiplier;
+                glider.Speed.Y = y_value;
+                data["noGravityTimer"] = no_gravity_timer;
+                data.Get<Wiggler>("wiggler").Start();
+                return true;
+            }
+
+            // if the entity has a GravityComponent then try to use the speed delegates from that
+            if (h.Entity.Get<GravityComponent>() is { } gravityComponent)
+            {
+                var speed = gravityComponent.EntitySpeed;
+                // do nothing if moving away
+                if (speed.Y > 0) return false;
+                speed.X *= x_multiplier;
+                speed.Y = y_value;
+                gravityComponent.EntitySpeed = speed;
+                return true;
+            }
+
+            // just take a guess that there's a Speed field if it's an unknown entity
+            var entityType = h.Entity.GetType();
+            var speedField = entityType.GetRuntimeFields().FirstOrDefault(f => f.Name == "Speed" && f.FieldType == typeof(Vector2));
+            if (speedField != null)
+            {
+                var speed = (Vector2)speedField.GetValue(h.Entity);
+                // do nothing if moving away
+                if (speed.Y > 0) return false;
+                speed.X *= x_multiplier;
+                speed.Y = y_value;
+                speedField.SetValue(h.Entity, speed);
+                return true;
+            }
+
+            return false;
+        }
+
+        private void OnPuffer(Puffer p)
+        {
+            // at the moment puffers don't support gravity, so just handle ceiling springs separately
+            if (Orientation == Orientations.Ceiling && !pufferHitCeilingSpring(p) ||
+                Orientation != Orientations.Ceiling && !p.HitSpring(this))
+                return;
+
+            bounceAnimate();
+        }
+
+        private bool pufferHitCeilingSpring(Puffer p)
+        {
+            var data = new DynData<Puffer>(p);
+            if (data.Get<Vector2>("hitSpeed").Y > 0)
+                return false;
+
+            ReflectionCache.Puffer_GotoHitSpeed.Invoke(p, new object[] { 224f * Vector2.UnitY });
+            p.MoveTowardsX(CenterX, 4f);
+            data.Get<Wiggler>("bounceWiggler").Start();
+            ReflectionCache.Puffer_Alert.Invoke(p, new object[] { true, false });
+            return true;
+        }
+
         private void bounceAnimate()
         {
             Audio.Play("event:/game/general/spring", BottomCenter);
@@ -235,14 +339,7 @@ namespace Celeste.Mod.GravityHelper.Entities
             _wiggler.Start();
         }
 
-        public override void Render()
-        {
-            if (Collidable)
-                _sprite.DrawOutline();
-            base.Render();
-        }
-
-        public enum Orientations
+        public new enum Orientations
         {
             Floor,
             WallLeft,
