@@ -74,7 +74,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
             // replace with custom checks
             cursor.Emit(OpCodes.Ldarg_0);
-            cursor.EmitDelegate<Func<TheoCrystal, bool>>(t => t.ShouldInvert());
+            cursor.EmitDelegate<Func<TheoCrystal, bool>>(self => self.ShouldInvert());
             cursor.Emit(OpCodes.Brfalse, cursor.Next);
             cursor.Emit(OpCodes.Ldarg_0);
             cursor.EmitDelegate<Action<TheoCrystal>>(self =>
