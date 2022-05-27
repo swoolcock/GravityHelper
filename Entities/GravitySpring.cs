@@ -24,11 +24,8 @@ namespace Celeste.Mod.GravityHelper.Entities
         // ReSharper disable once UnusedMember.Global
         public static bool RequiresHooks(EntityData data) => data.Enum<GravityType>("gravityType").RequiresHooks();
 
-        public Color DisabledColor = Color.White;
-        public bool VisibleWhenDisabled;
-
         public bool PlayerCanUse { get; }
-        public Orientations Orientation { get; }
+        public new Orientations Orientation { get; }
         public GravityType GravityType { get; }
 
         private string getAnimId(string id) => GravityType switch
@@ -52,6 +49,7 @@ namespace Celeste.Mod.GravityHelper.Entities
         private float _gravityCooldown;
         private readonly bool _defaultToController;
 
+        // ReSharper disable once PrivateFieldCanBeConvertedToLocalVariable
         private readonly DynData<Spring> _springData;
 
         public static Entity LoadFloor(Level level, LevelData levelData, Vector2 offset, EntityData entityData) =>
