@@ -14,23 +14,47 @@
     </gravitySpring>
 
     <gravityRefill path="objects/GravityHelper/gravityRefill/" start="idle">
-        <Justify x="0.5" y="0.5" />
+        <Center />
         <Loop id="idle" path="idle" delay="0.1" frames="0-7" />
     </gravityRefill>
 
     <gravityRefillArrows path="objects/GravityHelper/gravityRefill/">
-        <Justify x="0.5" y="0.5" />
+        <Center />
         <Anim id="arrows" path="arrows" delay="0.07" frames="0-7" />
     </gravityRefillArrows>
 
     <gravityRefillIndicator path="objects/GravityHelper/gravityRefill/">
-        <Justify x="0.5" y="0.5" />
+        <Center />
         <Loop id="down" path="indicator" delay="0.1" frames="0-7" />
         <Loop id="up" path="indicator" delay="0.1" frames="0-3,8-11" />
     </gravityRefillIndicator>
 
     <gravityBadelineBoost path="objects/GravityHelper/gravityBadelineBoost/">
-        <Justify x="0.5" y="0.5" />
+        <Center />
         <Loop id="ripple" path="ripple" delay="0.1" frames="0-8" />
     </gravityBadelineBoost>
+
+    <gravitySwitch path="objects/GravityHelper/gravitySwitch/" start="down">
+        <Center />
+        <Anim id="down" path="switch" frames="10-0" delay="0.08" goto="downLoop" />
+        <Loop id="downLoop" path="switch" frames="0-1" delay="0.08" />
+        <Anim id="downOff" path="switch" frames="10-0,15-16" delay="0.08" />
+        <Loop id="downOffLoop" path="switch" frames="16" delay="0.08" />
+        <Anim id="up" path="switch" frames="2-12" delay="0.08" goto="upLoop" />
+        <Loop id="upLoop" path="switch" frames="11-12" delay="0.08" />
+        <Anim id="upOff" path="switch" frames="2-12,13-14" delay="0.08" />
+        <Loop id="upOffLoop" path="switch" frames="14" delay="0.08" />
+    </gravitySwitch>
+
+    <gravitySwitchToggle path="objects/GravityHelper/gravitySwitch/" start="down">
+        <Center />
+        <Anim id="down" path="toggle" frames="10-0" delay="0.08" goto="downLoop" />
+        <Loop id="downLoop" path="toggle" frames="0-1" delay="0.08" />
+        <Anim id="downOff" path="toggle" frames="10-0,15-16" delay="0.08" />
+        <Loop id="downOffLoop" path="toggle" frames="16" delay="0.08" />
+        <Anim id="up" path="toggle" frames="2-12" delay="0.08" goto="upLoop" />
+        <Loop id="upLoop" path="toggle" frames="11-12" delay="0.08" />
+        <Anim id="upOff" path="toggle" frames="2-12,13-14" delay="0.08" />
+        <Loop id="upOffLoop" path="toggle" frames="14" delay="0.08" />
+    </gravitySwitchToggle>
 </Sprites>

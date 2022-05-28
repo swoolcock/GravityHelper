@@ -16,19 +16,20 @@ namespace Celeste.Mod.GravityHelper.Components
 
         public Action<Entity, GravityChangeArgs> GravityChanged;
 
-        public GravityListener()
+        public GravityListener(Action<Entity, GravityChangeArgs> gravityChanged = default)
             : base(true, false)
         {
+            GravityChanged = gravityChanged;
         }
 
-        public GravityListener(Entity target)
-            : this()
+        public GravityListener(Entity target, Action<Entity, GravityChangeArgs> gravityChanged = default)
+            : this(gravityChanged)
         {
             _target = new WeakReference<Entity>(target);
         }
 
-        public GravityListener(Type type)
-            : this()
+        public GravityListener(Type type, Action<Entity, GravityChangeArgs> gravityChanged = default)
+            : this(gravityChanged)
         {
             TargetType = type;
         }
@@ -56,7 +57,8 @@ namespace Celeste.Mod.GravityHelper.Components
     [TrackedAs(typeof(GravityListener))]
     public class PlayerGravityListener : GravityListener
     {
-        public PlayerGravityListener() : base(typeof(Player))
+        public PlayerGravityListener(Action<Entity, GravityChangeArgs> gravityChanged = default)
+            : base(typeof(Player), gravityChanged)
         {
         }
     }

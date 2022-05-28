@@ -124,6 +124,8 @@ entities.GravityHelper/BehaviorGravityController.placements.name.normal=Behaviou
 entities.GravityHelper/BehaviorGravityController.attributes.description.persistent=Whether this controller should be considered the default for its type.\nThere should only ever be one persistent in your map, and not in a room with another controller of the same type.
 entities.GravityHelper/BehaviorGravityController.attributes.description.holdableResetTime=The amount of time in seconds a holdable will take to reset after being dropped.\nIf <= 0, the holdable will never reset. Defaults to 2.
 entities.GravityHelper/BehaviorGravityController.attributes.description.springCooldown=The global setting for GravitySpring gravityCooldown. Defaults to 0.5 seconds.
+entities.GravityHelper/BehaviorGravityController.attributes.description.switchCooldown=The global setting for GravitySwitch cooldown. Defaults to 1 second.
+entities.GravityHelper/BehaviorGravityController.attributes.description.switchOnHoldables=The global setting for GravitySwitch switchOnHoldables. Defaults to true.
 
 # Visual Gravity Controller
 entities.GravityHelper/VisualGravityController.placements.name.normal=Visual Gravity Controller (GravityHelper)
@@ -156,3 +158,12 @@ entities.GravityHelper/VvvvvvGravityController.attributes.description.flipSound=
 triggers.GravityHelper/VvvvvvTrigger.placements.name.normal=VVVVVV Trigger (GravityHelper)
 triggers.GravityHelper/VvvvvvTrigger.attributes.description.enable=Whether this trigger should enable VVVVVV mode. Defaults to true.
 triggers.GravityHelper/VvvvvvTrigger.attributes.description.onlyOnSpawn=Whether this trigger should only activate when Madeline spawns within it. Defaults to false.
+
+# Gravity Toggle Switch
+entities.GravityHelper/GravitySwitch.placements.name.normal=Gravity Switch (Normal) (GravityHelper)
+entities.GravityHelper/GravitySwitch.placements.name.inverted=Gravity Switch (Inverted) (GravityHelper)
+entities.GravityHelper/GravitySwitch.placements.name.toggle=Gravity Switch (Toggle) (GravityHelper)
+entities.GravityHelper/GravitySwitch.attributes.description.defaultToController=If true (default), supported properties for this entity will use the value from the active controller.
+entities.GravityHelper/GravitySwitch.attributes.description.gravityType=The gravity type to set when Madeline touches the switch. Defaults to Toggle.
+entities.GravityHelper/GravitySwitch.attributes.description.cooldown=The number of seconds after activation that this switch will be disabled for. Defaults to 1 second.
+entities.GravityHelper/GravitySwitch.attributes.description.switchOnHoldables=Whether or not unheld holdables will trigger the switch. Defaults to true.

@@ -12,17 +12,22 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
     [Tracked]
     public class BehaviorGravityController : BaseGravityController<BehaviorGravityController>
     {
-        private const float default_holdable_reset_time = 2f;
-        private const float default_spring_cooldown = 0.5f;
+        public const float DEFAULT_HOLDABLE_RESET_TIME = 2f;
+        public const float DEFAULT_SPRING_COOLDOWN = 0.5f;
+        public const float DEFAULT_SWITCH_COOLDOWN = 1f;
 
         public float HoldableResetTime { get; }
         public float SpringCooldown { get; }
+        public float SwitchCooldown { get; }
+        public bool SwitchOnHoldables { get; }
 
         public BehaviorGravityController(EntityData data, Vector2 offset)
             : base(data, offset)
         {
-            HoldableResetTime = data.Float("holdableResetTime", default_holdable_reset_time).ClampLower(0f);
-            SpringCooldown = data.Float("springCooldown", default_spring_cooldown).ClampLower(0f);
+            HoldableResetTime = data.Float("holdableResetTime", DEFAULT_HOLDABLE_RESET_TIME).ClampLower(0f);
+            SpringCooldown = data.Float("springCooldown", DEFAULT_SPRING_COOLDOWN).ClampLower(0f);
+            SwitchCooldown = data.Float("switchCooldown", DEFAULT_SWITCH_COOLDOWN).ClampLower(0f);
+            SwitchOnHoldables = data.Bool("switchOnHoldables", true);
         }
     }
 }

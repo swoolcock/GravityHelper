@@ -76,7 +76,7 @@ namespace Celeste.Mod.GravityHelper.Entities
             GravityType = data.Enum<GravityType>("gravityType");
 
             _defaultToController = data.Bool("defaultToController");
-            _gravityCooldown = data.Float("gravityCooldown", 0.5f);
+            _gravityCooldown = data.Float("gravityCooldown", BehaviorGravityController.DEFAULT_SPRING_COOLDOWN);
 
             // handle legacy spring settings
             if (data.TryFloat("cooldown", out var cooldown))
@@ -104,8 +104,6 @@ namespace Celeste.Mod.GravityHelper.Entities
             playerCollider.OnCollide = OnCollide;
             holdableCollider.OnCollide = OnHoldable;
             pufferCollider.OnCollide = OnPuffer;
-
-            // update collider components
 
             // update things by orientation
             switch (orientation)
