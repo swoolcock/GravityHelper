@@ -37,3 +37,52 @@ Mountain:
   ShowCore: false
   BackgroundMusicParams:
     moon: 1
+CompleteScreen:
+  Atlas: "Core"
+  Start: [ 0.0, 200.0 ]
+  Center: [ 0.0, 0.0 ]
+  Offset: [ -108.0, -110.0 ]
+  Layers:
+    - Type: "layer"
+      Images: [ "01" ]
+      Position: [ -108.0, -110.0 ]
+      Scroll: [ 0.0 ]
+      Scale: 2
+    - Type: "layer"
+      Images: [ "02" ]
+      Position: [ -108.0, -110.0 ]
+      Scroll: [ 0.02 ]
+    - Type: "layer"
+      Images: [ "03" ]
+      Position: [ -108.0, -110.0 ]
+      Scroll: [ 0.06 ]
+      Scale: 2
+    - Type: "layer"
+      Images: [ "04" ]
+      Position: [ -108.0, -110.0 ]
+      Scroll: [ 0.08 ]
+      Scale: 2
+    - Type: "layer"
+      Images: [ "05" ]
+      Position: [ -108.0, -110.0 ]
+      Scroll: [ 0.10 ]
+    - Type: "layer"
+      Images: [ "06" ]
+      Position: [ -108.0, -110.0 ]
+      Scroll: [ 0.12 ]
+      Scale: 2
+    - Type: "layer"
+      Images: [ "07a" ]
+      Position: [ -108.0, -110.0 ]
+      Scroll: [ 0.16 ]
+      Scale: 2
+    - Type: "layer"
+      Images: [ "07b" ]
+      Position: [ -108.0, -110.0 ]
+      Scroll: [ 0.16 ]
+      Scale: 2
+    - Type: "layer"
+      Images: [ "07c" ]
+      Position: [ -108.0, -110.0 ]
+      Scroll: [ 0.16 ]
+      Scale: 2
