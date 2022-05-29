@@ -32,7 +32,13 @@
     <gravityBadelineBoost path="objects/GravityHelper/gravityBadelineBoost/">
         <Center />
         <Loop id="ripple" path="ripple" delay="0.1" frames="0-8" />
+        <Anim id="mask" path="mask" delay="0.1" frames="0-3" />
     </gravityBadelineBoost>
+
+    <gravityBooster path="objects/GravityHelper/gravityBooster/">
+        <Center />
+        <Loop id="ripple" path="ripple" delay="0.1" frames="0-8" />
+    </gravityBooster>
 
     <gravitySwitch path="objects/GravityHelper/gravitySwitch/" start="down">
         <Center />
