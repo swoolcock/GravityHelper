@@ -17,8 +17,7 @@ namespace Celeste.Mod.GravityHelper.Entities
 
         public GravityType GravityType { get; }
 
-        private readonly Sprite _animationSpriteUp;
-        private readonly Sprite _animationSpriteDown;
+        private readonly Sprite _animationSprite;
 
         public GravityBooster(EntityData data, Vector2 offset)
             : base(data.Position + offset, data.Bool("red"))
@@ -28,23 +27,27 @@ namespace Celeste.Mod.GravityHelper.Entities
 
             GravityType = (GravityType)data.Int("gravityType");
 
+            Add(_animationSprite = GFX.SpriteBank.Create("gravityBooster"));
+            _animationSprite.Color = GravityType.Color();
+            _animationSprite.Play("ripple");
+        }
+
+        public override void Update()
+        {
+            base.Update();
+
             const float ripple_offset = 5f;
+            var currentGravity = GravityHelperModule.PlayerComponent?.CurrentGravity ?? GravityType.Normal;
 
-            if (GravityType == GravityType.Inverted || GravityType == GravityType.Toggle)
+            if (GravityType == GravityType.Inverted || GravityType == GravityType.Toggle && currentGravity == GravityType.Normal)
             {
-                Add(_animationSpriteUp = GFX.SpriteBank.Create("gravityBooster"));
-                _animationSpriteUp.Y -= ripple_offset;
-                _animationSpriteUp.Color = GravityType.Color();
-                _animationSpriteUp.Play("ripple");
+                _animationSprite.Y = -ripple_offset;
+                _animationSprite.Scale.Y = 1f;
             }
-
-            if (GravityType == GravityType.Normal || GravityType == GravityType.Toggle)
+            else if (GravityType == GravityType.Normal || GravityType == GravityType.Toggle && currentGravity == GravityType.Inverted)
             {
-                Add(_animationSpriteDown = GFX.SpriteBank.Create("gravityBooster"));
-                _animationSpriteDown.Scale.Y = -1f;
-                _animationSpriteDown.Y += ripple_offset;
-                _animationSpriteDown.Color = GravityType.Color();
-                _animationSpriteDown.Play("ripple");
+                _animationSprite.Y = ripple_offset;
+                _animationSprite.Scale.Y = -1f;
             }
         }
     }
