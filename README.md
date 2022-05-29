@@ -70,6 +70,9 @@ Note that these will be executed in the order listed.
 #### FrostHelper
 * `CustomSpring`
 
+#### Hyperline
+* It just works, no changes required.
+
 #### MaddyCrown
 * Crowns are rendered in the correct place and upside-down.
 
@@ -83,7 +86,7 @@ Note that these will be executed in the order listed.
 * Gravity is correctly maintained between save states.
 
 #### Crowneline
-* It just works, no need for additional hooks.
+* It just works, no changes required.
 
 #### Cateline
 * Added hooks to correctly invert the tail.  Also fixes the missing tail trail.

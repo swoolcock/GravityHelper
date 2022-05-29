@@ -5,9 +5,11 @@ using Celeste.Mod.Entities;
 using Celeste.Mod.GravityHelper.Entities.Controllers;
 using Celeste.Mod.GravityHelper.Extensions;
 using Microsoft.Xna.Framework;
+using Monocle;
 
 namespace Celeste.Mod.GravityHelper.Triggers
 {
+    [Tracked]
     [CustomEntity("GravityHelper/VvvvvvTrigger")]
     public class VvvvvvTrigger : Trigger
     {
