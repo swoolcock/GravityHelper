@@ -12,7 +12,6 @@ const PLUGIN_VERSION = "1"
     pluginVersion::String=PLUGIN_VERSION,
     gravityType::Integer=0,
     red::Bool=false,
-    useTintedSprites::Bool=true,
 )
 
 const placements = Ahorn.PlacementDict(
