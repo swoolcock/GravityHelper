@@ -40,6 +40,11 @@
         <Loop id="ripple" path="ripple" delay="0.1" frames="0-8" />
     </gravityBooster>
 
+    <gravityBumper path="objects/GravityHelper/gravityBumper/">
+        <Center />
+        <Loop id="ripple" path="ripple" delay="0.1" frames="0-8" />
+    </gravityBumper>
+
     <gravitySwitch path="objects/GravityHelper/gravitySwitch/" start="down">
         <Center />
         <Anim id="down" path="switch" frames="10-0" delay="0.08" goto="downLoop" />
