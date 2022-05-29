@@ -1,10 +1,13 @@
 // Copyright (c) Shane Woolcock. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+using System;
 using Celeste.Mod.GravityHelper.Components;
 using Celeste.Mod.GravityHelper.Extensions;
 using Microsoft.Xna.Framework;
+using Mono.Cecil.Cil;
 using Monocle;
+using MonoMod.Cil;
 using MonoMod.Utils;
 
 namespace Celeste.Mod.GravityHelper.Hooks
@@ -15,6 +18,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
         {
             Logger.Log(nameof(GravityHelperModule), $"Loading {nameof(Glider)} hooks...");
 
+            IL.Celeste.Glider.Update += Glider_Update;
             On.Celeste.Glider.Added += Glider_Added;
             On.Celeste.Glider.Render += Glider_Render;
             On.Celeste.Glider.Update += Glider_Update;
@@ -24,6 +28,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
         {
             Logger.Log(nameof(GravityHelperModule), $"Unloading {nameof(Glider)} hooks...");
 
+            IL.Celeste.Glider.Update -= Glider_Update;
             On.Celeste.Glider.Added -= Glider_Added;
             On.Celeste.Glider.Render -= Glider_Render;
             On.Celeste.Glider.Update -= Glider_Update;
@@ -72,5 +77,68 @@ namespace Celeste.Mod.GravityHelper.Hooks
             orig(self);
             Input.GliderMoveY.Value = value;
         }
+
+        private static void Glider_Update(ILContext il) => HookUtils.SafeHook(() =>
+        {
+            var cursor = new ILCursor(il);
+            if (!cursor.TryGotoNext(instr => instr.MatchCall<Actor>(nameof(Actor.MoveV))) ||
+                !cursor.TryGotoNext(instr => instr.MatchLdarg(0),
+                    instr => instr.MatchCall<Entity>("get_Left"),
+                    instr => instr.MatchLdarg(0),
+                    instr => instr.MatchLdfld<Glider>("level")))
+                throw new HookException("Couldn't find start of bounds check");
+
+            var cursor2 = cursor.Clone();
+            if (!cursor2.TryGotoNext(instr => instr.MatchLdarg(0),
+                instr => instr.MatchLdfld<Glider>(nameof(Glider.Hold)),
+                instr => instr.MatchCallvirt<Holdable>(nameof(Holdable.CheckAgainstColliders))))
+                throw new HookException("Couldn't find end of bounds check");
+
+            // replace with custom checks
+            cursor.Emit(OpCodes.Ldarg_0);
+            cursor.EmitDelegate<Func<Glider, bool>>(self => self.ShouldInvert());
+            cursor.Emit(OpCodes.Brfalse, cursor.Next);
+            cursor.Emit(OpCodes.Ldarg_0);
+            cursor.EmitDelegate<Func<Glider, bool>>(self =>
+            {
+                var level = self.SceneAs<Level>();
+                var bounds = level.Bounds;
+
+                if (self.Left < bounds.Left)
+                {
+                    self.Left = bounds.Left;
+                    ReflectionCache.Glider_OnCollideH.Invoke(self, new object[]
+                    {
+                        new CollisionData { Direction = -Vector2.UnitX },
+                    });
+                }
+                else if (self.Right > bounds.Right)
+                {
+                    self.Right = bounds.Right;
+                    ReflectionCache.Glider_OnCollideH.Invoke(self, new object[]
+                    {
+                        new CollisionData { Direction = Vector2.UnitX },
+                    });
+                }
+
+                if (self.Bottom > bounds.Bottom)
+                {
+                    self.Bottom = bounds.Bottom;
+                    ReflectionCache.Glider_OnCollideV.Invoke(self, new object[]
+                    {
+                        new CollisionData { Direction = Vector2.UnitY },
+                    });
+                }
+                else if (self.Bottom < bounds.Top - 16)
+                {
+                    self.RemoveSelf();
+                    return true;
+                }
+
+                return false;
+            });
+            cursor.Emit(OpCodes.Brfalse_S, cursor2.Next);
+            cursor.Emit(OpCodes.Ret);
+        });
     }
 }

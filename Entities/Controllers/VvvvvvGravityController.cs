@@ -4,6 +4,7 @@
 using Celeste.Mod.Entities;
 using Microsoft.Xna.Framework;
 using Monocle;
+using MonoMod.Utils;
 
 namespace Celeste.Mod.GravityHelper.Entities.Controllers
 {
@@ -46,10 +47,11 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
             var active = ActiveController;
             if (!active.IsVvvvvv) return;
 
+            var playerData = new DynData<Player>(player);
             var jumpPressed = Input.Jump.Pressed;
             Input.Jump.ConsumePress();
 
-            if (jumpPressed && player.OnGround())
+            if (jumpPressed && (player.OnGround() || playerData.Get<float>("jumpGraceTimer") > 0))
             {
                 GravityHelperModule.PlayerComponent?.SetGravity(GravityType.Toggle);
                 player.Speed.Y = 160f * (player.SceneAs<Level>().InSpace ? 0.6f : 1f);

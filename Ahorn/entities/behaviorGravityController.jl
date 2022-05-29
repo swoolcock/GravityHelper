@@ -12,7 +12,9 @@ const PLUGIN_VERSION = "1"
     pluginVersion::String=PLUGIN_VERSION,
     persistent::Bool=true,
     holdableResetTime::Real=2.0,
-    springCooldown::Real=0.1
+    springCooldown::Real=0.1,
+    switchCooldown::Real=1.0,
+    switchOnHoldables::Bool=true
 )
 
 const placements = Ahorn.PlacementDict(

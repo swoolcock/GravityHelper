@@ -9,6 +9,8 @@ local placementData = helpers.createPlacementData('1', {
     persistent = true,
     holdableResetTime = 2.0,
     springCooldown = 0.1,
+    switchCooldown = 1.0,
+    switchOnHoldables = true,
 })
 
 local behaviorGravityController = {

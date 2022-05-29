@@ -16,7 +16,7 @@ local function makeOptions(options, defaults, ...)
 end
 
 local consts = {
-    modVersion = "1.0.49",
+    modVersion = "1.0.50",
     ignoredFields = {
         "modVersion",
         "pluginVersion",
@@ -51,6 +51,7 @@ local consts = {
             color = colors.Blue,
             sound = "event:/ui/game/lookout_off",
             springTexture = "objects/GravityHelper/gravitySpring/normal00",
+            switchTexture = "objects/GravityHelper/gravitySwitch/switch12",
         },
         -- inverted gravity
         inverted = {
@@ -59,6 +60,7 @@ local consts = {
             color = colors.Red,
             sound = "event:/ui/game/lookout_on",
             springTexture = "objects/GravityHelper/gravitySpring/invert00",
+            switchTexture = "objects/GravityHelper/gravitySwitch/switch01",
         },
         -- toggle gravity
         toggle = {
@@ -67,6 +69,7 @@ local consts = {
             color = colors.Purple,
             sound = "",
             springTexture = "objects/GravityHelper/gravitySpring/toggle00",
+            switchTexture = "objects/GravityHelper/gravitySwitch/toggle01",
         },
         -- do not affect gravity
         none = {

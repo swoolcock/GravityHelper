@@ -55,6 +55,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             IL.Celeste.Player.SideBounce += Player_SideBounce;
             IL.Celeste.Player.SlipCheck += Player_SlipCheck;
             IL.Celeste.Player.StarFlyUpdate += Player_StarFlyUpdate;
+            IL.Celeste.Player.SummitLaunchUpdate += Player_SummitLaunchUpdate;
             IL.Celeste.Player.SuperBounce += Player_SuperBounce;
             IL.Celeste.Player.SuperJump += Player_SuperJump;
             IL.Celeste.Player.SuperWallJump += Player_SuperWallJump;
@@ -129,6 +130,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             IL.Celeste.Player.SideBounce -= Player_SideBounce;
             IL.Celeste.Player.SlipCheck -= Player_SlipCheck;
             IL.Celeste.Player.StarFlyUpdate -= Player_StarFlyUpdate;
+            IL.Celeste.Player.SummitLaunchUpdate -= Player_SummitLaunchUpdate;
             IL.Celeste.Player.SuperBounce -= Player_SuperBounce;
             IL.Celeste.Player.SuperJump -= Player_SuperJump;
             IL.Celeste.Player.SuperWallJump -= Player_SuperWallJump;
@@ -196,7 +198,8 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
                 // copied from Player.BeforeUpTransition
                 if (self.StateMachine.State != Player.StRedDash)
-                self.Speed.X = 0.0f;
+                    self.Speed.X = 0.0f;
+
                 if (self.StateMachine.State != Player.StRedDash && self.StateMachine.State != Player.StReflectionFall &&
                     self.StateMachine.State != Player.StStarFly)
                 {
@@ -954,6 +957,17 @@ namespace Celeste.Mod.GravityHelper.Hooks
             cursor.EmitInvertVectorDelegate();
         });
 
+        private static void Player_SummitLaunchUpdate(ILContext il) => HookUtils.SafeHook(() =>
+        {
+            var cursor = new ILCursor(il);
+            if (!cursor.TryGotoNext(MoveType.Before, instr => instr.MatchLdcR4(40f)))
+                throw new HookException("Couldn't find 40f");
+            cursor.EmitLoadShouldInvert();
+            cursor.Emit(OpCodes.Brfalse_S, cursor.Next);
+            cursor.Emit(OpCodes.Ldc_R4, -(40f - 12f));
+            cursor.Emit(OpCodes.Br_S, cursor.Next.Next);
+        });
+
         private static void Player_SuperBounce(ILContext il) => HookUtils.SafeHook(() =>
         {
             var cursor = new ILCursor(il);
@@ -1325,8 +1339,12 @@ namespace Celeste.Mod.GravityHelper.Hooks
             var aimY = Input.Aim.Value.Y;
             var moveY = Input.MoveY.Value;
             var gliderMoveY = Input.GliderMoveY.Value;
+            var level = self.SceneAs<Level>();
 
-            self.Scene.GetPersistentController<VvvvvvGravityController>()?.CheckJump(self);
+            if (!level.InCutscene && !level.Paused)
+            {
+                self.Scene.GetPersistentController<VvvvvvGravityController>()?.CheckJump(self);
+            }
 
             if (GravityHelperModule.ShouldInvertPlayer)
             {

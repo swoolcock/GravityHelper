@@ -56,9 +56,13 @@ namespace Celeste.Mod.GravityHelper
         public static readonly MethodInfo FlyFeather_CollectRoutine = typeof(FlyFeather).GetMethod("CollectRoutine", BindingFlags.Instance | BindingFlags.NonPublic);
         public static readonly MethodInfo Booster_BoostRoutine = typeof(Booster).GetMethod("BoostRoutine", BindingFlags.Instance | BindingFlags.NonPublic);
         public static readonly MethodInfo BadelineBoost_BoostRoutine = typeof(BadelineBoost).GetMethod("BoostRoutine", BindingFlags.Instance | BindingFlags.NonPublic);
+        public static readonly MethodInfo Glider_OnCollideH = typeof(Glider).GetMethod("OnCollideH", BindingFlags.Instance | BindingFlags.NonPublic);
+        public static readonly MethodInfo Glider_OnCollideV = typeof(Glider).GetMethod("OnCollideV", BindingFlags.Instance | BindingFlags.NonPublic);
         public static readonly MethodInfo Level_NextLevel = typeof(Level).GetMethod("NextLevel", BindingFlags.Instance | BindingFlags.NonPublic);
         public static readonly MethodInfo Level_OrigTransitionRoutine = typeof(Level).GetMethod("orig_TransitionRoutine", BindingFlags.Instance | BindingFlags.NonPublic);
         public static readonly MethodInfo PlayerDeadBody_DeathRoutine = typeof(PlayerDeadBody).GetMethod("DeathRoutine", BindingFlags.Instance | BindingFlags.NonPublic);
+        public static readonly MethodInfo Puffer_GotoHitSpeed = typeof(Puffer).GetMethod("GotoHitSpeed", BindingFlags.Instance | BindingFlags.NonPublic);
+        public static readonly MethodInfo Puffer_Alert = typeof(Puffer).GetMethod("Alert", BindingFlags.Instance | BindingFlags.NonPublic);
         public static readonly MethodInfo Seeker_RegenerateCoroutine = typeof(Seeker).GetMethod("RegenerateCoroutine", BindingFlags.Instance | BindingFlags.NonPublic);
         public static readonly MethodInfo SolidTiles_SurfaceSoundIndexAt = typeof(SolidTiles).GetMethod("SurfaceSoundIndexAt", BindingFlags.Instance | BindingFlags.NonPublic);
         public static readonly MethodInfo Spring_BounceAnimate = typeof(Spring).GetMethod("BounceAnimate", BindingFlags.Instance | BindingFlags.NonPublic);
