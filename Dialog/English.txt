@@ -34,10 +34,8 @@ samah_gravityhelper_gravityhelpershowcase_dialog_badeline1=
     Leave me out of this!
 
 samah_gravityhelper_gravityhelpershowcase_dialog_badeline2=
-    [MADELINE left normal upsidedown]
-    Wasn't that fun?
-    [BADELINE right angryAlt upsidedown]
-    Don't even talk to me.
+    [BADELINE angryAlt]
+    That was awful.
 
 samah_gravityhelper_gravityhelpershowcase_dialog_vvvvvv1=
     When VVVVVV mode is enabled, pressing jump while on the ground will flip Madeline's gravity. Dash and grab are disabled by default.
@@ -52,8 +50,6 @@ samah_gravityhelper_gravityhelpershowcase_dialog_vvvvvv2=
     Gravity lines will flip your gravity when you touch them. You can even have oblique lines!
     [MADELINE left distracted]
     This is sounding more and more like that game.
-    []
-    Stop.
 
 samah_gravityhelper_gravityhelpershowcase_dialog_vvvvvv3=
     [MADELINE left deadpan]
@@ -64,5 +60,8 @@ samah_gravityhelper_gravityhelpershowcase_dialog_vvvvvv4=
     Sellout.
 
 samah_gravityhelper_gravityhelpershowcase_dialog_refill=
-    Gravity refill crystals give you a "charge" of gravity toggle.
-    Dash to consume the charge and toggle gravity!
+    Gravity refill crystals give you a "charge" of gravity toggle.  Dash to consume the charge and toggle gravity!
+    Gravity bumpers will change your gravity upon touch.
+
+samah_gravityhelper_gravityhelpershowcase_dialog_switch=
+    Gravity switches will change gravity when Madeline or a throwable object touches them.
