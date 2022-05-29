@@ -16,9 +16,26 @@ const PLUGIN_VERSION = "1"
 )
 
 const placements = Ahorn.PlacementDict(
-    "Gravity Dream Block (GravityHelper)" => Ahorn.EntityPlacement(
+    "Gravity Dream Block (Normal) (GravityHelper)" => Ahorn.EntityPlacement(
         GravityDreamBlock,
-        "rectangle"
+        "rectangle",
+        Dict{String, Any}(
+            "gravityType" => 0,
+        )
+    ),
+    "Gravity Dream Block (Inverted) (GravityHelper)" => Ahorn.EntityPlacement(
+        GravityDreamBlock,
+        "rectangle",
+        Dict{String, Any}(
+            "gravityType" => 1,
+        )
+    ),
+    "Gravity Dream Block (Toggle) (GravityHelper)" => Ahorn.EntityPlacement(
+        GravityDreamBlock,
+        "rectangle",
+        Dict{String, Any}(
+            "gravityType" => 2,
+        )
     )
 )
 

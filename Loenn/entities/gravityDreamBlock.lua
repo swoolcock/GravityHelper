@@ -27,12 +27,22 @@ local gravityDreamBlock = {
     placements = {
         {
             name = "normal",
-            data = helpers.union(placementData),
+            data = helpers.union(placementData, {
+                gravityType = consts.gravityTypes.normal.index,
+            }),
         },
-        --{
-        --    name = "gravityDreamBlock_moving",
-        --    data = placementData,
-        --},
+        {
+            name = "inverted",
+            data = helpers.union(placementData, {
+                gravityType = consts.gravityTypes.inverted.index,
+            }),
+        },
+        {
+            name = "toggle",
+            data = helpers.union(placementData, {
+                gravityType = consts.gravityTypes.toggle.index,
+            }),
+        },
     },
 }
 

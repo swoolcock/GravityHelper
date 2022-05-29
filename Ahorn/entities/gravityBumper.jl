@@ -14,8 +14,26 @@ const PLUGIN_VERSION = "1"
 )
 
 const placements = Ahorn.PlacementDict(
-    "Gravity Bumper (GravityHelper)" => Ahorn.EntityPlacement(
-        GravityBumper
+    "Gravity Bumper (Normal) (GravityHelper)" => Ahorn.EntityPlacement(
+        GravityBumper,
+        "point",
+        Dict{String, Any}(
+            "gravityType" => 0,
+        )
+    ),
+    "Gravity Bumper (Inverted) (GravityHelper)" => Ahorn.EntityPlacement(
+        GravityBumper,
+        "point",
+        Dict{String, Any}(
+            "gravityType" => 1,
+        )
+    ),
+    "Gravity Bumper (Toggle) (GravityHelper)" => Ahorn.EntityPlacement(
+        GravityBumper,
+        "point",
+        Dict{String, Any}(
+            "gravityType" => 2,
+        )
     )
 )
 

@@ -20,7 +20,21 @@ local gravityBooster = {
     placements = {
         {
             name = "normal",
-            data = helpers.union(placementData),
+            data = helpers.union(placementData, {
+                gravityType = consts.gravityTypes.normal.index,
+            }),
+        },
+        {
+            name = "inverted",
+            data = helpers.union(placementData, {
+                gravityType = consts.gravityTypes.inverted.index,
+            }),
+        },
+        {
+            name = "toggle",
+            data = helpers.union(placementData, {
+                gravityType = consts.gravityTypes.toggle.index,
+            }),
         },
     },
 }
