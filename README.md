@@ -109,11 +109,9 @@ Madeline's gravity on touch.  Gravity types can be defined per node.
 
 #### GravityBooster
 A `Booster` (bubble) that will change Madeline's gravity when she is released.
-Currently lacks a decent sprite, the default bubble sprite is tinted instead (this can be disabled).
 
 #### GravityBumper
 A `Bumper` that will change Madeline's gravity upon touch.
-Currently lacks a decent sprite, only the particle colours are changed.
 
 #### BehaviorGravityController
 A controller entity that manages:
