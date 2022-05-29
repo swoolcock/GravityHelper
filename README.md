@@ -4,7 +4,7 @@ A Celeste mod for controlling gravity in realtime (yes, actually real GravityHel
 ### How does it work?
 Madeline's `Speed` vector always represents the direction to the floor, regardless of gravity.
 This means that while inverted, her `Speed.Y` will be the opposite sign of her actual velocity as displayed in CelesteTAS.
-It was done this way to ensure that any tech will work on the ceiling since the game thinks it's the floor.
+It was done this way to ensure that any tech will work on the ceiling since the game thinks it's the floor, and most third-party mods "just work".
 
 The majority of hooks in GravityHelper (over 100!) are for entity interaction compatibility, or to ensure that collisions are done in
 the correct direction and from the correct corner of the hitbox.
@@ -21,7 +21,7 @@ Any `Entity` that supports inverted gravity will have a tracked `GravityComponen
 perform the flip.  The default procedure is:
 
 1) The `Entity`'s position is moved to the opposite side of the current hitbox (this means it could be stuck in the ceiling or floor).
-2) The hitbox is moved such that it has the same absolute coordinates as it did prior to the flip.
+2) The hitbox is moved such that it has the same absolute coordinates as it did prior to the flip (hopefully unsticking it).
 3) `Sprite`s are moved and flipped to correspond to the new position and direction.
 4) If the entity is an `Actor`, the Y component of the `Speed` property (if it exists) is inverted so that momentum is preserved.
 
@@ -101,10 +101,11 @@ An invisible trigger that will set Madeline's initial gravity if placed over a p
 Will optionally apply this gravity setting when returning from a berry/cassette bubble,
 since return bubbles will always set regular gravity when triggered.
 This was the safest solution given that return bubbles do not work well while inverted.
+When placing a spawn on the ceiling, nudge the player spawn entity 5 pixels upward to ensure Madeline is standing and doesn't fall upward.
 
 #### GravityBadelineBoost
 A `BadelineBoost` (Badeline orb) that supports going downward instead of upward, and can optionally change
-Madeline's gravity on touch.
+Madeline's gravity on touch.  Gravity types can be defined per node.
 
 #### GravityBooster
 A `Booster` (bubble) that will change Madeline's gravity when she is released.
@@ -118,11 +119,13 @@ Currently lacks a decent sprite, only the particle colours are changed.
 A controller entity that manages:
 * How long `Holdable`s stay inverted before resetting
 * The gravity change cooldown on `GravitySpring`s
+* The gravity change cooldown on `GravitySwitch`es
+* Whether `Holdable`s will trigger `GravitySwitch`es
  
 #### SoundGravityController
 A controller entity that manages:
 * The default sounds for gravity changes, if an entity supports it
-* Defining a music param to change upon gravity flip.
+* Defining a music param to change upon gravity flip
 
 #### VisualGravityController
 A controller entity that manages:
@@ -150,10 +153,13 @@ This means that it's theoretically "uncheesable" since you can't warp through it
 
 #### GravityRefill
 A `Refill` that provides a single 'charge' that causes the next dash to toggle gravity.
-Has a cool sprite and animated indicator above Madeline's head.
+Has a cool sprite and animated indicator above Madeline's head.  Can be configured to provide more than one charge, but the entity looks the same.
 
 #### GravitySpring
-A `Spring` that will change Madeline's gravity upon touch.  Can be attached to the ceiling.
+A `Spring` that will change Madeline's gravity upon touch.  Can be attached to the ceiling.  Will change gravity of other Actors (Theo etc.) if supported.
+
+#### GravitySwitch
+A `CoreModeToggle`-style switch that will change gravity upon touch.  Holdables will also trigger the switch if thrown/dropped (can be disabled).
 
 #### UpsideDownJumpThru
 A platform similar to `JumpthruPlatform` that allows `Actor`s to fall through it but not move upward.
@@ -167,13 +173,14 @@ A trigger that will enable or disable VVVVVV-mode. Requires that a VVVVVV contro
 
 ### How do controllers work?
 There are currently four different kinds of controller. Behavior, Visual, Sound, and VVVVVV.
-Most of the time you will only ever need exactly one of each of these types.
+Most of the time you will only ever need zero or one of each of these types.
 
 Controllers flagged as "persistent" act as a global default setting, and will be loaded at all times,
 regardless of which room the controller is added to. You can customise individual rooms by adding a non-persistent controller
 of a given type, which will set the defaults for just that room.
 
-There must always be exactly one persistent controller in a map of a given type if you wish to use it.
+There must always be exactly zero or one persistent controllers in a map of a given type if you wish to use it.
+Having two or more persistent controllers of the same type will result in undefined behaviour.
 Additionally, you cannot have multiple controllers of the same type in a single room.
 
 ### What works?
@@ -183,14 +190,14 @@ Most things.
 https://github.com/swoolcock/GravityHelper/issues
 
 ### How can I help?
-Test, test, test.  If you find anything not in the issue list that doesn't work as expected, please let me know.
+Make maps and playtest.  If you find anything not in the issue list that doesn't work as expected, please let me know.
 I always welcome decent pull requests or even the occasional "me too" reply as long as it has additional information.
 
 ### Thanks to...
 * VampireFlower for all their testing and TASing.  Without you GravityHelper would probably not exist.
 * coloursofnoise for the initial proof-of-concept hooks.
 * JaThePlayer for the original inspiration.
-* Viv for being Viv.
+* Viv for the Badeline chaser hooks.
 * max480 for putting up with my upside-down jumpthru complaints for months.
 * Cruor/Vexatos for Ahorn/Lönn.
 * 0x0ade and the Everest team for Everest.
