@@ -2,34 +2,64 @@ samah_gravityhelper=GravityHelper
 samah_gravityhelper_gravityhelpershowcase=GravityHelper Showcase
 poem_samah_gravityHelper_gravityhelpershowcase_a=Topsy-Turvy
 
+samah_gravityhelper_gravityhelpershowcase_dialog_comf=
+    [MADELINE left normal]
+    Comf!
+
+samah_gravityhelper_gravityhelpershowcase_dialog_intro=
+    [MADELINE left sad]
+    Urgh... where am I?
+
+    [MADELINE left distracted]
+    I vaguely remember something about chasing a bird...
+
+    []
+    Welcome to GravityHelper!
+    This is a showcase of some of the entities and features available in the mod.
+    Feel free to open the map file to see how things are done.
+
+    [MADELINE left sadder]
+    Guess I'll see what's up ahead.
+
+samah_gravityhelper_gravityhelpershowcase_dialog_notice=
+    [MADELINE left determined]
+    Hmm... what are those arrows?
+
+    []
+    Most entities and interactions in GravityHelper follow a common colour theme.
+    {# 76CFFF}Blue{#} means normal gravity, {# F94A4A}red{#} means inverted gravity, and {# d678db}purple{#} means toggle.
+    Arrows will generally point in the direction that {+MADELINE} will travel.
+
 samah_gravityhelper_gravityhelpershowcase_dialog_field=
-    Gravity fields will change Madeline's gravity upon entry.
-    They will also affect Theo and jellies that are dropped or thrown.
+    Gravity fields will change {+MADELINE}'s gravity upon entry.
+    They will also affect {+THEO} and jellies that are dropped or thrown.
 
 samah_gravityhelper_gravityhelpershowcase_dialog_dreamblock=
-    Gravity dream blocks will change Madeline's gravity upon exit.
+    Gravity dream blocks will change {+MADELINE}'s gravity upon exit.
 
 samah_gravityhelper_gravityhelpershowcase_dialog_what=
     [MADELINE left surprised]
     What just happened???
 
 samah_gravityhelper_gravityhelpershowcase_dialog_booster=
-    Gravity boosters will change Madeline's gravity upon exit.
-    They come in both Golden Ridge and Mirror Temple flavours.
+    Gravity boosters will change {+MADELINE}'s gravity upon exit.
+    They come in both {+AREA_4} and {+AREA_5} flavours.
 
 samah_gravityhelper_gravityhelpershowcase_dialog_blood=
-    [MADELINE left upset upsidedown]
+    [MADELINE left distracted upsidedown]
     The blood is rushing to my head.
 
 samah_gravityhelper_gravityhelpershowcase_dialog_spring=
-    Gravity springs will change Madeline's gravity upon touch.
-    They will also affect jellies or Theo!
+    Gravity springs will change {+MADELINE}'s gravity upon touch.
+    They will also affect jellies or {+THEO}!
 
 samah_gravityhelper_gravityhelpershowcase_dialog_badeline1=
     Gravity Badeline boosts will send you in the direction the arrow points.
     Each node can have a separate gravity setting.
+
     [MADELINE left together]
     Time for some fun!
+
     [BADELINE right yell]
     Leave me out of this!
 
@@ -38,16 +68,20 @@ samah_gravityhelper_gravityhelpershowcase_dialog_badeline2=
     That was awful.
 
 samah_gravityhelper_gravityhelpershowcase_dialog_vvvvvv1=
-    When VVVVVV mode is enabled, pressing jump while on the ground will flip Madeline's gravity. Dash and grab are disabled by default.
+    When VVVVVV mode is enabled, pressing jump while on the ground will flip {+MADELINE}'s gravity.{n}Dash and grab are disabled by default.
+
     [MADELINE left normal]
     Oh like that game?
+
     []
     No, not at all like that game. This is a different VVVVVV.
+
     [MADELINE left upset]
     Fine.
 
 samah_gravityhelper_gravityhelpershowcase_dialog_vvvvvv2=
     Gravity lines will flip your gravity when you touch them. You can even have oblique lines!
+
     [MADELINE left distracted]
     This is sounding more and more like that game.
 
@@ -64,4 +98,38 @@ samah_gravityhelper_gravityhelpershowcase_dialog_refill=
     Gravity bumpers will change your gravity upon touch.
 
 samah_gravityhelper_gravityhelpershowcase_dialog_switch=
-    Gravity switches will change gravity when Madeline or a throwable object touches them.
+    [THEO right excited]
+    Yo {# F94A4A}Strawberry{#}!
+
+    [MADELINE left normal]
+    Hey {+THEO}!
+    What are you doing here?
+
+    [THEO right wtf]
+    Well I was just sitting here minding my own business...
+    Y'know, {~}{# aaaaaa}"It's your boy {+THEO}{# aaaaaa} in this{n}weird cave, no big deal."{#}{/~}
+
+    [THEO right thinking]
+    {# ffff9b}\#upsidedown{#}
+
+    [THEO right serious]
+    I blacked out and woke up in this crystal.
+
+    [MADELINE left normal]
+    Any way I can help?
+
+    [THEO right thinking]
+    I'm not sure, but that heart looks enticing.
+
+    [MADELINE left sad]
+    But, I don't know how to reach it.
+
+    [THEO right thinking]
+    Hmmm... maybe I could help?
+
+    []
+    Gravity switches will change gravity when {+MADELINE} or a throwable object touches them.
+    Try throwing {+THEO} onto the switch, but mind the spinners above you!
+
+    [THEO right yolo]
+    {big}{~}Y{>> 0.5}OLO{>> 0.2}OOOOOOOO!!{>>}{/~}{/big}
