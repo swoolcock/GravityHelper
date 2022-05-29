@@ -15,12 +15,20 @@ local spawnGravityTrigger = {
     name = "GravityHelper/SpawnGravityTrigger",
     ignoredFields = consts.ignoredFields,
     fieldInformation = {
-        gravityType = consts.fieldInformation.gravityType(),
+        gravityType = consts.fieldInformation.gravityType(0,1),
     },
     placements = {
         {
             name = "normal",
-            data = helpers.union(placementData),
+            data = helpers.union(placementData, {
+                gravityType = consts.gravityTypes.normal.index,
+            }),
+        },
+        {
+            name = "inverted",
+            data = helpers.union(placementData, {
+                gravityType = consts.gravityTypes.inverted.index,
+            }),
         },
     },
 }

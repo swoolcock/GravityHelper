@@ -23,9 +23,26 @@ const gravityTypes = Dict{String, Integer}(
 )
 
 const placements = Ahorn.PlacementDict(
-    "Gravity Trigger (GravityHelper)" => Ahorn.EntityPlacement(
+    "Gravity Trigger (Normal) (GravityHelper)" => Ahorn.EntityPlacement(
         GravityTrigger,
         "rectangle",
+        Dict{String, Any}(
+            "gravityType" => 0,
+        )
+    ),
+    "Gravity Trigger (Inverted) (GravityHelper)" => Ahorn.EntityPlacement(
+        GravityTrigger,
+        "rectangle",
+        Dict{String, Any}(
+            "gravityType" => 1,
+        )
+    ),
+    "Gravity Trigger (Toggle) (GravityHelper)" => Ahorn.EntityPlacement(
+        GravityTrigger,
+        "rectangle",
+        Dict{String, Any}(
+            "gravityType" => 2,
+        )
     ),
 )
 

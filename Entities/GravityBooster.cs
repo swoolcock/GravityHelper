@@ -6,7 +6,6 @@ using Celeste.Mod.Entities;
 using Celeste.Mod.GravityHelper.Extensions;
 using Microsoft.Xna.Framework;
 using Monocle;
-using MonoMod.Utils;
 
 namespace Celeste.Mod.GravityHelper.Entities
 {
@@ -17,9 +16,8 @@ namespace Celeste.Mod.GravityHelper.Entities
         private readonly Version _pluginVersion;
 
         public GravityType GravityType { get; }
-        public bool UseTintedSprites { get; }
 
-        private readonly DynData<Booster> _data;
+        private readonly Sprite _animationSprite;
 
         public GravityBooster(EntityData data, Vector2 offset)
             : base(data.Position + offset, data.Bool("red"))
@@ -27,24 +25,30 @@ namespace Celeste.Mod.GravityHelper.Entities
             _modVersion = data.ModVersion();
             _pluginVersion = data.PluginVersion();
 
-            _data = new DynData<Booster>(this);
             GravityType = (GravityType)data.Int("gravityType");
-            UseTintedSprites = data.Bool("useTintedSprites", true);
+
+            Add(_animationSprite = GFX.SpriteBank.Create("gravityBooster"));
+            _animationSprite.Color = GravityType.Color();
+            _animationSprite.Play("ripple");
         }
 
-        public override void Render()
+        public override void Update()
         {
-            if (!UseTintedSprites)
-            {
-                base.Render();
-                return;
-            }
+            base.Update();
 
-            var sprite = _data.Get<Sprite>("sprite");
-            var oldColor = sprite.Color;
-            sprite.Color = GravityType.Color();
-            base.Render();
-            sprite.Color = oldColor;
+            const float ripple_offset = 5f;
+            var currentGravity = GravityHelperModule.PlayerComponent?.CurrentGravity ?? GravityType.Normal;
+
+            if (GravityType == GravityType.Inverted || GravityType == GravityType.Toggle && currentGravity == GravityType.Normal)
+            {
+                _animationSprite.Y = -ripple_offset;
+                _animationSprite.Scale.Y = 1f;
+            }
+            else if (GravityType == GravityType.Normal || GravityType == GravityType.Toggle && currentGravity == GravityType.Inverted)
+            {
+                _animationSprite.Y = ripple_offset;
+                _animationSprite.Scale.Y = -1f;
+            }
         }
     }
 }

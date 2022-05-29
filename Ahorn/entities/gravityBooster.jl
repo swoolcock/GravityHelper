@@ -12,13 +12,30 @@ const PLUGIN_VERSION = "1"
     pluginVersion::String=PLUGIN_VERSION,
     gravityType::Integer=0,
     red::Bool=false,
-    useTintedSprites::Bool=true,
 )
 
 const placements = Ahorn.PlacementDict(
-    "Gravity Booster (GravityHelper)" => Ahorn.EntityPlacement(
-        GravityBooster
+    "Gravity Booster (Normal) (GravityHelper)" => Ahorn.EntityPlacement(
+        GravityBooster,
+        "point",
+        Dict{String, Any}(
+            "gravityType" => 0,
+        )
     ),
+    "Gravity Booster (Inverted) (GravityHelper)" => Ahorn.EntityPlacement(
+        GravityBooster,
+        "point",
+        Dict{String, Any}(
+            "gravityType" => 1,
+        )
+    ),
+    "Gravity Booster (Toggle) (GravityHelper)" => Ahorn.EntityPlacement(
+        GravityBooster,
+        "point",
+        Dict{String, Any}(
+            "gravityType" => 2,
+        )
+    )
 )
 
 const gravityTypes = Dict{String, Integer}(

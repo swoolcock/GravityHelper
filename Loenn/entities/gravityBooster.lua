@@ -8,7 +8,6 @@ local drawableSprite = require("structs.drawable_sprite")
 local placementData = helpers.createPlacementData('1', {
     gravityType = consts.gravityTypes.normal.index,
     red = false,
-    useTintedSprites = true,
 })
 
 local gravityBooster = {
@@ -21,7 +20,21 @@ local gravityBooster = {
     placements = {
         {
             name = "normal",
-            data = helpers.union(placementData),
+            data = helpers.union(placementData, {
+                gravityType = consts.gravityTypes.normal.index,
+            }),
+        },
+        {
+            name = "inverted",
+            data = helpers.union(placementData, {
+                gravityType = consts.gravityTypes.inverted.index,
+            }),
+        },
+        {
+            name = "toggle",
+            data = helpers.union(placementData, {
+                gravityType = consts.gravityTypes.toggle.index,
+            }),
         },
     },
 }

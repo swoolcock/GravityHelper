@@ -16,8 +16,16 @@ local vvvvvvTrigger = {
     ignoredFields = consts.ignoredFields,
     placements = {
         {
-            name = "normal",
-            data = helpers.union(placementData),
+            name = "enable",
+            data = helpers.union(placementData, {
+                enable = true,
+            }),
+        },
+        {
+            name = "disabled",
+            data = helpers.union(placementData, {
+                enable = false,
+            }),
         },
     },
 }

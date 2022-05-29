@@ -9,21 +9,28 @@ entities.GravityHelper/GravityBadelineBoost.attributes.canSkip=Badeline will ski
 entities.GravityHelper/GravityBadelineBoost.attributes.nodeGravityTypes=A comma-separated list of gravity types for individual nodes (including the first position).\n0 = normal, 1 = inverted, 2 = toggle. Defaults to empty string.
 
 # Gravity Booster (Bubble)
-entities.GravityHelper/GravityBooster.placements.name.normal=Gravity Booster (GravityHelper)
+entities.GravityHelper/GravityBooster.placements.name.normal=Gravity Booster (Normal) (GravityHelper)
+entities.GravityHelper/GravityBooster.placements.name.inverted=Gravity Booster (Inverted) (GravityHelper)
+entities.GravityHelper/GravityBooster.placements.name.toggle=Gravity Booster (Toggle) (GravityHelper)
 entities.GravityHelper/GravityBooster.attributes.description.gravityType=The gravity type to set when Madeline leaves the booster (bubble). Defaults to Normal.
 entities.GravityHelper/GravityBooster.attributes.red=Whether to act the same as a Mirror Temple bubble, where travel ends upon hitting a solid. Defaults to false.
-entities.GravityHelper/GravityBooster.attributes.useTintedSprites=Whether to use red, blue, or purple tinted sprites rather than just vanilla. Defaults to true.
 
 # Gravity Bumper
-entities.GravityHelper/GravityBumper.placements.name.normal=Gravity Bumper (GravityHelper)
+entities.GravityHelper/GravityBumper.placements.name.normal=Gravity Bumper (Normal) (GravityHelper)
+entities.GravityHelper/GravityBumper.placements.name.inverted=Gravity Bumper (Inverted) (GravityHelper)
+entities.GravityHelper/GravityBumper.placements.name.toggle=Gravity Bumper (Toggle) (GravityHelper)
 entities.GravityHelper/GravityBumper.attributes.description.gravityType=The gravity type to set when Madeline touches the bumper.
 
 # Gravity Dream Block
-entities.GravityHelper/GravityDreamBlock.placements.name.normal=Gravity Dream Block (GravityHelper)
+entities.GravityHelper/GravityDreamBlock.placements.name.normal=Gravity Dream Block (Normal) (GravityHelper)
+entities.GravityHelper/GravityDreamBlock.placements.name.inverted=Gravity Dream Block (Inverted) (GravityHelper)
+entities.GravityHelper/GravityDreamBlock.placements.name.toggle=Gravity Dream Block (Toggle) (GravityHelper)
 entities.GravityHelper/GravityDreamBlock.attributes.description.gravityType=The gravity type to set when Madeline exits the dream block.
 
 # Gravity Field
-entities.GravityHelper/GravityField.placements.name.normal=Gravity Field (GravityHelper)
+entities.GravityHelper/GravityField.placements.name.normal=Gravity Field (Normal) (GravityHelper)
+entities.GravityHelper/GravityField.placements.name.inverted=Gravity Field (Inverted) (GravityHelper)
+entities.GravityHelper/GravityField.placements.name.toggle=Gravity Field (Toggle) (GravityHelper)
 entities.GravityHelper/GravityField.placements.name.attachedIndicator=Gravity Field (Attached Indicator) (GravityHelper)
 entities.GravityHelper/GravityField.placements.name.visualOnly=Gravity Field (Visual Only) (GravityHelper)
 entities.GravityHelper/GravityField.attributes.description.defaultToController=If true (default), supported properties for this entity will use the value from the active controller.
@@ -105,8 +112,10 @@ entities.GravityHelper/UpsideDownWatchTower.attributes.description.summit=Whethe
 entities.GravityHelper/UpsideDownWatchTower.attributes.description.onlyY=Whether the watch tower can only move vertically. If the watch tower has nodes it will still follow them.
 
 # Gravity Trigger
-triggers.GravityHelper/GravityTrigger.placements.name.normal=Gravity Trigger (GravityHelper)
-triggers.GravityHelper/GravitySpringCeiling.attributes.description.defaultToController=If true (default), supported properties for this trigger will use the value from the active controller.
+triggers.GravityHelper/GravityTrigger.placements.name.normal=Gravity Trigger (Normal) (GravityHelper)
+triggers.GravityHelper/GravityTrigger.placements.name.inverted=Gravity Trigger (Inverted) (GravityHelper)
+triggers.GravityHelper/GravityTrigger.placements.name.toggle=Gravity Trigger (Toggle) (GravityHelper)
+triggers.GravityHelper/GravityTrigger.attributes.description.defaultToController=If true (default), supported properties for this trigger will use the value from the active controller.
 triggers.GravityHelper/GravityTrigger.attributes.description.gravityType=The gravity type to set when Madeline enters the trigger.
 triggers.GravityHelper/GravityTrigger.attributes.description.momentumMultiplier=The multiplier to apply to Madeline's Y velocity when gravity flips.\n0 means instantly change, positive values give a gradual change. Defaults to 1.
 triggers.GravityHelper/GravityTrigger.attributes.description.affectsPlayer=Whether the trigger affects Madeline. Defaults to true.
@@ -115,7 +124,8 @@ triggers.GravityHelper/GravityTrigger.attributes.description.affectsOtherActors=
 triggers.GravityHelper/GravityTrigger.attributes.description.sound=The sound that should be played. Defaults to an embedded sound, set your own or clear it for no sound. Supports controllers.
 
 # Spawn Gravity Trigger
-triggers.GravityHelper/SpawnGravityTrigger.placements.name.normal=Spawn Gravity Trigger (GravityHelper)
+triggers.GravityHelper/SpawnGravityTrigger.placements.name.normal=Spawn Gravity Trigger (Normal) (GravityHelper)
+triggers.GravityHelper/SpawnGravityTrigger.placements.name.inverted=Spawn Gravity Trigger (Inverted) (GravityHelper)
 triggers.GravityHelper/SpawnGravityTrigger.attributes.description.gravityType=The gravity type to set when Madeline spawns inside the trigger.
 triggers.GravityHelper/SpawnGravityTrigger.attributes.description.fireOnBubbleReturn=Whether gravity should be applied if Madeline is sent to the spawn trigger via a cassette or berry return bubble.
 
@@ -155,7 +165,8 @@ entities.GravityHelper/VvvvvvGravityController.attributes.description.disableDas
 entities.GravityHelper/VvvvvvGravityController.attributes.description.flipSound=The sound to play when the player flips. Defaults to a custom sound.
 
 # VVVVVV Trigger
-triggers.GravityHelper/VvvvvvTrigger.placements.name.normal=VVVVVV Trigger (GravityHelper)
+triggers.GravityHelper/VvvvvvTrigger.placements.name.enable=VVVVVV Trigger (Enable) (GravityHelper)
+triggers.GravityHelper/VvvvvvTrigger.placements.name.disable=VVVVVV Trigger (Disable) (GravityHelper)
 triggers.GravityHelper/VvvvvvTrigger.attributes.description.enable=Whether this trigger should enable VVVVVV mode. Defaults to true.
 triggers.GravityHelper/VvvvvvTrigger.attributes.description.onlyOnSpawn=Whether this trigger should only activate when Madeline spawns within it. Defaults to false.
 

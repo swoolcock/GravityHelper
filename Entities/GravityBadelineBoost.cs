@@ -23,6 +23,7 @@ namespace Celeste.Mod.GravityHelper.Entities
         private readonly DynData<BadelineBoost> _data;
         private readonly Sprite _sprite;
         private readonly Sprite _animationSprite;
+        private readonly Sprite _maskSprite;
         private readonly GravityType[] _gravityTypes;
 
         public GravityType CurrentDirection { get; private set; } = GravityType.Normal;
@@ -52,6 +53,9 @@ namespace Celeste.Mod.GravityHelper.Entities
             Add(_animationSprite = GFX.SpriteBank.Create("gravityBadelineBoost"));
             _animationSprite.Play("ripple");
             _animationSprite.Color = GravityType.Color();
+
+            _maskSprite = GFX.SpriteBank.Create("gravityBadelineBoost");
+            _maskSprite.Play("mask");
         }
 
         public override void Update()
@@ -86,6 +90,27 @@ namespace Celeste.Mod.GravityHelper.Entities
                     CurrentDirection = GravityType.Inverted;
                 }
             }
+        }
+
+        public override void Render()
+        {
+            if (_sprite.Visible)
+            {
+                var animation = _maskSprite.Animations["mask"];
+                var frameIndex = 0;
+                if (_sprite.CurrentAnimationID == "blink" && _sprite.CurrentAnimationFrame < 3)
+                    frameIndex = _sprite.CurrentAnimationFrame + 1;
+                var frame = animation.Frames[frameIndex];
+
+                for (int y = -1; y <= 1; y++)
+                for (int x = -1; x <= 1; x++)
+                {
+                    if (x != 0 || y != 0)
+                        frame.DrawCentered(Position + _sprite.Position + new Vector2(x, y), currentNodeGravityType.Color());
+                }
+            }
+
+            base.Render();
         }
     }
 }

@@ -26,6 +26,8 @@ namespace Celeste.Mod.GravityHelper.Entities
 
         public GravityType GravityType { get; }
 
+        private readonly Sprite _animationSprite;
+
         public GravityBumper(EntityData data, Vector2 offset)
             : base(data, offset)
         {
@@ -33,6 +35,10 @@ namespace Celeste.Mod.GravityHelper.Entities
             _pluginVersion = data.PluginVersion();
 
             GravityType = (GravityType)data.Int("gravityType");
+
+            Add(_animationSprite = GFX.SpriteBank.Create("gravityBumper"));
+            _animationSprite.Color = GravityType.Color();
+            _animationSprite.Play("ripple");
         }
 
         public ParticleType GetAmbientParticleType()
@@ -95,6 +101,25 @@ namespace Celeste.Mod.GravityHelper.Entities
                 GravityType.Toggle => P_Launch_Toggle,
                 _ => P_Launch,
             };
+        }
+
+        public override void Update()
+        {
+            base.Update();
+
+            const float ripple_offset = 8f;
+            var currentGravity = GravityHelperModule.PlayerComponent?.CurrentGravity ?? GravityType.Normal;
+
+            if (GravityType == GravityType.Inverted || GravityType == GravityType.Toggle && currentGravity == GravityType.Normal)
+            {
+                _animationSprite.Y = -ripple_offset;
+                _animationSprite.Scale.Y = 1f;
+            }
+            else if (GravityType == GravityType.Normal || GravityType == GravityType.Toggle && currentGravity == GravityType.Inverted)
+            {
+                _animationSprite.Y = ripple_offset;
+                _animationSprite.Scale.Y = -1f;
+            }
         }
     }
 }

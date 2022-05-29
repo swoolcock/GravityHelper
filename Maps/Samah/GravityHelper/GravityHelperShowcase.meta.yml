@@ -1,0 +1,39 @@
+Icon: areas/Samah/GravityHelper/showcase
+Interlude: false
+TitleBaseColor: 240d7c
+TitleAccentColor: ff6aa9
+TitleTextColor: ffffff
+IntroType: WakeUp
+Dreaming: false
+ColorGrade: none
+Wipe: Celeste.StarfieldWipe
+DarknessAlpha: 0.05
+BloomBase: 0.5
+BloomStrength: 1.0
+CassetteNoteColor: e6566a
+CassetteSong:
+Modes:
+  - AudioState:
+      Music: event:/new_content/music/lvl10/part01
+      Ambience: event:/env/amb/00_prologue
+    Inventory: Default
+    SeekerSlowdown: false
+    HeartIsEnd: true
+    StartLevel: intro
+Mountain:
+  Idle:
+    Position: [ 6.4, 33.050, 7.4 ]
+    Target: [ 0, 32.5, 0 ]
+  Select:
+    Position: [ 5.881, 31.525, 2.871 ]
+    Target: [ 4.393, 31.481, 1.534 ]
+  Zoom:
+    Position: [ 2, 31, 1 ]
+    Target: [ 0, 31, 0 ]
+  Cursor: [ 0, 33.3, 0 ]
+  # Available: 0, 1, 2
+  State: 3
+  Rotate: true
+  ShowCore: false
+  BackgroundMusicParams:
+    moon: 1

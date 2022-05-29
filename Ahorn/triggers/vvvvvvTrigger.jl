@@ -16,9 +16,19 @@ const PLUGIN_VERSION = "1"
 )
 
 const placements = Ahorn.PlacementDict(
-    "VVVVVV Trigger (GravityHelper)" => Ahorn.EntityPlacement(
+    "VVVVVV Trigger (Enable) (GravityHelper)" => Ahorn.EntityPlacement(
         VvvvvvTrigger,
         "rectangle",
+        Dict{String, Any}(
+            "enable" => true,
+        )
+    ),
+    "VVVVVV Trigger (Disable) (GravityHelper)" => Ahorn.EntityPlacement(
+        VvvvvvTrigger,
+        "rectangle",
+        Dict{String, Any}(
+            "enable" => false,
+        )
     ),
 )
 
