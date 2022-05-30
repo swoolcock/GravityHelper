@@ -1190,6 +1190,18 @@ namespace Celeste.Mod.GravityHelper.Hooks
                         self.Speed.Y *= -args.MomentumMultiplier;
                         self.DashDir.Y *= -1;
                         data["varJumpTimer"] = 0f;
+
+                        // update player on ground status
+                        checkGround(self, args.NewValue, out var onGround, out var onSafeGround);
+
+                        var oldOnGround = data.Get<bool>("onGround");
+                        if (oldOnGround && !onGround)
+                            data["jumpGraceTimer"] = 0f;
+                        else if (!oldOnGround && onGround)
+                            self.StartJumpGraceTime();
+
+                        data["onGround"] = onGround;
+                        self.SetOnSafeGround(onSafeGround);
                     },
                     GetSpeed = () => self.Speed,
                     SetSpeed = value => self.Speed = value,
@@ -1205,6 +1217,43 @@ namespace Celeste.Mod.GravityHelper.Hooks
                     },
                 }
             );
+        }
+
+        private static void checkGround(Player self, GravityType type, out bool onGround, out bool onSafeGround)
+        {
+            var direction = type == GravityType.Inverted ? -Vector2.UnitY : Vector2.UnitY;
+
+            if (self.StateMachine.State == Player.StDreamDash)
+                onGround = onSafeGround = false;
+            else if (self.Speed.Y >= 0f)
+            {
+                var platform = (Platform) self.CollideFirst<Solid>(self.Position + direction) ??
+                    self.CollideFirstOutside<JumpThru>(self.Position + direction);
+                if (platform != null)
+                {
+                    onGround = true;
+                    onSafeGround = platform.Safe;
+                }
+                else
+                    onGround = onSafeGround = false;
+            }
+            else
+                onGround = onSafeGround = false;
+
+            if (self.StateMachine.State == Player.StSwim)
+                onSafeGround = true;
+
+            if (onSafeGround)
+            {
+                foreach (var component in self.Scene.Tracker.GetComponents<SafeGroundBlocker>())
+                {
+                    if (component is SafeGroundBlocker safeGroundBlocker && safeGroundBlocker.Check(self))
+                    {
+                        onSafeGround = false;
+                        break;
+                    }
+                }
+            }
         }
 
         private static void Player_CreateTrail(On.Celeste.Player.orig_CreateTrail orig, Player self)
