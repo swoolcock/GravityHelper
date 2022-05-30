@@ -1107,7 +1107,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
                 GravityHelperModule.Session.InitialGravity);
             GravityHelperModule.Instance.GravityBeforeReload = null;
 
-            if (self.CollideFirstOrDefault<VvvvvvTrigger>() is { } vvvvvvTrigger && vvvvvvTrigger.OnlyOnSpawn)
+            if (self.CollideFirstOrDefault<VvvvvvTrigger>() is { } vvvvvvTrigger)
                 GravityHelperModule.Session.VvvvvvTrigger = vvvvvvTrigger.Enable;
 
             scene.Add(new GravityRefillIndicator());
@@ -1135,6 +1135,8 @@ namespace Celeste.Mod.GravityHelper.Hooks
             BadelineOldsiteHooks.ChaserStateGravity.Clear();
             GravityRefill.NumberOfCharges = 0;
 
+            var data = new DynData<Player>(self);
+
             self.Add(new TransitionListener
                 {
                     OnOutBegin = () => GravityHelperModule.Session.InitialGravity = GravityHelperModule.PlayerComponent?.CurrentGravity ?? GravityType.Normal,
@@ -1155,18 +1157,18 @@ namespace Celeste.Mod.GravityHelper.Hooks
                         Vector2 normalLightOffset = new Vector2(0.0f, -8f);
                         Vector2 duckingLightOffset = new Vector2(0.0f, -3f);
 
-                        self.SetNormalLightOffset(args.NewValue == GravityType.Normal ? normalLightOffset : -normalLightOffset);
-                        self.SetDuckingLightOffset(args.NewValue == GravityType.Normal ? duckingLightOffset : -duckingLightOffset);
+                        data["normalLightOffset"] = args.NewValue == GravityType.Normal ? normalLightOffset : -normalLightOffset;
+                        data["duckingLightOffset"] = args.NewValue == GravityType.Normal ? duckingLightOffset : -duckingLightOffset;
                         self.Light.Position = self.Ducking ? duckingLightOffset : normalLightOffset;
 
-                        var starFlyBloom = self.GetStarFlyBloom();
+                        var starFlyBloom = data.Get<BloomPoint>("starFlyBloom");
                         if (starFlyBloom != null)
                             starFlyBloom.Y = Math.Abs(starFlyBloom.Y) * (args.NewValue == GravityType.Inverted ? 1 : -1);
                     },
                     UpdatePosition = args =>
                     {
                         if (!args.Changed) return;
-                        var collider = self.Collider ?? self.GetNormalHitbox();
+                        var collider = self.Collider ?? data.Get<Hitbox>("normalHitbox");
                         self.Position.Y = args.NewValue == GravityType.Inverted
                             ? collider.AbsoluteTop
                             : collider.AbsoluteBottom;
@@ -1175,19 +1177,31 @@ namespace Celeste.Mod.GravityHelper.Hooks
                     {
                         if (!args.Changed) return;
 
-                        InvertHitbox(self.GetNormalHitbox());
-                        InvertHitbox(self.GetNormalHurtbox());
-                        InvertHitbox(self.GetDuckHitbox());
-                        InvertHitbox(self.GetDuckHurtbox());
-                        InvertHitbox(self.GetStarFlyHitbox());
-                        InvertHitbox(self.GetStarFlyHurtbox());
+                        InvertHitbox(data.Get<Hitbox>("normalHitbox"));
+                        InvertHitbox(data.Get<Hitbox>("normalHurtbox"));
+                        InvertHitbox(data.Get<Hitbox>("duckHitbox"));
+                        InvertHitbox(data.Get<Hitbox>("duckHurtbox"));
+                        InvertHitbox(data.Get<Hitbox>("starFlyHitbox"));
+                        InvertHitbox(data.Get<Hitbox>("starFlyHurtbox"));
                     },
                     UpdateSpeed = args =>
                     {
                         if (!args.Changed) return;
                         self.Speed.Y *= -args.MomentumMultiplier;
                         self.DashDir.Y *= -1;
-                        self.SetVarJumpTimer(0f);
+                        data["varJumpTimer"] = 0f;
+
+                        // update player on ground status
+                        checkGround(self, args.NewValue, out var onGround, out var onSafeGround);
+
+                        var oldOnGround = data.Get<bool>("onGround");
+                        if (oldOnGround && !onGround)
+                            data["jumpGraceTimer"] = 0f;
+                        else if (!oldOnGround && onGround)
+                            self.StartJumpGraceTime();
+
+                        data["onGround"] = onGround;
+                        self.SetOnSafeGround(onSafeGround);
                     },
                     GetSpeed = () => self.Speed,
                     SetSpeed = value => self.Speed = value,
@@ -1203,6 +1217,43 @@ namespace Celeste.Mod.GravityHelper.Hooks
                     },
                 }
             );
+        }
+
+        private static void checkGround(Player self, GravityType type, out bool onGround, out bool onSafeGround)
+        {
+            var direction = type == GravityType.Inverted ? -Vector2.UnitY : Vector2.UnitY;
+
+            if (self.StateMachine.State == Player.StDreamDash)
+                onGround = onSafeGround = false;
+            else if (self.Speed.Y >= 0f)
+            {
+                var platform = (Platform) self.CollideFirst<Solid>(self.Position + direction) ??
+                    self.CollideFirstOutside<JumpThru>(self.Position + direction);
+                if (platform != null)
+                {
+                    onGround = true;
+                    onSafeGround = platform.Safe;
+                }
+                else
+                    onGround = onSafeGround = false;
+            }
+            else
+                onGround = onSafeGround = false;
+
+            if (self.StateMachine.State == Player.StSwim)
+                onSafeGround = true;
+
+            if (onSafeGround)
+            {
+                foreach (var component in self.Scene.Tracker.GetComponents<SafeGroundBlocker>())
+                {
+                    if (component is SafeGroundBlocker safeGroundBlocker && safeGroundBlocker.Check(self))
+                    {
+                        onSafeGround = false;
+                        break;
+                    }
+                }
+            }
         }
 
         private static void Player_CreateTrail(On.Celeste.Player.orig_CreateTrail orig, Player self)
