@@ -1135,6 +1135,8 @@ namespace Celeste.Mod.GravityHelper.Hooks
             BadelineOldsiteHooks.ChaserStateGravity.Clear();
             GravityRefill.NumberOfCharges = 0;
 
+            var data = new DynData<Player>(self);
+
             self.Add(new TransitionListener
                 {
                     OnOutBegin = () => GravityHelperModule.Session.InitialGravity = GravityHelperModule.PlayerComponent?.CurrentGravity ?? GravityType.Normal,
@@ -1155,18 +1157,18 @@ namespace Celeste.Mod.GravityHelper.Hooks
                         Vector2 normalLightOffset = new Vector2(0.0f, -8f);
                         Vector2 duckingLightOffset = new Vector2(0.0f, -3f);
 
-                        self.SetNormalLightOffset(args.NewValue == GravityType.Normal ? normalLightOffset : -normalLightOffset);
-                        self.SetDuckingLightOffset(args.NewValue == GravityType.Normal ? duckingLightOffset : -duckingLightOffset);
+                        data["normalLightOffset"] = args.NewValue == GravityType.Normal ? normalLightOffset : -normalLightOffset;
+                        data["duckingLightOffset"] = args.NewValue == GravityType.Normal ? duckingLightOffset : -duckingLightOffset;
                         self.Light.Position = self.Ducking ? duckingLightOffset : normalLightOffset;
 
-                        var starFlyBloom = self.GetStarFlyBloom();
+                        var starFlyBloom = data.Get<BloomPoint>("starFlyBloom");
                         if (starFlyBloom != null)
                             starFlyBloom.Y = Math.Abs(starFlyBloom.Y) * (args.NewValue == GravityType.Inverted ? 1 : -1);
                     },
                     UpdatePosition = args =>
                     {
                         if (!args.Changed) return;
-                        var collider = self.Collider ?? self.GetNormalHitbox();
+                        var collider = self.Collider ?? data.Get<Hitbox>("normalHitbox");
                         self.Position.Y = args.NewValue == GravityType.Inverted
                             ? collider.AbsoluteTop
                             : collider.AbsoluteBottom;
@@ -1175,19 +1177,19 @@ namespace Celeste.Mod.GravityHelper.Hooks
                     {
                         if (!args.Changed) return;
 
-                        InvertHitbox(self.GetNormalHitbox());
-                        InvertHitbox(self.GetNormalHurtbox());
-                        InvertHitbox(self.GetDuckHitbox());
-                        InvertHitbox(self.GetDuckHurtbox());
-                        InvertHitbox(self.GetStarFlyHitbox());
-                        InvertHitbox(self.GetStarFlyHurtbox());
+                        InvertHitbox(data.Get<Hitbox>("normalHitbox"));
+                        InvertHitbox(data.Get<Hitbox>("normalHurtbox"));
+                        InvertHitbox(data.Get<Hitbox>("duckHitbox"));
+                        InvertHitbox(data.Get<Hitbox>("duckHurtbox"));
+                        InvertHitbox(data.Get<Hitbox>("starFlyHitbox"));
+                        InvertHitbox(data.Get<Hitbox>("starFlyHurtbox"));
                     },
                     UpdateSpeed = args =>
                     {
                         if (!args.Changed) return;
                         self.Speed.Y *= -args.MomentumMultiplier;
                         self.DashDir.Y *= -1;
-                        self.SetVarJumpTimer(0f);
+                        data["varJumpTimer"] = 0f;
                     },
                     GetSpeed = () => self.Speed,
                     SetSpeed = value => self.Speed = value,
