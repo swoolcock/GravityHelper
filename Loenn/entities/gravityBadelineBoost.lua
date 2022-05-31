@@ -1,6 +1,7 @@
 -- Copyright (c) Shane Woolcock. Licensed under the MIT Licence.
 -- See the LICENCE file in the repository root for full licence text.
 
+local utils = require("utils")
 local consts = require("mods").requireFromPlugin("consts")
 local helpers = require("mods").requireFromPlugin("helpers")
 local drawableSprite = require("structs.drawable_sprite")
@@ -44,7 +45,7 @@ local function getSprites(room, entity, gravityType, x, y)
     local sprites = {maskSprite, badelineSprite}
 
     local function createRippleSprite(scaleY)
-        local rippleSprite = drawableSprite.fromTexture("objects/GravityHelper/gravityBadelineBoost/ripple03", entity)
+        local rippleSprite = drawableSprite.fromTexture("objects/GravityHelper/ripple03", entity)
         local offset = scaleY < 0 and 4 or -3
         if x ~= nil and y ~= nil then
             rippleSprite:setPosition(x, y + offset)
@@ -78,6 +79,17 @@ local function gravityTypeForNode(entity, index)
     end
 
     return math.min(math.max(gravityType, -1), 2)
+end
+
+function gravityBadelineBoost.selection(room, entity)
+    local nodeRectangles = {}
+    local x,y,w,h = -10,-9,20,19
+    if entity.nodes ~= nil then
+        for _,node in ipairs(entity.nodes) do
+            table.insert(nodeRectangles, utils.rectangle(node.x + x, node.y + y, w, h))
+        end
+    end
+    return utils.rectangle(entity.x + x, entity.y + y, w, h), nodeRectangles
 end
 
 function gravityBadelineBoost.sprite(room, entity)

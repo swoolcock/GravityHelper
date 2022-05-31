@@ -44,9 +44,9 @@ const gravityTypes = Dict{String, Integer}(
 )
 
 const gravityColors = Dict{Integer, Tuple{Real, Real, Real, Real}}(
-    0 => (0.0, 0.0, 1.0, 0.5),
-    1 => (1.0, 0.0, 0.0, 0.5),
-    2 => (0.5, 0.0, 0.5, 0.5),
+    0 => (0.0, 0.0, 1.0, 1.0),
+    1 => (1.0, 0.0, 0.0, 1.0),
+    2 => (0.75, 0.0, 0.75, 1.0),
 )
 
 Ahorn.nodeLimits(entity::GravityBumper) = 0, 1
@@ -58,6 +58,8 @@ Ahorn.editingOptions(entity::GravityBumper) = Dict{String, Any}(
 )
 
 sprite = "objects/Bumper/Idle22.png"
+mask = "objects/GravityHelper/gravityBumper/mask00"
+ripple = "objects/GravityHelper/ripple03"
 
 function Ahorn.selection(entity::GravityBumper)
     x, y = Ahorn.position(entity)
@@ -71,26 +73,37 @@ function Ahorn.selection(entity::GravityBumper)
     return Ahorn.getSpriteRectangle(sprite, x, y)
 end
 
+function drawNode(ctx::Ahorn.Cairo.CairoContext, x::Real, y::Real, gravityType::Integer)
+    gravityType = clamp(gravityType, -1, 2)
+    color = gravityColors[gravityType]
+    Ahorn.drawSprite(ctx, mask, x, y, tint=color)
+    Ahorn.drawSprite(ctx, sprite, x, y)
+
+    if gravityType == 1 || gravityType == 2
+        Ahorn.drawSprite(ctx, ripple, x, y - 8, tint=color)
+    end
+    if gravityType == 0 || gravityType == 2
+        Ahorn.drawSprite(ctx, ripple, x, y + 8, sy=-1, tint=color)
+    end
+end
+
 function Ahorn.renderSelectedAbs(ctx::Ahorn.Cairo.CairoContext, entity::GravityBumper)
     x, y = Ahorn.position(entity)
     nodes = get(entity.data, "nodes", ())
+    gravityType = get(entity.data, "gravityType", 0)
 
     if !isempty(nodes)
         nx, ny = Int.(nodes[1])
 
         theta = atan(y - ny, x - nx)
         Ahorn.drawArrow(ctx, x, y, nx + cos(theta) * 8, ny + sin(theta) * 8, Ahorn.colors.selection_selected_fc, headLength=6)
-
-        gravityType = Int(get(entity.data, "gravityType", 0))
-        color = gravityColors[gravityType]
-        Ahorn.drawSprite(ctx, sprite, nx, ny, tint=color)
+        drawNode(ctx, nx, ny, gravityType)
     end
 end
 
 function Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::GravityBumper, room::Maple.Room)
     gravityType = Int(get(entity.data, "gravityType", 0))
-    color = gravityColors[gravityType]
-    Ahorn.drawSprite(ctx, sprite, 0, 0, tint=color)
+    drawNode(ctx, 0, 0, gravityType)
 end
 
 end

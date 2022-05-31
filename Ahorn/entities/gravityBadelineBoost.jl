@@ -32,7 +32,7 @@ const gravityTypes = Dict{String, Integer}(
 const gravityColors = Dict{Integer, Tuple{Real, Real, Real, Real}}(
     0 => (0.0, 0.0, 1.0, 1.0),
     1 => (1.0, 0.0, 0.0, 1.0),
-    2 => (0.5, 0.0, 0.5, 1.0),
+    2 => (0.75, 0.0, 0.75, 1.0),
     -1 => (1.0, 1.0, 1.0, 1.0),
 )
 
@@ -46,7 +46,7 @@ Ahorn.nodeLimits(entity::GravityBadelineBoost) = 0, -1
 
 sprite = "objects/badelineboost/idle00.png"
 mask = "objects/GravityHelper/gravityBadelineBoost/mask00"
-ripple = "objects/GravityHelper/gravityBadelineBoost/ripple03"
+ripple = "objects/GravityHelper/ripple03"
 
 function drawNode(ctx::Ahorn.Cairo.CairoContext, x::Real, y::Real, gravityType::Integer)
     gravityType = clamp(gravityType, -1, 2)

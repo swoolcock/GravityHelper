@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <Sprites>
+    <gravityRipple path="objects/GravityHelper/" start="loop">
+        <Center />
+        <Loop id="loop" path="ripple" delay="0.1" frames="0-8" />
+    </gravityRipple>
+
     <gravitySpring path="objects/GravityHelper/gravitySpring/" start="none_idle">
         <Justify x="0.5" y="1" />
         <Anim id="none_idle" path="none" delay="0.0" frames="0" />
@@ -31,18 +36,12 @@
 
     <gravityBadelineBoost path="objects/GravityHelper/gravityBadelineBoost/">
         <Center />
-        <Loop id="ripple" path="ripple" delay="0.1" frames="0-8" />
         <Anim id="mask" path="mask" delay="0.1" frames="0-3" />
     </gravityBadelineBoost>
 
-    <gravityBooster path="objects/GravityHelper/gravityBooster/">
-        <Center />
-        <Loop id="ripple" path="ripple" delay="0.1" frames="0-8" />
-    </gravityBooster>
-
     <gravityBumper path="objects/GravityHelper/gravityBumper/">
         <Center />
-        <Loop id="ripple" path="ripple" delay="0.1" frames="0-8" />
+        <Anim id="mask" path="mask" delay="0.1" frames="0-8" />
     </gravityBumper>
 
     <gravitySwitch path="objects/GravityHelper/gravitySwitch/" start="down">

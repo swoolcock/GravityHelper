@@ -2,10 +2,12 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System;
+using System.Linq;
 using Celeste.Mod.Entities;
 using Celeste.Mod.GravityHelper.Extensions;
 using Microsoft.Xna.Framework;
 using Monocle;
+using MonoMod.Utils;
 
 namespace Celeste.Mod.GravityHelper.Entities
 {
@@ -26,19 +28,29 @@ namespace Celeste.Mod.GravityHelper.Entities
 
         public GravityType GravityType { get; }
 
-        private readonly Sprite _animationSprite;
+        private readonly DynData<Bumper> _data;
+        private readonly Sprite _sprite;
+        private readonly Sprite _rippleSprite;
+        private readonly Sprite _maskSprite;
 
         public GravityBumper(EntityData data, Vector2 offset)
             : base(data, offset)
         {
+            _data = new DynData<Bumper>(this);
+
             _modVersion = data.ModVersion();
             _pluginVersion = data.PluginVersion();
 
             GravityType = (GravityType)data.Int("gravityType");
 
-            Add(_animationSprite = GFX.SpriteBank.Create("gravityBumper"));
-            _animationSprite.Color = GravityType.Color();
-            _animationSprite.Play("ripple");
+            _sprite = _data.Get<Sprite>("sprite");
+
+            _maskSprite = GFX.SpriteBank.Create("gravityBumper");
+            _maskSprite.Play("mask");
+
+            Add(_rippleSprite = GFX.SpriteBank.Create("gravityRipple"));
+            _rippleSprite.Color = GravityType.Color();
+            _rippleSprite.Play("loop");
         }
 
         public ParticleType GetAmbientParticleType()
@@ -103,6 +115,33 @@ namespace Celeste.Mod.GravityHelper.Entities
             };
         }
 
+        public override void Render()
+        {
+            if (_sprite.Visible)
+            {
+                var animation = _maskSprite.Animations["mask"];
+                var frameIndex = 0;
+                if (_sprite.CurrentAnimationID == "hit")
+                    frameIndex = _sprite.CurrentAnimationFrame >= 2 ? _sprite.CurrentAnimationFrame - 1 : 0;
+                else if (_sprite.CurrentAnimationID == "off")
+                    frameIndex = 7;
+                else if (_sprite.CurrentAnimationID == "on")
+                    frameIndex = (_sprite.CurrentAnimationFrame + 7) % 9;
+                var frame = animation.Frames.ElementAtOrDefault(frameIndex);
+
+                if (frame != null)
+                {
+                    var color = GravityType.Color();
+                    if (frameIndex == 7)
+                        color *= 0.5f;
+
+                    frame.DrawCentered(Position + _sprite.Position, color);
+                }
+            }
+
+            base.Render();
+        }
+
         public override void Update()
         {
             base.Update();
@@ -112,13 +151,13 @@ namespace Celeste.Mod.GravityHelper.Entities
 
             if (GravityType == GravityType.Inverted || GravityType == GravityType.Toggle && currentGravity == GravityType.Normal)
             {
-                _animationSprite.Y = -ripple_offset;
-                _animationSprite.Scale.Y = 1f;
+                _rippleSprite.Y = -ripple_offset;
+                _rippleSprite.Scale.Y = 1f;
             }
             else if (GravityType == GravityType.Normal || GravityType == GravityType.Toggle && currentGravity == GravityType.Inverted)
             {
-                _animationSprite.Y = ripple_offset;
-                _animationSprite.Scale.Y = -1f;
+                _rippleSprite.Y = ripple_offset;
+                _rippleSprite.Scale.Y = -1f;
             }
         }
     }
