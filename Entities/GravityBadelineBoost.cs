@@ -102,12 +102,7 @@ namespace Celeste.Mod.GravityHelper.Entities
                     frameIndex = _sprite.CurrentAnimationFrame + 1;
                 var frame = animation.Frames[frameIndex];
 
-                for (int y = -1; y <= 1; y++)
-                for (int x = -1; x <= 1; x++)
-                {
-                    if (x != 0 || y != 0)
-                        frame.DrawCentered(Position + _sprite.Position + new Vector2(x, y), currentNodeGravityType.Color());
-                }
+                frame.DrawCentered(Position + _sprite.Position, currentNodeGravityType.Color());
             }
 
             base.Render();
