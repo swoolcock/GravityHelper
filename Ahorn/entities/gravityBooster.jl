@@ -45,9 +45,9 @@ const gravityTypes = Dict{String, Integer}(
 )
 
 const gravityColors = Dict{Integer, Tuple{Real, Real, Real, Real}}(
-    0 => (0.0, 0.0, 1.0, 0.5),
-    1 => (1.0, 0.0, 0.0, 0.5),
-    2 => (0.5, 0.0, 0.5, 0.5),
+    0 => (0.0, 0.0, 1.0, 1.0),
+    1 => (1.0, 0.0, 0.0, 1.0),
+    2 => (0.75, 0.0, 0.75, 1.0),
 )
 
 Ahorn.editingIgnored(entity::GravityBooster, multiple::Bool=false) = String["modVersion", "pluginVersion"]
@@ -56,8 +56,10 @@ Ahorn.editingOptions(entity::GravityBooster) = Dict{String, Any}(
     "gravityType" => gravityTypes,
 )
 
+overlay = "objects/GravityHelper/gravityBooster/overlay"
 normalSprite = "objects/booster/booster00"
 redSprite = "objects/booster/boosterRed00"
+ripple = "objects/GravityHelper/ripple03"
 
 function Ahorn.selection(entity::GravityBooster)
     x, y = Ahorn.position(entity)
@@ -67,13 +69,17 @@ end
 
 function Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::GravityBooster, room::Maple.Room)
     gravityType = get(entity.data, "gravityType", 0)
-    useTintedSprites = get(entity.data, "useTintedSprites", true)
     sprite = get(entity.data, "red", false) ? redSprite : normalSprite
+    color = gravityColors[gravityType]
 
-    if useTintedSprites
-        Ahorn.drawSprite(ctx, sprite, 0, 0, tint=gravityColors[gravityType])
-    else
-        Ahorn.drawSprite(ctx, sprite, 0, 0)
+    Ahorn.drawSprite(ctx, sprite, 0, 0)
+    Ahorn.drawSprite(ctx, overlay, 0, 0, tint=color)
+
+    if gravityType == 1 || gravityType == 2
+        Ahorn.drawSprite(ctx, ripple, 0, -4, tint=color)
+    end
+    if gravityType == 0 || gravityType == 2
+        Ahorn.drawSprite(ctx, ripple, 0, 4, sy=-1, tint=color)
     end
 end
 

@@ -27,9 +27,9 @@ namespace Celeste.Mod.GravityHelper.Entities
 
             GravityType = (GravityType)data.Int("gravityType");
 
-            Add(_animationSprite = GFX.SpriteBank.Create("gravityBooster"));
+            Add(_animationSprite = GFX.SpriteBank.Create("gravityRipple"));
             _animationSprite.Color = GravityType.Color();
-            _animationSprite.Play("ripple");
+            _animationSprite.Play("loop");
         }
 
         public override void Update()

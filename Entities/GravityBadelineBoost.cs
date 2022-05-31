@@ -22,7 +22,7 @@ namespace Celeste.Mod.GravityHelper.Entities
 
         private readonly DynData<BadelineBoost> _data;
         private readonly Sprite _sprite;
-        private readonly Sprite _animationSprite;
+        private readonly Sprite _rippleSprite;
         private readonly Sprite _maskSprite;
         private readonly GravityType[] _gravityTypes;
 
@@ -50,9 +50,9 @@ namespace Celeste.Mod.GravityHelper.Entities
             else
                 _gravityTypes = null;
 
-            Add(_animationSprite = GFX.SpriteBank.Create("gravityBadelineBoost"));
-            _animationSprite.Play("ripple");
-            _animationSprite.Color = GravityType.Color();
+            Add(_rippleSprite = GFX.SpriteBank.Create("gravityRipple"));
+            _rippleSprite.Play("loop");
+            _rippleSprite.Color = GravityType.Color();
 
             _maskSprite = GFX.SpriteBank.Create("gravityBadelineBoost");
             _maskSprite.Play("mask");
@@ -62,31 +62,33 @@ namespace Celeste.Mod.GravityHelper.Entities
         {
             base.Update();
 
-            _animationSprite.Visible = false;
+            _rippleSprite.Visible = false;
 
             if (_sprite.Visible && !travelling && GravityHelperModule.PlayerComponent is { } playerComponent)
             {
-                _animationSprite.Visible = true;
-                _animationSprite.Position = _sprite.Position;
+                _rippleSprite.Visible = true;
+                _rippleSprite.Position = _sprite.Position;
 
                 var currentPlayerGravity = playerComponent.CurrentGravity;
                 var currentNodeGravity = currentNodeGravityType;
 
                 if (_gravityTypes != null)
-                    _animationSprite.Color = currentNodeGravity.Color();
+                    _rippleSprite.Color = currentNodeGravity.Color();
 
                 if (currentNodeGravity == GravityType.Normal ||
                     currentNodeGravity == GravityType.Toggle && currentPlayerGravity == GravityType.Inverted ||
                     currentNodeGravity == GravityType.None && currentPlayerGravity == GravityType.Normal)
                 {
-                    _animationSprite.Rotation = 0;
+                    _rippleSprite.Rotation = 0;
+                    _rippleSprite.Position -= new Vector2(0f, 2f);
                     CurrentDirection = GravityType.Normal;
                 }
                 else if (currentNodeGravity == GravityType.Inverted ||
                     currentNodeGravity == GravityType.Toggle && currentPlayerGravity == GravityType.Normal ||
                     currentNodeGravity == GravityType.None && currentPlayerGravity == GravityType.Inverted)
                 {
-                    _animationSprite.Rotation = (float)Math.PI;
+                    _rippleSprite.Rotation = (float)Math.PI;
+                    _rippleSprite.Position += new Vector2(0f, 2f);
                     CurrentDirection = GravityType.Inverted;
                 }
             }
@@ -102,12 +104,7 @@ namespace Celeste.Mod.GravityHelper.Entities
                     frameIndex = _sprite.CurrentAnimationFrame + 1;
                 var frame = animation.Frames[frameIndex];
 
-                for (int y = -1; y <= 1; y++)
-                for (int x = -1; x <= 1; x++)
-                {
-                    if (x != 0 || y != 0)
-                        frame.DrawCentered(Position + _sprite.Position + new Vector2(x, y), currentNodeGravityType.Color());
-                }
+                frame.DrawCentered(Position + _sprite.Position, currentNodeGravityType.Color());
             }
 
             base.Render();
