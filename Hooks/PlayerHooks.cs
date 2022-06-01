@@ -1153,7 +1153,8 @@ namespace Celeste.Mod.GravityHelper.Hooks
                         },
                     UpdateVisuals = args =>
                     {
-                        if (!args.Changed) return;
+                        if (!args.Changed || self.Scene == null) return;
+
                         Vector2 normalLightOffset = new Vector2(0.0f, -8f);
                         Vector2 duckingLightOffset = new Vector2(0.0f, -3f);
 
@@ -1167,7 +1168,8 @@ namespace Celeste.Mod.GravityHelper.Hooks
                     },
                     UpdatePosition = args =>
                     {
-                        if (!args.Changed) return;
+                        if (!args.Changed || self.Scene == null) return;
+
                         var collider = self.Collider ?? data.Get<Hitbox>("normalHitbox");
                         self.Position.Y = args.NewValue == GravityType.Inverted
                             ? collider.AbsoluteTop
@@ -1175,7 +1177,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
                     },
                     UpdateColliders = args =>
                     {
-                        if (!args.Changed) return;
+                        if (!args.Changed || self.Scene == null) return;
 
                         InvertHitbox(data.Get<Hitbox>("normalHitbox"));
                         InvertHitbox(data.Get<Hitbox>("normalHurtbox"));
@@ -1186,7 +1188,8 @@ namespace Celeste.Mod.GravityHelper.Hooks
                     },
                     UpdateSpeed = args =>
                     {
-                        if (!args.Changed) return;
+                        if (!args.Changed || self.Scene == null) return;
+
                         self.Speed.Y *= -args.MomentumMultiplier;
                         self.DashDir.Y *= -1;
                         data["varJumpTimer"] = 0f;

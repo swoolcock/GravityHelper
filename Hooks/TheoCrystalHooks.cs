@@ -41,13 +41,14 @@ namespace Celeste.Mod.GravityHelper.Hooks
             {
                 UpdateVisuals = args =>
                 {
+                    if (!args.Changed || self.Scene == null) return;
                     var sprite = data.Get<Sprite>("sprite");
                     sprite.Scale.Y = args.NewValue == GravityType.Inverted ? -1 : 1;
                 },
                 UpdateSpeed = args =>
                 {
-                    if (args.Changed)
-                        self.Speed.Y *= -args.MomentumMultiplier;
+                    if (!args.Changed || self.Scene == null) return;
+                    self.Speed.Y *= -args.MomentumMultiplier;
                 },
                 GetSpeed = () => self.Speed,
                 SetSpeed = value => self.Speed = value,
