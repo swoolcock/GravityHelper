@@ -23,7 +23,7 @@ namespace Celeste.Mod.GravityHelper.Entities
         private float _cooldownRemaining;
         private bool _playSounds;
 
-        private bool usable => GravityType != GravityHelperModule.PlayerComponent.CurrentGravity;
+        private bool usable => GravityType != (GravityHelperModule.PlayerComponent?.CurrentGravity ?? GravityType.Normal);
 
         public GravitySwitch(EntityData data, Vector2 offset) : base(data.Position + offset)
         {
