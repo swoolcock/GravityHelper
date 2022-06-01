@@ -168,7 +168,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
         private static void Level_Update(On.Celeste.Level.orig_Update orig, Level self)
         {
-            if (GravityHelperModule.Settings.ToggleInvertGravity.Pressed)
+            if (GravityHelperModule.Settings.ToggleInvertGravity.Pressed && !self.FrozenOrPaused && self.Tracker.GetEntity<Player>() != null)
             {
                 GravityHelperModule.InvalidateRun();
                 GravityHelperModule.Settings.ToggleInvertGravity.ConsumePress();
