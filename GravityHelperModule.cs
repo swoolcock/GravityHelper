@@ -121,6 +121,7 @@ namespace Celeste.Mod.GravityHelper
             InputHooks.Load();
             JumpThruHooks.Load();
             LevelHooks.Load();
+            MoveBlockHooks.Load();
             PlayerDeadBodyHooks.Load();
             PlayerHairHooks.Load();
             PlayerHooks.Load();
@@ -165,6 +166,7 @@ namespace Celeste.Mod.GravityHelper
             InputHooks.Unload();
             JumpThruHooks.Unload();
             LevelHooks.Unload();
+            MoveBlockHooks.Unload();
             PlayerDeadBodyHooks.Unload();
             PlayerHairHooks.Unload();
             PlayerHooks.Unload();
