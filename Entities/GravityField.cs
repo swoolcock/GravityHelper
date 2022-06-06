@@ -306,10 +306,14 @@ namespace Celeste.Mod.GravityHelper.Entities
         private bool staticMoverCollideCheck(Solid solid)
         {
             if (solid is SolidTiles) return false;
-            // TODO: allow the mapper to specify the static mover collision hitbox
-            // Collider = staticMoverHitbox;
+            var collider = Collider;
+
+            // only attach to adjacent solids if this affects an actor, otherwise require overlap
+            // this ensures that overlays will only attach to the entity they collide with, and not adjacent solids
+            if (!AffectsNothing) Collider = _staticMoverHitbox;
+
             var collides = CollideCheck(solid);
-            // Collider = normalHitbox;
+            Collider = collider;
             return collides;
         }
 
