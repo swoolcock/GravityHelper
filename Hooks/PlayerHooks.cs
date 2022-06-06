@@ -411,7 +411,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
             static bool collideJumpthrus(Player self) =>
                 !GravityHelperModule.ShouldInvertPlayer && self.CollideCheckUpsideDownJumpThru() ||
-                GravityHelperModule.ShouldInvertPlayer && self.CollideCheck<JumpThru>();
+                GravityHelperModule.ShouldInvertPlayer && self.CollideCheckNotUpsideDownJumpThru();
 
             if (!cursor.TryGotoNext(MoveType.After, instr => instr.MatchCallGeneric<Entity>(nameof(Entity.CollideCheck), out _)))
                 throw new HookException("Couldn't find CollideCheck<Solid>");

@@ -9,7 +9,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Celeste.Mod.GravityHelper.Components;
-using Celeste.Mod.GravityHelper.Entities;
 using Celeste.Mod.GravityHelper.Entities.Controllers;
 using Celeste.Mod.GravityHelper.Hooks;
 using Monocle;
@@ -229,10 +228,6 @@ namespace Celeste.Mod.GravityHelper
                 SolidMoving = solidMoving;
             if (state[nameof(JumpThruMoving)] is bool jumpThruMoving)
                 JumpThruMoving = jumpThruMoving;
-
-            // fix upside down jumpthru tracking
-            foreach (var udjt in Engine.Scene.Entities.Where(e => e is UpsideDownJumpThru))
-                ((UpsideDownJumpThru)udjt).EnsureCorrectTracking();
 
             // fix player component
             PlayerComponent = level.Tracker.GetEntity<Player>()?.Get<GravityComponent>();

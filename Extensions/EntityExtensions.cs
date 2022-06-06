@@ -123,15 +123,15 @@ namespace Celeste.Mod.GravityHelper.Extensions
 
         public static bool CollideCheckOutsideNotUpsideDownJumpThru(this Entity entity, Vector2 at)
         {
-            if (!entity.Scene.Tracker.Entities.TryGetValue(typeof(JumpThru), out var entities))
-                return false;
+            foreach (Entity b in entity.Scene.Tracker.Entities[typeof(JumpThru)])
+            {
+                if (b is UpsideDownJumpThru || b.GetType() == ReflectionCache.MaxHelpingHandUpsideDownJumpThruType)
+                    continue;
+                if (!Collide.Check(entity, b) && Collide.Check(entity, b, at))
+                    return true;
+            }
 
-            _entityList.Clear();
-            Collide.All(entity, entities, _entityList, at);
-            var coll = _entityList.Any(e =>
-                e.GetType() != ReflectionCache.MaxHelpingHandUpsideDownJumpThruType && !entity.CollideCheck(e));
-            _entityList.Clear();
-            return coll;
+            return false;
         }
 
         public static JumpThru CollideFirstOutsideUpsideDownJumpThru(this Entity entity, Vector2 at)
@@ -146,15 +146,15 @@ namespace Celeste.Mod.GravityHelper.Extensions
 
         public static JumpThru CollideFirstOutsideNotUpsideDownJumpThru(this Entity entity, Vector2 at)
         {
-            if (!entity.Scene.Tracker.Entities.TryGetValue(typeof(JumpThru), out var entities))
-                return null;
+            foreach (Entity b in entity.Scene.Tracker.Entities[typeof(JumpThru)])
+            {
+                if (b is UpsideDownJumpThru || b.GetType() == ReflectionCache.MaxHelpingHandUpsideDownJumpThruType)
+                    continue;
+                if (!Collide.Check(entity, b) && Collide.Check(entity, b, at))
+                    return b as JumpThru;
+            }
 
-            _entityList.Clear();
-            Collide.All(entity, entities, _entityList, at);
-            var coll = _entityList.FirstOrDefault(e =>
-                e.GetType() != ReflectionCache.MaxHelpingHandUpsideDownJumpThruType && !entity.CollideCheck(e));
-            _entityList.Clear();
-            return coll as JumpThru;
+            return null;
         }
 
         public static bool IsUpsideDownJumpThru(this JumpThru jumpThru)
