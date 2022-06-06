@@ -48,10 +48,15 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
             if (!active.IsVvvvvv) return;
 
             var playerData = new DynData<Player>(player);
+            var onGround = player.OnGround() || playerData.Get<float>("jumpGraceTimer") > 0;
+            var dreamJump = playerData.Get<bool>("dreamJump");
             var jumpPressed = Input.Jump.Pressed;
             Input.Jump.ConsumePress();
 
-            if (jumpPressed && (player.OnGround() || playerData.Get<float>("jumpGraceTimer") > 0))
+            // for now we'll only allow normal state
+            if (player.StateMachine != Player.StNormal) return;
+
+            if (jumpPressed && onGround && !dreamJump)
             {
                 GravityHelperModule.PlayerComponent?.SetGravity(GravityType.Toggle);
                 player.Speed.Y = 160f * (player.SceneAs<Level>().InSpace ? 0.6f : 1f);
