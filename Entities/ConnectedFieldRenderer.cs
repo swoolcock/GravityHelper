@@ -221,11 +221,11 @@ namespace Celeste.Mod.GravityHelper.Entities
 
             public void OnRenderBloom()
             {
+                if (_list.Any(e => !e.Visible))
+                    return;
+
                 foreach (var entity in _list)
-                {
-                    if (entity.Visible)
-                        Draw.Rect(entity.X, entity.Y, entity.Width, entity.Height, Color.White);
-                }
+                    Draw.Rect(entity.X, entity.Y, entity.Width, entity.Height, Color.White);
 
                 foreach (var edge in _edges)
                 {
@@ -246,12 +246,12 @@ namespace Celeste.Mod.GravityHelper.Entities
                 if (_list.Count <= 0)
                     return;
 
+                if (_list.Any(e => !e.Visible))
+                    return;
+
                 var color = Color;
                 foreach (var entity in _list)
-                {
-                    if (entity.Visible)
-                        Draw.Rect(entity.Collider, color);
-                }
+                    Draw.Rect(entity.Collider, color);
 
                 if (_edges.Count == 0)
                     return;
