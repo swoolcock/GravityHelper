@@ -103,7 +103,10 @@ namespace Celeste.Mod.GravityHelper.Entities
                 {
                     OnAttach = p => Depth = p.Depth - 1,
                     SolidChecker = staticMoverCollideCheck,
-                    OnShake = amount => _arrowShakeOffset += amount,
+                    OnShake = staticMoverOnShake,
+                    OnMove = staticMoverOnMove,
+                    OnEnable = () => staticMoverOnEnableDisable(true),
+                    OnDisable = () => staticMoverOnEnableDisable(false),
                 });
             }
 
@@ -228,6 +231,7 @@ namespace Celeste.Mod.GravityHelper.Entities
             if (shouldDrawField)
                 this.GetConnectedFieldRenderer<GravityFieldRenderer, GravityField>(scene, false);
 
+            _fieldGroup.Fields.Clear();
             _fieldGroup = null;
         }
 
@@ -317,6 +321,30 @@ namespace Celeste.Mod.GravityHelper.Entities
             return collides;
         }
 
+        private void staticMoverOnShake(Vector2 amount)
+        {
+            foreach (var field in _fieldGroup?.Fields ?? Enumerable.Empty<GravityField>())
+            {
+                field._arrowShakeOffset += amount;
+            }
+        }
+
+        private void staticMoverOnMove(Vector2 amount)
+        {
+            foreach (var field in _fieldGroup?.Fields ?? Enumerable.Empty<GravityField>())
+            {
+                field.Position += amount;
+            }
+        }
+
+        private void staticMoverOnEnableDisable(bool enabled)
+        {
+            foreach (var field in _fieldGroup?.Fields ?? Enumerable.Empty<GravityField>())
+            {
+                field.Visible = field.Active = field.Collidable = enabled;
+            }
+        }
+
         private bool canConnectTo(GravityField other) =>
             other.GravityType == GravityType &&
             other.AttachToSolids == AttachToSolids;
@@ -339,6 +367,7 @@ namespace Celeste.Mod.GravityHelper.Entities
             if (_fieldGroup != null) return;
 
             _fieldGroup = existing ?? new GravityFieldGroup();
+            _fieldGroup.Fields.Add(this);
 
             var adjacent = getAdjacent();
             foreach (var field in adjacent)
@@ -353,6 +382,7 @@ namespace Celeste.Mod.GravityHelper.Entities
         private class GravityFieldGroup
         {
             public int Semaphore;
+            public List<GravityField> Fields = new();
         }
 
         public enum VisualType
