@@ -12,8 +12,6 @@ namespace Celeste.Mod.GravityHelper.Entities
     public class ConnectedFieldRenderer<TEntity> : Entity
         where TEntity : Entity, IConnectableField
     {
-        public string InitialRoom { get; private set; }
-
         protected ConnectedFieldRenderer()
         {
             Tag = Tags.TransitionUpdate;
@@ -22,98 +20,43 @@ namespace Celeste.Mod.GravityHelper.Entities
             Add(new CustomBloom(onRenderBloom));
         }
 
-        public override void Added(Scene scene)
-        {
-            base.Added(scene);
-            InitialRoom = SceneAs<Level>().Session.LevelData.Name;
-        }
-
-        public void Track(TEntity entity)
-        {
-            var fieldColor = entity.FieldColor;
-            var fieldGroup = Components.GetAll<FieldGroupRenderer>().FirstOrDefault(f => f.Color == fieldColor);
-
-            if (fieldGroup == null)
-                Add(fieldGroup = new FieldGroupRenderer(fieldColor));
-
-            fieldGroup.Track(entity, Scene);
-        }
-
-        public bool Untrack(TEntity entity, bool removeIfEmpty = false)
-        {
-            var fieldColor = entity.FieldColor;
-            var found = false;
-
-            foreach (var renderer in Components.GetAll<FieldGroupRenderer>().Where(f => f.Color == fieldColor))
-            {
-                if (renderer.Untrack(entity))
-                {
-                    found = true;
-                    break;
-                }
-            }
-
-            if (removeIfEmpty && !Components.GetAll<FieldGroupRenderer>().Any())
-                RemoveSelf();
-
-            return found;
-        }
-
         private void onRenderBloom()
         {
             foreach (var fieldGroup in Components.GetAll<FieldGroupRenderer>())
                 fieldGroup.OnRenderBloom();
         }
 
+        public void CreateComponents(IEnumerable<TEntity> entities)
+        {
+            Remove(Components
+                .GetAll<FieldGroupRenderer>()
+                .ToArray<Component>());
+            Add(entities
+                .GroupBy(e => e.FieldColor)
+                .Select(g => new FieldGroupRenderer(g.Key, g))
+                .ToArray<Component>());
+        }
+
         private class FieldGroupRenderer : Component
         {
             public Color Color { get; }
 
-            private readonly List<TEntity> _list = new List<TEntity>();
+            private readonly List<TEntity> _list;
             private readonly List<Edge> _edges = new List<Edge>();
             private VirtualMap<bool> _tiles;
             private Rectangle _levelTileBounds;
             private bool _dirty;
 
-            public FieldGroupRenderer(Color color) : base(true, true)
+            public FieldGroupRenderer(Color color, IEnumerable<TEntity> entities) : base(true, true)
             {
                 Color = color;
+                _list = entities.ToList();
             }
 
-            public void Track(TEntity entity, Scene scene)
+            public override void Removed(Entity entity)
             {
-                _list.Add(entity);
-
-                if (ensureTiles(scene))
-                {
-                    for (int x = (int) entity.X / 8; x < entity.Right / 8.0; ++x)
-                    for (int y = (int) entity.Y / 8; y < entity.Bottom / 8.0; ++y)
-                        _tiles[x - _levelTileBounds.X, y - _levelTileBounds.Y] = true;
-                }
-
-                _dirty = true;
-            }
-
-            public bool Untrack(TEntity entity, bool removeIfEmpty = true)
-            {
-                if (!_list.Remove(entity)) return false;
-
-                _dirty = true;
-
-                if (_list.Any())
-                {
-                    for (int x = (int) entity.X / 8; x < entity.Right / 8.0; ++x)
-                    for (int y = (int) entity.Y / 8; y < entity.Bottom / 8.0; ++y)
-                        _tiles[x - _levelTileBounds.X, y - _levelTileBounds.Y] = false;
-                }
-                else
-                {
-                    _tiles = null;
-                    if (removeIfEmpty)
-                        RemoveSelf();
-                }
-
-                return true;
+                base.Removed(entity);
+                _list.Clear();
             }
 
             private bool ensureTiles(Scene scene)
@@ -318,39 +261,6 @@ namespace Celeste.Mod.GravityHelper.Entities
                                                           view.Top < Parent.Y + (double) Max.Y &&
                                                           view.Bottom > Parent.Y + (double) Min.Y;
             }
-        }
-    }
-
-    public static class ConnectedFieldRendererExtensions
-    {
-        public static TConnectedFieldRenderer GetConnectedFieldRenderer<TConnectedFieldRenderer, TEntity>(this TEntity entity, Scene scene = null, bool? track = null)
-            where TEntity : Entity, IConnectableField
-            where TConnectedFieldRenderer : ConnectedFieldRenderer<TEntity>, new()
-        {
-            scene = scene as Level ?? entity.Scene as Level ?? Engine.Scene as Level;
-            if (scene is not Level level) return null;
-            var roomName = level.Session.LevelData.Name;
-
-            if (track == false)
-            {
-                foreach (var r in scene.Entities.OfType<TConnectedFieldRenderer>())
-                {
-                    if (r.Untrack(entity))
-                        return r;
-                }
-            }
-
-            var renderer = scene.Entities.OfType<TConnectedFieldRenderer>().FirstOrDefault(r => r.InitialRoom == roomName) ??
-                scene.Entities.ToAdd.OfType<TConnectedFieldRenderer>().FirstOrDefault();
-
-            if (track == true)
-            {
-                if (renderer == null)
-                    scene.Add(renderer = new TConnectedFieldRenderer());
-                renderer.Track(entity);
-            }
-
-            return renderer;
         }
     }
 }

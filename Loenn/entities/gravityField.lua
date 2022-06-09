@@ -13,6 +13,7 @@ local placementData = helpers.createPlacementData('1', {
     attachToSolids = false,
     arrowType = consts.gravityTypes.default.index,
     fieldType = consts.gravityTypes.default.index,
+    singleUse = false,
     sound = "",
     arrowOpacity = 0.5,
     fieldOpacity = 0.15,

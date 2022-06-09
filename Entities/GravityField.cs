@@ -39,6 +39,7 @@ namespace Celeste.Mod.GravityHelper.Entities
         public Color FieldColor { get; private set; }
         public Color ArrowColor { get; private set; }
         public Color ParticleColor { get; private set; }
+        public bool SingleUse { get; private set; }
         public string Sound { get; private set; }
 
         private GravityType arrowGravityType => ArrowType == VisualType.Default ? GravityType : (GravityType) ArrowType;
@@ -83,6 +84,7 @@ namespace Celeste.Mod.GravityHelper.Entities
             AttachToSolids = data.Bool("attachToSolids");
             ArrowType = (VisualType)data.Int("arrowType", (int) VisualType.Default);
             FieldType = (VisualType)data.Int("fieldType", (int) VisualType.Default);
+            SingleUse = data.Bool("singleUse");
 
             _defaultToController = data.Bool("defaultToController");
             _arrowOpacity = data.Float("arrowOpacity", DEFAULT_ARROW_OPACITY).Clamp(0f, 1f);
@@ -103,10 +105,10 @@ namespace Celeste.Mod.GravityHelper.Entities
                 {
                     OnAttach = p => Depth = p.Depth - 1,
                     SolidChecker = staticMoverCollideCheck,
-                    OnShake = staticMoverOnShake,
-                    OnMove = staticMoverOnMove,
-                    OnEnable = () => staticMoverOnEnableDisable(true),
-                    OnDisable = () => staticMoverOnEnableDisable(false),
+                    OnShake = amount => _fieldGroup?.Fields.ForEach(f => f._arrowShakeOffset += amount),
+                    OnMove = amount => _fieldGroup?.Fields.ForEach(f => f.Position += amount),
+                    OnEnable = () => _fieldGroup?.Fields.ForEach(f => f.Active = f.Collidable = f.Visible = !SingleUse || !_fieldGroup.AlreadyUsed),
+                    OnDisable = () => _fieldGroup?.Fields.ForEach(f => f.Active = f.Collidable = f.Visible = false),
                 });
             }
 
@@ -127,6 +129,13 @@ namespace Celeste.Mod.GravityHelper.Entities
                 {
                     Audio.Play(Sound);
                     _audioMuffleSecondsRemaining = audio_muffle_seconds;
+                }
+
+                if (SingleUse)
+                {
+                    _fieldGroup.AlreadyUsed = true;
+                    _fieldGroup.Semaphore = 0;
+                    _fieldGroup.Fields.ForEach(f => f.Active = f.Collidable = f.Visible = false);
                 }
             }
         }
@@ -172,7 +181,7 @@ namespace Celeste.Mod.GravityHelper.Entities
 
             if (shouldDrawField && scene != null)
             {
-                this.GetConnectedFieldRenderer<GravityFieldRenderer, GravityField>(scene, true);
+                _fieldGroup.RebuildFieldRenderer(scene);
             }
 
             if (shouldDrawField && !_particles.Any())
@@ -185,6 +194,8 @@ namespace Celeste.Mod.GravityHelper.Entities
         public override void Added(Scene scene)
         {
             base.Added(scene);
+
+            buildFieldGroup(scene);
 
             if (_defaultToController && Scene.GetActiveController<VisualGravityController>() is { } visualController)
             {
@@ -219,7 +230,6 @@ namespace Celeste.Mod.GravityHelper.Entities
             Sound = _sound;
 
             _arrowShakeOffset = Vector2.Zero;
-            _fieldGroup = null;
 
             updateProperties(scene);
         }
@@ -228,17 +238,10 @@ namespace Celeste.Mod.GravityHelper.Entities
         {
             base.Removed(scene);
 
-            if (shouldDrawField)
-                this.GetConnectedFieldRenderer<GravityFieldRenderer, GravityField>(scene, false);
-
+            _fieldGroup.FieldRenderer?.RemoveSelf();
+            _fieldGroup.FieldRenderer = null;
             _fieldGroup.Fields.Clear();
             _fieldGroup = null;
-        }
-
-        public override void Awake(Scene scene)
-        {
-            base.Awake(scene);
-            buildFieldGroup();
         }
 
         public override void Update()
@@ -321,57 +324,39 @@ namespace Celeste.Mod.GravityHelper.Entities
             return collides;
         }
 
-        private void staticMoverOnShake(Vector2 amount)
-        {
-            foreach (var field in _fieldGroup?.Fields ?? Enumerable.Empty<GravityField>())
-            {
-                field._arrowShakeOffset += amount;
-            }
-        }
-
-        private void staticMoverOnMove(Vector2 amount)
-        {
-            foreach (var field in _fieldGroup?.Fields ?? Enumerable.Empty<GravityField>())
-            {
-                field.Position += amount;
-            }
-        }
-
-        private void staticMoverOnEnableDisable(bool enabled)
-        {
-            foreach (var field in _fieldGroup?.Fields ?? Enumerable.Empty<GravityField>())
-            {
-                field.Visible = field.Active = field.Collidable = enabled;
-            }
-        }
-
         private bool canConnectTo(GravityField other) =>
             other.GravityType == GravityType &&
             other.AttachToSolids == AttachToSolids;
 
-        private IEnumerable<GravityField> getAdjacent()
+        private IEnumerable<GravityField> getAdjacent(Scene scene)
         {
-            if (!Scene.Tracker.Entities.ContainsKey(typeof(GravityField)))
+            var allFields = scene.Entities.ToAdd.Concat(scene.Entities).OfType<GravityField>().ToArray();
+            if (allFields.Length == 0)
                 return Enumerable.Empty<GravityField>();
 
             var adjacent = new List<GravityField>();
-            Scene.CollideInto(new Rectangle((int)X, (int)Y - 2, (int)Width, (int)Height + 4), adjacent);
-            Scene.CollideInto(new Rectangle((int)X - 2, (int)Y, (int)Width + 4, (int)Height), adjacent);
-            adjacent.Remove(this);
-            adjacent.RemoveAll(f => !canConnectTo(f));
+            var tallRect = new Rectangle((int)X, (int)Y - 2, (int)Width, (int)Height + 4);
+            var wideRect = new Rectangle((int)X - 2, (int)Y, (int)Width + 4, (int)Height);
+
+            foreach (var field in allFields)
+            {
+                if (field != this && canConnectTo(field) && (field.CollideRect(tallRect) || field.CollideRect(wideRect)))
+                    adjacent.Add(field);
+            }
+
             return adjacent;
         }
 
-        private void buildFieldGroup(GravityFieldGroup existing = null)
+        private void buildFieldGroup(Scene scene, GravityFieldGroup existing = null)
         {
             if (_fieldGroup != null) return;
 
             _fieldGroup = existing ?? new GravityFieldGroup();
             _fieldGroup.Fields.Add(this);
 
-            var adjacent = getAdjacent();
+            var adjacent = getAdjacent(scene);
             foreach (var field in adjacent)
-                field.buildFieldGroup(_fieldGroup);
+                field.buildFieldGroup(scene, _fieldGroup);
         }
 
         [Tracked]
@@ -381,8 +366,23 @@ namespace Celeste.Mod.GravityHelper.Entities
 
         private class GravityFieldGroup
         {
+            public static int NextId;
+            public int Id = NextId++;
+            public bool AlreadyUsed;
             public int Semaphore;
-            public List<GravityField> Fields = new();
+            public readonly List<GravityField> Fields = new();
+            public GravityFieldRenderer FieldRenderer;
+
+            public void RebuildFieldRenderer(Scene scene)
+            {
+                var fieldRenderer = FieldRenderer ?? new GravityFieldRenderer();
+                fieldRenderer.CreateComponents(Fields);
+
+                if (FieldRenderer == null)
+                {
+                    scene.Add(FieldRenderer = fieldRenderer);
+                }
+            }
         }
 
         public enum VisualType
