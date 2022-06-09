@@ -52,6 +52,9 @@ namespace Celeste.Mod.GravityHelper.Components
                 bottomTiles[i].Texture = topTiles[i].Texture;
                 bottomTiles[i].FlipY = true;
             }
+
+            foreach (var image in Images)
+                image.Y = Entity.Height;
         }
 
         public override void Update()
