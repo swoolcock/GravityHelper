@@ -11,8 +11,8 @@ namespace Celeste.Mod.GravityHelper.Extensions
         private const string mod_version_key = "modVersion";
         private const string plugin_version_key = "pluginVersion";
 
-        public static Version ModVersion(this EntityData self) => self.ModVersion(new Version(1, 0));
-        public static Version PluginVersion(this EntityData self) => self.PluginVersion(new Version(1, 0));
+        public static Version ModVersion(this EntityData self) => self.ModVersion(new Version(0, 1));
+        public static Version PluginVersion(this EntityData self) => self.PluginVersion(new Version(0, 1));
         public static Version ModVersion(this EntityData self, Version defaultValue) => self.Version(mod_version_key, defaultValue);
         public static Version PluginVersion(this EntityData self, Version defaultValue) => self.Version(plugin_version_key, defaultValue);
 
