@@ -10,15 +10,16 @@ local placementData = helpers.createPlacementData('1', {
     fieldArrowOpacity = 0.5,
     fieldBackgroundOpacity = 0.15,
     fieldParticleOpacity = 0.5,
-    fieldNormalColor="0000FF",
-    fieldInvertedColor="FF0000",
-    fieldToggleColor="800080",
-    fieldArrowColor="FFFFFF",
-    fieldParticleColor="FFFFFF",
+    fieldNormalColor = "0000FF",
+    fieldInvertedColor = "FF0000",
+    fieldToggleColor = "800080",
+    fieldArrowColor = "FFFFFF",
+    fieldParticleColor = "FFFFFF",
+    fieldFlashOnTrigger = true,
     lineMinAlpha = 0.45,
     lineMaxAlpha = 0.95,
     lineFlashTime = 0.35,
-    lineColor="FFFFFF",
+    lineColor = "FFFFFF",
 })
 
 local visualGravityController = {

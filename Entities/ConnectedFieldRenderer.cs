@@ -12,6 +12,8 @@ namespace Celeste.Mod.GravityHelper.Entities
     public class ConnectedFieldRenderer<TEntity> : Entity
         where TEntity : Entity, IConnectableField
     {
+        public float AlphaMultiplier = 1f;
+
         protected ConnectedFieldRenderer()
         {
             Tag = Tags.TransitionUpdate;
@@ -192,7 +194,9 @@ namespace Celeste.Mod.GravityHelper.Entities
                 if (_list.Any(e => !e.Visible))
                     return;
 
-                var color = Color;
+                var multiplier = (Entity as ConnectedFieldRenderer<TEntity>)?.AlphaMultiplier ?? 1f;
+
+                var color = Color * multiplier;
                 foreach (var entity in _list)
                     Draw.Rect(entity.Collider, color);
 

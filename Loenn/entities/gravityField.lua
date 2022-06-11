@@ -21,6 +21,7 @@ local placementData = helpers.createPlacementData('1', {
     arrowColor = "FFFFFF",
     fieldColor = "",
     particleColor = "FFFFFF",
+    flashOnTrigger = true,
     affectsPlayer = true,
     affectsHoldableActors = false,
     affectsOtherActors = false,

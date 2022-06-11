@@ -19,6 +19,7 @@ const PLUGIN_VERSION = "1"
     fieldToggleColor::String="800080",
     fieldArrowColor::String="FFFFFF",
     fieldParticleColor::String="FFFFFF",
+    fieldFlashOnTrigger::Bool=true,
     lineMinAlpha::Real=0.45,
     lineMaxAlpha::Real=0.95,
     lineFlashTime::Real=0.35,
