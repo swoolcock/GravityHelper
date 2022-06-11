@@ -39,13 +39,50 @@ namespace Celeste.Mod.GravityHelper.Entities
                 .ToArray<Component>());
         }
 
-        private class FieldGroupRenderer : Component
+        public void ForEachTile(Action<int, int, FieldGroupRenderer> action)
+        {
+            var levelTileBounds = SceneAs<Level>().TileBounds;
+
+            foreach (var child in Components.GetAll<FieldGroupRenderer>())
+            {
+                for (int y = 0; y < levelTileBounds.Height; y++)
+                {
+                    for (int x = 0; x < levelTileBounds.Width; x++)
+                    {
+                        if (child.Tiles[x, y])
+                            action(x, y, child);
+                    }
+                }
+            }
+        }
+
+        public Vector2 GetCenterOfMass()
+        {
+            float columnSum = 0, rowSum = 0;
+            int tileSum = 0;
+
+            ForEachTile((x, y, _) =>
+            {
+                columnSum += x;
+                rowSum += y;
+                tileSum++;
+            });
+
+            if (tileSum == 0) return Vector2.Zero;
+
+            var levelTileBounds = SceneAs<Level>().TileBounds;
+            var averageColumn = columnSum / tileSum;
+            var averageRow = rowSum / tileSum;
+            return new Vector2((levelTileBounds.X + averageColumn) * 8, (levelTileBounds.Y + averageRow) * 8);
+        }
+
+        public class FieldGroupRenderer : Component
         {
             public Color Color { get; }
 
             private readonly List<TEntity> _list;
             private readonly List<Edge> _edges = new List<Edge>();
-            private VirtualMap<bool> _tiles;
+            public VirtualMap<bool> Tiles;
             private Rectangle _levelTileBounds;
             private bool _dirty;
 
@@ -63,22 +100,22 @@ namespace Celeste.Mod.GravityHelper.Entities
 
             private bool ensureTiles(Scene scene)
             {
-                if (_tiles == null && scene is Level level)
+                if (Tiles == null && scene is Level level)
                 {
                     _levelTileBounds = level.TileBounds;
-                    _tiles = new VirtualMap<bool>(_levelTileBounds.Width, _levelTileBounds.Height);
+                    Tiles = new VirtualMap<bool>(_levelTileBounds.Width, _levelTileBounds.Height);
 
                     foreach (var entity in _list)
                     {
                         for (int x = (int) entity.X / 8; x < entity.Right / 8.0; ++x)
                         for (int y = (int) entity.Y / 8; y < entity.Bottom / 8.0; ++y)
-                            _tiles[x - _levelTileBounds.X, y - _levelTileBounds.Y] = true;
+                            Tiles[x - _levelTileBounds.X, y - _levelTileBounds.Y] = true;
                     }
 
                     _dirty = true;
                 }
 
-                return _tiles != null;
+                return Tiles != null;
             }
 
             public override void EntityAdded(Scene scene)
@@ -120,7 +157,7 @@ namespace Celeste.Mod.GravityHelper.Entities
             {
                 _dirty = false;
                 _edges.Clear();
-                if (_list.Count == 0 || _tiles == null)
+                if (_list.Count == 0 || Tiles == null)
                     return;
 
                 Point[] pointArray =
@@ -162,7 +199,7 @@ namespace Celeste.Mod.GravityHelper.Entities
                 }
             }
 
-            private bool inside(int tx, int ty) => _tiles[tx - _levelTileBounds.X, ty - _levelTileBounds.Y];
+            private bool inside(int tx, int ty) => Tiles[tx - _levelTileBounds.X, ty - _levelTileBounds.Y];
 
             public void OnRenderBloom()
             {

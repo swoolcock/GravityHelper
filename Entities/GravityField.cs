@@ -84,6 +84,7 @@ namespace Celeste.Mod.GravityHelper.Entities
         private readonly List<Vector2> _particles = new List<Vector2>();
         private readonly float[] _speeds = {12f, 20f, 40f};
         private GravityFieldGroup _fieldGroup;
+        private Vector2 _staticMoverOffset;
 
         #region Managed by owner
 
@@ -133,7 +134,11 @@ namespace Celeste.Mod.GravityHelper.Entities
                     OnAttach = p => _fieldGroup?.Fields.ForEach(f => f.Depth = p.Depth - 1),
                     SolidChecker = staticMoverCollideCheck,
                     OnShake = amount => _fieldGroup?.Fields.ForEach(f => f._arrowShakeOffset += amount),
-                    OnMove = amount => _fieldGroup?.Fields.ForEach(f => f.Position += amount),
+                    OnMove = amount => _fieldGroup?.Fields.ForEach(f =>
+                    {
+                        f.Position += amount;
+                        f._staticMoverOffset += amount;
+                    }),
                     OnEnable = () => _fieldGroup?.Fields.ForEach(f => f.Active = f.Collidable = f.Visible = !SingleUse || !_fieldGroup.Owner._alreadyUsed),
                     OnDisable = () => _fieldGroup?.Fields.ForEach(f => f.Active = f.Collidable = f.Visible = false),
                 });
@@ -201,6 +206,9 @@ namespace Celeste.Mod.GravityHelper.Entities
                     {
                         _alreadyUsed = true;
                         _semaphore = 0;
+
+                        var com = _fieldGroup.GetCenterOfMass() + _staticMoverOffset;
+                        Audio.Play("event:/new_content/game/10_farewell/glider_emancipate", com);
                         _fieldGroup.Fields.ForEach(f => f.Active = f.Collidable = f.Visible = false);
                     }
                 }
