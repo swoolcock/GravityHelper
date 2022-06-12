@@ -95,10 +95,15 @@ end
 
 function Ahorn.renderAbs(ctx::Ahorn.Cairo.CairoContext, entity::GravityBadelineBoost, room::Maple.Room)
     x, y = Ahorn.position(entity)
+    nodes = get(entity.data, "nodes", ())
     nodeTypesString = get(entity.data, "nodeGravityTypes", "")
     nodeTypes = tryparse.(Int, split(nodeTypesString, ','))
-    globalType = get(entity.data, "gravityType", 0)
-    gravityType = get(nodeTypes, 1, globalType)
+    gravityType = get(entity.data, "gravityType", 0)
+
+    if length(nodes) > 0
+        gravityType = get(nodeTypes, 1, gravityType)
+    end
+
     drawNode(ctx, x, y, gravityType)
 end
 
