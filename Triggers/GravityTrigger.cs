@@ -22,6 +22,7 @@ namespace Celeste.Mod.GravityHelper.Triggers
         public GravityType GravityType { get; }
         public float MomentumMultiplier { get; }
         public virtual bool ShouldAffectPlayer => true;
+        protected bool AffectsNothing => !AffectsPlayer && !AffectsHoldableActors && !AffectsOtherActors;
 
         private readonly Version _modVersion;
         private readonly Version _pluginVersion;

@@ -17,6 +17,8 @@ namespace Celeste.Mod.GravityHelper.Entities
     [Tracked]
     public class GravityField : GravityTrigger, IConnectableField
     {
+        #region Constants
+
         public const float DEFAULT_ARROW_OPACITY = 0.5f;
         public const float DEFAULT_FIELD_OPACITY = 0.15f;
         public const float DEFAULT_PARTICLE_OPACITY = 0.5f;
@@ -24,31 +26,51 @@ namespace Celeste.Mod.GravityHelper.Entities
         public const string DEFAULT_PARTICLE_COLOR = "FFFFFF";
 
         private const float audio_muffle_seconds = 0.2f;
+        private const float flash_seconds = 0.5f;
+        private const float flash_multiplier = 3f;
+
+        #endregion
 
         #region Entity Properties
 
         public VisualType ArrowType { get; }
         public VisualType FieldType { get; }
         public bool AttachToSolids { get; }
+        public bool SingleUse { get; }
 
         #endregion
 
-        // We'll always handle it ourselves to cover connected fields
-        public override bool ShouldAffectPlayer => false;
+        #region Controller-Managed
 
         public Color FieldColor { get; private set; }
         public Color ArrowColor { get; private set; }
         public Color ParticleColor { get; private set; }
+        public bool FlashOnTrigger { get; private set; }
         public string Sound { get; private set; }
+
+        private readonly bool _defaultToController;
+        private float _arrowOpacity;
+        private float _fieldOpacity;
+        private float _particleOpacity;
+        private string _arrowColor;
+        private string _fieldColor;
+        private string _particleColor;
+        private bool _flashOnTrigger;
+        private string _sound;
+
+        #endregion
+
+        #region Private Helper Properties
 
         private GravityType arrowGravityType => ArrowType == VisualType.Default ? GravityType : (GravityType) ArrowType;
         private GravityType fieldGravityType => FieldType == VisualType.Default ? GravityType : (GravityType) FieldType;
+        private bool shouldDrawArrows => !(ArrowType == VisualType.None || ArrowType == VisualType.Default && GravityType == GravityType.None);
+        private bool shouldDrawField => !(FieldType == VisualType.None || FieldType == VisualType.Default && GravityType == GravityType.None);
+
+        #endregion
 
         private readonly Version _modVersion;
         private readonly Version _pluginVersion;
-
-        private bool shouldDrawArrows => !(ArrowType == VisualType.None || ArrowType == VisualType.Default && GravityType == GravityType.None);
-        private bool shouldDrawField => !(FieldType == VisualType.None || FieldType == VisualType.Default && GravityType == GravityType.None);
 
         private MTexture _arrowTexture;
         private MTexture _arrowSmallTexture;
@@ -62,17 +84,19 @@ namespace Celeste.Mod.GravityHelper.Entities
         private readonly List<Vector2> _particles = new List<Vector2>();
         private readonly float[] _speeds = {12f, 20f, 40f};
         private GravityFieldGroup _fieldGroup;
+        private Vector2 _staticMoverOffset;
 
-        private readonly bool _defaultToController;
-        private float _arrowOpacity;
-        private float _fieldOpacity;
-        private float _particleOpacity;
-        private string _arrowColor;
-        private string _fieldColor;
-        private string _particleColor;
-        private string _sound;
+        #region Managed by owner
 
         private float _audioMuffleSecondsRemaining;
+        private float _flashSecondsRemaining;
+        private bool _alreadyUsed;
+        private int _semaphore;
+
+        #endregion
+
+        // We'll always handle it ourselves to cover connected fields
+        public override bool ShouldAffectPlayer => false;
 
         public GravityField(EntityData data, Vector2 offset)
             : base(data, offset)
@@ -80,10 +104,13 @@ namespace Celeste.Mod.GravityHelper.Entities
             _modVersion = data.ModVersion();
             _pluginVersion = data.PluginVersion();
 
+            // entity properties
             AttachToSolids = data.Bool("attachToSolids");
             ArrowType = (VisualType)data.Int("arrowType", (int) VisualType.Default);
             FieldType = (VisualType)data.Int("fieldType", (int) VisualType.Default);
+            SingleUse = data.Bool("singleUse");
 
+            // controller managed
             _defaultToController = data.Bool("defaultToController");
             _arrowOpacity = data.Float("arrowOpacity", DEFAULT_ARROW_OPACITY).Clamp(0f, 1f);
             _particleOpacity = data.Float("particleOpacity", DEFAULT_PARTICLE_OPACITY).Clamp(0f, 1f);
@@ -91,9 +118,12 @@ namespace Celeste.Mod.GravityHelper.Entities
             _arrowColor = data.Attr("arrowColor", DEFAULT_ARROW_COLOR);
             _fieldColor = data.Attr("fieldColor", string.Empty);
             _particleColor = data.Attr("particleColor", DEFAULT_PARTICLE_COLOR);
+            _flashOnTrigger = data.Bool("flashOnTrigger", true);
             _sound = data.Attr("sound", string.Empty);
 
             Collider = _normalHitbox = new Hitbox(data.Width, data.Height);
+
+            Depth = Depths.Player + 1;
 
             _staticMoverHitbox = new Hitbox(data.Width + 2, data.Height + 2, -1, -1);
 
@@ -101,56 +131,23 @@ namespace Celeste.Mod.GravityHelper.Entities
             {
                 Add(new StaticMover
                 {
-                    OnAttach = p => Depth = p.Depth - 1,
+                    OnAttach = p => _fieldGroup?.Fields.ForEach(f => f.Depth = p.Depth - 1),
                     SolidChecker = staticMoverCollideCheck,
-                    OnShake = amount => _arrowShakeOffset += amount,
+                    OnShake = amount => _fieldGroup?.Fields.ForEach(f => f._arrowShakeOffset += amount),
+                    OnMove = amount => _fieldGroup?.Fields.ForEach(f =>
+                    {
+                        f.Position += amount;
+                        f._staticMoverOffset += amount;
+                    }),
+                    OnEnable = () => _fieldGroup?.Fields.ForEach(f => f.Active = f.Collidable = f.Visible = !SingleUse || !_fieldGroup.Owner._alreadyUsed),
+                    OnDisable = () => _fieldGroup?.Fields.ForEach(f => f.Active = f.Collidable = f.Visible = false),
                 });
             }
 
-            updateProperties(null);
-        }
-
-        protected override void HandleOnEnter(Player player)
-        {
-            if (GravityType == GravityType.None || !AffectsPlayer || _fieldGroup == null) return;
-
-            _fieldGroup.Semaphore++;
-
-            if (_fieldGroup.Semaphore == 1 && GravityHelperModule.PlayerComponent is { } playerComponent)
-            {
-                var previousGravity = playerComponent.CurrentGravity;
-                playerComponent.SetGravity(GravityType, MomentumMultiplier);
-                if (!string.IsNullOrWhiteSpace(Sound) && playerComponent.CurrentGravity != previousGravity && _audioMuffleSecondsRemaining <= 0)
-                {
-                    Audio.Play(Sound);
-                    _audioMuffleSecondsRemaining = audio_muffle_seconds;
-                }
-            }
-        }
-
-        protected override void HandleOnStay(Player player)
-        {
-            if (GravityType == GravityType.None || !AffectsPlayer ||GravityType == GravityType.Toggle)
-                return;
-
-            if (GravityType != GravityHelperModule.PlayerComponent?.CurrentGravity)
-                GravityHelperModule.PlayerComponent?.SetGravity(GravityType, MomentumMultiplier);
-        }
-
-        protected override void HandleOnLeave(Player player)
-        {
-            if (_fieldGroup == null) return;
-            _fieldGroup.Semaphore--;
-        }
-
-        private void updateProperties(Scene scene)
-        {
             Visible = shouldDrawArrows || shouldDrawField;
 
             if (shouldDrawArrows && !shouldDrawField)
                 Depth = Depths.FGDecals - 1;
-            else
-                Depth = Depths.Player + 1;
 
             if (shouldDrawArrows)
             {
@@ -167,11 +164,6 @@ namespace Celeste.Mod.GravityHelper.Entities
                 _arrowSmallOrigin = new Vector2(_arrowSmallTexture.Width / 2f, _arrowSmallTexture.Height / 2f);
             }
 
-            if (shouldDrawField && scene != null)
-            {
-                this.GetConnectedFieldRenderer<GravityFieldRenderer, GravityField>(scene, true);
-            }
-
             if (shouldDrawField && !_particles.Any())
             {
                 for (int index = 0; index < Width * (double) Height / 16.0; ++index)
@@ -179,11 +171,87 @@ namespace Celeste.Mod.GravityHelper.Entities
             }
         }
 
+        protected override void HandleOnEnter(Player player)
+        {
+            // defer to the owner
+            if (_fieldGroup?.Owner != this)
+            {
+                _fieldGroup?.Owner.HandleOnEnter(player);
+                return;
+            }
+
+            if (_alreadyUsed || GravityType == GravityType.None || !AffectsPlayer) return;
+
+            _semaphore++;
+
+            if (_semaphore == 1 && GravityHelperModule.PlayerComponent is { } playerComponent)
+            {
+                var previousGravity = playerComponent.CurrentGravity;
+                playerComponent.SetGravity(GravityType, MomentumMultiplier);
+
+                if (playerComponent.CurrentGravity != previousGravity)
+                {
+                    if (!string.IsNullOrWhiteSpace(Sound) && _audioMuffleSecondsRemaining <= 0)
+                    {
+                        Audio.Play(Sound);
+                        _audioMuffleSecondsRemaining = audio_muffle_seconds;
+                    }
+
+                    if (FlashOnTrigger)
+                    {
+                        _flashSecondsRemaining = flash_seconds;
+                    }
+
+                    if (SingleUse)
+                    {
+                        _alreadyUsed = true;
+                        _semaphore = 0;
+
+                        var com = _fieldGroup.GetCenterOfMass() + _staticMoverOffset;
+                        Audio.Play("event:/new_content/game/10_farewell/glider_emancipate", com);
+                        _fieldGroup.Fields.ForEach(f => f.Active = f.Collidable = f.Visible = false);
+                    }
+                }
+            }
+        }
+
+        protected override void HandleOnStay(Player player)
+        {
+            if (GravityType == GravityType.None || !AffectsPlayer || GravityType == GravityType.Toggle)
+                return;
+
+            if (GravityType != GravityHelperModule.PlayerComponent?.CurrentGravity)
+                GravityHelperModule.PlayerComponent?.SetGravity(GravityType, MomentumMultiplier);
+        }
+
+        protected override void HandleOnLeave(Player player)
+        {
+            // defer to the owner
+            if (_fieldGroup?.Owner != this)
+            {
+                _fieldGroup?.Owner.HandleOnLeave(player);
+                return;
+            }
+
+            _semaphore--;
+        }
+
         public override void Added(Scene scene)
         {
             base.Added(scene);
 
-            if (_defaultToController && Scene.GetActiveController<VisualGravityController>() is { } visualController)
+            if (_fieldGroup == null)
+            {
+                scene.Add(buildFieldGroup(scene));
+                foreach (var field in _fieldGroup.Fields)
+                    field.configure(scene);
+                _fieldGroup.CreateComponents(_fieldGroup.Fields);
+            }
+        }
+
+        private void configure(Scene scene)
+        {
+            if (_defaultToController && scene.GetActiveController<VisualGravityController>() is { } visualController)
             {
                 _arrowOpacity = visualController.FieldArrowOpacity.Clamp(0f, 1f);
                 _fieldOpacity = visualController.FieldBackgroundOpacity.Clamp(0f, 1f);
@@ -197,13 +265,15 @@ namespace Celeste.Mod.GravityHelper.Entities
                     GravityType.Toggle => visualController.FieldToggleColor,
                     _ => null,
                 };
+                _flashOnTrigger = visualController.FieldFlashOnTrigger;
             }
 
             FieldColor = (string.IsNullOrWhiteSpace(_fieldColor) ? GravityType.Color() : Calc.HexToColor(_fieldColor)) * _fieldOpacity;
             ArrowColor = Calc.HexToColor(!string.IsNullOrWhiteSpace(_arrowColor) ? _arrowColor : DEFAULT_ARROW_COLOR);
             ParticleColor = Calc.HexToColor(!string.IsNullOrWhiteSpace(_particleColor) ? _particleColor : DEFAULT_PARTICLE_COLOR);
+            FlashOnTrigger = _flashOnTrigger;
 
-            if (_defaultToController && Scene.GetActiveController<SoundGravityController>() is { } soundController)
+            if (_defaultToController && scene.GetActiveController<SoundGravityController>() is { } soundController)
             {
                 if (GravityType == GravityType.Normal)
                     _sound = soundController.NormalSound;
@@ -216,31 +286,28 @@ namespace Celeste.Mod.GravityHelper.Entities
             Sound = _sound;
 
             _arrowShakeOffset = Vector2.Zero;
-            _fieldGroup = null;
-
-            updateProperties(scene);
         }
 
         public override void Removed(Scene scene)
         {
             base.Removed(scene);
 
-            if (shouldDrawField)
-                this.GetConnectedFieldRenderer<GravityFieldRenderer, GravityField>(scene, false);
-
+            _fieldGroup?.Fields.Clear();
+            _fieldGroup?.RemoveSelf();
             _fieldGroup = null;
-        }
-
-        public override void Awake(Scene scene)
-        {
-            base.Awake(scene);
-            buildFieldGroup();
         }
 
         public override void Update()
         {
-            if (_audioMuffleSecondsRemaining > 0)
-                _audioMuffleSecondsRemaining -= Engine.DeltaTime;
+            // only the owner should update these values
+            if (_fieldGroup?.Owner == this)
+            {
+                if (_audioMuffleSecondsRemaining > 0)
+                    _audioMuffleSecondsRemaining -= Engine.DeltaTime;
+                if (_flashSecondsRemaining > 0)
+                    _flashSecondsRemaining -= Engine.DeltaTime;
+                _fieldGroup.AlphaMultiplier = Calc.LerpClamp(1f, flash_multiplier, _flashSecondsRemaining / flash_seconds);
+            }
 
             int length = _speeds.Length;
             float height = Height;
@@ -266,9 +333,11 @@ namespace Celeste.Mod.GravityHelper.Entities
         {
             base.Render();
 
+            var flashOpacity = _fieldGroup?.AlphaMultiplier ?? 1f;
+
             if (shouldDrawField)
             {
-                var color = ParticleColor * _particleOpacity;
+                var color = ParticleColor * _particleOpacity * flashOpacity;
                 foreach (Vector2 particle in _particles)
                     Draw.Pixel.Draw(Position + particle, Vector2.Zero, color);
             }
@@ -285,7 +354,7 @@ namespace Celeste.Mod.GravityHelper.Entities
                 // if width or height is 1, scale down the arrows
                 var texture = widthInTiles == 1 || heightInTiles == 1 ? _arrowSmallTexture : _arrowTexture;
                 var origin = widthInTiles == 1 || heightInTiles == 1 ? _arrowSmallOrigin : _arrowOrigin;
-                var color = ArrowColor * _arrowOpacity;
+                var color = ArrowColor * _arrowOpacity * flashOpacity;
 
                 // arrows should be centre aligned in each 2x2 box
                 // offset by half a tile if the width or height is odd
@@ -306,49 +375,63 @@ namespace Celeste.Mod.GravityHelper.Entities
         private bool staticMoverCollideCheck(Solid solid)
         {
             if (solid is SolidTiles) return false;
-            // TODO: allow the mapper to specify the static mover collision hitbox
-            // Collider = staticMoverHitbox;
+            var collider = Collider;
+
+            // only attach to adjacent solids if this affects an actor, otherwise require overlap
+            // this ensures that overlays will only attach to the entity they collide with, and not adjacent solids
+            if (!AffectsNothing) Collider = _staticMoverHitbox;
+
             var collides = CollideCheck(solid);
-            // Collider = normalHitbox;
+            Collider = collider;
             return collides;
         }
 
-        private bool canConnectTo(GravityField other) =>
-            other.GravityType == GravityType &&
-            other.AttachToSolids == AttachToSolids;
-
-        private IEnumerable<GravityField> getAdjacent()
+        /// <summary>
+        /// Gets all the fields that are within two pixels of this field in any direction.
+        /// </summary>
+        private IEnumerable<GravityField> getAdjacent(Scene scene)
         {
-            if (!Scene.Tracker.Entities.ContainsKey(typeof(GravityField)))
+            var allFields = scene.Entities.ToAdd.Concat(scene.Entities).OfType<GravityField>().ToArray();
+            if (allFields.Length == 0)
                 return Enumerable.Empty<GravityField>();
 
-            var adjacent = new List<GravityField>();
-            Scene.CollideInto(new Rectangle((int)X, (int)Y - 2, (int)Width, (int)Height + 4), adjacent);
-            Scene.CollideInto(new Rectangle((int)X - 2, (int)Y, (int)Width + 4, (int)Height), adjacent);
-            adjacent.Remove(this);
-            adjacent.RemoveAll(f => !canConnectTo(f));
-            return adjacent;
+            var tallRect = new Rectangle((int)X, (int)Y - 2, (int)Width, (int)Height + 4);
+            var wideRect = new Rectangle((int)X - 2, (int)Y, (int)Width + 4, (int)Height);
+
+            return allFields.Where(f =>
+                f != this &&
+                f.GravityType == GravityType &&
+                (f.CollideRect(tallRect) || f.CollideRect(wideRect)));
         }
 
-        private void buildFieldGroup(GravityFieldGroup existing = null)
+        /// <summary>
+        /// Creates and returns a <see cref="GravityFieldGroup"/>, recursively building the
+        /// list of adjacent fields (retrieved with <see cref="getAdjacent"/>.
+        /// The field that initially creates the group will be flagged as the "owner".
+        /// </summary>
+        private GravityFieldGroup buildFieldGroup(Scene scene, GravityFieldGroup existing = null)
         {
-            if (_fieldGroup != null) return;
+            if (_fieldGroup != null) return _fieldGroup;
 
-            _fieldGroup = existing ?? new GravityFieldGroup();
+            _fieldGroup = existing ?? new GravityFieldGroup(this);
+            _fieldGroup.Fields.Add(this);
 
-            var adjacent = getAdjacent();
-            foreach (var field in adjacent)
-                field.buildFieldGroup(_fieldGroup);
+            foreach (var field in getAdjacent(scene))
+                field.buildFieldGroup(scene, _fieldGroup);
+
+            return _fieldGroup;
         }
 
         [Tracked]
-        internal class GravityFieldRenderer : ConnectedFieldRenderer<GravityField>
+        internal class GravityFieldGroup : ConnectedFieldRenderer<GravityField>
         {
-        }
+            public readonly List<GravityField> Fields = new();
+            public readonly GravityField Owner;
 
-        private class GravityFieldGroup
-        {
-            public int Semaphore;
+            public GravityFieldGroup(GravityField owner)
+            {
+                Owner = owner;
+            }
         }
 
         public enum VisualType

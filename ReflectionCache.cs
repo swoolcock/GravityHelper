@@ -61,6 +61,7 @@ namespace Celeste.Mod.GravityHelper
         public static readonly MethodInfo Glider_OnCollideV = typeof(Glider).GetMethod("OnCollideV", BindingFlags.Instance | BindingFlags.NonPublic);
         public static readonly MethodInfo Level_NextLevel = typeof(Level).GetMethod("NextLevel", BindingFlags.Instance | BindingFlags.NonPublic);
         public static readonly MethodInfo Level_OrigTransitionRoutine = typeof(Level).GetMethod("orig_TransitionRoutine", BindingFlags.Instance | BindingFlags.NonPublic);
+        public static readonly MethodInfo MoveBlock_AddImage = typeof(MoveBlock).GetMethod("AddImage", BindingFlags.Instance | BindingFlags.NonPublic);
         public static readonly MethodInfo PlayerDeadBody_DeathRoutine = typeof(PlayerDeadBody).GetMethod("DeathRoutine", BindingFlags.Instance | BindingFlags.NonPublic);
         public static readonly MethodInfo Puffer_GotoHitSpeed = typeof(Puffer).GetMethod("GotoHitSpeed", BindingFlags.Instance | BindingFlags.NonPublic);
         public static readonly MethodInfo Puffer_Alert = typeof(Puffer).GetMethod("Alert", BindingFlags.Instance | BindingFlags.NonPublic);
@@ -123,6 +124,11 @@ namespace Celeste.Mod.GravityHelper
         public static int CallSurfaceSoundIndexAt(this SolidTiles solidTiles, Vector2 readPosition) => (int) SolidTiles_SurfaceSoundIndexAt.Invoke(solidTiles, new object[] {readPosition});
         public static bool CallDashCorrectCheck(this Player player, Vector2 add) => (bool)Player_DashCorrectCheck.Invoke(player, new object[] {add});
         public static void CallBounceAnimate(this Spring spring) => Spring_BounceAnimate.Invoke(spring, new object[0]);
+        public static void CallAddImage(this MoveBlock moveBlock, MTexture tex, Vector2 position, float rotation, Vector2 scale, List<Image> addTo) =>
+            MoveBlock_AddImage.Invoke(moveBlock, new object[]
+            {
+                tex, position, rotation, scale, addTo,
+            });
 
         public static int CallFancyFallingBlockSurfaceSoundIndexAt(this FallingBlock fallingBlock, Vector2 readPosition)
         {

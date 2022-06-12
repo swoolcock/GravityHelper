@@ -16,8 +16,9 @@ const PLUGIN_VERSION = "1"
     arrowType::Integer=-2, fieldType::Integer=-2, sound::String="",
     arrowOpacity::Real=0.5, fieldOpacity::Real=0.15, particleOpacity::Real=0.5,
     arrowColor::String="FFFFFF", fieldColor::String="", particleColor::String="FFFFFF",
+    flashOnTrigger::Bool=true,
     affectsPlayer::Bool=true, affectsHoldableActors::Bool=false, affectsOtherActors::Bool=false,
-    momentumMultiplier::Real=1.0
+    momentumMultiplier::Real=1.0, singleUse::Bool=false
 )
 
 const gravityColors = Dict{Integer, Tuple{Real, Real, Real, Real}}(

@@ -2,7 +2,6 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System;
-using System.Collections.Generic;
 using Celeste.Mod.Entities;
 using Celeste.Mod.GravityHelper.Extensions;
 using Microsoft.Xna.Framework;
@@ -21,8 +20,6 @@ namespace Celeste.Mod.GravityHelper.Entities
         private readonly string _overrideTexture;
         private readonly int _overrideSoundIndex;
 
-        private Vector2 _shakeOffset;
-
         public UpsideDownJumpThru(EntityData data, Vector2 offset)
             : base(data.Position + offset, data.Width, true)
         {
@@ -35,23 +32,10 @@ namespace Celeste.Mod.GravityHelper.Entities
 
             Depth = -60;
             Collider.Top = 3;
-
-            Add(new StaticMover
-            {
-                SolidChecker = s => CollideCheck(s, Position - Vector2.UnitX) || CollideCheck(s, Position + Vector2.UnitX),
-                OnMove = v =>
-                {
-                    MoveH(v.X);
-                    MoveV(v.Y);
-                },
-                OnShake = v => _shakeOffset += v,
-            });
         }
 
         public override void Awake(Scene scene)
         {
-            EnsureCorrectTracking(scene);
-
             string str = AreaData.Get(scene).Jumpthru;
             if (!string.IsNullOrEmpty(_overrideTexture) && !_overrideTexture.Equals("default"))
                 str = _overrideTexture;
@@ -96,27 +80,6 @@ namespace Celeste.Mod.GravityHelper.Entities
                     Scale = {Y = -1},
                 });
             }
-        }
-
-        public override void Render()
-        {
-            Position += _shakeOffset;
-            base.Render();
-            Position -= _shakeOffset;
-        }
-
-        public void EnsureCorrectTracking(Scene scene = null)
-        {
-            scene ??= Scene;
-            if (scene == null) return;
-
-            // ensure we're only tracked as UpsideDownJumpThru
-            if (scene.Tracker.Entities.TryGetValue(typeof(JumpThru), out var jumpthrus) && jumpthrus.Contains(this))
-                jumpthrus.Remove(this);
-            if (!scene.Tracker.Entities.TryGetValue(typeof(UpsideDownJumpThru), out var upsidedown))
-                upsidedown = scene.Tracker.Entities[typeof(UpsideDownJumpThru)] = new List<Entity>();
-            if (!upsidedown.Contains(this))
-                upsidedown.Add(this);
         }
     }
 }

@@ -20,7 +20,6 @@ namespace Celeste.Mod.GravityHelper.Hooks
         {
             Logger.Log(nameof(GravityHelperModule), $"Loading {nameof(Actor)} hooks...");
 
-            IL.Celeste.Actor.IsRiding_JumpThru += Actor_IsRiding_JumpThru;
             IL.Celeste.Actor.IsRiding_Solid += Actor_IsRiding_Solid;
 
             // we need to run this after MaxHelpingHand to ensure both UDJT types are handled
@@ -29,37 +28,32 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
             On.Celeste.Actor.MoveVExact += Actor_MoveVExact;
             On.Celeste.Actor.OnGround_int += Actor_OnGround_int;
+            On.Celeste.Actor.IsRiding_JumpThru += Actor_IsRiding_JumpThru;
         }
+
 
         public static void Unload()
         {
             Logger.Log(nameof(GravityHelperModule), $"Unloading {nameof(Actor)} hooks...");
 
-            IL.Celeste.Actor.IsRiding_JumpThru -= Actor_IsRiding_JumpThru;
             IL.Celeste.Actor.IsRiding_Solid -= Actor_IsRiding_Solid;
             IL.Celeste.Actor.MoveVExact -= Actor_MoveVExact;
 
             On.Celeste.Actor.MoveVExact -= Actor_MoveVExact;
             On.Celeste.Actor.OnGround_int -= Actor_OnGround_int;
+            On.Celeste.Actor.IsRiding_JumpThru -= Actor_IsRiding_JumpThru;
         }
 
-        private static void Actor_IsRiding_JumpThru(ILContext il) => HookUtils.SafeHook(() =>
+        private static bool Actor_IsRiding_JumpThru(On.Celeste.Actor.orig_IsRiding_JumpThru orig, Actor self, JumpThru jumpThru)
         {
-            var cursor = new ILCursor(il);
-
-            cursor.Emit(OpCodes.Ldarg_0);
-            cursor.Emit(OpCodes.Ldarg_1);
-            cursor.EmitDelegate<Func<Actor, JumpThru, bool>>((self, jumpThru) =>
-            {
-                if (self.IgnoreJumpThrus) return false;
-                var shouldInvert = self.ShouldInvertChecked();
-                return shouldInvert && jumpThru.IsUpsideDownJumpThru() &&
-                       self.CollideCheckOutside(jumpThru, self.Position - Vector2.UnitY) ||
-                       !shouldInvert && !jumpThru.IsUpsideDownJumpThru() &&
-                       self.CollideCheckOutside(jumpThru, self.Position + Vector2.UnitY);
-            });
-            cursor.Emit(OpCodes.Ret);
-        });
+            // we override all other hooks, since it's the only way to accurately handle riding UDJT
+            if (self.IgnoreJumpThrus) return false;
+            var shouldInvert = self.ShouldInvertChecked();
+            return shouldInvert && jumpThru.IsUpsideDownJumpThru() &&
+                self.CollideCheckOutside(jumpThru, self.Position - Vector2.UnitY) ||
+                !shouldInvert && !jumpThru.IsUpsideDownJumpThru() &&
+                self.CollideCheckOutside(jumpThru, self.Position + Vector2.UnitY);
+        }
 
         private static void Actor_IsRiding_Solid(ILContext il) => HookUtils.SafeHook(() =>
         {
@@ -86,6 +80,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             if (!cursor2.TryGotoNext(MoveType.AfterLabel, instr => instr.MatchLdarg(0), instr => instr.MatchLdflda<Actor>("movementCounter")))
                 throw new HookException("Couldn't find movementCounter");
 
+            // handle standing on upside-down jumpthrus
             cursor.Emit(OpCodes.Ldarg_0);
             cursor.Emit(OpCodes.Ldarg_1);
             cursor.EmitDelegate<Func<Actor, int, JumpThru>>((self, moveV) =>
@@ -96,6 +91,21 @@ namespace Celeste.Mod.GravityHelper.Hooks
             cursor.Emit(OpCodes.Stloc, variable);
             cursor.Emit(OpCodes.Ldloc, variable);
             cursor.Emit(OpCodes.Brtrue, cursor2.Next);
+
+            // handle standing on regular jumpthrus (ignore UDJT)
+            if (!cursor.TryGotoNext(instr => instr.MatchLdloc(variable.Index),
+                instr => instr.MatchBrfalse(out _)))
+                throw new HookException("Couldn't find if (platform != null)");
+
+            cursor.Emit(OpCodes.Ldarg_0);
+            cursor.Emit(OpCodes.Ldloc, variable);
+            cursor.EmitDelegate<Func<Actor, Platform, Platform>>((self, platform) =>
+            {
+                if (platform is UpsideDownJumpThru || platform != null && platform.GetType() == ReflectionCache.MaxHelpingHandUpsideDownJumpThruType)
+                    return self.CollideFirstOutsideNotUpsideDownJumpThru(self.Position + Vector2.UnitY);
+                return platform;
+            });
+            cursor.Emit(OpCodes.Stloc, variable);
         });
 
         private static bool Actor_MoveVExact(On.Celeste.Actor.orig_MoveVExact orig, Actor self, int moveV, Collision onCollide, Solid pusher) =>

@@ -12,7 +12,7 @@ namespace Celeste.Mod.GravityHelper.Entities
     public class ConnectedFieldRenderer<TEntity> : Entity
         where TEntity : Entity, IConnectableField
     {
-        public string InitialRoom { get; private set; }
+        public float AlphaMultiplier = 1f;
 
         protected ConnectedFieldRenderer()
         {
@@ -22,118 +22,100 @@ namespace Celeste.Mod.GravityHelper.Entities
             Add(new CustomBloom(onRenderBloom));
         }
 
-        public override void Added(Scene scene)
-        {
-            base.Added(scene);
-            InitialRoom = SceneAs<Level>().Session.LevelData.Name;
-        }
-
-        public void Track(TEntity entity)
-        {
-            var fieldColor = entity.FieldColor;
-            var fieldGroup = Components.GetAll<FieldGroupRenderer>().FirstOrDefault(f => f.Color == fieldColor);
-
-            if (fieldGroup == null)
-                Add(fieldGroup = new FieldGroupRenderer(fieldColor));
-
-            fieldGroup.Track(entity, Scene);
-        }
-
-        public bool Untrack(TEntity entity, bool removeIfEmpty = false)
-        {
-            var fieldColor = entity.FieldColor;
-            var found = false;
-
-            foreach (var renderer in Components.GetAll<FieldGroupRenderer>().Where(f => f.Color == fieldColor))
-            {
-                if (renderer.Untrack(entity))
-                {
-                    found = true;
-                    break;
-                }
-            }
-
-            if (removeIfEmpty && !Components.GetAll<FieldGroupRenderer>().Any())
-                RemoveSelf();
-
-            return found;
-        }
-
         private void onRenderBloom()
         {
             foreach (var fieldGroup in Components.GetAll<FieldGroupRenderer>())
                 fieldGroup.OnRenderBloom();
         }
 
-        private class FieldGroupRenderer : Component
+        public void CreateComponents(IEnumerable<TEntity> entities)
+        {
+            Remove(Components
+                .GetAll<FieldGroupRenderer>()
+                .ToArray<Component>());
+            Add(entities
+                .GroupBy(e => e.FieldColor)
+                .Select(g => new FieldGroupRenderer(g.Key, g))
+                .ToArray<Component>());
+        }
+
+        public void ForEachTile(Action<int, int, FieldGroupRenderer> action)
+        {
+            var levelTileBounds = SceneAs<Level>().TileBounds;
+
+            foreach (var child in Components.GetAll<FieldGroupRenderer>())
+            {
+                for (int y = 0; y < levelTileBounds.Height; y++)
+                {
+                    for (int x = 0; x < levelTileBounds.Width; x++)
+                    {
+                        if (child.Tiles[x, y])
+                            action(x, y, child);
+                    }
+                }
+            }
+        }
+
+        public Vector2 GetCenterOfMass()
+        {
+            float columnSum = 0, rowSum = 0;
+            int tileSum = 0;
+
+            ForEachTile((x, y, _) =>
+            {
+                columnSum += x;
+                rowSum += y;
+                tileSum++;
+            });
+
+            if (tileSum == 0) return Vector2.Zero;
+
+            var levelTileBounds = SceneAs<Level>().TileBounds;
+            var averageColumn = columnSum / tileSum;
+            var averageRow = rowSum / tileSum;
+            return new Vector2((levelTileBounds.X + averageColumn) * 8, (levelTileBounds.Y + averageRow) * 8);
+        }
+
+        public class FieldGroupRenderer : Component
         {
             public Color Color { get; }
 
-            private readonly List<TEntity> _list = new List<TEntity>();
+            private readonly List<TEntity> _list;
             private readonly List<Edge> _edges = new List<Edge>();
-            private VirtualMap<bool> _tiles;
+            public VirtualMap<bool> Tiles;
             private Rectangle _levelTileBounds;
             private bool _dirty;
 
-            public FieldGroupRenderer(Color color) : base(true, true)
+            public FieldGroupRenderer(Color color, IEnumerable<TEntity> entities) : base(true, true)
             {
                 Color = color;
+                _list = entities.ToList();
             }
 
-            public void Track(TEntity entity, Scene scene)
+            public override void Removed(Entity entity)
             {
-                _list.Add(entity);
-
-                if (ensureTiles(scene))
-                {
-                    for (int x = (int) entity.X / 8; x < entity.Right / 8.0; ++x)
-                    for (int y = (int) entity.Y / 8; y < entity.Bottom / 8.0; ++y)
-                        _tiles[x - _levelTileBounds.X, y - _levelTileBounds.Y] = true;
-                }
-
-                _dirty = true;
-            }
-
-            public bool Untrack(TEntity entity, bool removeIfEmpty = true)
-            {
-                if (!_list.Remove(entity)) return false;
-
-                _dirty = true;
-
-                if (_list.Any())
-                {
-                    for (int x = (int) entity.X / 8; x < entity.Right / 8.0; ++x)
-                    for (int y = (int) entity.Y / 8; y < entity.Bottom / 8.0; ++y)
-                        _tiles[x - _levelTileBounds.X, y - _levelTileBounds.Y] = false;
-                }
-                else
-                {
-                    _tiles = null;
-                    if (removeIfEmpty)
-                        RemoveSelf();
-                }
-
-                return true;
+                base.Removed(entity);
+                _list.Clear();
             }
 
             private bool ensureTiles(Scene scene)
             {
-                if (_tiles == null && scene is Level level)
+                if (Tiles == null && scene is Level level)
                 {
                     _levelTileBounds = level.TileBounds;
-                    _tiles = new VirtualMap<bool>(_levelTileBounds.Width, _levelTileBounds.Height);
+                    Tiles = new VirtualMap<bool>(_levelTileBounds.Width, _levelTileBounds.Height);
 
                     foreach (var entity in _list)
                     {
                         for (int x = (int) entity.X / 8; x < entity.Right / 8.0; ++x)
                         for (int y = (int) entity.Y / 8; y < entity.Bottom / 8.0; ++y)
-                            _tiles[x - _levelTileBounds.X, y - _levelTileBounds.Y] = true;
+                            Tiles[x - _levelTileBounds.X, y - _levelTileBounds.Y] = true;
                     }
 
                     _dirty = true;
                 }
 
-                return _tiles != null;
+                return Tiles != null;
             }
 
             public override void EntityAdded(Scene scene)
@@ -175,7 +157,7 @@ namespace Celeste.Mod.GravityHelper.Entities
             {
                 _dirty = false;
                 _edges.Clear();
-                if (_list.Count == 0 || _tiles == null)
+                if (_list.Count == 0 || Tiles == null)
                     return;
 
                 Point[] pointArray =
@@ -217,15 +199,15 @@ namespace Celeste.Mod.GravityHelper.Entities
                 }
             }
 
-            private bool inside(int tx, int ty) => _tiles[tx - _levelTileBounds.X, ty - _levelTileBounds.Y];
+            private bool inside(int tx, int ty) => Tiles[tx - _levelTileBounds.X, ty - _levelTileBounds.Y];
 
             public void OnRenderBloom()
             {
+                if (_list.Any(e => !e.Visible))
+                    return;
+
                 foreach (var entity in _list)
-                {
-                    if (entity.Visible)
-                        Draw.Rect(entity.X, entity.Y, entity.Width, entity.Height, Color.White);
-                }
+                    Draw.Rect(entity.X, entity.Y, entity.Width, entity.Height, Color.White);
 
                 foreach (var edge in _edges)
                 {
@@ -246,12 +228,14 @@ namespace Celeste.Mod.GravityHelper.Entities
                 if (_list.Count <= 0)
                     return;
 
-                var color = Color;
+                if (_list.Any(e => !e.Visible))
+                    return;
+
+                var multiplier = (Entity as ConnectedFieldRenderer<TEntity>)?.AlphaMultiplier ?? 1f;
+
+                var color = Color * multiplier;
                 foreach (var entity in _list)
-                {
-                    if (entity.Visible)
-                        Draw.Rect(entity.Collider, color);
-                }
+                    Draw.Rect(entity.Collider, color);
 
                 if (_edges.Count == 0)
                     return;
@@ -318,39 +302,6 @@ namespace Celeste.Mod.GravityHelper.Entities
                                                           view.Top < Parent.Y + (double) Max.Y &&
                                                           view.Bottom > Parent.Y + (double) Min.Y;
             }
-        }
-    }
-
-    public static class ConnectedFieldRendererExtensions
-    {
-        public static TConnectedFieldRenderer GetConnectedFieldRenderer<TConnectedFieldRenderer, TEntity>(this TEntity entity, Scene scene = null, bool? track = null)
-            where TEntity : Entity, IConnectableField
-            where TConnectedFieldRenderer : ConnectedFieldRenderer<TEntity>, new()
-        {
-            scene = scene as Level ?? entity.Scene as Level ?? Engine.Scene as Level;
-            if (scene is not Level level) return null;
-            var roomName = level.Session.LevelData.Name;
-
-            if (track == false)
-            {
-                foreach (var r in scene.Entities.OfType<TConnectedFieldRenderer>())
-                {
-                    if (r.Untrack(entity))
-                        return r;
-                }
-            }
-
-            var renderer = scene.Entities.OfType<TConnectedFieldRenderer>().FirstOrDefault(r => r.InitialRoom == roomName) ??
-                scene.Entities.ToAdd.OfType<TConnectedFieldRenderer>().FirstOrDefault();
-
-            if (track == true)
-            {
-                if (renderer == null)
-                    scene.Add(renderer = new TConnectedFieldRenderer());
-                renderer.Track(entity);
-            }
-
-            return renderer;
         }
     }
 }

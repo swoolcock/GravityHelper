@@ -19,6 +19,7 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
         public string FieldToggleColor { get; }
         public string FieldArrowColor { get; }
         public string FieldParticleColor { get; }
+        public bool FieldFlashOnTrigger { get; }
         public float LineMinAlpha { get; }
         public float LineMaxAlpha { get; }
         public float LineFlashTime { get; }
@@ -35,6 +36,7 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
             FieldToggleColor = data.Attr("fieldToggleColor");
             FieldArrowColor = data.Attr("fieldArrowColor");
             FieldParticleColor = data.Attr("fieldParticleColor");
+            FieldFlashOnTrigger = data.Bool("fieldFlashOnTrigger", true);
             LineMinAlpha = data.Float("lineMinAlpha");
             LineMaxAlpha = data.Float("lineMaxAlpha");
             LineFlashTime = data.Float("lineFlashTime");
