@@ -42,6 +42,7 @@ entities.GravityHelper/GravityField.attributes.description.attachToSolids=Whethe
 entities.GravityHelper/GravityField.attributes.description.fieldOpacity=The opacity of the shimmering field effect, if enabled. Ranges from 0 (invisible) to 1 (fully opaque).\nDefaults to 0.15. Supports controllers.
 entities.GravityHelper/GravityField.attributes.description.arrowOpacity=The opacity of the arrows, if enabled. Ranges from 0 (invisible) to 1 (fully opaque).\nDefaults to 0.5. Supports controllers.
 entities.GravityHelper/GravityField.attributes.description.particleOpacity=The opacity of the moving particles, if the field effect is enabled. Ranges from 0 (invisible) to 1 (fully opaque).\nDefaults to 0.5. Supports controllers.
+entities.GravityHelper/GravityField.attributes.description.flashOnTrigger=Whether the field should flash when Madeline triggers it. Defaults to true.
 entities.GravityHelper/GravityField.attributes.description.affectsPlayer=Whether the field affects Madeline. Defaults to true.
 entities.GravityHelper/GravityField.attributes.description.affectsHoldableActors=Whether the field affects Actors with a Holdable component while they are not being held. Defaults to false.
 entities.GravityHelper/GravityField.attributes.description.affectsOtherActors=Whether the field affects non-holdable Actors. Defaults to false.
@@ -143,6 +144,7 @@ entities.GravityHelper/VisualGravityController.attributes.description.persistent
 entities.GravityHelper/VisualGravityController.attributes.description.fieldBackgroundOpacity=The default opacity of shimmering field effects, if enabled.\nRanges from 0 (invisible) to 1 (fully opaque). Defaults to 0.15.
 entities.GravityHelper/VisualGravityController.attributes.description.fieldArrowOpacity=The default opacity of arrows, if enabled.\nRanges from 0 (invisible) to 1 (fully opaque). Defaults to 0.5.
 entities.GravityHelper/VisualGravityController.attributes.description.fieldParticleOpacity=The default opacity of moving particles, if enabled.\nRanges from 0 (invisible) to 1 (fully opaque). Defaults to 0.5.
+entities.GravityHelper/VisualGravityController.attributes.description.fieldFlashOnTrigger=The global setting for GravityField flashOnTrigger. Defaults to true.
 entities.GravityHelper/VisualGravityController.attributes.description.lineMinAlpha=The global setting for GravityLine minAlpha. Defaults to 0.45.
 entities.GravityHelper/VisualGravityController.attributes.description.lineMaxAlpha=The global setting for GravityLine maxAlpha. Defaults to 0.95.
 entities.GravityHelper/VisualGravityController.attributes.description.lineFlashTime=The global setting for GravityLine flashTime. Defaults to 0.35 seconds.
