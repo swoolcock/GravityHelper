@@ -1213,10 +1213,12 @@ namespace Celeste.Mod.GravityHelper.Hooks
                 {
                     OnDash = _ =>
                     {
-                        if (GravityRefill.NumberOfCharges == 0)
-                            return;
-                        GravityRefill.NumberOfCharges--;
-                        GravityHelperModule.PlayerComponent?.SetGravity(GravityType.Toggle);
+                        if (GravityRefill.NumberOfCharges > 0 ||
+                            (self.SceneAs<Level>()?.GetActiveController<BehaviorGravityController>()?.DashToToggle ?? false))
+                        {
+                            GravityRefill.NumberOfCharges = Math.Max(GravityRefill.NumberOfCharges - 1, 0);
+                            GravityHelperModule.PlayerComponent?.SetGravity(GravityType.Toggle);
+                        }
                     },
                 }
             );

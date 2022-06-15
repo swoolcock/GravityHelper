@@ -20,6 +20,7 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
         public float SpringCooldown { get; }
         public float SwitchCooldown { get; }
         public bool SwitchOnHoldables { get; }
+        public bool DashToToggle { get; }
 
         public BehaviorGravityController(EntityData data, Vector2 offset)
             : base(data, offset)
@@ -28,6 +29,7 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
             SpringCooldown = data.Float("springCooldown", DEFAULT_SPRING_COOLDOWN).ClampLower(0f);
             SwitchCooldown = data.Float("switchCooldown", DEFAULT_SWITCH_COOLDOWN).ClampLower(0f);
             SwitchOnHoldables = data.Bool("switchOnHoldables", true);
+            DashToToggle = data.Bool("dashToToggle");
         }
     }
 }
