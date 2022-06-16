@@ -86,6 +86,9 @@ namespace Celeste.Mod.GravityHelper
         public static FieldInfo CatelineModuleTailNodesFieldInfo { get; private set; }
         public static Type DashTrailAllTheTimeType { get; private set; }
         public static Type CommunalHelperConnectedSolidType { get; private set; }
+        public static Type ExtendedVariantsJumpCountType { get; private set; }
+        public static MethodInfo ExtendedVariantsJumpCountGetJumpBufferMethodInfo { get; private set; }
+        public static MethodInfo ExtendedVariantsJumpCountSetJumpCountMethodInfo { get; private set; }
 
         public static void LoadThirdPartyTypes()
         {
@@ -100,6 +103,9 @@ namespace Celeste.Mod.GravityHelper
             CatelineModuleTailNodesFieldInfo = CatelineModuleType?.GetField("tailNodes", BindingFlags.Instance | BindingFlags.NonPublic);
             DashTrailAllTheTimeType = GetModdedTypeByName("ExtendedVariantMode", "ExtendedVariants.Variants.DashTrailAllTheTime");
             CommunalHelperConnectedSolidType = GetModdedTypeByName("CommunalHelper", "Celeste.Mod.CommunalHelper.ConnectedSolid");
+            ExtendedVariantsJumpCountType = GetModdedTypeByName("ExtendedVariantMode", "ExtendedVariants.Variants.JumpCount");
+            ExtendedVariantsJumpCountGetJumpBufferMethodInfo = ExtendedVariantsJumpCountType?.GetMethod("GetJumpBuffer", BindingFlags.Public | BindingFlags.Static);
+            ExtendedVariantsJumpCountSetJumpCountMethodInfo = ExtendedVariantsJumpCountType?.GetMethod("SetJumpCount", BindingFlags.Public | BindingFlags.Static);
         }
 
         #endregion
