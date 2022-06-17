@@ -5,7 +5,23 @@
     - Name: Everest
       Version: 1.2781.0
   OptionalDependencies:
-    - Name: SpeedrunTool
-      Version: 3.7.2
+    - Name: Cateline
+      Version: 0.0.2
+    - Name: CommunalHelper
+      Version: 1.11.5
+    - Name: ExtendedVariantMode
+      Version: 0.22.16
+    - Name: FancyTileEntities
+      Version: 1.5.1
     - Name: FrostHelper
       Version: 1.34.4
+    - Name: MaddyCrown
+      Version: 1.0.1
+    - Name: MaxHelpingHand
+      Version: 1.18.9
+    - Name: OutbackHelper
+      Version: 1.6.2
+    - Name: SpeedrunTool
+      Version: 3.7.2
+    - Name: StaminaMeter
+      Version: 1.3.0
