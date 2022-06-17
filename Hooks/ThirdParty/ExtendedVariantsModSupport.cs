@@ -15,6 +15,7 @@ namespace Celeste.Mod.GravityHelper.Hooks.ThirdParty
         // ReSharper disable InconsistentNaming
         private static IDetour hook_DashTrailAllTheTime_createTrail;
         private static IDetour hook_JumpIndicator_Render;
+        private static IDetour hook_DashCountIndicator_Render;
         // ReSharper restore InconsistentNaming
 
         protected override void Load()
@@ -28,10 +29,17 @@ namespace Celeste.Mod.GravityHelper.Hooks.ThirdParty
             }
 
             var jit = ReflectionCache.ExtendedVariantsJumpIndicatorType;
-            var renderMethod = jit?.GetMethod("Render", BindingFlags.Instance | BindingFlags.Public);
-            if (renderMethod != null)
+            var jiRenderMethod = jit?.GetMethod("Render", BindingFlags.Instance | BindingFlags.Public);
+            if (jiRenderMethod != null)
             {
-                hook_JumpIndicator_Render = new ILHook(renderMethod, JumpIndicator_Render);
+                hook_JumpIndicator_Render = new ILHook(jiRenderMethod, JumpIndicator_Render);
+            }
+
+            var dcit = ReflectionCache.ExtendedVariantsDashCountIndicatorType;
+            var dciRenderMethod = dcit?.GetMethod("Render", BindingFlags.Instance | BindingFlags.Public);
+            if (dciRenderMethod != null)
+            {
+                hook_DashCountIndicator_Render = new ILHook(dciRenderMethod, DashCountIndicator_Render);
             }
         }
 
@@ -41,6 +49,8 @@ namespace Celeste.Mod.GravityHelper.Hooks.ThirdParty
             hook_DashTrailAllTheTime_createTrail = null;
             hook_JumpIndicator_Render?.Dispose();
             hook_JumpIndicator_Render = null;
+            hook_DashCountIndicator_Render?.Dispose();
+            hook_DashCountIndicator_Render = null;
         }
 
         private static void DashTrailAllTheTime_createTrail(Action<Player> orig, Player player)
@@ -58,6 +68,14 @@ namespace Celeste.Mod.GravityHelper.Hooks.ThirdParty
         }
 
         private static void JumpIndicator_Render(ILContext il) => HookUtils.SafeHook(() =>
+        {
+            var cursor = new ILCursor(il);
+            if (!cursor.TryGotoNext(ILCursorExtensions.AdditionPredicate))
+                throw new HookException("Couldn't find vector addition");
+            cursor.EmitInvertVectorDelegate();
+        });
+
+        private static void DashCountIndicator_Render(ILContext il) => HookUtils.SafeHook(() =>
         {
             var cursor = new ILCursor(il);
             if (!cursor.TryGotoNext(ILCursorExtensions.AdditionPredicate))
