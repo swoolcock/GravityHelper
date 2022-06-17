@@ -64,7 +64,7 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
             if (jumpPressed && (onGround || jumpBuffer > 0) && !dreamJump)
             {
                 // consume an Extended Variant Jump(TM)
-                if (jumpBuffer > 0)
+                if (!onGround && jumpBuffer > 0)
                     ReflectionCache.ExtendedVariantsJumpCountSetJumpCountMethodInfo?.Invoke(null, new object[] { jumpBuffer - 1, false });
 
                 GravityHelperModule.PlayerComponent?.SetGravity(GravityType.Toggle);
