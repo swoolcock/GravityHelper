@@ -14,7 +14,8 @@ const PLUGIN_VERSION = "1"
     holdableResetTime::Real=2.0,
     springCooldown::Real=0.1,
     switchCooldown::Real=1.0,
-    switchOnHoldables::Bool=true
+    switchOnHoldables::Bool=true,
+    dashToToggle::Bool=false
 )
 
 const placements = Ahorn.PlacementDict(

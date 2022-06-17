@@ -11,6 +11,7 @@ local placementData = helpers.createPlacementData('1', {
     springCooldown = 0.1,
     switchCooldown = 1.0,
     switchOnHoldables = true,
+    dashToToggle = false,
 })
 
 local behaviorGravityController = {

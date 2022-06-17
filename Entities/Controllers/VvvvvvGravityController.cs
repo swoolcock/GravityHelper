@@ -56,8 +56,17 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
             // for now we'll only allow normal state
             if (player.StateMachine != Player.StNormal) return;
 
-            if (jumpPressed && onGround && !dreamJump)
+            // see if an Extended Variant Jump(TM) is available
+            int jumpBuffer = 0;
+            if (ReflectionCache.ExtendedVariantsJumpCountGetJumpBufferMethodInfo != null)
+                jumpBuffer = (int)ReflectionCache.ExtendedVariantsJumpCountGetJumpBufferMethodInfo.Invoke(null, new object[0]);
+
+            if (jumpPressed && (onGround || jumpBuffer > 0) && !dreamJump)
             {
+                // consume an Extended Variant Jump(TM)
+                if (!onGround && jumpBuffer > 0)
+                    ReflectionCache.ExtendedVariantsJumpCountSetJumpCountMethodInfo?.Invoke(null, new object[] { jumpBuffer - 1, false });
+
                 GravityHelperModule.PlayerComponent?.SetGravity(GravityType.Toggle);
                 player.Speed.Y = 160f * (player.SceneAs<Level>().InSpace ? 0.6f : 1f);
                 if (!string.IsNullOrEmpty(active.FlipSound))
