@@ -3,6 +3,7 @@
 
 using Celeste.Mod.GravityHelper.Components;
 using Microsoft.Xna.Framework;
+using MonoMod.RuntimeDetour;
 
 // ReSharper disable InconsistentNaming
 
@@ -15,7 +16,8 @@ namespace Celeste.Mod.GravityHelper.Hooks
             Logger.Log(nameof(GravityHelperModule), $"Loading {nameof(Spikes)} hooks...");
 
             On.Celeste.Spikes.ctor_Vector2_int_Directions_string += Spikes_ctor_Vector2_int_Directions_string;
-            On.Celeste.Spikes.OnCollide += Spikes_OnCollide;
+            using (new DetourContext { Before = { "*" } })
+                On.Celeste.Spikes.OnCollide += Spikes_OnCollide;
         }
 
         public static void Unload()
