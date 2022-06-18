@@ -2,10 +2,16 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System;
+using System.Linq;
 using System.Reflection;
+using Celeste.Mod.GravityHelper.Components;
+using Celeste.Mod.GravityHelper.Extensions;
+using Microsoft.Xna.Framework;
 using Mono.Cecil.Cil;
+using Monocle;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
+using MonoMod.Utils;
 
 namespace Celeste.Mod.GravityHelper.Hooks.ThirdParty
 {
@@ -17,6 +23,8 @@ namespace Celeste.Mod.GravityHelper.Hooks.ThirdParty
         private static IDetour hook_MaxHelpingHand_UpsideDownJumpThru_updateClimbMove;
         private static IDetour hook_MaxHelpingHand_UpsideDownJumpThru_onJumpthruHasPlayerRider;
         private static IDetour hook_MaxHelpingHand_UpsideDownJumpThru_onPlayerOnCollideV;
+        private static IDetour hook_MaxHelpingHand_GroupedTriggerSpikes_GetPlayerCollideIndex;
+        private static IDetour hook_MaxHelpingHand_GroupedTriggerSpikes_ctor;
         // ReSharper restore InconsistentNaming
 
         protected override void Load()
@@ -48,6 +56,19 @@ namespace Celeste.Mod.GravityHelper.Hooks.ThirdParty
             {
                 hook_MaxHelpingHand_UpsideDownJumpThru_onPlayerOnCollideV = new ILHook(onPlayerOnCollideVMethod, MaxHelpingHand_onPlayerOnCollideV);
             }
+
+            var mhhgtst = ReflectionCache.MaxHelpingHandGroupedTriggerSpikesType;
+            var getPlayerCollideIndexMethod = mhhgtst?.GetMethod("GetPlayerCollideIndex", BindingFlags.Instance | BindingFlags.NonPublic);
+            if (getPlayerCollideIndexMethod != null)
+            {
+                hook_MaxHelpingHand_GroupedTriggerSpikes_GetPlayerCollideIndex = new ILHook(getPlayerCollideIndexMethod, GroupedTriggerSpikes_GetPlayerCollideIndex);
+            }
+
+            var ctor = mhhgtst?.GetConstructors().FirstOrDefault(c => c.GetParameters().Length > 3);
+            if (ctor != null)
+            {
+                hook_MaxHelpingHand_GroupedTriggerSpikes_ctor = new ILHook(ctor, GroupedTriggerSpikes_ctor);
+            }
         }
 
         protected override void Unload()
@@ -60,6 +81,10 @@ namespace Celeste.Mod.GravityHelper.Hooks.ThirdParty
             hook_MaxHelpingHand_UpsideDownJumpThru_onJumpthruHasPlayerRider = null;
             hook_MaxHelpingHand_UpsideDownJumpThru_onPlayerOnCollideV?.Dispose();
             hook_MaxHelpingHand_UpsideDownJumpThru_onPlayerOnCollideV = null;
+            hook_MaxHelpingHand_GroupedTriggerSpikes_GetPlayerCollideIndex?.Dispose();
+            hook_MaxHelpingHand_GroupedTriggerSpikes_GetPlayerCollideIndex = null;
+            hook_MaxHelpingHand_GroupedTriggerSpikes_ctor?.Dispose();
+            hook_MaxHelpingHand_GroupedTriggerSpikes_ctor = null;
         }
 
         private static int MaxHelpingHand_UpsideDownJumpThru_updateClimbMove(Func<Player, int, int> orig, Player player, int lastClimbMove) =>
@@ -88,6 +113,62 @@ namespace Celeste.Mod.GravityHelper.Hooks.ThirdParty
                 instr => instr.MatchLdarg(2)))
                 throw new HookException("Couldn't find orig call");
             cursor.Emit(OpCodes.Br_S, cursor2.Next);
+        });
+
+        private void GroupedTriggerSpikes_GetPlayerCollideIndex(ILContext il) => HookUtils.SafeHook(() =>
+        {
+            var cursor = new ILCursor(il);
+
+            if (!cursor.TryGotoNext(MoveType.After, instr => instr.MatchLdfld<Vector2>(nameof(Vector2.Y))))
+                throw new HookException("Couldn't find first Speed.Y");
+            cursor.EmitInvertFloatDelegate();
+
+            if (!cursor.TryGotoNext(MoveType.After, instr => instr.MatchLdfld<Vector2>(nameof(Vector2.Y))))
+                throw new HookException("Couldn't find second Speed.Y");
+            cursor.EmitInvertFloatDelegate();
+        });
+
+        private void GroupedTriggerSpikes_ctor(ILContext il) => HookUtils.SafeHook(() =>
+        {
+            var cursor = new ILCursor(il);
+            if (!cursor.TryGotoNext(instr => instr.MatchRet()))
+                throw new HookException("Couldn't find return");
+
+            cursor.Emit(OpCodes.Ldarg_0);
+            cursor.EmitDelegate<Action<Entity>>(self =>
+            {
+                var data = new DynamicData(self);
+                var direction = data.Get<Spikes.Directions>("direction");
+                var method = ReflectionCache.MaxHelpingHandGroupedTriggerSpikesType.GetMethod("UpSafeBlockCheck", BindingFlags.NonPublic | BindingFlags.Instance);
+
+                // we add a disabled ledge blocker for downward spikes
+                if (direction == Spikes.Directions.Down)
+                {
+                    self.Add(new SafeGroundBlocker());
+                    self.Add(new LedgeBlocker
+                    {
+                        Blocking = false,
+                        BlockChecker = player => (bool)method.Invoke(self, new object[] { player }),
+                    });
+                }
+
+                // add a player listener to toggle the ledge blockers
+                if (direction == Spikes.Directions.Down || direction == Spikes.Directions.Up)
+                {
+                    self.Add(new PlayerGravityListener
+                    {
+                        GravityChanged = (_, args) =>
+                        {
+                            var ledgeBlocker = self.Components.Get<LedgeBlocker>();
+                            var safeGroundBlocker = self.Components.Get<SafeGroundBlocker>();
+                            if (direction == Spikes.Directions.Up)
+                                safeGroundBlocker.Blocking = ledgeBlocker.Blocking = args.NewValue == GravityType.Normal;
+                            else if (direction == Spikes.Directions.Down)
+                                safeGroundBlocker.Blocking = ledgeBlocker.Blocking = args.NewValue == GravityType.Inverted;
+                        },
+                    });
+                }
+            });
         });
     }
 }
