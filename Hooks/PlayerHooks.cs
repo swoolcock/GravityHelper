@@ -628,7 +628,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
         {
             static bool collideJumpthrus(Player self, Vector2 at) =>
                 !GravityHelperModule.ShouldInvertPlayer && self.CollideCheckUpsideDownJumpThru(at) ||
-                GravityHelperModule.ShouldInvertPlayer && self.CollideCheck<JumpThru>(at);
+                GravityHelperModule.ShouldInvertPlayer && self.CollideCheckNotUpsideDownJumpThru(at);
 
             var cursor = new ILCursor(il);
 
@@ -708,7 +708,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             cursor.Emit(OpCodes.Ldarg_0); // this
             cursor.EmitDelegate<Func<Player, Platform>>(self =>
                 !GravityHelperModule.ShouldInvertPlayer
-                    ? self.CollideFirstOutside<JumpThru>(self.Position + Vector2.UnitY)
+                    ? self.CollideFirstOutsideNotUpsideDownJumpThru(self.Position + Vector2.UnitY)
                     : self.CollideFirstOutsideUpsideDownJumpThru(self.Position - Vector2.UnitY));
             cursor.Emit(OpCodes.Stloc_1);
             cursor.Emit(OpCodes.Br_S, platformNotEqualNull);
@@ -748,7 +748,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             cursor.Emit(OpCodes.Ldarg_0); // this
             cursor.EmitDelegate<Func<Player, bool>>(self =>
                 !GravityHelperModule.ShouldInvertPlayer
-                    ? self.CollideCheckOutside<JumpThru>(self.Position + Vector2.UnitY)
+                    ? self.CollideCheckOutsideNotUpsideDownJumpThru(self.Position + Vector2.UnitY)
                     : self.CollideCheckOutsideUpsideDownJumpThru(self.Position - Vector2.UnitY));
             cursor.Emit(OpCodes.Brfalse_S, varJumpTimerCheck);
             cursor.Emit(OpCodes.Br_S, spikesCheck);
@@ -814,7 +814,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             cursor.Emit(OpCodes.Ldarg_0);
             cursor.EmitDelegate<Func<bool, Player, bool>>((b, self) =>
                 !GravityHelperModule.ShouldInvertPlayer
-                    ? b
+                    ? self.CollideCheckOutsideNotUpsideDownJumpThru(self.Position + Vector2.UnitY * 3f)
                     : self.CollideCheckOutsideUpsideDownJumpThru(self.Position - Vector2.UnitY * 3f));
 
             // find 3
@@ -868,7 +868,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
                 cursor.Remove(); // TODO: NOT REMOVE
                 cursor.EmitDelegate<Func<Player, Vector2, bool>>((self, at) =>
                     !GravityHelperModule.ShouldInvertPlayer
-                        ? self.CollideCheck<JumpThru>(at)
+                        ? self.CollideCheckNotUpsideDownJumpThru(at)
                         : self.CollideCheckUpsideDownJumpThru(at));
             }
         });
@@ -1233,7 +1233,9 @@ namespace Celeste.Mod.GravityHelper.Hooks
             else if (self.Speed.Y >= 0f)
             {
                 var platform = (Platform) self.CollideFirst<Solid>(self.Position + direction) ??
-                    self.CollideFirstOutside<JumpThru>(self.Position + direction);
+                    (type == GravityType.Inverted
+                        ? self.CollideFirstOutsideUpsideDownJumpThru(self.Position + direction)
+                        : self.CollideFirstOutsideNotUpsideDownJumpThru(self.Position + direction));
                 if (platform != null)
                 {
                     onGround = true;

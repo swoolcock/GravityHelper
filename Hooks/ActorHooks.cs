@@ -3,10 +3,10 @@
 
 using System;
 using System.Linq;
-using Celeste.Mod.GravityHelper.Entities;
 using Celeste.Mod.GravityHelper.Extensions;
 using Microsoft.Xna.Framework;
 using Mono.Cecil.Cil;
+using Monocle;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
 
@@ -21,13 +21,13 @@ namespace Celeste.Mod.GravityHelper.Hooks
             Logger.Log(nameof(GravityHelperModule), $"Loading {nameof(Actor)} hooks...");
 
             IL.Celeste.Actor.IsRiding_Solid += Actor_IsRiding_Solid;
+            IL.Celeste.Actor.OnGround_int += Actor_OnGround_int;
 
             // we need to run this after MaxHelpingHand to ensure both UDJT types are handled
             using (new DetourContext {After = {"MaxHelpingHand"}})
                 IL.Celeste.Actor.MoveVExact += Actor_MoveVExact;
 
             On.Celeste.Actor.MoveVExact += Actor_MoveVExact;
-            On.Celeste.Actor.OnGround_int += Actor_OnGround_int;
             On.Celeste.Actor.IsRiding_JumpThru += Actor_IsRiding_JumpThru;
         }
 
@@ -37,10 +37,10 @@ namespace Celeste.Mod.GravityHelper.Hooks
             Logger.Log(nameof(GravityHelperModule), $"Unloading {nameof(Actor)} hooks...");
 
             IL.Celeste.Actor.IsRiding_Solid -= Actor_IsRiding_Solid;
+            IL.Celeste.Actor.OnGround_int -= Actor_OnGround_int;
             IL.Celeste.Actor.MoveVExact -= Actor_MoveVExact;
 
             On.Celeste.Actor.MoveVExact -= Actor_MoveVExact;
-            On.Celeste.Actor.OnGround_int -= Actor_OnGround_int;
             On.Celeste.Actor.IsRiding_JumpThru -= Actor_IsRiding_JumpThru;
         }
 
@@ -86,7 +86,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             cursor.EmitDelegate<Func<Actor, int, JumpThru>>((self, moveV) =>
             {
                 if (moveV >= 0 || self.IgnoreJumpThrus) return null;
-                return self.CollideFirstOutside<UpsideDownJumpThru>(self.Position - Vector2.UnitY);
+                return self.CollideFirstOutsideUpsideDownJumpThru(self.Position - Vector2.UnitY);
             });
             cursor.Emit(OpCodes.Stloc, variable);
             cursor.Emit(OpCodes.Ldloc, variable);
@@ -98,11 +98,13 @@ namespace Celeste.Mod.GravityHelper.Hooks
                 throw new HookException("Couldn't find if (platform != null)");
 
             cursor.Emit(OpCodes.Ldarg_0);
+            cursor.Emit(OpCodes.Ldarg_1);
             cursor.Emit(OpCodes.Ldloc, variable);
-            cursor.EmitDelegate<Func<Actor, Platform, Platform>>((self, platform) =>
+            cursor.EmitDelegate<Func<Actor, int, Platform, Platform>>((self, moveV, platform) =>
             {
-                if (platform is UpsideDownJumpThru || platform != null && platform.GetType() == ReflectionCache.MaxHelpingHandUpsideDownJumpThruType)
-                    return self.CollideFirstOutsideNotUpsideDownJumpThru(self.Position + Vector2.UnitY);
+                // without this, Madeline will land on UDJT while regular gravity
+                if (platform is JumpThru jumpThru && jumpThru.IsUpsideDownJumpThru())
+                    return self.CollideFirstOutsideNotUpsideDownJumpThru(self.Position + Vector2.UnitY * Math.Sign(moveV));
                 return platform;
             });
             cursor.Emit(OpCodes.Stloc, variable);
@@ -115,18 +117,23 @@ namespace Celeste.Mod.GravityHelper.Hooks
                 !GravityHelperModule.JumpThruMoving &&
                 !GravityHelperModule.Transitioning ? -moveV : moveV, onCollide, pusher);
 
-        private static bool Actor_OnGround_int(On.Celeste.Actor.orig_OnGround_int orig, Actor self, int downCheck)
+        private static void Actor_OnGround_int(ILContext il) => HookUtils.SafeHook(() =>
         {
-            if (!self.ShouldInvertChecked())
-                return orig(self, downCheck);
+            var cursor = new ILCursor(il);
 
-            if (self.CollideCheck<Solid>(self.Position - Vector2.UnitY * downCheck))
-                return true;
+            if (!cursor.TryGotoNext(MoveType.After, instr => instr.MatchLdarg(1)))
+                throw new HookException("Couldn't find first downCheck");
+            cursor.EmitActorInvertIntDelegate(OpCodes.Ldarg_0);
 
-            if (!self.IgnoreJumpThrus)
-                return self.CollideCheckOutsideUpsideDownJumpThru(self.Position - Vector2.UnitY * downCheck);
+            if (!cursor.TryGotoNext(instr => instr.MatchLdarg(0), instr => instr.MatchLdarg(0)))
+                throw new HookException("Couldn't find CollideCheckOutside<JumpThru>");
 
-            return false;
-        }
+            cursor.Emit(OpCodes.Ldarg_0);
+            cursor.Emit(OpCodes.Ldarg_1);
+            cursor.EmitDelegate<Func<Entity, int, bool>>((self, downCheck) => self.ShouldInvertChecked()
+                ? self.CollideCheckOutsideUpsideDownJumpThru(self.Position - Vector2.UnitY * downCheck)
+                : self.CollideCheckOutsideNotUpsideDownJumpThru(self.Position + Vector2.UnitY * downCheck));
+            cursor.Emit(OpCodes.Ret);
+        });
     }
 }
