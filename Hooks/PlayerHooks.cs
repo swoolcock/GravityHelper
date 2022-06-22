@@ -597,6 +597,21 @@ namespace Celeste.Mod.GravityHelper.Hooks
             cursor.GotoNextUnitY(MoveType.After);
             cursor.EmitInvertVectorDelegate();
 
+            if (!cursor.TryGotoNext(instr => instr.MatchStfld<Player>("wallSlideDir")))
+                throw new HookException("Couldn't find wallSlideDir");
+
+            cursor.Emit(OpCodes.Ldarg_0);
+            cursor.EmitDelegate<Func<int, Player, int>>((value, self) =>
+            {
+                if (self.Scene is Level level &&
+                    level.GetActiveController<VvvvvvGravityController>() is { } controller &&
+                    controller.IsVvvvvv &&
+                    controller.DisableGrab)
+                    return 0;
+
+                return value;
+            });
+
             // if ((water = this.CollideFirst<Water>(this.Position + Vector2.UnitY * 2f)) != null)
             cursor.GotoNextUnitY(MoveType.After);
             cursor.EmitInvertVectorDelegate();
