@@ -38,30 +38,39 @@ namespace Celeste.Mod.GravityHelper.Hooks
         private static void DreamBlock_WobbleLine(ILContext il) => HookUtils.SafeHook(() =>
         {
             var cursor = new ILCursor(il);
+            emitReplaceActiveLineColor(cursor);
+            emitReplaceActiveBackColor(cursor);
+        });
+
+        private static void DreamBlock_Render(ILContext il) => HookUtils.SafeHook(() =>
+        {
+            var cursor = new ILCursor(il);
+
+            // change background colour
+            emitReplaceActiveBackColor(cursor);
+
+            // change colour of corner rectangles
+            emitReplaceActiveLineColor(cursor);
+            emitReplaceActiveLineColor(cursor);
+            emitReplaceActiveLineColor(cursor);
+            emitReplaceActiveLineColor(cursor);
+        });
+
+        private static void emitReplaceActiveLineColor(ILCursor cursor)
+        {
             if (!cursor.TryGotoNext(MoveType.After, instr => instr.MatchLdsfld<DreamBlock>("activeLineColor")))
                 throw new HookException("Couldn't find activeLineColor");
 
             cursor.Emit(OpCodes.Ldarg_0);
             cursor.EmitDelegate<Func<Color, DreamBlock, Color>>((color, self) =>
                 self is GravityDreamBlock gravityDreamBlock ? gravityDreamBlock.GravityType.Color().Lighter(0.4f) : color);
+        }
 
+        private static void emitReplaceActiveBackColor(ILCursor cursor)
+        {
             if (!cursor.TryGotoNext(MoveType.After, instr => instr.MatchLdsfld<DreamBlock>("activeBackColor")))
                 throw new HookException("Couldn't find activeBackColor");
 
-            emitReplaceColor(cursor);
-        });
-
-        private static void DreamBlock_Render(ILContext il) => HookUtils.SafeHook(() =>
-        {
-            var cursor = new ILCursor(il);
-            if (!cursor.TryGotoNext(MoveType.After, instr => instr.MatchLdsfld<DreamBlock>("activeBackColor")))
-                throw new HookException("Couldn't find activeBackColor");
-
-            emitReplaceColor(cursor);
-        });
-
-        private static void emitReplaceColor(ILCursor cursor)
-        {
             cursor.Emit(OpCodes.Ldarg_0);
             cursor.EmitDelegate<Func<Color, DreamBlock, Color>>((oldColor, self) =>
             {
