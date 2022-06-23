@@ -36,10 +36,10 @@ namespace Celeste.Mod.GravityHelper.Hooks
             void invertAdditions()
             {
                 cursor.GotoNextAddition();
-                EmitInvertVecForPlayerHair(cursor);
+                EmitInvertVecForPlayerHair(cursor, OpCodes.Ldarg_0);
                 cursor.Index += 2;
                 cursor.GotoNextAddition();
-                EmitInvertVecForPlayerHair(cursor);
+                EmitInvertVecForPlayerHair(cursor, OpCodes.Ldarg_0);
             }
 
             // this.Nodes[0] = this.Sprite.RenderPosition + new Vector2(0.0f, -9f * this.Sprite.Scale.Y) + this.Sprite.HairOffset * new Vector2((float) this.Facing, 1f);
@@ -60,16 +60,16 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
             // Vector2 hairScale = this.GetHairScale(index);
             cursor.GotoNext(MoveType.After, instr => instr.MatchCallvirt<PlayerHair>("GetHairScale"));
-            EmitInvertVecForPlayerHair(cursor);
+            EmitInvertVecForPlayerHair(cursor, OpCodes.Ldarg_0);
 
             // this.GetHairTexture(index).Draw(this.Nodes[index], origin, this.GetHairColor(index), this.GetHairScale(index));
             cursor.GotoNext(MoveType.After, instr => instr.MatchCallvirt<PlayerHair>("GetHairScale"));
-            EmitInvertVecForPlayerHair(cursor);
+            EmitInvertVecForPlayerHair(cursor, OpCodes.Ldarg_0);
         });
 
-        private static void EmitInvertVecForPlayerHair(ILCursor cursor)
+        public static void EmitInvertVecForPlayerHair(ILCursor cursor, OpCode loadHairOpCode)
         {
-            cursor.Emit(OpCodes.Ldarg_0);
+            cursor.Emit(loadHairOpCode);
             cursor.EmitDelegate<Func<Vector2, PlayerHair, Vector2>>((v, p) =>
             {
                 var inverted = new Vector2(v.X, -v.Y);

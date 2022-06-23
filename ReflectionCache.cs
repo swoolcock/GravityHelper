@@ -94,6 +94,7 @@ namespace Celeste.Mod.GravityHelper
         public static MethodInfo ExtendedVariantsJumpCountGetJumpBufferMethodInfo { get; private set; }
         public static MethodInfo ExtendedVariantsJumpCountSetJumpCountMethodInfo { get; private set; }
         public static Type StaminaMeterSmallStaminaMeterDisplayType { get; private set; }
+        public static Type BunnelineModuleType { get; private set; }
 
         public static void LoadThirdPartyTypes()
         {
@@ -116,6 +117,7 @@ namespace Celeste.Mod.GravityHelper
             ExtendedVariantsJumpCountGetJumpBufferMethodInfo = ExtendedVariantsJumpCountType?.GetMethod("GetJumpBuffer", BindingFlags.Public | BindingFlags.Static);
             ExtendedVariantsJumpCountSetJumpCountMethodInfo = ExtendedVariantsJumpCountType?.GetMethod("SetJumpCount", BindingFlags.Public | BindingFlags.Static);
             StaminaMeterSmallStaminaMeterDisplayType = GetModdedTypeByName("StaminaMeter", "Celeste.Mod.StaminaMeter.SmallStaminaMeterDisplay");
+            BunnelineModuleType = GetModdedTypeByName("Bunneline", "Celeste.Mod.Bunneline.BunnelineModule");
         }
 
         #endregion
