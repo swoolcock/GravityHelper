@@ -2,8 +2,10 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using Celeste.Mod.GravityHelper.Components;
+using Celeste.Mod.GravityHelper.Entities;
 using Microsoft.Xna.Framework;
 using MonoMod.RuntimeDetour;
+using MonoMod.Utils;
 
 // ReSharper disable InconsistentNaming
 
@@ -54,16 +56,44 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
         private static void Spikes_OnCollide(On.Celeste.Spikes.orig_OnCollide orig, Spikes self, Player player)
         {
-            if (!GravityHelperModule.ShouldInvertPlayer || self.Direction == Spikes.Directions.Left || self.Direction == Spikes.Directions.Right)
+            // left and right spikes just behave as usual
+            if (self.Direction == Spikes.Directions.Left || self.Direction == Spikes.Directions.Right)
             {
                 orig(self, player);
                 return;
             }
 
-            if (self.Direction == Spikes.Directions.Up && player.Speed.Y <= 0)
-                player.Die(new Vector2(0, -1));
-            else if (self.Direction == Spikes.Directions.Down && player.Speed.Y >= 0 && player.Top >= self.Top)
-                player.Die(new Vector2(0, 1));
+            // if we're not inverting and not dream dashing, just behave as usual
+            var invert = GravityHelperModule.ShouldInvertPlayer;
+            var isDreamDash = player.StateMachine.State == Player.StDreamDash;
+            if (!invert && !isDreamDash)
+            {
+                orig(self, player);
+                return;
+            }
+
+            // for nicer feeling gameplay, we always apply the "spikes on top of a dream block don't kill you"
+            // likewise, we apply this check to spikes on the bottom if Madeline changed gravity entering the dream block
+
+            if (self.Direction == Spikes.Directions.Up)
+            {
+                // regular upward spikes check that includes Y position
+                if (!invert && player.Speed.Y >= 0 && player.Bottom <= self.Bottom)
+                    player.Die(-Vector2.UnitY);
+                // inverted upward spikes check that only includes Y position if we're dream dashing
+                else if (invert && player.Speed.Y <= 0 && (!isDreamDash || player.Bottom <= self.Bottom))
+                    player.Die(-Vector2.UnitY);
+            }
+            else
+            {
+                var changedGravity = GravityHelperModule.PlayerComponent?.PreDreamBlockGravityType != GravityHelperModule.PlayerComponent?.CurrentGravity;
+                // regular downward spikes check that only includes Y position if we changed gravity on entry
+                if (!invert && player.Speed.Y <= 0 && (!changedGravity || player.Top >= self.Top))
+                    player.Die(Vector2.UnitY);
+                // inverted downward spikes check that includes Y position
+                else if (invert && player.Speed.Y >= 0 && player.Top >= self.Top)
+                    player.Die(Vector2.UnitY);
+            }
         }
     }
 }
