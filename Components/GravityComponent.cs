@@ -8,7 +8,7 @@ using MonoMod.Utils;
 
 namespace Celeste.Mod.GravityHelper.Components
 {
-    [Tracked]
+    [Tracked(true)]
     public class GravityComponent : Component
     {
         private static int _nextId;
@@ -59,8 +59,6 @@ namespace Celeste.Mod.GravityHelper.Components
 
             _data = new DynData<Entity>(entity);
             _data.Data[INVERTED_KEY] = _currentGravity == GravityType.Inverted;
-
-            if (entity is Player) GravityHelperModule.PlayerComponent = this;
         }
 
         public override void Removed(Entity entity)
@@ -71,8 +69,6 @@ namespace Celeste.Mod.GravityHelper.Components
 
             _data.Data[INVERTED_KEY] = false;
             _data = null;
-
-            if (entity is Player) GravityHelperModule.PlayerComponent = null;
         }
 
         public override void EntityAwake()

@@ -31,7 +31,7 @@ namespace Celeste.Mod.GravityHelper
 
         public static GravityHelperModule Instance { get; private set; }
 
-        public static GravityComponent PlayerComponent { get; internal set; }
+        public static PlayerGravityComponent PlayerComponent { get; internal set; }
         public static bool ShouldInvertPlayer => PlayerComponent?.ShouldInvert ?? false;
         public static bool ShouldInvertPlayerChecked => PlayerComponent?.ShouldInvertChecked ?? false;
 
@@ -230,7 +230,7 @@ namespace Celeste.Mod.GravityHelper
                 JumpThruMoving = jumpThruMoving;
 
             // fix player component
-            PlayerComponent = level.Tracker.GetEntity<Player>()?.Get<GravityComponent>();
+            PlayerComponent = level.Tracker.GetEntity<Player>()?.Get<PlayerGravityComponent>();
         }
 
         public static void InvalidateRun()
