@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using Celeste.Mod.GravityHelper.Components;
 using Celeste.Mod.GravityHelper.Extensions;
+using Celeste.Mod.GravityHelper.Hooks;
 using Microsoft.Xna.Framework;
 using Mono.Cecil.Cil;
 using Monocle;
@@ -13,7 +14,7 @@ using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
 using MonoMod.Utils;
 
-namespace Celeste.Mod.GravityHelper.Hooks.ThirdParty
+namespace Celeste.Mod.GravityHelper.ThirdParty
 {
     [ThirdPartyMod("CommunalHelper")]
     public class CommunalHelperModSupport : ThirdPartyModSupport

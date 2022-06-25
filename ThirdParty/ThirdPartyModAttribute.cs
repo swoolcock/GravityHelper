@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Celeste.Mod.GravityHelper.Hooks.ThirdParty
+namespace Celeste.Mod.GravityHelper.ThirdParty
 {
     [AttributeUsage(AttributeTargets.Class)]
     public class ThirdPartyModAttribute : Attribute

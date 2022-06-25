@@ -4,12 +4,13 @@
 using System.Collections.Generic;
 using System.Reflection;
 using Celeste.Mod.GravityHelper.Extensions;
+using Celeste.Mod.GravityHelper.Hooks;
 using Microsoft.Xna.Framework;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
 
-namespace Celeste.Mod.GravityHelper.Hooks.ThirdParty
+namespace Celeste.Mod.GravityHelper.ThirdParty
 {
     [ThirdPartyMod("Bunneline")]
     public class BunnelineModSupport : ThirdPartyModSupport

@@ -11,6 +11,7 @@ using System.Linq;
 using Celeste.Mod.GravityHelper.Components;
 using Celeste.Mod.GravityHelper.Entities.Controllers;
 using Celeste.Mod.GravityHelper.Hooks;
+using Celeste.Mod.GravityHelper.ThirdParty;
 using Monocle;
 using MonoMod.ModInterop;
 

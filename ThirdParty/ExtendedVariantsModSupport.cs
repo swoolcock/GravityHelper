@@ -4,10 +4,11 @@
 using System;
 using System.Reflection;
 using Celeste.Mod.GravityHelper.Extensions;
+using Celeste.Mod.GravityHelper.Hooks;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
 
-namespace Celeste.Mod.GravityHelper.Hooks.ThirdParty
+namespace Celeste.Mod.GravityHelper.ThirdParty
 {
     [ThirdPartyMod("ExtendedVariantMode")]
     public class ExtendedVariantsModSupport : ThirdPartyModSupport

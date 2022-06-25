@@ -5,11 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Celeste.Mod.GravityHelper.Hooks.ThirdParty;
 
 // ReSharper disable InconsistentNaming
 
-namespace Celeste.Mod.GravityHelper.Hooks
+namespace Celeste.Mod.GravityHelper.ThirdParty
 {
     public static class ThirdPartyHooks
     {
