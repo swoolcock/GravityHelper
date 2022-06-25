@@ -6,7 +6,7 @@ using System.Reflection;
 using Monocle;
 using MonoMod.RuntimeDetour;
 
-namespace Celeste.Mod.GravityHelper.Hooks.ThirdParty
+namespace Celeste.Mod.GravityHelper.ThirdParty
 {
     [ThirdPartyMod("OutbackHelper")]
     public class OutbackHelperModSupport : ThirdPartyModSupport

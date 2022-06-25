@@ -47,7 +47,11 @@ namespace Celeste.Mod.GravityHelper.Entities
         private float _cooldownRemaining;
 
         private float _gravityCooldown;
+        private readonly bool _showIndicator;
+        private readonly bool _largeIndicator;
+        private readonly int _indicatorOffset;
         private readonly bool _defaultToController;
+        private IndicatorRenderer _indicatorRenderer;
 
         // ReSharper disable once PrivateFieldCanBeConvertedToLocalVariable
         private readonly DynData<Spring> _springData;
@@ -77,6 +81,9 @@ namespace Celeste.Mod.GravityHelper.Entities
 
             _defaultToController = data.Bool("defaultToController");
             _gravityCooldown = data.Float("gravityCooldown", BehaviorGravityController.DEFAULT_SPRING_COOLDOWN);
+            _showIndicator = data.Bool("showIndicator");
+            _largeIndicator = data.Bool("largeIndicator");
+            _indicatorOffset = data.Int("indicatorOffset", 8);
 
             // handle legacy spring settings
             if (data.TryFloat("cooldown", out var cooldown))
@@ -138,6 +145,19 @@ namespace Celeste.Mod.GravityHelper.Entities
             {
                 _gravityCooldown = behaviorController.SpringCooldown;
             }
+
+            if (_showIndicator && GravityType is GravityType.Normal or GravityType.Inverted or GravityType.Toggle)
+            {
+                scene.Add(_indicatorRenderer = new IndicatorRenderer(this));
+            }
+        }
+
+        public override void Removed(Scene scene)
+        {
+            base.Removed(scene);
+
+            _indicatorRenderer?.RemoveSelf();
+            _indicatorRenderer = null;
         }
 
         private void OnEnable()
@@ -162,6 +182,9 @@ namespace Celeste.Mod.GravityHelper.Entities
         public override void Update()
         {
             base.Update();
+
+            if (_indicatorRenderer != null)
+                _indicatorRenderer.Visible = Visible;
 
             if (_cooldownRemaining > 0)
             {
@@ -381,6 +404,52 @@ namespace Celeste.Mod.GravityHelper.Entities
             Input.Rumble(RumbleStrength.Medium, RumbleLength.Medium);
             self.Sprite.Scale = new Vector2(0.5f, 1.5f);
             self.Collider = collider;
+        }
+
+        public class IndicatorRenderer : Entity
+        {
+            private readonly GravitySpring _spring;
+            private readonly MTexture _arrowTexture;
+            private readonly Vector2 _arrowOrigin;
+
+            public IndicatorRenderer(GravitySpring spring)
+            {
+                _spring = spring;
+
+                var prefix = _spring.GravityType switch
+                {
+                    GravityType.Normal => "down",
+                    GravityType.Inverted => "up",
+                    _ => "double",
+                };
+
+                var size = _spring._largeIndicator ? string.Empty : "Small";
+
+                _arrowTexture = GFX.Game[$"objects/GravityHelper/gravityField/{prefix}Arrow{size}"];
+                _arrowOrigin = new Vector2(_arrowTexture.Width / 2f, _arrowTexture.Height / 2f);
+
+                Depth = Depths.FGDecals - 1;
+
+                Active = false;
+                Collidable = false;
+            }
+
+            public override void Render()
+            {
+                var offset = _spring._indicatorOffset;
+
+                var position = _spring.Position + _spring.Orientation switch
+                {
+                    Orientations.WallLeft => Vector2.UnitX * -offset,
+                    Orientations.WallRight => Vector2.UnitX * offset,
+                    Orientations.Ceiling => Vector2.UnitY * -offset,
+                    Orientations.Floor => Vector2.UnitY * offset,
+                    _ => Vector2.Zero,
+                };
+
+                _arrowTexture.DrawOutline(position, _arrowOrigin);
+                _arrowTexture.Draw(position, _arrowOrigin);
+            }
         }
     }
 }

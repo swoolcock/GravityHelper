@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-namespace Celeste.Mod.GravityHelper.Hooks.ThirdParty
+namespace Celeste.Mod.GravityHelper.ThirdParty
 {
     [ThirdPartyMod("SpeedrunTool", "3.7.2")]
     public class SpeedrunToolModSupport : ThirdPartyModSupport

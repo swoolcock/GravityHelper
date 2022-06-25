@@ -10,6 +10,9 @@ local placementData = helpers.createPlacementData('1', {
     playerCanUse = true,
     gravityType = consts.gravityTypes.normal.index,
     gravityCooldown = 0.1,
+    showIndicator = false,
+    largeIndicator = false,
+    indicatorOffset = 8,
 })
 
 local function makeSpring(name, rotation, xOffset, yOffset, width, height, gravityType)
