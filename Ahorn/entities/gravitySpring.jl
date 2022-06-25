@@ -13,22 +13,26 @@ const default_cooldown = 0.1
     x::Integer, y::Integer,
     pluginVersion::String=PLUGIN_VERSION,
     defaultToController::Bool=true,
-    playerCanUse::Bool=true, gravityType::Integer=0, gravityCooldown::Real=default_cooldown)
+    playerCanUse::Bool=true, gravityType::Integer=0, gravityCooldown::Real=default_cooldown,
+    showIndicator::Bool=false, largeIndicator::Bool=false, indicatorOffset::Integer=8)
 @mapdef Entity "GravityHelper/GravitySpringWallLeft" GravitySpringWallLeft(
     x::Integer, y::Integer,
     pluginVersion::String=PLUGIN_VERSION,
     defaultToController::Bool=true,
-    playerCanUse::Bool=true, gravityType::Integer=2, gravityCooldown::Real=default_cooldown)
+    playerCanUse::Bool=true, gravityType::Integer=2, gravityCooldown::Real=default_cooldown,
+    showIndicator::Bool=false, largeIndicator::Bool=false, indicatorOffset::Integer=8)
 @mapdef Entity "GravityHelper/GravitySpringWallRight" GravitySpringWallRight(
     x::Integer, y::Integer,
     pluginVersion::String=PLUGIN_VERSION,
     defaultToController::Bool=true,
-    playerCanUse::Bool=true, gravityType::Integer=2, gravityCooldown::Real=default_cooldown)
+    playerCanUse::Bool=true, gravityType::Integer=2, gravityCooldown::Real=default_cooldown,
+    showIndicator::Bool=false, largeIndicator::Bool=false, indicatorOffset::Integer=8)
 @mapdef Entity "GravityHelper/GravitySpringCeiling" GravitySpringCeiling(
     x::Integer, y::Integer,
     pluginVersion::String=PLUGIN_VERSION,
     defaultToController::Bool=true,
-    playerCanUse::Bool=true, gravityType::Integer=1, gravityCooldown::Real=default_cooldown)
+    playerCanUse::Bool=true, gravityType::Integer=1, gravityCooldown::Real=default_cooldown,
+    showIndicator::Bool=false, largeIndicator::Bool=false, indicatorOffset::Integer=8)
 
 const gravitySpringUnion = Union{GravitySpringFloor, GravitySpringWallLeft, GravitySpringWallRight, GravitySpringCeiling}
 

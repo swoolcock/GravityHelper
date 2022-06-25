@@ -72,24 +72,36 @@ placements.entities.GravityHelper/GravitySpringFloor.tooltips.defaultToControlle
 placements.entities.GravityHelper/GravitySpringFloor.tooltips.playerCanUse=Whether the spring will activate for the player.
 placements.entities.GravityHelper/GravitySpringFloor.tooltips.gravityType=The gravity type to set when Madeline activates the spring.
 placements.entities.GravityHelper/GravitySpringFloor.tooltips.gravityCooldown=Time in seconds before the spring will change Madeline's gravity again (the bouncing component has no cooldown). If set to 0 seconds, cooldown is disabled. Defaults to 0.1 seconds. Supports controllers.
+placements.entities.GravityHelper/GravitySpringFloor.tooltips.showIndicator=Whether an arrow indicator should be rendered, just below the FG decal layer. Defaults to false.
+placements.entities.GravityHelper/GravitySpringFloor.tooltips.largeIndicator=Whether the indicator should be a larger arrow. Defaults to false.
+placements.entities.GravityHelper/GravitySpringFloor.tooltips.indicatorOffset=The number of pixels away from the spring to render the indicator. Defaults to 8.
 
 # Gravity Spring (Wall Left)
 placements.entities.GravityHelper/GravitySpringWallLeft.tooltips.defaultToController=If true (default), supported properties for this entity will use the value from the active controller.
 placements.entities.GravityHelper/GravitySpringWallLeft.tooltips.playerCanUse=Whether the spring will activate for the player.
 placements.entities.GravityHelper/GravitySpringWallLeft.tooltips.gravityType=The gravity type to set when Madeline activates the spring.
 placements.entities.GravityHelper/GravitySpringWallLeft.tooltips.gravityCooldown=Time in seconds before the spring will change Madeline's gravity again (the bouncing component has no cooldown). If set to 0 seconds, cooldown is disabled. Defaults to 0.1 seconds. Supports controllers.
+placements.entities.GravityHelper/GravitySpringWallLeft.tooltips.showIndicator=Whether an arrow indicator should be rendered, just below the FG decal layer. Defaults to false.
+placements.entities.GravityHelper/GravitySpringWallLeft.tooltips.largeIndicator=Whether the indicator should be a larger arrow. Defaults to false.
+placements.entities.GravityHelper/GravitySpringWallLeft.tooltips.indicatorOffset=The number of pixels away from the spring to render the indicator. Defaults to 8.
 
 # Gravity Spring (Wall Right)
 placements.entities.GravityHelper/GravitySpringWallRight.tooltips.defaultToController=If true (default), supported properties for this entity will use the value from the active controller.
 placements.entities.GravityHelper/GravitySpringWallRight.tooltips.playerCanUse=Whether the spring will activate for the player.
 placements.entities.GravityHelper/GravitySpringWallRight.tooltips.gravityType=The gravity type to set when Madeline activates the spring.
 placements.entities.GravityHelper/GravitySpringWallRight.tooltips.gravityCooldown=Time in seconds before the spring will change Madeline's gravity again (the bouncing component has no cooldown). If set to 0 seconds, cooldown is disabled. Defaults to 0.1 seconds. Supports controllers.
+placements.entities.GravityHelper/GravitySpringWallRight.tooltips.showIndicator=Whether an arrow indicator should be rendered, just below the FG decal layer. Defaults to false.
+placements.entities.GravityHelper/GravitySpringWallRight.tooltips.largeIndicator=Whether the indicator should be a larger arrow. Defaults to false.
+placements.entities.GravityHelper/GravitySpringWallRight.tooltips.indicatorOffset=The number of pixels away from the spring to render the indicator. Defaults to 8.
 
 # Gravity Spring (Ceiling)
 placements.entities.GravityHelper/GravitySpringCeiling.tooltips.defaultToController=If true (default), supported properties for this entity will use the value from the active controller.
 placements.entities.GravityHelper/GravitySpringCeiling.tooltips.playerCanUse=Whether the spring will activate for the player.
 placements.entities.GravityHelper/GravitySpringCeiling.tooltips.gravityType=The gravity type to set when Madeline activates the spring.
 placements.entities.GravityHelper/GravitySpringCeiling.tooltips.gravityCooldown=Time in seconds before the spring will change Madeline's gravity again (the bouncing component has no cooldown). If set to 0 seconds, cooldown is disabled. Defaults to 0.1 seconds. Supports controllers.
+placements.entities.GravityHelper/GravitySpringCeiling.tooltips.showIndicator=Whether an arrow indicator should be rendered, just below the FG decal layer. Defaults to false.
+placements.entities.GravityHelper/GravitySpringCeiling.tooltips.largeIndicator=Whether the indicator should be a larger arrow. Defaults to false.
+placements.entities.GravityHelper/GravitySpringCeiling.tooltips.indicatorOffset=The number of pixels away from the spring to render the indicator. Defaults to 8.
 
 # Upside Down Watch Tower
 placements.entities.GravityHelper/UpsideDownWatchTower.tooltips.summit=Whether the watch tower should zoom on the final node or not. Requires nodes to function, otherwise game will crash.
