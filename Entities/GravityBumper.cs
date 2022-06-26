@@ -43,6 +43,9 @@ namespace Celeste.Mod.GravityHelper.Entities
 
             GravityType = (GravityType)data.Int("gravityType");
 
+            var sine = _data.Get<SineWave>("sine");
+            sine.Rate = data.Float("wobbleRate", 1f);
+
             _sprite = _data.Get<Sprite>("sprite");
 
             _maskSprite = GFX.SpriteBank.Create("gravityBumper");
