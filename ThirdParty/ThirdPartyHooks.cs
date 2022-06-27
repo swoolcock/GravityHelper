@@ -13,7 +13,7 @@ namespace Celeste.Mod.GravityHelper.ThirdParty
     public static class ThirdPartyHooks
     {
         public static IEnumerable<Type> ThirdPartyModTypes =>
-            typeof(ThirdPartyModSupport).Assembly.DefinedTypes.Where(t =>
+            ReflectionCache.LoadableTypes.Where(t =>
                 t.GetCustomAttribute<ThirdPartyModAttribute>() != null);
 
         public static readonly Dictionary<string, ThirdPartyModSupport> LoadedMods = new();
