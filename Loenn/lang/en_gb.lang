@@ -20,6 +20,7 @@ entities.GravityHelper/GravityBumper.placements.name.normal=Gravity Bumper (Norm
 entities.GravityHelper/GravityBumper.placements.name.inverted=Gravity Bumper (Inverted) (GravityHelper)
 entities.GravityHelper/GravityBumper.placements.name.toggle=Gravity Bumper (Toggle) (GravityHelper)
 entities.GravityHelper/GravityBumper.attributes.description.gravityType=The gravity type to set when Madeline touches the bumper.
+entities.GravityHelper/GravityBumper.attributes.description.wobbleRate=The rate multiplier at which the bumper will wobble back and forth.  Set to 0 to disable wobbling.  Defaults to 1 (vanilla).
 
 # Gravity Dream Block
 entities.GravityHelper/GravityDreamBlock.placements.name.normal=Gravity Dream Block (Normal) (GravityHelper)

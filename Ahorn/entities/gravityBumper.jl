@@ -10,7 +10,8 @@ const PLUGIN_VERSION = "1"
 @mapdef Entity "GravityHelper/GravityBumper" GravityBumper(
     x::Integer, y::Integer,
     pluginVersion::String=PLUGIN_VERSION,
-    gravityType::Integer=0
+    gravityType::Integer=0,
+    wobbleRate::Real=1.0
 )
 
 const placements = Ahorn.PlacementDict(

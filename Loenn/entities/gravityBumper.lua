@@ -8,6 +8,7 @@ local drawableSprite = require("structs.drawable_sprite")
 
 local placementData = helpers.createPlacementData('1', {
     gravityType = consts.gravityTypes.normal.index,
+    wobbleRate = 1,
 })
 
 local gravityBumper = {

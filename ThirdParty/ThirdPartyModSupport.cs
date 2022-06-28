@@ -2,6 +2,7 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
@@ -9,6 +10,9 @@ namespace Celeste.Mod.GravityHelper.ThirdParty
 {
     public abstract class ThirdPartyModSupport : IDisposable
     {
+        // ReSharper disable once InconsistentNaming
+        public static readonly List<string> BlacklistedMods = new();
+
         private bool _loaded;
 
         public ThirdPartyModAttribute Attribute =>
@@ -20,6 +24,12 @@ namespace Celeste.Mod.GravityHelper.ThirdParty
         public bool TryLoad()
         {
             var attr = Attribute;
+
+            if (BlacklistedMods.Contains(attr.Name))
+            {
+                Logger.Log(LogLevel.Info, nameof(GravityHelperModule), $"{attr.Name} is blacklisted, skipping.");
+                return false;
+            }
 
             if (_loaded)
             {
