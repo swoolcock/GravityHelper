@@ -17,13 +17,29 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
         public bool DisableGrab { get; }
         public bool DisableDash { get; }
 
-        public bool IsVvvvvv => Mode == VvvvvvMode.TriggerBased && GravityHelperModule.Session.VvvvvvTrigger || Mode == VvvvvvMode.On;
+        public bool IsVvvvvv => GravityHelperModule.Settings.VvvvvvMode == GravityHelperModuleSettings.VvvvvvSetting.Default
+            ? Mode == VvvvvvMode.TriggerBased && GravityHelperModule.Session.VvvvvvTrigger || Mode == VvvvvvMode.On
+            : GravityHelperModule.Settings.VvvvvvMode == GravityHelperModuleSettings.VvvvvvSetting.Enabled;
+
+        public bool IsDisableDash => GravityHelperModule.Settings.VvvvvvMode == GravityHelperModuleSettings.VvvvvvSetting.Default
+            ? DisableDash
+            : GravityHelperModule.Settings.VvvvvvMode == GravityHelperModuleSettings.VvvvvvSetting.Enabled &&
+            GravityHelperModule.Settings.VvvvvvAllowDashing != GravityHelperModuleSettings.VvvvvvSetting.Enabled;
 
         private bool _dashDisabled;
         private float _bufferTimeRemaining;
         private bool _autoFlip;
 
         private const float flip_buffer_seconds = 0.1f;
+        private const string default_flip_sound = "event:/gravityhelper/toggle";
+
+        public VvvvvvGravityController()
+        {
+            Mode = VvvvvvMode.Off;
+            FlipSound = default_flip_sound;
+            DisableDash = true;
+            DisableGrab = true;
+        }
 
         public VvvvvvGravityController(EntityData data, Vector2 offset)
             : base(data, offset)
@@ -40,8 +56,25 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
 
             var active = ActiveController;
             var session = GravityHelperModule.Session;
-            session.DisableGrab = active.DisableGrab;
-            session.VvvvvvMode = active.Mode;
+            var settings = GravityHelperModule.Settings;
+
+            switch (settings.VvvvvvMode)
+            {
+                case GravityHelperModuleSettings.VvvvvvSetting.Default:
+                    session.VvvvvvMode = active.Mode;
+                    session.DisableGrab = active.DisableGrab;
+                    break;
+
+                case GravityHelperModuleSettings.VvvvvvSetting.Enabled:
+                    session.VvvvvvMode = VvvvvvMode.On;
+                    session.DisableGrab = settings.VvvvvvAllowGrabbing != GravityHelperModuleSettings.VvvvvvSetting.Enabled;
+                    break;
+
+                case GravityHelperModuleSettings.VvvvvvSetting.Disabled:
+                    session.VvvvvvMode = VvvvvvMode.Off;
+                    session.DisableGrab = false;
+                    break;
+            }
         }
 
         public void CheckJump(Player player)
@@ -107,8 +140,17 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
 
             GravityHelperModule.PlayerComponent?.SetGravity(GravityType.Toggle);
             player.Speed.Y = 160f * (player.SceneAs<Level>().InSpace ? 0.6f : 1f);
-            if (!string.IsNullOrEmpty(active.FlipSound))
-                Audio.Play(active.FlipSound);
+
+            var forcedOn = GravityHelperModule.Settings.VvvvvvMode == GravityHelperModuleSettings.VvvvvvSetting.Enabled;
+
+            var flipSound = active.FlipSound;
+            if (forcedOn && GravityHelperModule.Settings.VvvvvvFlipSound == GravityHelperModuleSettings.VvvvvvSetting.Enabled)
+                flipSound = string.IsNullOrWhiteSpace(flipSound) ? default_flip_sound : flipSound;
+            else if (forcedOn && GravityHelperModule.Settings.VvvvvvFlipSound == GravityHelperModuleSettings.VvvvvvSetting.Disabled)
+                flipSound = string.Empty;
+
+            if (!string.IsNullOrEmpty(flipSound))
+                Audio.Play(flipSound);
         }
 
         public override void Update()
@@ -117,10 +159,12 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
             if (!Persistent) return;
 
             var active = ActiveController;
+            var isVvvvvv = active.IsVvvvvv;
+            var disableDash = active.IsDisableDash;
 
-            if (_dashDisabled != active.IsVvvvvv && active.DisableDash)
+            if (_dashDisabled != (isVvvvvv && disableDash))
             {
-                _dashDisabled = active.IsVvvvvv && active.DisableDash;
+                _dashDisabled = isVvvvvv && disableDash;
                 updateInventory();
             }
 

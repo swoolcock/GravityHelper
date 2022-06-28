@@ -17,7 +17,8 @@ namespace Celeste.Mod.GravityHelper.Extensions
 
         public static BaseGravityController GetActiveController(this Scene scene, Type controllerType)
         {
-            if (!scene.Tracker.Entities.TryGetValue(controllerType, out var list)) return null;
+            if (scene == null || controllerType == null) return null;
+            if (!scene.Tracker.Entities.TryGetValue(controllerType, out var list) || !list.Any()) return null;
             var level = scene as Level;
 
             BaseGravityController global = null;

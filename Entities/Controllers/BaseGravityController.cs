@@ -12,11 +12,15 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
     public abstract class BaseGravityController<TController> : BaseGravityController
         where TController : BaseGravityController
     {
+        protected BaseGravityController()
+        {
+        }
+
         protected BaseGravityController(EntityData data, Vector2 offset)
             : base(data, offset) {
         }
 
-        public TController ActiveController => SceneAs<Level>().GetActiveController<TController>() ?? this as TController;
+        public TController ActiveController => (Scene as Level)?.GetActiveController<TController>() ?? this as TController;
     }
 
     public abstract class BaseGravityController : Entity
@@ -30,6 +34,24 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
         /// Get the active controller with Scene.GetActiveController if you want to read a property.
         /// </summary>
         public bool Persistent { get; }
+
+        public bool Ephemeral { get; }
+
+        protected BaseGravityController()
+        {
+            ModVersion = new Version(0, 1);
+            PluginVersion = new Version(0, 1);
+
+            Visible = Collidable = false;
+            Ephemeral = Active = Persistent = true;
+
+            AddTag(Tags.Global);
+
+            Add(new TransitionListener
+            {
+                OnOutBegin = Transitioned,
+            });
+        }
 
         protected BaseGravityController(EntityData data, Vector2 offset)
             : base(data.Position + offset)
@@ -92,11 +114,16 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
 
             orig(self, playerintro, true);
 
+            // ensure we have a vvvvvv if required by settings
+            var vvvvvv = self.GetPersistentController<VvvvvvGravityController>();
+            if (vvvvvv == null && GravityHelperModule.Settings.VvvvvvMode != GravityHelperModuleSettings.VvvvvvSetting.Default)
+                self.Add(vvvvvv = new VvvvvvGravityController());
+
             // apply each controller type (this should probably be automatic)
             self.GetPersistentController<BehaviorGravityController>()?.Transitioned();
             self.GetPersistentController<SoundGravityController>()?.Transitioned();
             self.GetPersistentController<VisualGravityController>()?.Transitioned();
-            self.GetPersistentController<VvvvvvGravityController>()?.Transitioned();
+            vvvvvv?.Transitioned();
         }
     }
 }
