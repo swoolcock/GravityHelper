@@ -45,6 +45,9 @@ namespace Celeste.Mod.GravityHelper.Entities
 
             textures[0] = GFX.Game[$"objects/GravityHelper/gravityDreamBlock/{prefix}Arrow"];
             textures[1] = GFX.Game[$"objects/GravityHelper/gravityDreamBlock/{prefix}ArrowSmall"];
+
+            // bring gravity dream blocks above regular dream blocks at the same depth
+            Depth--;
         }
 
         public void InitialiseParticleColors()
