@@ -1,6 +1,7 @@
 // Copyright (c) Shane Woolcock. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+using System.Reflection;
 using Celeste.Mod.Entities;
 using Microsoft.Xna.Framework;
 using Monocle;
@@ -21,10 +22,9 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
             ? Mode == VvvvvvMode.TriggerBased && GravityHelperModule.Session.VvvvvvTrigger || Mode == VvvvvvMode.On
             : GravityHelperModule.Settings.VvvvvvMode == GravityHelperModuleSettings.VvvvvvSetting.Enabled;
 
-        public bool IsDisableDash => GravityHelperModule.Settings.VvvvvvMode == GravityHelperModuleSettings.VvvvvvSetting.Default
+        public bool IsDisableDash => GravityHelperModule.Settings.VvvvvvAllowDashing == GravityHelperModuleSettings.VvvvvvSetting.Default
             ? DisableDash
-            : GravityHelperModule.Settings.VvvvvvMode == GravityHelperModuleSettings.VvvvvvSetting.Enabled &&
-            GravityHelperModule.Settings.VvvvvvAllowDashing != GravityHelperModuleSettings.VvvvvvSetting.Enabled;
+            : GravityHelperModule.Settings.VvvvvvAllowDashing != GravityHelperModuleSettings.VvvvvvSetting.Enabled;
 
         private bool _dashDisabled;
         private float _bufferTimeRemaining;
@@ -58,23 +58,19 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
             var session = GravityHelperModule.Session;
             var settings = GravityHelperModule.Settings;
 
-            switch (settings.VvvvvvMode)
+            session.VvvvvvMode = settings.VvvvvvMode switch
             {
-                case GravityHelperModuleSettings.VvvvvvSetting.Default:
-                    session.VvvvvvMode = active.Mode;
-                    session.DisableGrab = active.DisableGrab;
-                    break;
+                GravityHelperModuleSettings.VvvvvvSetting.Enabled => VvvvvvMode.On,
+                GravityHelperModuleSettings.VvvvvvSetting.Disabled => VvvvvvMode.Off,
+                _ => active.Mode,
+            };
 
-                case GravityHelperModuleSettings.VvvvvvSetting.Enabled:
-                    session.VvvvvvMode = VvvvvvMode.On;
-                    session.DisableGrab = settings.VvvvvvAllowGrabbing != GravityHelperModuleSettings.VvvvvvSetting.Enabled;
-                    break;
-
-                case GravityHelperModuleSettings.VvvvvvSetting.Disabled:
-                    session.VvvvvvMode = VvvvvvMode.Off;
-                    session.DisableGrab = false;
-                    break;
-            }
+            session.DisableGrab = settings.VvvvvvAllowGrabbing switch
+            {
+                GravityHelperModuleSettings.VvvvvvSetting.Enabled => false,
+                GravityHelperModuleSettings.VvvvvvSetting.Disabled => active.IsVvvvvv,
+                _ => active.DisableGrab,
+            };
         }
 
         public void CheckJump(Player player)
@@ -186,8 +182,11 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
             }
             else
             {
-                // TODO: not force default
-                level.Session.Inventory = PlayerInventory.Default;
+                var invName = level.Session.MapData.Meta.Inventory;
+                var fieldInfo = typeof(PlayerInventory).GetField(invName, BindingFlags.Public | BindingFlags.Static);
+                var inv = fieldInfo != null ? (PlayerInventory)fieldInfo.GetValue(null) : PlayerInventory.Default;
+                level.Session.Inventory = inv;
+                player.Dashes = player.MaxDashes;
             }
         }
     }
