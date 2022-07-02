@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Celeste.Mod.Entities;
+using Celeste.Mod.GravityHelper.Components;
 using Celeste.Mod.GravityHelper.Entities.Controllers;
 using Celeste.Mod.GravityHelper.Extensions;
 using Celeste.Mod.GravityHelper.Triggers;
@@ -85,6 +86,7 @@ namespace Celeste.Mod.GravityHelper.Entities
         private readonly float[] _speeds = {12f, 20f, 40f};
         private GravityFieldGroup _fieldGroup;
         private Vector2 _staticMoverOffset;
+        private CassetteComponent _cassetteComponent;
 
         #region Managed by owner
 
@@ -109,6 +111,15 @@ namespace Celeste.Mod.GravityHelper.Entities
             ArrowType = (VisualType)data.Int("arrowType", (int) VisualType.Default);
             FieldType = (VisualType)data.Int("fieldType", (int) VisualType.Default);
             SingleUse = data.Bool("singleUse");
+
+            var cassetteIndex = data.Int("cassetteIndex", -1);
+            if (cassetteIndex >= 0)
+            {
+                Add(_cassetteComponent = new CassetteComponent(cassetteIndex, data)
+                {
+                    OnStateChange = value => Collidable = value >= CassetteStates.On,
+                });
+            }
 
             // controller managed
             _defaultToController = data.Bool("defaultToController");
@@ -333,11 +344,16 @@ namespace Celeste.Mod.GravityHelper.Entities
         {
             base.Render();
 
+            var cassetteIndex = _cassetteComponent?.CassetteIndex ?? -1;
+            var cassetteState = _cassetteComponent?.CassetteState ?? CassetteStates.On;
+            var cassetteOpacity = cassetteIndex < 0 || cassetteState == CassetteStates.On ? 1f : cassetteState == CassetteStates.Off ? 0.25f : 0.5f;
             var flashOpacity = _fieldGroup?.AlphaMultiplier ?? 1f;
 
-            if (shouldDrawField)
+            var opacity = cassetteOpacity * flashOpacity;
+
+            if (shouldDrawField && (cassetteIndex < 0 || cassetteState >= CassetteStates.On))
             {
-                var color = ParticleColor * _particleOpacity * flashOpacity;
+                var color = ParticleColor * _particleOpacity * opacity;
                 foreach (Vector2 particle in _particles)
                     Draw.Pixel.Draw(Position + particle, Vector2.Zero, color);
             }
@@ -354,7 +370,7 @@ namespace Celeste.Mod.GravityHelper.Entities
                 // if width or height is 1, scale down the arrows
                 var texture = widthInTiles == 1 || heightInTiles == 1 ? _arrowSmallTexture : _arrowTexture;
                 var origin = widthInTiles == 1 || heightInTiles == 1 ? _arrowSmallOrigin : _arrowOrigin;
-                var color = ArrowColor * _arrowOpacity * flashOpacity;
+                var color = ArrowColor * _arrowOpacity * opacity;
 
                 // arrows should be centre aligned in each 2x2 box
                 // offset by half a tile if the width or height is odd
