@@ -82,9 +82,6 @@ namespace Celeste.Mod.GravityHelper
         public static Type MaddyCrownModuleType { get; private set; }
         public static Type FrostHelperCustomSpringType { get; private set; }
         public static Type OutbackHelperPortalType { get; private set; }
-        public static Type CatelineModuleType { get; private set; }
-        public static FieldInfo CatelineModuleInstanceFieldInfo { get; private set; }
-        public static FieldInfo CatelineModuleTailNodesFieldInfo { get; private set; }
         public static Type CommunalHelperConnectedSolidType { get; private set; }
         public static Type CommunalHelperTimedTriggerSpikesType { get; private set; }
         public static Type ExtendedVariantsDashTrailAllTheTimeType { get; private set; }
@@ -105,9 +102,6 @@ namespace Celeste.Mod.GravityHelper
             MaxHelpingHandGroupedTriggerSpikesType = GetModdedTypeByName("MaxHelpingHand", "Celeste.Mod.MaxHelpingHand.Entities.GroupedTriggerSpikes");
             FrostHelperCustomSpringType = GetModdedTypeByName("FrostHelper", "FrostHelper.CustomSpring");
             OutbackHelperPortalType = GetModdedTypeByName("OutbackHelper", "Celeste.Mod.OutbackHelper.Portal");
-            CatelineModuleType = GetModdedTypeByName("Cateline", "Celeste.Mod.Cateline.CatelineModule");
-            CatelineModuleInstanceFieldInfo = CatelineModuleType?.GetField("Instance", BindingFlags.Static | BindingFlags.Public);
-            CatelineModuleTailNodesFieldInfo = CatelineModuleType?.GetField("tailNodes", BindingFlags.Instance | BindingFlags.NonPublic);
             CommunalHelperConnectedSolidType = GetModdedTypeByName("CommunalHelper", "Celeste.Mod.CommunalHelper.ConnectedSolid");
             CommunalHelperTimedTriggerSpikesType = GetModdedTypeByName("CommunalHelper", "Celeste.Mod.CommunalHelper.Entities.TimedTriggerSpikes");
             ExtendedVariantsDashTrailAllTheTimeType = GetModdedTypeByName("ExtendedVariantMode", "ExtendedVariants.Variants.DashTrailAllTheTime");

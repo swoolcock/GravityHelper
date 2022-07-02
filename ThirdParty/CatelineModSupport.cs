@@ -7,52 +7,25 @@ using System.Linq;
 using System.Reflection;
 using Celeste.Mod.GravityHelper.Extensions;
 using Celeste.Mod.GravityHelper.Hooks;
+using Celeste.Mod.GravityHelper.Hooks.Attributes;
 using Microsoft.Xna.Framework;
 using Mono.Cecil.Cil;
 using Monocle;
 using MonoMod.Cil;
-using MonoMod.RuntimeDetour;
 
 namespace Celeste.Mod.GravityHelper.ThirdParty
 {
-    [ThirdPartyMod("Cateline")]
-    public class CatelineModSupport : ThirdPartyModSupport
+    [HookFixture("Cateline")]
+    public class CatelineModSupport
     {
-        // ReSharper disable InconsistentNaming
-        private IDetour hook_CatelineModule_Hair_Render;
-        private IDetour hook_CatelineModule_Player_Update;
-        // ReSharper restore InconsistentNaming
+        private const string cateline_module_name = "Celeste.Mod.Cateline.CatelineModule";
+
+        [ReflectType("Cateline", cateline_module_name)]
+        public static Type CatelineModuleType;
 
         private static List<Vector2> _tailNodes;
 
-        protected override void Load()
-        {
-            var cmt = ReflectionCache.CatelineModuleType;
-            var cmHairRenderMethod = cmt?.GetMethod("Hair_Render", BindingFlags.Instance | BindingFlags.NonPublic);
-            if (cmHairRenderMethod != null)
-            {
-                hook_CatelineModule_Hair_Render = new ILHook(cmHairRenderMethod, CatelineModule_Hair_Render);
-            }
-
-            var cmPlayerUpdateMethod = cmt?.GetMethod("Player_Update", BindingFlags.Instance | BindingFlags.NonPublic);
-            if (cmPlayerUpdateMethod != null)
-            {
-                hook_CatelineModule_Player_Update = new ILHook(cmPlayerUpdateMethod, CatelineModule_Player_Update);
-            }
-
-            IL.Celeste.TrailManager.BeforeRender += TrailManager_BeforeRender;
-        }
-
-        protected override void Unload()
-        {
-            hook_CatelineModule_Hair_Render?.Dispose();
-            hook_CatelineModule_Hair_Render = null;
-            hook_CatelineModule_Player_Update?.Dispose();
-            hook_CatelineModule_Player_Update = null;
-
-            IL.Celeste.TrailManager.BeforeRender -= TrailManager_BeforeRender;
-        }
-
+        [HookMethod(cateline_module_name, "Hair_Render")]
         private static void CatelineModule_Hair_Render(ILContext il) => HookUtils.SafeHook(() =>
         {
             var cursor = new ILCursor(il);
@@ -63,11 +36,12 @@ namespace Celeste.Mod.GravityHelper.ThirdParty
             cursor.EmitInvertFloatDelegate();
 
             // invert tail scale
-            if (!cursor.TryGotoNext(MoveType.After, instr => instr.MatchLdfld(ReflectionCache.CatelineModuleType, "tailScale")))
+            if (!cursor.TryGotoNext(MoveType.After, instr => instr.MatchLdfld(CatelineModuleType, "tailScale")))
                 throw new HookException("Couldn't invert tailScale");
             cursor.EmitInvertVectorDelegate();
         });
 
+        [HookMethod(cateline_module_name, "Player_Update")]
         private static void CatelineModule_Player_Update(ILContext il) => HookUtils.SafeHook(() =>
         {
             // Cateline's tail implementation is very similar to PlayerHair.AfterUpdate,
@@ -82,12 +56,12 @@ namespace Celeste.Mod.GravityHelper.ThirdParty
             }
 
             // this.tailNodes[0] = sprite.RenderPosition + new Vector2(0.0f, -2f * sprite.Scale.Y) + vector2_2;
-            cursor.GotoNext(instr => instr.MatchLdfld(ReflectionCache.CatelineModuleType, "tailNodes"));
+            cursor.GotoNext(instr => instr.MatchLdfld(CatelineModuleType, "tailNodes"));
             invertAddition();
             invertAddition();
 
             // Vector2 target = this.tailNodes[0] + new Vector2((float) ((double) -(float) hair.Facing * (double) num3 * 2.0), (float) Math.Sin((double) hair.Wave) * num1) + vector2_1;
-            cursor.GotoNext(instr => instr.MatchLdfld(ReflectionCache.CatelineModuleType, "tailNodes"));
+            cursor.GotoNext(instr => instr.MatchLdfld(CatelineModuleType, "tailNodes"));
             invertAddition();
             invertAddition();
 
@@ -100,11 +74,15 @@ namespace Celeste.Mod.GravityHelper.ThirdParty
             invertAddition();
         });
 
-        private void TrailManager_BeforeRender(ILContext il) => HookUtils.SafeHook(() =>
+        [HookMethod(typeof(IL.Celeste.TrailManager), nameof(IL.Celeste.TrailManager.BeforeRender))]
+        private static void TrailManager_BeforeRender(ILContext il) => HookUtils.SafeHook(() =>
         {
             // this hook actually fixes an issue with Cateline where the tail is not correctly offset when rendering the dash trail
             var cursor = new ILCursor(il);
             var variable = il.Body.Variables.FirstOrDefault(v => v.VariableType.FullName == typeof(Vector2).FullName);
+
+            var instanceFieldInfo = CatelineModuleType?.GetField("Instance", BindingFlags.Static | BindingFlags.Public);
+            var tailNodesFieldInfo = CatelineModuleType?.GetField("tailNodes", BindingFlags.Instance | BindingFlags.NonPublic);
 
             cursor.GotoNext(instr => instr.MatchCallvirt<Component>(nameof(Component.Render)));
             cursor.Emit(OpCodes.Ldloc, variable);
@@ -112,8 +90,8 @@ namespace Celeste.Mod.GravityHelper.ThirdParty
             {
                 if (_tailNodes == null)
                 {
-                    var instance = ReflectionCache.CatelineModuleInstanceFieldInfo.GetValue(null);
-                    _tailNodes = (List<Vector2>)ReflectionCache.CatelineModuleTailNodesFieldInfo.GetValue(instance);
+                    var instance = instanceFieldInfo.GetValue(null);
+                    _tailNodes = (List<Vector2>)tailNodesFieldInfo.GetValue(instance);
                 }
 
                 for (int i = 0; i < _tailNodes.Count; i++)
