@@ -1,6 +1,7 @@
 // Copyright (c) Shane Woolcock. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+using System.Reflection;
 using Celeste.Mod.Entities;
 using Microsoft.Xna.Framework;
 using Monocle;
@@ -181,8 +182,11 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
             }
             else
             {
-                // TODO: not force default
-                level.Session.Inventory = PlayerInventory.Default;
+                var invName = level.Session.MapData.Meta.Inventory;
+                var fieldInfo = typeof(PlayerInventory).GetField(invName, BindingFlags.Public | BindingFlags.Static);
+                var inv = fieldInfo != null ? (PlayerInventory)fieldInfo.GetValue(null) : PlayerInventory.Default;
+                level.Session.Inventory = inv;
+                player.Dashes = player.MaxDashes;
             }
         }
     }
