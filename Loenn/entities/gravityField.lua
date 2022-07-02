@@ -26,6 +26,7 @@ local placementData = helpers.createPlacementData('1', {
     affectsHoldableActors = false,
     affectsOtherActors = false,
     momentumMultiplier = 1.0,
+    cassetteIndex = -1,
 })
 
 local gravityField = {
@@ -74,6 +75,38 @@ local gravityField = {
             data = helpers.union(placementData, {
                 affectsPlayer = false,
             }),
+        },
+        {
+            name = "cassetteBlock0",
+            data = helpers.union(placementData, {
+                gravityType = 0,
+                cassetteIndex = 0,
+                fieldColor = "49aaf0",
+            })
+        },
+        {
+            name = "cassetteBlock1",
+            data = helpers.union(placementData, {
+                gravityType = 1,
+                cassetteIndex = 1,
+                fieldColor = "f049be",
+            })
+        },
+        {
+            name = "cassetteBlock2",
+            data = helpers.union(placementData, {
+                gravityType = 0,
+                cassetteIndex = 2,
+                fieldColor = "fcdc3a",
+            })
+        },
+        {
+            name = "cassetteBlock3",
+            data = helpers.union(placementData, {
+                gravityType = 1,
+                cassetteIndex = 3,
+                fieldColor = "38e04e",
+            })
         },
     },
 }

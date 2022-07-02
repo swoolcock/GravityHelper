@@ -25,7 +25,7 @@ namespace Celeste.Mod.GravityHelper
 
         public void CreateAllowInAllMapsEntry(TextMenu menu, bool inGame)
         {
-            menu.Add(new TextMenu.OnOff("Allow In All Maps", AllowInAllMaps)
+            menu.Add(new TextMenu.OnOff(Dialog.Get("GRAVITYHELPER_MENU_ALLOW_IN_ALL_MAPS"), AllowInAllMaps)
             {
                 Disabled = inGame,
                 OnValueChange = value => AllowInAllMaps = value,
@@ -34,7 +34,7 @@ namespace Celeste.Mod.GravityHelper
 
         public void CreateVvvvvvModeEntry(TextMenu menu, bool inGame)
         {
-            menu.Add(new TextMenu.Option<VvvvvvSetting>("Vvvvvv Mode")
+            menu.Add(new TextMenu.Option<VvvvvvSetting>(Dialog.Get("GRAVITYHELPER_MENU_VVVVVV_MODE"))
             {
                 Values = getEnumOptions<VvvvvvSetting>().ToList(),
                 Index = (int)VvvvvvMode,
@@ -54,7 +54,7 @@ namespace Celeste.Mod.GravityHelper
 
         public void CreateVvvvvvAllowGrabbingEntry(TextMenu menu, bool inGame)
         {
-            menu.Add(new TextMenu.Option<VvvvvvSetting>("Vvvvvv Allow Grabbing")
+            menu.Add(new TextMenu.Option<VvvvvvSetting>(Dialog.Get("GRAVITYHELPER_MENU_VVVVVV_ALLOW_GRABBING"))
             {
                 Values = getEnumOptions<VvvvvvSetting>().ToList(),
                 Index = (int)VvvvvvAllowGrabbing,
@@ -69,7 +69,7 @@ namespace Celeste.Mod.GravityHelper
 
         public void CreateVvvvvvAllowDashingEntry(TextMenu menu, bool inGame)
         {
-            menu.Add(new TextMenu.Option<VvvvvvSetting>("Vvvvvv Allow Dashing")
+            menu.Add(new TextMenu.Option<VvvvvvSetting>(Dialog.Get("GRAVITYHELPER_MENU_VVVVVV_ALLOW_DASHING"))
             {
                 Values = getEnumOptions<VvvvvvSetting>().ToList(),
                 Index = (int)VvvvvvAllowDashing,
@@ -84,7 +84,7 @@ namespace Celeste.Mod.GravityHelper
 
         public void CreateVvvvvvFlipSoundEntry(TextMenu menu, bool inGame)
         {
-            menu.Add(new TextMenu.Option<VvvvvvSetting>("Vvvvvv Flip Sound")
+            menu.Add(new TextMenu.Option<VvvvvvSetting>(Dialog.Get("GRAVITYHELPER_MENU_VVVVVV_FLIP_SOUND"))
             {
                 Values = getEnumOptions<VvvvvvSetting>().ToList(),
                 Index = (int)VvvvvvFlipSound,

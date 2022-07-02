@@ -18,7 +18,8 @@ const PLUGIN_VERSION = "1"
     arrowColor::String="FFFFFF", fieldColor::String="", particleColor::String="FFFFFF",
     flashOnTrigger::Bool=true,
     affectsPlayer::Bool=true, affectsHoldableActors::Bool=false, affectsOtherActors::Bool=false,
-    momentumMultiplier::Real=1.0, singleUse::Bool=false
+    momentumMultiplier::Real=1.0, singleUse::Bool=false,
+    cassetteIndex::Integer=-1
 )
 
 const gravityColors = Dict{Integer, Tuple{Real, Real, Real, Real}}(
@@ -83,6 +84,42 @@ const placements = Ahorn.PlacementDict(
         "rectangle",
         Dict{String, Any}(
             "affectsPlayer" => false,
+        )
+    ),
+    "Gravity Field (Cassette Block 0 - Blue) (GravityHelper)" => Ahorn.EntityPlacement(
+        GravityField,
+        "rectangle",
+        Dict{String, Any}(
+            "gravityType" => 0,
+            "cassetteIndex" => 0,
+            "fieldColor" => "49aaf0",
+        )
+    ),
+    "Gravity Field (Cassette Block 1 - Rose) (GravityHelper)" => Ahorn.EntityPlacement(
+        GravityField,
+        "rectangle",
+        Dict{String, Any}(
+            "gravityType" => 1,
+            "cassetteIndex" => 1,
+            "fieldColor" => "f049be",
+        )
+    ),
+    "Gravity Field (Cassette Block 2 - Bright Sun) (GravityHelper)" => Ahorn.EntityPlacement(
+        GravityField,
+        "rectangle",
+        Dict{String, Any}(
+            "gravityType" => 0,
+            "cassetteIndex" => 2,
+            "fieldColor" => "fcdc3a",
+        )
+    ),
+    "Gravity Field (Cassette Block 3 - Malachite) (GravityHelper)" => Ahorn.EntityPlacement(
+        GravityField,
+        "rectangle",
+        Dict{String, Any}(
+            "gravityType" => 1,
+            "cassetteIndex" => 3,
+            "fieldColor" => "38e04e",
         )
     )
 )

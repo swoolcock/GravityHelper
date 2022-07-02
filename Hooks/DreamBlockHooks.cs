@@ -32,7 +32,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
         {
             orig(self);
             if (self is GravityDreamBlock gravityDreamBlock)
-                gravityDreamBlock.UpdateParticleColors();
+                gravityDreamBlock.InitialiseParticleColors();
         }
 
         private static void DreamBlock_WobbleLine(ILContext il) => HookUtils.SafeHook(() =>
@@ -63,7 +63,10 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
             cursor.Emit(OpCodes.Ldarg_0);
             cursor.EmitDelegate<Func<Color, DreamBlock, Color>>((color, self) =>
-                self is GravityDreamBlock gravityDreamBlock ? gravityDreamBlock.GravityType.Color().Lighter(0.4f) : color);
+            {
+                if (self is not GravityDreamBlock gravityDreamBlock) return color;
+                return gravityDreamBlock.GravityType.Color().Lighter(gravityDreamBlock.WasEntered ? 0.6f : 0.4f);
+            });
         }
 
         private static void emitReplaceActiveBackColor(ILCursor cursor)
@@ -74,13 +77,9 @@ namespace Celeste.Mod.GravityHelper.Hooks
             cursor.Emit(OpCodes.Ldarg_0);
             cursor.EmitDelegate<Func<Color, DreamBlock, Color>>((oldColor, self) =>
             {
-                if (self is GravityDreamBlock gravityDreamBlock)
-                {
-                    var color = gravityDreamBlock.GravityType.Color() * 0.15f;
-                    return new Color(color.R, color.G, color.B, 255);
-                }
-
-                return oldColor;
+                if (self is not GravityDreamBlock gravityDreamBlock) return oldColor;
+                var color = gravityDreamBlock.GravityType.Color() * (gravityDreamBlock.WasEntered ? 0.6f : 0.15f);
+                return new Color(color.R, color.G, color.B, 255);
             });
         }
     }

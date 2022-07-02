@@ -24,6 +24,7 @@ namespace Celeste.Mod.GravityHelper.Entities
         private readonly DynData<DreamBlock> _dreamBlockData;
 
         public GravityType GravityType { get; }
+        internal bool WasEntered;
 
         public GravityDreamBlock(EntityData data, Vector2 offset)
             : base(data, offset)
@@ -44,9 +45,12 @@ namespace Celeste.Mod.GravityHelper.Entities
 
             textures[0] = GFX.Game[$"objects/GravityHelper/gravityDreamBlock/{prefix}Arrow"];
             textures[1] = GFX.Game[$"objects/GravityHelper/gravityDreamBlock/{prefix}ArrowSmall"];
+
+            // bring gravity dream blocks above regular dream blocks at the same depth
+            Depth--;
         }
 
-        public void UpdateParticleColors()
+        public void InitialiseParticleColors()
         {
             var gravityTypeColor = GravityType.Color();
             var particlesObject = _dreamBlockData["particles"];
@@ -60,6 +64,21 @@ namespace Celeste.Mod.GravityHelper.Entities
                     particles.SetValue(particle, i);
                 }
             }
+        }
+
+        public override void Update()
+        {
+            base.Update();
+
+            if (WasEntered && (Scene?.Tracker.GetEntity<Player>() is not { } player || player.StateMachine.State != Player.StDreamDash))
+                WasEntered = false;
+        }
+
+        public void PlayerEntered()
+        {
+            WasEntered = true;
+            GravityHelperModule.PlayerComponent.PreDreamBlockGravityType = GravityHelperModule.PlayerComponent.CurrentGravity;
+            GravityHelperModule.PlayerComponent.SetGravity(GravityType);
         }
     }
 }

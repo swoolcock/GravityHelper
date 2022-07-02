@@ -33,6 +33,7 @@ placements.entities.GravityHelper/GravityField.tooltips.flashOnTrigger=Whether t
 placements.entities.GravityHelper/GravityField.tooltips.affectsPlayer=Whether the field affects Madeline. Defaults to true.
 placements.entities.GravityHelper/GravityField.tooltips.affectsHoldableActors=Whether the field affects Actors with a Holdable component while they are not being held. Defaults to false.
 placements.entities.GravityHelper/GravityField.tooltips.affectsOtherActors=Whether the field affects non-holdable Actors. Defaults to false.
+placements.entities.GravityHelper/GravityField.tooltips.cassetteIndex=Which cassette block index the field should be active on. Defaults to -1, which disables cassette block logic.
 
 # Gravity Line
 placements.entities.GravityHelper/GravityLine.tooltips.defaultToController=If true (default), supported properties for this entity will use the value from the active controller.

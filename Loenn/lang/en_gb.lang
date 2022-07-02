@@ -34,6 +34,10 @@ entities.GravityHelper/GravityField.placements.name.inverted=Gravity Field (Inve
 entities.GravityHelper/GravityField.placements.name.toggle=Gravity Field (Toggle) (GravityHelper)
 entities.GravityHelper/GravityField.placements.name.attachedIndicator=Gravity Field (Attached Indicator) (GravityHelper)
 entities.GravityHelper/GravityField.placements.name.visualOnly=Gravity Field (Visual Only) (GravityHelper)
+entities.GravityHelper/GravityField.placements.name.cassetteBlock0=Gravity Field (Cassette Block 0 - Blue) (GravityHelper)
+entities.GravityHelper/GravityField.placements.name.cassetteBlock1=Gravity Field (Cassette Block 1 - Rose) (GravityHelper)
+entities.GravityHelper/GravityField.placements.name.cassetteBlock2=Gravity Field (Cassette Block 2 - Bright Sun) (GravityHelper)
+entities.GravityHelper/GravityField.placements.name.cassetteBlock3=Gravity Field (Cassette Block 3 - Malachite) (GravityHelper)
 entities.GravityHelper/GravityField.attributes.description.defaultToController=If true (default), supported properties for this entity will use the value from the active controller.
 entities.GravityHelper/GravityField.attributes.description.gravityType=The gravity type to set when Madeline enters the field.
 entities.GravityHelper/GravityField.attributes.description.momentumMultiplier=The multiplier to apply to Madeline's Y velocity when gravity flips.\n0 means instantly change, positive values give a gradual change. Defaults to 1.
@@ -47,6 +51,7 @@ entities.GravityHelper/GravityField.attributes.description.flashOnTrigger=Whethe
 entities.GravityHelper/GravityField.attributes.description.affectsPlayer=Whether the field affects Madeline. Defaults to true.
 entities.GravityHelper/GravityField.attributes.description.affectsHoldableActors=Whether the field affects Actors with a Holdable component while they are not being held. Defaults to false.
 entities.GravityHelper/GravityField.attributes.description.affectsOtherActors=Whether the field affects non-holdable Actors. Defaults to false.
+entities.GravityHelper/GravityField.attributes.description.cassetteIndex=Which cassette block index the field should be active on. Defaults to -1, which disables cassette block logic.
 
 # Gravity Line
 entities.GravityHelper/GravityLine.placements.name.crossable=Gravity Line (Crossable) (GravityHelper)

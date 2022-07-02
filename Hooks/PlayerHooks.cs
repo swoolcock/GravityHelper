@@ -1191,10 +1191,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             var data = new DynData<Player>(self);
             var dreamBlock = data.Get<DreamBlock>("dreamBlock");
             if (GravityHelperModule.PlayerComponent != null && dreamBlock is GravityDreamBlock gravityDreamBlock)
-            {
-                GravityHelperModule.PlayerComponent.PreDreamBlockGravityType = GravityHelperModule.PlayerComponent.CurrentGravity;
-                GravityHelperModule.PlayerComponent.SetGravity(gravityDreamBlock.GravityType);
-            }
+                gravityDreamBlock.PlayerEntered();
         }
 
         private static bool Player_DreamDashCheck(On.Celeste.Player.orig_DreamDashCheck orig, Player self, Vector2 dir)
