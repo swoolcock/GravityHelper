@@ -66,12 +66,21 @@ namespace Celeste.Mod.GravityHelper.Hooks.Attributes
             // load types
             var fields = fixtureType.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
             var typeFields = fields.Where(f => f.GetCustomAttribute<ReflectTypeAttribute>() != null);
+            var properties = fixtureType.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
+            var typeProperties = properties.Where(f => f.GetCustomAttribute<ReflectTypeAttribute>() != null);
 
             foreach (var typeField in typeFields)
             {
                 var attribute = typeField.GetCustomAttribute<ReflectTypeAttribute>();
                 var targetType = ReflectionCache.GetModdedTypeByName(attribute.ModName, attribute.TypeName);
                 if (targetType != null) typeField.SetValue(null, targetType);
+            }
+
+            foreach (var typeProperty in typeProperties)
+            {
+                var attribute = typeProperty.GetCustomAttribute<ReflectTypeAttribute>();
+                var targetType = ReflectionCache.GetModdedTypeByName(attribute.ModName, attribute.TypeName);
+                if (targetType != null) typeProperty.SetValue(null, targetType);
             }
 
             // load methods
@@ -91,32 +100,52 @@ namespace Celeste.Mod.GravityHelper.Hooks.Attributes
                     : ReflectionCache.GetModdedTypeByName(ModName, attribute.TargetTypeName);
                 if (targetType == null) continue;
 
-                // handle events
-                var matchingEvent = targetType.GetEvent(targetType.Name, BindingFlags.Public | BindingFlags.Static);
-                if (matchingEvent != null)
+                void processHookMethod()
                 {
-                    var del = hookMethod.CreateDelegate(matchingEvent.EventHandlerType);
-                    delegates.Add(new Tuple<EventInfo, Delegate>(matchingEvent, del));
-                    matchingEvent.AddEventHandler(null, del);
-                    continue;
+                    // handle events
+                    var matchingEvent = targetType.GetEvent(targetType.Name, BindingFlags.Public | BindingFlags.Static);
+                    if (matchingEvent != null)
+                    {
+                        var del = hookMethod.CreateDelegate(matchingEvent.EventHandlerType);
+                        delegates.Add(new Tuple<EventInfo, Delegate>(matchingEvent, del));
+                        matchingEvent.AddEventHandler(null, del);
+                        return;
+                    }
+
+                    // handle detours
+                    var matchingMethods = targetType.GetMethods(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
+                        .Where(m => m.Name == attribute.TargetMethod);
+                    var targetMethod = matchingMethods.FirstOrDefault();
+                    if (targetMethod == null) return;
+
+                    if (targetMethod.ReturnType == typeof(IEnumerator))
+                        targetMethod = targetMethod.GetStateMachineTarget();
+
+                    var parameters = hookMethod.GetParameters();
+                    IDetour detour = null;
+                    if (parameters.FirstOrDefault()?.ParameterType == typeof(ILContext))
+                        detour = new ILHook(targetMethod, hookMethod.CreateDelegate<ILContext.Manipulator>());
+                    else
+                        detour = new Hook(targetMethod, hookMethod);
+
+                    detours.Add(detour);
                 }
 
-                // handle detours
-                var matchingMethods = targetType.GetMethods(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
-                    .Where(m => m.Name == attribute.TargetMethod);
-                var targetMethod = matchingMethods.FirstOrDefault();
-                if (targetMethod == null) continue;
+                DetourContext context = null;
+                if (attribute.Before.Any() || attribute.After.Any())
+                {
+                    context = new DetourContext();
+                    if (attribute.Before.Any())
+                        context.Before = attribute.Before;
+                    if (attribute.After.Any())
+                        context.After = attribute.After;
+                }
 
-                if (targetMethod.ReturnType == typeof(IEnumerator))
-                    targetMethod = targetMethod.GetStateMachineTarget();
-
-                IDetour detour = null;
-                if (hookMethod.GetParameters().FirstOrDefault().ParameterType == typeof(ILContext))
-                    detour = new ILHook(targetMethod, hookMethod.CreateDelegate<ILContext.Manipulator>());
+                if (context != null)
+                    using (context)
+                        processHookMethod();
                 else
-                    detour = new Hook(targetMethod, hookMethod);
-
-                detours.Add(detour);
+                    processHookMethod();
             }
 
             _delegates[fixtureType] = delegates;
