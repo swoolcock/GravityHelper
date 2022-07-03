@@ -113,13 +113,22 @@ namespace Celeste.Mod.GravityHelper.Hooks.Attributes
                     }
 
                     // handle detours
-                    var matchingMethods = targetType.GetMethods(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
-                        .Where(m => m.Name == attribute.TargetMethod);
-                    var targetMethod = matchingMethods.FirstOrDefault();
+                    MethodBase targetMethod;
+                    if (attribute.TargetMethod == "ctor")
+                        targetMethod = targetType.GetConstructor(attribute.Types ?? Type.EmptyTypes);
+                    else
+                    {
+                        var matchingMethods = targetType.GetMethods(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
+                            .Where(m => m.Name == attribute.TargetMethod);
+                        targetMethod = matchingMethods.FirstOrDefault(m =>
+                            attribute.Types == null || m.GetParameters().Select(p =>
+                                p.ParameterType).SequenceEqual(attribute.Types));
+                    }
+
                     if (targetMethod == null) return;
 
-                    if (targetMethod.ReturnType == typeof(IEnumerator))
-                        targetMethod = targetMethod.GetStateMachineTarget();
+                    if (targetMethod is MethodInfo methodInfo && methodInfo.ReturnType == typeof(IEnumerator))
+                        targetMethod = methodInfo.GetStateMachineTarget();
 
                     var parameters = hookMethod.GetParameters();
                     IDetour detour = null;

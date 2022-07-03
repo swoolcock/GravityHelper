@@ -16,17 +16,20 @@ namespace Celeste.Mod.GravityHelper.Hooks.Attributes
         public string TargetMethod { get; }
         public List<string> Before { get; set; } = new List<string>();
         public List<string> After { get; set; } = new List<string>();
+        public Type[] Types { get; }
 
-        public HookMethodAttribute(string targetTypeName, string targetMethod)
+        public HookMethodAttribute(string targetTypeName, string targetMethod, Type[] types = null)
         {
             TargetTypeName = targetTypeName;
             TargetMethod = targetMethod;
+            Types = types;
         }
 
-        public HookMethodAttribute(Type targetType, string targetMethod)
+        public HookMethodAttribute(Type targetType, string targetMethod, Type[] types = null)
         {
             TargetType = targetType;
             TargetMethod = targetMethod;
+            Types = types;
         }
     }
 }
