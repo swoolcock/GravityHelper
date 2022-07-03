@@ -3,6 +3,7 @@
 
 using System.Reflection;
 using Celeste.Mod.Entities;
+using Celeste.Mod.GravityHelper.ThirdParty;
 using Microsoft.Xna.Framework;
 using Monocle;
 using MonoMod.Utils;
@@ -91,7 +92,7 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
             {
                 // consume an Extended Variant Jump(TM)
                 if (jumpBuffer > 0)
-                    ReflectionCache.ExtendedVariantsJumpCountSetJumpCountMethodInfo?.Invoke(null, new object[] { jumpBuffer - 1, false });
+                    ExtendedVariantsModSupport.JumpCountSetJumpCount?.Invoke(null, new object[] { jumpBuffer - 1, false });
                 // do the flip right now
                 doFlip(player);
             }
@@ -120,8 +121,8 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
             var onGround = player.OnGround() || playerData.Get<float>("jumpGraceTimer") > 0;
 
             // see if an Extended Variant Jump(TM) is available
-            if (ReflectionCache.ExtendedVariantsJumpCountGetJumpBufferMethodInfo != null)
-                jumpBuffer = (int)ReflectionCache.ExtendedVariantsJumpCountGetJumpBufferMethodInfo.Invoke(null, new object[0]);
+            if (ExtendedVariantsModSupport.JumpCountGetJumpBuffer != null)
+                jumpBuffer = (int)ExtendedVariantsModSupport.JumpCountGetJumpBuffer.Invoke(null, new object[0]);
 
             // we can flip if we're on the ground or have an extended variant jump
             return onGround || jumpBuffer > 0;

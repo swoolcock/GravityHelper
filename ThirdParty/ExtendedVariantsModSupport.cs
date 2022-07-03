@@ -5,55 +5,36 @@ using System;
 using System.Reflection;
 using Celeste.Mod.GravityHelper.Extensions;
 using Celeste.Mod.GravityHelper.Hooks;
+using Celeste.Mod.GravityHelper.Hooks.Attributes;
 using MonoMod.Cil;
-using MonoMod.RuntimeDetour;
 
 namespace Celeste.Mod.GravityHelper.ThirdParty
 {
-    [ThirdPartyMod("ExtendedVariantMode")]
-    public class ExtendedVariantsModSupport : ThirdPartyModSupport
+    [HookFixture("ExtendedVariantMode")]
+    public static class ExtendedVariantsModSupport
     {
-        // ReSharper disable InconsistentNaming
-        private static IDetour hook_DashTrailAllTheTime_createTrail;
-        private static IDetour hook_JumpIndicator_Render;
-        private static IDetour hook_DashCountIndicator_Render;
-        // ReSharper restore InconsistentNaming
+        private const string dash_trail_all_the_time_type = "ExtendedVariants.Variants.DashTrailAllTheTime";
+        [ReflectType("ExtendedVariantMode", dash_trail_all_the_time_type)]
+        public static Type DashTrailAllTheTimeType;
 
-        protected override void Load()
-        {
-            var dtattt = ReflectionCache.ExtendedVariantsDashTrailAllTheTimeType;
-            var createTrailMethod = dtattt?.GetMethod("createTrail", BindingFlags.Static | BindingFlags.NonPublic);
-            if (createTrailMethod != null)
-            {
-                var target = GetType().GetMethod(nameof(DashTrailAllTheTime_createTrail), BindingFlags.Static | BindingFlags.NonPublic);
-                hook_DashTrailAllTheTime_createTrail = new Hook(createTrailMethod, target);
-            }
+        private const string jump_indicator_type = "ExtendedVariants.Entities.JumpIndicator";
+        [ReflectType("ExtendedVariantMode", jump_indicator_type)]
+        public static Type JumpIndicatorType;
 
-            var jit = ReflectionCache.ExtendedVariantsJumpIndicatorType;
-            var jiRenderMethod = jit?.GetMethod("Render", BindingFlags.Instance | BindingFlags.Public);
-            if (jiRenderMethod != null)
-            {
-                hook_JumpIndicator_Render = new ILHook(jiRenderMethod, JumpIndicator_Render);
-            }
+        private const string dash_count_indicator_type = "ExtendedVariants.Entities.DashCountIndicator";
+        [ReflectType("ExtendedVariantMode", dash_count_indicator_type)]
+        public static Type DashCountIndicatorType;
 
-            var dcit = ReflectionCache.ExtendedVariantsDashCountIndicatorType;
-            var dciRenderMethod = dcit?.GetMethod("Render", BindingFlags.Instance | BindingFlags.Public);
-            if (dciRenderMethod != null)
-            {
-                hook_DashCountIndicator_Render = new ILHook(dciRenderMethod, DashCountIndicator_Render);
-            }
-        }
+        [ReflectType("ExtendedVariantMode", "ExtendedVariants.Variants.JumpCount")]
+        public static Type JumpCountType;
 
-        protected override void Unload()
-        {
-            hook_DashTrailAllTheTime_createTrail?.Dispose();
-            hook_DashTrailAllTheTime_createTrail = null;
-            hook_JumpIndicator_Render?.Dispose();
-            hook_JumpIndicator_Render = null;
-            hook_DashCountIndicator_Render?.Dispose();
-            hook_DashCountIndicator_Render = null;
-        }
+        private static readonly MethodInfo jump_count_get_jump_buffer;
+        public static MethodInfo JumpCountGetJumpBuffer = jump_count_get_jump_buffer ??= JumpCountType?.GetMethod("GetJumpBuffer", BindingFlags.Public | BindingFlags.Static);
 
+        private static readonly MethodInfo jump_count_set_jump_count;
+        public static MethodInfo JumpCountSetJumpCount = jump_count_set_jump_count ??= JumpCountType?.GetMethod("SetJumpCount", BindingFlags.Public | BindingFlags.Static);
+
+        [HookMethod(dash_trail_all_the_time_type, "createTrail")]
         private static void DashTrailAllTheTime_createTrail(Action<Player> orig, Player player)
         {
             if (!GravityHelperModule.ShouldInvertPlayer)
@@ -68,6 +49,7 @@ namespace Celeste.Mod.GravityHelper.ThirdParty
             player.Sprite.Scale.Y = oldScale.Y;
         }
 
+        [HookMethod(jump_indicator_type, "Render")]
         private static void JumpIndicator_Render(ILContext il) => HookUtils.SafeHook(() =>
         {
             var cursor = new ILCursor(il);
@@ -76,6 +58,7 @@ namespace Celeste.Mod.GravityHelper.ThirdParty
             cursor.EmitInvertVectorDelegate();
         });
 
+        [HookMethod(dash_count_indicator_type, "Render")]
         private static void DashCountIndicator_Render(ILContext il) => HookUtils.SafeHook(() =>
         {
             var cursor = new ILCursor(il);

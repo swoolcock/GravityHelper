@@ -1,42 +1,20 @@
 // Copyright (c) Shane Woolcock. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
-using System.Collections.Generic;
-using System.Reflection;
 using Celeste.Mod.GravityHelper.Extensions;
 using Celeste.Mod.GravityHelper.Hooks;
-using Microsoft.Xna.Framework;
+using Celeste.Mod.GravityHelper.Hooks.Attributes;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
-using MonoMod.RuntimeDetour;
 
 namespace Celeste.Mod.GravityHelper.ThirdParty
 {
-    [ThirdPartyMod("Bunneline")]
-    public class BunnelineModSupport : ThirdPartyModSupport
+    [HookFixture("Bunneline")]
+    public static class BunnelineModSupport
     {
-        // ReSharper disable InconsistentNaming
-        private IDetour hook_BunnelineModule_Hair_Render;
-        // ReSharper restore InconsistentNaming
+        private const string bunneline_module_type = "Celeste.Mod.Bunneline.BunnelineModule";
 
-        private static List<Vector2> _tailNodes;
-
-        protected override void Load()
-        {
-            var bmt = ReflectionCache.BunnelineModuleType;
-            var bmHairRenderMethod = bmt?.GetMethod("Hair_Render", BindingFlags.Instance | BindingFlags.NonPublic);
-            if (bmHairRenderMethod != null)
-            {
-                hook_BunnelineModule_Hair_Render = new ILHook(bmHairRenderMethod, BunnelineModule_Hair_Render);
-            }
-        }
-
-        protected override void Unload()
-        {
-            hook_BunnelineModule_Hair_Render?.Dispose();
-            hook_BunnelineModule_Hair_Render = null;
-        }
-
+        [HookMethod(bunneline_module_type, "Hair_Render")]
         private static void BunnelineModule_Hair_Render(ILContext il) => HookUtils.SafeHook(() =>
         {
             var cursor = new ILCursor(il);

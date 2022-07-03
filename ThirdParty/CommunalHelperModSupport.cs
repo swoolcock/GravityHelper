@@ -7,6 +7,7 @@ using System.Reflection;
 using Celeste.Mod.GravityHelper.Components;
 using Celeste.Mod.GravityHelper.Extensions;
 using Celeste.Mod.GravityHelper.Hooks;
+using Celeste.Mod.GravityHelper.Hooks.Attributes;
 using Microsoft.Xna.Framework;
 using Mono.Cecil.Cil;
 using Monocle;
@@ -16,50 +17,16 @@ using MonoMod.Utils;
 
 namespace Celeste.Mod.GravityHelper.ThirdParty
 {
-    [ThirdPartyMod("CommunalHelper")]
-    public class CommunalHelperModSupport : ThirdPartyModSupport
+    [HookFixture("CommunalHelper")]
+    public static class CommunalHelperModSupport
     {
-        // ReSharper disable InconsistentNaming
-        private static IDetour hook_CommunalHelper_ConnectedSolid_MoveVExact;
-        private static IDetour hook_CommunalHelper_TimedTriggerSpikes_OnCollide;
-        private static IDetour hook_CommunalHelper_TimedTriggerSpikes_ctor;
-        // ReSharper restore InconsistentNaming
+        private const string connected_solid_type = "Celeste.Mod.CommunalHelper.ConnectedSolid";
+        private const string timed_trigger_spikes_type = "Celeste.Mod.CommunalHelper.Entities.TimedTriggerSpikes";
 
-        protected override void Load()
-        {
-            var chcst = ReflectionCache.CommunalHelperConnectedSolidType;
-            var moveVExactMethod = chcst?.GetMethod("MoveVExact", BindingFlags.Instance | BindingFlags.Public);
-            if (moveVExactMethod != null)
-            {
-                var target = GetType().GetMethod(nameof(ConnectedSolid_MoveVExact), BindingFlags.Static | BindingFlags.NonPublic);
-                hook_CommunalHelper_ConnectedSolid_MoveVExact = new Hook(moveVExactMethod, target);
-            }
+        [ReflectType("CommunalHelper", timed_trigger_spikes_type)]
+        public static Type TimedTriggerSpikesType;
 
-            var chttst = ReflectionCache.CommunalHelperTimedTriggerSpikesType;
-            var onCollideMethod = chttst?.GetMethod("OnCollide", BindingFlags.Instance | BindingFlags.NonPublic);
-            if (onCollideMethod != null)
-            {
-                hook_CommunalHelper_TimedTriggerSpikes_OnCollide = new ILHook(onCollideMethod, TimedTriggerSpikes_OnCollide);
-            }
-
-            var ctor = chttst?.GetConstructors().FirstOrDefault(c => c.GetParameters().Length > 3);
-            if (ctor != null)
-            {
-                hook_CommunalHelper_TimedTriggerSpikes_ctor = new ILHook(ctor, TimedTriggerSpikes_ctor);
-            }
-        }
-
-
-        protected override void Unload()
-        {
-            hook_CommunalHelper_ConnectedSolid_MoveVExact?.Dispose();
-            hook_CommunalHelper_ConnectedSolid_MoveVExact = null;
-            hook_CommunalHelper_TimedTriggerSpikes_OnCollide?.Dispose();
-            hook_CommunalHelper_TimedTriggerSpikes_OnCollide = null;
-            hook_CommunalHelper_TimedTriggerSpikes_ctor?.Dispose();
-            hook_CommunalHelper_TimedTriggerSpikes_ctor = null;
-        }
-
+        [HookMethod(connected_solid_type, "MoveVExact")]
         private static void ConnectedSolid_MoveVExact(Action<Solid, int> orig, Solid self, int move)
         {
             GravityHelperModule.OverrideSemaphore++;
@@ -67,7 +34,8 @@ namespace Celeste.Mod.GravityHelper.ThirdParty
             GravityHelperModule.OverrideSemaphore--;
         }
 
-        private void TimedTriggerSpikes_OnCollide(ILContext il) => HookUtils.SafeHook(() =>
+        [HookMethod(timed_trigger_spikes_type, "OnCollide")]
+        private static void TimedTriggerSpikes_OnCollide(ILContext il) => HookUtils.SafeHook(() =>
         {
             var cursor = new ILCursor(il);
 
@@ -80,7 +48,8 @@ namespace Celeste.Mod.GravityHelper.ThirdParty
             cursor.EmitInvertFloatDelegate();
         });
 
-        private void TimedTriggerSpikes_ctor(ILContext il) => HookUtils.SafeHook(() =>
+        [HookMethod(timed_trigger_spikes_type, "ctor")]
+        private static void TimedTriggerSpikes_ctor(ILContext il) => HookUtils.SafeHook(() =>
         {
             var cursor = new ILCursor(il);
             if (!cursor.TryGotoNext(instr => instr.MatchRet()))
@@ -91,7 +60,7 @@ namespace Celeste.Mod.GravityHelper.ThirdParty
             {
                 var data = new DynamicData(self);
                 var direction = data.Get<Spikes.Directions>("direction");
-                var method = ReflectionCache.CommunalHelperTimedTriggerSpikesType.GetMethod("UpSafeBlockCheck", BindingFlags.NonPublic | BindingFlags.Instance);
+                var method = TimedTriggerSpikesType.GetMethod("UpSafeBlockCheck", BindingFlags.NonPublic | BindingFlags.Instance);
 
                 // we add a disabled ledge blocker for downward spikes
                 // note that there's a bug with timed trigger spikes

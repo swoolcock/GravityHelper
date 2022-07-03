@@ -16,16 +16,16 @@ using MonoMod.Cil;
 namespace Celeste.Mod.GravityHelper.ThirdParty
 {
     [HookFixture("Cateline")]
-    public class CatelineModSupport
+    public static class CatelineModSupport
     {
-        private const string cateline_module_name = "Celeste.Mod.Cateline.CatelineModule";
+        private const string cateline_module_type = "Celeste.Mod.Cateline.CatelineModule";
 
-        [ReflectType("Cateline", cateline_module_name)]
+        [ReflectType("Cateline", cateline_module_type)]
         public static Type CatelineModuleType;
 
         private static List<Vector2> _tailNodes;
 
-        [HookMethod(cateline_module_name, "Hair_Render")]
+        [HookMethod(cateline_module_type, "Hair_Render")]
         private static void CatelineModule_Hair_Render(ILContext il) => HookUtils.SafeHook(() =>
         {
             var cursor = new ILCursor(il);
@@ -41,7 +41,7 @@ namespace Celeste.Mod.GravityHelper.ThirdParty
             cursor.EmitInvertVectorDelegate();
         });
 
-        [HookMethod(cateline_module_name, "Player_Update")]
+        [HookMethod(cateline_module_type, "Player_Update")]
         private static void CatelineModule_Player_Update(ILContext il) => HookUtils.SafeHook(() =>
         {
             // Cateline's tail implementation is very similar to PlayerHair.AfterUpdate,
