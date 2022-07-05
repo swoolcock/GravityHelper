@@ -112,10 +112,8 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
         private static bool Actor_MoveVExact(On.Celeste.Actor.orig_MoveVExact orig, Actor self, int moveV, Collision onCollide, Solid pusher) =>
             orig(self,
-                self.ShouldInvertChecked() &&
-                !GravityHelperModule.SolidMoving &&
-                !GravityHelperModule.JumpThruMoving &&
-                !GravityHelperModule.Transitioning ? -moveV : moveV, onCollide, pusher);
+                GravityHelperModule.OverrideSemaphore <= 0 &&
+                self.ShouldInvertChecked() ? -moveV : moveV, onCollide, pusher);
 
         private static void Actor_OnGround_int(ILContext il) => HookUtils.SafeHook(() =>
         {

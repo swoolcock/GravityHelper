@@ -37,9 +37,9 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
         private static void JumpThru_MoveVExact(On.Celeste.JumpThru.orig_MoveVExact orig, JumpThru self, int move)
         {
-            GravityHelperModule.JumpThruMoving = true;
+            GravityHelperModule.OverrideSemaphore++;
             orig(self, move);
-            GravityHelperModule.JumpThruMoving = false;
+            GravityHelperModule.OverrideSemaphore--;
         }
     }
 }

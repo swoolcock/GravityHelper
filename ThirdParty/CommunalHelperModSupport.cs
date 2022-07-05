@@ -62,9 +62,9 @@ namespace Celeste.Mod.GravityHelper.ThirdParty
 
         private static void ConnectedSolid_MoveVExact(Action<Solid, int> orig, Solid self, int move)
         {
-            GravityHelperModule.SolidMoving = true;
+            GravityHelperModule.OverrideSemaphore++;
             orig(self, move);
-            GravityHelperModule.SolidMoving = false;
+            GravityHelperModule.OverrideSemaphore--;
         }
 
         private void TimedTriggerSpikes_OnCollide(ILContext il) => HookUtils.SafeHook(() =>

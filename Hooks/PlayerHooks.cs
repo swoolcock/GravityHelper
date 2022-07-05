@@ -1292,9 +1292,9 @@ namespace Celeste.Mod.GravityHelper.Hooks
         private static bool Player_TransitionTo(On.Celeste.Player.orig_TransitionTo orig, Player self, Vector2 target,
             Vector2 direction)
         {
-            GravityHelperModule.Transitioning = true;
+            GravityHelperModule.OverrideSemaphore++;
             bool val = orig(self, target, direction);
-            GravityHelperModule.Transitioning = false;
+            GravityHelperModule.OverrideSemaphore--;
             return val;
         }
 
