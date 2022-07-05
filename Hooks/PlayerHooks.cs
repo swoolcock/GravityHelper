@@ -8,6 +8,7 @@ using Celeste.Mod.GravityHelper.Components;
 using Celeste.Mod.GravityHelper.Entities;
 using Celeste.Mod.GravityHelper.Entities.Controllers;
 using Celeste.Mod.GravityHelper.Extensions;
+using Celeste.Mod.GravityHelper.ThirdParty;
 using Celeste.Mod.GravityHelper.Triggers;
 using Microsoft.Xna.Framework;
 using Mono.Cecil.Cil;
@@ -1363,7 +1364,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
                     return false;
 
                 var ghUdjt = self.Scene.Tracker.GetEntitiesOrEmpty<UpsideDownJumpThru>();
-                var mhhUdjt = self.Scene.Tracker.GetEntitiesOrEmpty(ReflectionCache.MaxHelpingHandUpsideDownJumpThruType);
+                var mhhUdjt = self.Scene.Tracker.GetEntitiesOrEmpty(MaxHelpingHandModSupport.MaxHelpingHandUpsideDownJumpThruType);
                 var entities = ghUdjt.Concat(mhhUdjt);
 
                 foreach (var entity in entities)

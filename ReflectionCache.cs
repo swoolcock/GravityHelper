@@ -73,31 +73,6 @@ namespace Celeste.Mod.GravityHelper
 
         #endregion
 
-        #region Optional Dependencies
-
-        public static Type MaxHelpingHandUpsideDownJumpThruType { get; private set; }
-        public static Type MaxHelpingHandGroupedTriggerSpikesType { get; private set; }
-        public static Type FancyFallingBlockType { get; private set; }
-        public static MethodInfo FancyFallingBlock_SurfaceSoundIndexAt { get; private set; }
-        public static Type MaddyCrownModuleType { get; private set; }
-        public static Type FrostHelperCustomSpringType { get; private set; }
-        public static Type OutbackHelperPortalType { get; private set; }
-        public static Type StaminaMeterSmallStaminaMeterDisplayType { get; private set; }
-
-        public static void LoadThirdPartyTypes()
-        {
-            FancyFallingBlockType = GetModdedTypeByName("FancyTileEntities", "Celeste.Mod.FancyTileEntities.FancyFallingBlock");
-            FancyFallingBlock_SurfaceSoundIndexAt = FancyFallingBlockType?.GetMethod("SurfaceSoundIndexAt", BindingFlags.Instance | BindingFlags.NonPublic);
-            MaddyCrownModuleType = GetModdedTypeByName("MaddyCrown", "Celeste.Mod.MaddyCrown.MaddyCrownModule");
-            MaxHelpingHandUpsideDownJumpThruType = GetModdedTypeByName("MaxHelpingHand", "Celeste.Mod.MaxHelpingHand.Entities.UpsideDownJumpThru");
-            MaxHelpingHandGroupedTriggerSpikesType = GetModdedTypeByName("MaxHelpingHand", "Celeste.Mod.MaxHelpingHand.Entities.GroupedTriggerSpikes");
-            FrostHelperCustomSpringType = GetModdedTypeByName("FrostHelper", "FrostHelper.CustomSpring");
-            OutbackHelperPortalType = GetModdedTypeByName("OutbackHelper", "Celeste.Mod.OutbackHelper.Portal");
-            StaminaMeterSmallStaminaMeterDisplayType = GetModdedTypeByName("StaminaMeter", "Celeste.Mod.StaminaMeter.SmallStaminaMeterDisplay");
-        }
-
-        #endregion
-
         #region Reflection Extensions
 
         public static void SetLastClimbMove(this Player player, int value) => Player_LastClimbMove.SetValue(player, value);
@@ -125,12 +100,6 @@ namespace Celeste.Mod.GravityHelper
             {
                 tex, position, rotation, scale, addTo,
             });
-
-        public static int CallFancyFallingBlockSurfaceSoundIndexAt(this FallingBlock fallingBlock, Vector2 readPosition)
-        {
-            if (FancyFallingBlock_SurfaceSoundIndexAt == null) return -1;
-            return (int) FancyFallingBlock_SurfaceSoundIndexAt.Invoke(fallingBlock, new object[] {readPosition});
-        }
 
         public static void SetValue(this VirtualJoystick virtualJoystick, Vector2 value)
         {

@@ -2,7 +2,6 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System;
-using System.Linq;
 using System.Reflection;
 using Celeste.Mod.GravityHelper.Components;
 using Celeste.Mod.GravityHelper.Extensions;
@@ -12,7 +11,6 @@ using Microsoft.Xna.Framework;
 using Mono.Cecil.Cil;
 using Monocle;
 using MonoMod.Cil;
-using MonoMod.RuntimeDetour;
 using MonoMod.Utils;
 
 namespace Celeste.Mod.GravityHelper.ThirdParty

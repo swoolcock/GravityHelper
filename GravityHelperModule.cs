@@ -12,7 +12,6 @@ using Celeste.Mod.GravityHelper.Components;
 using Celeste.Mod.GravityHelper.Entities.Controllers;
 using Celeste.Mod.GravityHelper.Hooks;
 using Celeste.Mod.GravityHelper.Hooks.Attributes;
-using Celeste.Mod.GravityHelper.ThirdParty;
 using Monocle;
 using MonoMod.ModInterop;
 
@@ -88,7 +87,7 @@ namespace Celeste.Mod.GravityHelper
         {
             base.Initialize();
 #if FORCE_LOAD_HOOKS
-            ThirdPartyHooks.Load();
+            HookFixtureAttribute.LoadAll(true);
 #endif
         }
 
@@ -100,7 +99,7 @@ namespace Celeste.Mod.GravityHelper
             hooksActive = true;
 
 #if !FORCE_LOAD_HOOKS
-            ThirdPartyHooks.Load();
+            HookFixtureAttribute.LoadAll(true);
 #endif
 
             On.Celeste.Mod.AssetReloadHelper.ReloadLevel += AssetReloadHelper_ReloadLevel;
@@ -149,7 +148,7 @@ namespace Celeste.Mod.GravityHelper
             hooksActive = false;
 
 #if !FORCE_LOAD_HOOKS
-            ThirdPartyHooks.Unload();
+            HookFixtureAttribute.UnloadAll(true);
 #endif
 
             On.Celeste.Mod.AssetReloadHelper.ReloadLevel -= AssetReloadHelper_ReloadLevel;

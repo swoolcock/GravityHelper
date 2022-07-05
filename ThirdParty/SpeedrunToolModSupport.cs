@@ -6,23 +6,26 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Celeste.Mod.GravityHelper.Hooks.Attributes;
+using JetBrains.Annotations;
 
 namespace Celeste.Mod.GravityHelper.ThirdParty
 {
-    [ThirdPartyMod("SpeedrunTool", "3.7.2")]
-    public class SpeedrunToolModSupport : ThirdPartyModSupport
+    [HookFixture("SpeedrunTool")]
+    public static class SpeedrunToolModSupport
     {
         private static object _speedrunToolSaveLoadAction;
 
-        protected override void Load()
+        [UsedImplicitly]
+        public static void Load()
         {
             var slat = ReflectionCache.GetModdedTypeByName("SpeedrunTool", "Celeste.Mod.SpeedrunTool.SaveLoad.SaveLoadAction");
             var allFieldInfo = slat?.GetField("All", BindingFlags.Static | BindingFlags.NonPublic);
             if (allFieldInfo?.GetValue(null) is not IList all) return;
             var slActionDelegateType = slat.GetNestedType("SlAction");
 
-            var saveState = Delegate.CreateDelegate(slActionDelegateType, GetType().GetMethod(nameof(speedrunToolSaveState), BindingFlags.NonPublic | BindingFlags.Static)!);
-            var loadState = Delegate.CreateDelegate(slActionDelegateType, GetType().GetMethod(nameof(speedrunToolLoadState), BindingFlags.NonPublic | BindingFlags.Static)!);
+            var saveState = Delegate.CreateDelegate(slActionDelegateType, typeof(SpeedrunToolModSupport).GetMethod(nameof(speedrunToolSaveState), BindingFlags.NonPublic | BindingFlags.Static)!);
+            var loadState = Delegate.CreateDelegate(slActionDelegateType, typeof(SpeedrunToolModSupport).GetMethod(nameof(speedrunToolLoadState), BindingFlags.NonPublic | BindingFlags.Static)!);
 
             // this constructor changes with almost every version of SpeedrunTool,
             // so we'll just take the first with at least two parameters and hope for the best
@@ -36,7 +39,8 @@ namespace Celeste.Mod.GravityHelper.ThirdParty
             all.Add(_speedrunToolSaveLoadAction);
         }
 
-        protected override void Unload()
+        [UsedImplicitly]
+        public static void Unload()
         {
             var slat = ReflectionCache.GetModdedTypeByName("SpeedrunTool", "Celeste.Mod.SpeedrunTool.SaveLoad.SaveLoadAction");
             var allFieldInfo = slat?.GetField("All", BindingFlags.Static | BindingFlags.NonPublic);

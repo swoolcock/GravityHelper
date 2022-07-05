@@ -2,38 +2,24 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System;
-using System.Reflection;
 using Celeste.Mod.GravityHelper.Entities;
 using Celeste.Mod.GravityHelper.Extensions;
 using Celeste.Mod.GravityHelper.Hooks;
+using Celeste.Mod.GravityHelper.Hooks.Attributes;
 using Microsoft.Xna.Framework;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
-using MonoMod.RuntimeDetour;
 
 namespace Celeste.Mod.GravityHelper.ThirdParty
 {
-    [ThirdPartyMod("FrostHelper")]
-    public class FrostHelperModSupport : ThirdPartyModSupport
+    [HookFixture("FrostHelper")]
+    public static class FrostHelperModSupport
     {
-        // ReSharper disable once InconsistentNaming
-        private static IDetour hook_FrostHelper_CustomSpring_OnCollide;
+        private const string custom_spring_type = "FrostHelper.CustomSpring";
+        [ReflectType("FrostHelper", custom_spring_type)]
+        public static Type FrostHelperCustomSpringType;
 
-        protected override void Load()
-        {
-            var fhcst = ReflectionCache.FrostHelperCustomSpringType;
-            var onCollideMethod = fhcst?.GetMethod("OnCollide", BindingFlags.Instance | BindingFlags.NonPublic);
-
-            if (onCollideMethod != null)
-                hook_FrostHelper_CustomSpring_OnCollide = new ILHook(onCollideMethod, FrostHelper_CustomSpring_OnCollide);
-        }
-
-        protected override void Unload()
-        {
-            hook_FrostHelper_CustomSpring_OnCollide?.Dispose();
-            hook_FrostHelper_CustomSpring_OnCollide = null;
-        }
-
+        [HookMethod(custom_spring_type, "OnCollide")]
         private static void FrostHelper_CustomSpring_OnCollide(ILContext il) => HookUtils.SafeHook(() =>
         {
             var cursor = new ILCursor(il);
@@ -74,7 +60,7 @@ namespace Celeste.Mod.GravityHelper.ThirdParty
 
             // cancel the negative
             if (!cursor.TryGotoNext(MoveType.After,
-                instr => instr.MatchLdflda(ReflectionCache.FrostHelperCustomSpringType, "speedMult"),
+                instr => instr.MatchLdflda(FrostHelperCustomSpringType, "speedMult"),
                 instr => instr.MatchLdfld<Vector2>(nameof(Vector2.Y)),
                 instr => instr.MatchNeg()))
                 throw new HookException("Couldn't find neg");

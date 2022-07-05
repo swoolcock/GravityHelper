@@ -2,33 +2,17 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System;
-using System.Reflection;
+using Celeste.Mod.GravityHelper.Hooks.Attributes;
 using Monocle;
-using MonoMod.RuntimeDetour;
 
 namespace Celeste.Mod.GravityHelper.ThirdParty
 {
-    [ThirdPartyMod("OutbackHelper")]
-    public class OutbackHelperModSupport : ThirdPartyModSupport
+    [HookFixture("OutbackHelper")]
+    public static class OutbackHelperModSupport
     {
-        // ReSharper disable once InconsistentNaming
-        private static IDetour hook_OutbackHelper_Portal_OnPlayer;
+        private const string portal_type = "Celeste.Mod.OutbackHelper.Portal";
 
-        protected override void Load()
-        {
-            var ohpt = ReflectionCache.OutbackHelperPortalType;
-            var onPlayerMethod = ohpt?.GetMethod("OnPlayer", BindingFlags.Instance | BindingFlags.NonPublic);
-
-            if (onPlayerMethod != null)
-                hook_OutbackHelper_Portal_OnPlayer = new Hook(onPlayerMethod, GetType().GetMethod(nameof(OutbackHelper_Portal_OnPlayer), BindingFlags.NonPublic | BindingFlags.Static)!);
-        }
-
-        protected override void Unload()
-        {
-            hook_OutbackHelper_Portal_OnPlayer?.Dispose();
-            hook_OutbackHelper_Portal_OnPlayer = null;
-        }
-
+        [HookMethod(portal_type, "OnPlayer")]
         private static void OutbackHelper_Portal_OnPlayer(Action<Entity, Player> orig, Entity self, Player player)
         {
             if (!GravityHelperModule.ShouldInvertPlayer)

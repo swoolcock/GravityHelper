@@ -17,6 +17,9 @@ namespace Celeste.Mod.GravityHelper.Hooks.Attributes
     [AttributeUsage(AttributeTargets.Class)]
     public class HookFixtureAttribute : Attribute
     {
+        // ReSharper disable once InconsistentNaming
+        public static readonly List<string> BlacklistedMods = new();
+
         private static readonly List<Type> _fixtureTypes = new List<Type>();
         private static readonly Dictionary<Type, List<IDetour>> _detours = new Dictionary<Type, List<IDetour>>();
         private static readonly Dictionary<Type, List<Tuple<EventInfo, Delegate>>> _delegates = new Dictionary<Type, List<Tuple<EventInfo, Delegate>>>();
@@ -28,32 +31,46 @@ namespace Celeste.Mod.GravityHelper.Hooks.Attributes
             ModName = modName;
         }
 
-        public static void LoadAll()
+        public static void LoadAll(bool thirdPartyMods = false)
         {
             var types = typeof(HookFixtureAttribute).Assembly.GetTypesSafe();
             var fixtureTypes = types.Where(t => t.GetCustomAttribute<HookFixtureAttribute>() != null);
             foreach (var type in fixtureTypes)
             {
                 var attribute = type.GetCustomAttribute<HookFixtureAttribute>();
+                var hasModName = !string.IsNullOrWhiteSpace(attribute.ModName);
+                if (thirdPartyMods != hasModName) continue;
+
+                if (thirdPartyMods)
+                {
+                    var modExists = Everest.Modules.Any(m => m.Metadata.Name == attribute.ModName);
+                    // skip if mod not loaded
+                    if (!modExists)
+                        continue;
+
+                    // skip and log if mod blacklisted
+                    if (BlacklistedMods.Contains(attribute.ModName))
+                    {
+                        Logger.Log(nameof(GravityHelperModule), $"Skipping hooks for blacklisted mod: {attribute.ModName}");
+                        continue;
+                    }
+
+                    Logger.Log(nameof(GravityHelperModule), $"Loading hooks for mod: {attribute.ModName}");
+                }
+
                 attribute.Load(type);
                 _fixtureTypes.Add(type);
             }
         }
 
-        public static void UnloadAll()
+        public static void UnloadAll(bool thirdPartyMods = false)
         {
             foreach (var type in _fixtureTypes)
             {
-                if (_detours.TryGetValue(type, out var detours))
-                {
-                    foreach (var detour in detours)
-                        detour.Dispose();
-                }
-                if (_delegates.TryGetValue(type, out var delegates))
-                {
-                    foreach (var del in delegates)
-                        del.Item1.RemoveEventHandler(null, del.Item2);
-                }
+                var attribute = type.GetCustomAttribute<HookFixtureAttribute>();
+                var hasModName = !string.IsNullOrWhiteSpace(attribute.ModName);
+                if (thirdPartyMods == hasModName)
+                    Unload(type);
             }
 
             _detours.Clear();
@@ -63,6 +80,10 @@ namespace Celeste.Mod.GravityHelper.Hooks.Attributes
 
         internal void Load(Type fixtureType)
         {
+            // execute Load
+            var loadMethod = fixtureType.GetMethod("Load", BindingFlags.Static | BindingFlags.Public);
+            loadMethod?.Invoke(null, new object[0]);
+
             // load types
             var fields = fixtureType.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
             var typeFields = fields.Where(f => f.GetCustomAttribute<ReflectTypeAttribute>() != null);
@@ -159,6 +180,27 @@ namespace Celeste.Mod.GravityHelper.Hooks.Attributes
 
             _delegates[fixtureType] = delegates;
             _detours[fixtureType] = detours;
+        }
+
+        internal static void Unload(Type fixtureType)
+        {
+            if (_detours.TryGetValue(fixtureType, out var detours))
+            {
+                foreach (var detour in detours)
+                    detour.Dispose();
+            }
+            _detours.Remove(fixtureType);
+
+            if (_delegates.TryGetValue(fixtureType, out var delegates))
+            {
+                foreach (var del in delegates)
+                    del.Item1.RemoveEventHandler(null, del.Item2);
+            }
+            _delegates.Remove(fixtureType);
+
+            // execute Unload
+            var unloadMethod = fixtureType.GetMethod("Unload", BindingFlags.Static | BindingFlags.Public);
+            unloadMethod?.Invoke(null, new object[0]);
         }
     }
 }

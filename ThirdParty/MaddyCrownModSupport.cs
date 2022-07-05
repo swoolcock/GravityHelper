@@ -2,37 +2,21 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System;
-using System.Reflection;
 using Celeste.Mod.GravityHelper.Hooks;
+using Celeste.Mod.GravityHelper.Hooks.Attributes;
 using Microsoft.Xna.Framework;
 using Mono.Cecil.Cil;
 using Monocle;
 using MonoMod.Cil;
-using MonoMod.RuntimeDetour;
 
 namespace Celeste.Mod.GravityHelper.ThirdParty
 {
-    [ThirdPartyMod("MaddyCrown")]
-    public class MaddyCrownModSupport : ThirdPartyModSupport
+    [HookFixture("MaddyCrown")]
+    public static class MaddyCrownModSupport
     {
-        // ReSharper disable once InconsistentNaming
-        private static IDetour hook_MaddyCrownModule_Player_Update;
+        private const string maddy_crown_module_type = "Celeste.Mod.MaddyCrown.MaddyCrownModule";
 
-        protected override void Load()
-        {
-            var mcmt = ReflectionCache.MaddyCrownModuleType;
-            var playerUpdateMethod = mcmt?.GetMethod("Player_Update", BindingFlags.Instance | BindingFlags.NonPublic);
-
-            if (playerUpdateMethod != null)
-                hook_MaddyCrownModule_Player_Update = new ILHook(playerUpdateMethod, MaddyCrownModule_Player_Update);
-        }
-
-        protected override void Unload()
-        {
-            hook_MaddyCrownModule_Player_Update?.Dispose();
-            hook_MaddyCrownModule_Player_Update = null;
-        }
-
+        [HookMethod(maddy_crown_module_type, "Player_Update")]
         private static void MaddyCrownModule_Player_Update(ILContext il) => HookUtils.SafeHook(() =>
         {
             var cursor = new ILCursor(il);

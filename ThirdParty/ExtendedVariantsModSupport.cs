@@ -28,11 +28,11 @@ namespace Celeste.Mod.GravityHelper.ThirdParty
         [ReflectType("ExtendedVariantMode", "ExtendedVariants.Variants.JumpCount")]
         public static Type JumpCountType;
 
-        private static readonly MethodInfo jump_count_get_jump_buffer;
-        public static MethodInfo JumpCountGetJumpBuffer = jump_count_get_jump_buffer ??= JumpCountType?.GetMethod("GetJumpBuffer", BindingFlags.Public | BindingFlags.Static);
+        private static MethodInfo _jumpCountGetJumpBuffer;
+        public static MethodInfo JumpCountGetJumpBuffer => _jumpCountGetJumpBuffer ??= JumpCountType?.GetMethod("GetJumpBuffer", BindingFlags.Public | BindingFlags.Static);
 
-        private static readonly MethodInfo jump_count_set_jump_count;
-        public static MethodInfo JumpCountSetJumpCount = jump_count_set_jump_count ??= JumpCountType?.GetMethod("SetJumpCount", BindingFlags.Public | BindingFlags.Static);
+        private static MethodInfo _jumpCountSetJumpCount;
+        public static MethodInfo JumpCountSetJumpCount => _jumpCountSetJumpCount ??= JumpCountType?.GetMethod("SetJumpCount", BindingFlags.Public | BindingFlags.Static);
 
         [HookMethod(dash_trail_all_the_time_type, "createTrail")]
         private static void DashTrailAllTheTime_createTrail(Action<Player> orig, Player player)

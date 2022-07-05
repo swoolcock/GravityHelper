@@ -4,7 +4,7 @@
 using System;
 using Celeste.Mod.GravityHelper.Components;
 using Celeste.Mod.GravityHelper.Extensions;
-using Celeste.Mod.GravityHelper.ThirdParty;
+using Celeste.Mod.GravityHelper.Hooks.Attributes;
 using Microsoft.Xna.Framework;
 using Monocle;
 using MonoMod.ModInterop;
@@ -14,7 +14,7 @@ namespace Celeste.Mod.GravityHelper
     [ModExportName("GravityHelper")]
     public static class GravityHelperExports
     {
-        public static void RegisterModSupportBlacklist(string modName) => ThirdPartyModSupport.BlacklistedMods.Add(modName);
+        public static void RegisterModSupportBlacklist(string modName) => HookFixtureAttribute.BlacklistedMods.Add(modName);
 
         public static string GravityTypeFromInt(int gravityType) => ((GravityType)gravityType).ToString();
 

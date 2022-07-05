@@ -2,39 +2,22 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System;
-using System.Reflection;
 using Celeste.Mod.GravityHelper.Hooks;
+using Celeste.Mod.GravityHelper.Hooks.Attributes;
 using Microsoft.Xna.Framework;
 using Mono.Cecil.Cil;
 using Monocle;
 using MonoMod.Cil;
-using MonoMod.RuntimeDetour;
 
 namespace Celeste.Mod.GravityHelper.ThirdParty
 {
-    [ThirdPartyMod("StaminaMeter")]
-    public class StaminaMeterModSupport : ThirdPartyModSupport
+    [HookFixture("StaminaMeter")]
+    public static class StaminaMeterModSupport
     {
-        // ReSharper disable once InconsistentNaming
-        private IDetour hook_SmallStaminaMeterDisplay_Render;
+        private const string small_stamina_meter_display_type = "Celeste.Mod.StaminaMeter.SmallStaminaMeterDisplay";
 
-        protected override void Load()
-        {
-            var ssmdt = ReflectionCache.StaminaMeterSmallStaminaMeterDisplayType;
-            var renderMethod = ssmdt?.GetMethod("Render", BindingFlags.Public | BindingFlags.Instance);
-            if (renderMethod != null)
-            {
-                hook_SmallStaminaMeterDisplay_Render = new ILHook(renderMethod, SmallStaminaMeterDisplay_Render);
-            }
-        }
-
-        protected override void Unload()
-        {
-            hook_SmallStaminaMeterDisplay_Render?.Dispose();
-            hook_SmallStaminaMeterDisplay_Render = null;
-        }
-
-        private void SmallStaminaMeterDisplay_Render(ILContext il) => HookUtils.SafeHook(() =>
+        [HookMethod(small_stamina_meter_display_type, "Render")]
+        private static void SmallStaminaMeterDisplay_Render(ILContext il) => HookUtils.SafeHook(() =>
         {
             var cursor = new ILCursor(il);
             if (!cursor.TryGotoNext(instr => instr.MatchLdfld<Entity>(nameof(Entity.Position))))
