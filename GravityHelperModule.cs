@@ -35,7 +35,7 @@ namespace Celeste.Mod.GravityHelper
         public static PlayerGravityComponent PlayerComponent { get; internal set; }
         public static bool ShouldInvertPlayer => PlayerComponent?.ShouldInvert ?? false;
         public static bool ShouldInvertPlayerChecked => PlayerComponent?.ShouldInvertChecked ?? false;
-        public static int OverrideSemaphore = 0;
+        internal static int OverrideSemaphore = 0;
 
         public static bool AreHooksRequiredForSession(Session session) =>
             session.MapData?.Levels?
