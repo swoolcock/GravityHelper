@@ -16,12 +16,19 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
         public const float DEFAULT_SPRING_COOLDOWN = 0.5f;
         public const float DEFAULT_SWITCH_COOLDOWN = 1f;
 
-        public float HoldableResetTime { get; }
-        public float SpringCooldown { get; }
-        public float SwitchCooldown { get; }
-        public bool SwitchOnHoldables { get; }
+        public float HoldableResetTime { get; } = DEFAULT_HOLDABLE_RESET_TIME;
+        public float SpringCooldown { get; } = DEFAULT_SPRING_COOLDOWN;
+        public float SwitchCooldown { get; } = DEFAULT_SWITCH_COOLDOWN;
+        public bool SwitchOnHoldables { get; } = true;
         public bool DashToToggle { get; }
 
+        // ReSharper disable once UnusedMember.Global
+        public BehaviorGravityController()
+        {
+            // ephemeral controller
+        }
+
+        // ReSharper disable once UnusedMember.Global
         public BehaviorGravityController(EntityData data, Vector2 offset)
             : base(data, offset)
         {

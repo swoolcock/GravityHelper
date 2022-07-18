@@ -93,7 +93,7 @@ namespace Celeste.Mod.GravityHelper.Entities
             if (_audioMuffleSecondsRemaining > 0)
                 _audioMuffleSecondsRemaining -= Engine.DeltaTime;
 
-            var vvvvvv = Scene.GetActiveController<VvvvvvGravityController>();
+            var vvvvvv = Scene.GetActiveController<VvvvvvGravityController>(true);
             var components = Scene.Tracker.GetComponents<GravityComponent>();
 
             foreach (var component in components)

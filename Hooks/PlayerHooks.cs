@@ -604,7 +604,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             cursor.EmitDelegate<Func<int, Player, int>>((value, self) =>
             {
                 if (self.Scene is Level level &&
-                    level.GetActiveController<VvvvvvGravityController>() is { } controller &&
+                    level.GetActiveController<VvvvvvGravityController>(true) is { } controller &&
                     controller.IsVvvvvv &&
                     controller.DisableGrab)
                     return 0;

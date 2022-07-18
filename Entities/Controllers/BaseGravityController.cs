@@ -114,16 +114,11 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
 
             orig(self, playerintro, true);
 
-            // ensure we have a vvvvvv if required by settings
-            var vvvvvv = self.GetPersistentController<VvvvvvGravityController>();
-            if (vvvvvv == null && GravityHelperModule.Settings.VvvvvvMode != GravityHelperModuleSettings.VvvvvvSetting.Default)
-                self.Add(vvvvvv = new VvvvvvGravityController());
-
             // apply each controller type (this should probably be automatic)
             self.GetPersistentController<BehaviorGravityController>()?.Transitioned();
             self.GetPersistentController<SoundGravityController>()?.Transitioned();
             self.GetPersistentController<VisualGravityController>()?.Transitioned();
-            vvvvvv?.Transitioned();
+            self.GetPersistentController<VvvvvvGravityController>(GravityHelperModule.Settings.VvvvvvMode != GravityHelperModuleSettings.VvvvvvSetting.Default)?.Transitioned();
         }
     }
 }
