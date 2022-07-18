@@ -19,7 +19,14 @@ const PLUGIN_VERSION = "1"
 )
 
 const placements = Ahorn.PlacementDict(
-    "Behavior Gravity Controller (GravityHelper)" => Ahorn.EntityPlacement(
+    "Behavior Gravity Controller (Single Room) (GravityHelper)" => Ahorn.EntityPlacement(
+        BehaviorGravityController,
+        "point",
+        Dict{String, Any}(
+            "persistent" => false,
+        )
+    ),
+    "Behavior Gravity Controller (Persistent) (GravityHelper)" => Ahorn.EntityPlacement(
         BehaviorGravityController,
     ),
 )

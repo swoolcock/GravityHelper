@@ -149,7 +149,8 @@ triggers.GravityHelper/SpawnGravityTrigger.attributes.description.gravityType=Th
 triggers.GravityHelper/SpawnGravityTrigger.attributes.description.fireOnBubbleReturn=Whether gravity should be applied if Madeline is sent to the spawn trigger via a cassette or berry return bubble.
 
 # Behavior Gravity Controller
-entities.GravityHelper/BehaviorGravityController.placements.name.normal=Behaviour Gravity Controller (GravityHelper)
+entities.GravityHelper/BehaviorGravityController.placements.name.single_room=Behaviour Gravity Controller (Single Room) (GravityHelper)
+entities.GravityHelper/BehaviorGravityController.placements.name.persistent=Behaviour Gravity Controller (Persistent) (GravityHelper)
 entities.GravityHelper/BehaviorGravityController.attributes.description.persistent=Whether this controller should be considered the default for its type.\nThere should only ever be one persistent in your map, and not in a room with another controller of the same type.
 entities.GravityHelper/BehaviorGravityController.attributes.description.holdableResetTime=The amount of time in seconds a holdable will take to reset after being dropped.\nIf <= 0, the holdable will never reset. Defaults to 2.
 entities.GravityHelper/BehaviorGravityController.attributes.description.springCooldown=The global setting for GravitySpring gravityCooldown. Defaults to 0.5 seconds.
@@ -158,7 +159,8 @@ entities.GravityHelper/BehaviorGravityController.attributes.description.switchOn
 entities.GravityHelper/BehaviorGravityController.attributed.description.dashToToggle=Whether dashing should trigger a gravity toggle, always. Acts as if Madeline had a permanent GravityRefill charge. Defaults to false.
 
 # Visual Gravity Controller
-entities.GravityHelper/VisualGravityController.placements.name.normal=Visual Gravity Controller (GravityHelper)
+entities.GravityHelper/VisualGravityController.placements.name.single_room=Visual Gravity Controller (Single Room) (GravityHelper)
+entities.GravityHelper/VisualGravityController.placements.name.persistent=Visual Gravity Controller (Persistent) (GravityHelper)
 entities.GravityHelper/VisualGravityController.attributes.description.persistent=Whether this controller should be considered the default for its type.\nThere should only ever be one persistent in your map, and not in a room with another controller of the same type.
 entities.GravityHelper/VisualGravityController.attributes.description.fieldBackgroundOpacity=The default opacity of shimmering field effects, if enabled.\nRanges from 0 (invisible) to 1 (fully opaque). Defaults to 0.15.
 entities.GravityHelper/VisualGravityController.attributes.description.fieldArrowOpacity=The default opacity of arrows, if enabled.\nRanges from 0 (invisible) to 1 (fully opaque). Defaults to 0.5.
@@ -169,7 +171,8 @@ entities.GravityHelper/VisualGravityController.attributes.description.lineMaxAlp
 entities.GravityHelper/VisualGravityController.attributes.description.lineFlashTime=The global setting for GravityLine flashTime. Defaults to 0.35 seconds.
 
 # Sound Gravity Controller
-entities.GravityHelper/SoundGravityController.placements.name.normal=Sound Gravity Controller (GravityHelper)
+entities.GravityHelper/SoundGravityController.placements.name.single_room=Sound Gravity Controller (Single Room) (GravityHelper)
+entities.GravityHelper/SoundGravityController.placements.name.persistent=Sound Gravity Controller (Persistent) (GravityHelper)
 entities.GravityHelper/SoundGravityController.attributes.description.persistent=Whether this controller should be considered the default for its type.\nThere should only ever be one persistent in your map, and not in a room with another controller of the same type.
 entities.GravityHelper/SoundGravityController.attributes.description.normalSound=The sound to play when gravity resets to normal.\nDefaults to event:/ui/game/lookout_off (the sound when cancelling a watch tower).
 entities.GravityHelper/SoundGravityController.attributes.description.invertedSound=The sound to play when gravity inverts.\nDefaults to event:/ui/game/lookout_on (the sound when first using a watch tower).
@@ -178,7 +181,8 @@ entities.GravityHelper/SoundGravityController.attributes.description.musicParam=
 entities.GravityHelper/SoundGravityController.attributes.description.lineSound=The sound to play when touching a GravityLine. Defaults to a custom sound.
 
 # VVVVVV Gravity Controller
-entities.GravityHelper/VvvvvvGravityController.placements.name.normal=VVVVVV Gravity Controller (GravityHelper)
+entities.GravityHelper/VvvvvvGravityController.placements.name.single_room=VVVVVV Gravity Controller (Single Room) (GravityHelper)
+entities.GravityHelper/VvvvvvGravityController.placements.name.persistent=VVVVVV Gravity Controller (Persistent) (GravityHelper)
 entities.GravityHelper/VvvvvvGravityController.attributes.description.persistent=Whether this controller should be considered the default for its type.\nThere should only ever be one persistent in your map, and not in a room with another controller of the same type.
 entities.GravityHelper/VvvvvvGravityController.attributes.description.mode=On, Off, or Trigger-based control. When on, regular jumping is disabled and replaced with instant gravity flipping if on the ground. Defaults to On.
 entities.GravityHelper/VvvvvvGravityController.attributes.description.disableGrab=Whether grabbing should be disabled while vvvvvv mode is enabled. Defaults to true.

@@ -22,7 +22,13 @@ local vvvvvvGravityController = {
     },
     placements = {
         {
-            name = "normal",
+            name = "single_room",
+            data = helpers.union(placementData, {
+                persistent = false,
+            }),
+        },
+        {
+            name = "persistent",
             data = helpers.union(placementData),
         },
     },
