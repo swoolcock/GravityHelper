@@ -106,6 +106,14 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
             var entities = self.Session.MapData?.Levels?.SelectMany(l => l.Entities) ?? Enumerable.Empty<EntityData>();
             var controllers = entities.Where(d => d.Name.StartsWith("GravityHelper") && d.Name.Contains("Controller")).ToArray();
 
+            // check whether we have duplicate persistent controllers and log it
+            foreach (var grouping in controllers.GroupBy(d => d.Name))
+            {
+                var persistentCount = grouping.Count(c => c.Bool("persistent"));
+                if (persistentCount > 1)
+                    Logger.Log(LogLevel.Warn, nameof(GravityHelperModule), $"Warning: Found {persistentCount} persistent controllers of type {grouping.Key}");
+            }
+
             foreach (var data in controllers)
             {
                 self.Session.DoNotLoad.Add(new EntityID(data.Level.Name, data.ID));
