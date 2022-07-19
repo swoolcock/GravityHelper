@@ -69,7 +69,7 @@ namespace Celeste.Mod.GravityHelper.Entities
             CancelDash = data.Bool("cancelDash");
             DisableUntilExit = data.Bool("disableUntilExit");
             OnlyWhileFalling = data.Bool("onlyWhileFalling");
-            Depth = Depths.Above;
+            Depth = Depths.Above + 1; // make sure we're below spinners
 
             _defaultToController = data.Bool("defaultToController");
             _minAlpha = data.Float("minAlpha", DEFAULT_MIN_ALPHA);
