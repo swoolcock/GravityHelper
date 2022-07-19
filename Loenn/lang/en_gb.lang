@@ -70,6 +70,7 @@ entities.GravityHelper/GravityLine.attributes.description.sound=The sound that s
 entities.GravityHelper/GravityLine.attributes.description.minAlpha=The alpha to display when not flashing. Defaults to 0.45. Supports controllers.
 entities.GravityHelper/GravityLine.attributes.description.maxAlpha=The alpha to start a flash with. Defaults to 0.95. Supports controllers.
 entities.GravityHelper/GravityLine.attributes.description.flashTime=The time in seconds taken to perform a flash when triggered.\nIf set to 0 seconds, flashing is disabled. Defaults to 0.35 seconds. Supports controllers.
+entities.GravityHelper/GravityLine.attributes.description.lineThickness=The thickness in pixels to render the line. Defaults to 2. Supports controllers.
 
 # Gravity Refill
 entities.GravityHelper/GravityRefill.placements.name.normal=Gravity Refill (GravityHelper)
@@ -169,6 +170,7 @@ entities.GravityHelper/VisualGravityController.attributes.description.fieldFlash
 entities.GravityHelper/VisualGravityController.attributes.description.lineMinAlpha=The global setting for GravityLine minAlpha. Defaults to 0.45.
 entities.GravityHelper/VisualGravityController.attributes.description.lineMaxAlpha=The global setting for GravityLine maxAlpha. Defaults to 0.95.
 entities.GravityHelper/VisualGravityController.attributes.description.lineFlashTime=The global setting for GravityLine flashTime. Defaults to 0.35 seconds.
+entities.GravityHelper/VisualGravityController.attributes.description.lineThickness=The global setting for GravityLine lineThickness. Defaults to 2.
 
 # Sound Gravity Controller
 entities.GravityHelper/SoundGravityController.placements.name.single_room=Sound Gravity Controller (Single Room) (GravityHelper)

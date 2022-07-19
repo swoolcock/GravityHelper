@@ -20,6 +20,7 @@ local placementData = helpers.createPlacementData('1', {
     lineMaxAlpha = 0.95,
     lineFlashTime = 0.35,
     lineColor = "FFFFFF",
+    lineThickness = 2.0,
 })
 
 local visualGravityController = {

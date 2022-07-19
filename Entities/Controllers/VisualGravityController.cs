@@ -24,6 +24,7 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
         public float LineMaxAlpha { get; } = GravityLine.DEFAULT_MAX_ALPHA;
         public float LineFlashTime { get; } = GravityLine.DEFAULT_FLASH_TIME;
         public string LineColor { get; } = GravityLine.DEFAULT_LINE_COLOR;
+        public float LineThickness { get; } = GravityLine.DEFAULT_LINE_THICKNESS;
 
         // ReSharper disable once UnusedMember.Global
         public VisualGravityController()
@@ -48,6 +49,7 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
             LineMaxAlpha = data.Float("lineMaxAlpha", LineMaxAlpha);
             LineFlashTime = data.Float("lineFlashTime", LineFlashTime);
             LineColor = data.Attr("lineColor", LineColor);
+            LineThickness = data.Float("lineThickness", LineThickness);
         }
     }
 }

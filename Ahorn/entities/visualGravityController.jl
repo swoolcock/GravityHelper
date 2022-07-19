@@ -23,7 +23,8 @@ const PLUGIN_VERSION = "1"
     lineMinAlpha::Real=0.45,
     lineMaxAlpha::Real=0.95,
     lineFlashTime::Real=0.35,
-    lineColor::String="FFFFFF"
+    lineColor::String="FFFFFF",
+    lineThickness::Real=2.0
 )
 
 const placements = Ahorn.PlacementDict(
