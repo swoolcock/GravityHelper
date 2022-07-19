@@ -18,7 +18,7 @@ const default_sound = "event:/gravityhelper/gravity_line"
     cooldown::Real=0, cancelDash::Bool=false, disableUntilExit::Bool=false, onlyWhileFalling::Bool=false,
     affectsPlayer::Bool=true, affectsHoldableActors::Bool=false, affectsOtherActors::Bool=false,
     playSound::String=default_sound, minAlpha::Real=0.45, maxAlpha::Real=0.95, flashTime::Real=0.35,
-    lineColor::String="FFFFFF"
+    lineColor::String="FFFFFF", lineThickness::Real=2.0
 ) = Entity("GravityHelper/GravityLine",
     x = x1, y = y1,
     defaultToController=defaultToController,
@@ -26,7 +26,7 @@ const default_sound = "event:/gravityhelper/gravity_line"
     gravityType=gravityType, momentumMultiplier=momentumMultiplier,
     cooldown=cooldown, cancelDash=cancelDash, disableUntilExit=disableUntilExit, onlyWhileFalling=onlyWhileFalling,
     affectsPlayer=affectsPlayer, affectsHoldableActors=affectsHoldableActors, affectsOtherActors=affectsOtherActors,
-    playSound=playSound, minAlpha=minAlpha, maxAlpha=maxAlpha, flashTime=flashTime, lineColor=lineColor,
+    playSound=playSound, minAlpha=minAlpha, maxAlpha=maxAlpha, flashTime=flashTime, lineColor=lineColor, lineThickness=lineThickness,
     nodes=Tuple{Int, Int}[(x2, y2)]
 )
 

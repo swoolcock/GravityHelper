@@ -20,7 +20,13 @@ local behaviorGravityController = {
     ignoredFields = consts.ignoredFields,
     placements = {
         {
-            name = "normal",
+            name = "single_room",
+            data = helpers.union(placementData, {
+                persistent = false,
+            }),
+        },
+        {
+            name = "persistent",
             data = helpers.union(placementData),
         },
     },

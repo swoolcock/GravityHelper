@@ -58,15 +58,9 @@ namespace Celeste.Mod.GravityHelper.ThirdParty
 
         private static void FancyFallingBlock_MoveVExact(Action<FallingBlock, int> orig, FallingBlock self, int move)
         {
-            if (!GravityHelperModule.ShouldInvertPlayer)
-            {
-                orig(self, move);
-                return;
-            }
-
-            GravityHelperModule.SolidMoving = true;
+            GravityHelperModule.OverrideSemaphore++;
             orig(self, move);
-            GravityHelperModule.SolidMoving = false;
+            GravityHelperModule.OverrideSemaphore--;
         }
 
         private static int FancyFallingBlock_GetLandSoundIndex(Func<FallingBlock, Entity, int> orig, FallingBlock self, Entity entity)

@@ -604,7 +604,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             cursor.EmitDelegate<Func<int, Player, int>>((value, self) =>
             {
                 if (self.Scene is Level level &&
-                    level.GetActiveController<VvvvvvGravityController>() is { } controller &&
+                    level.GetActiveController<VvvvvvGravityController>(true) is { } controller &&
                     controller.IsVvvvvv &&
                     controller.DisableGrab)
                     return 0;
@@ -1292,9 +1292,9 @@ namespace Celeste.Mod.GravityHelper.Hooks
         private static bool Player_TransitionTo(On.Celeste.Player.orig_TransitionTo orig, Player self, Vector2 target,
             Vector2 direction)
         {
-            GravityHelperModule.Transitioning = true;
+            GravityHelperModule.OverrideSemaphore++;
             bool val = orig(self, target, direction);
-            GravityHelperModule.Transitioning = false;
+            GravityHelperModule.OverrideSemaphore--;
             return val;
         }
 

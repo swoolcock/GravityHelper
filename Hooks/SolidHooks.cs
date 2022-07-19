@@ -35,9 +35,9 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
         private static void Solid_MoveVExact(On.Celeste.Solid.orig_MoveVExact orig, Solid self, int move)
         {
-            GravityHelperModule.SolidMoving = true;
+            GravityHelperModule.OverrideSemaphore++;
             orig(self, move);
-            GravityHelperModule.SolidMoving = false;
+            GravityHelperModule.OverrideSemaphore--;
         }
     }
 }

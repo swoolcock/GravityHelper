@@ -20,6 +20,7 @@ namespace Celeste.Mod.GravityHelper.Entities
         public const float DEFAULT_FLASH_TIME = 0.35f;
         public const string DEFAULT_SOUND = "event:/gravityhelper/gravity_line";
         public const string DEFAULT_LINE_COLOR = "FFFFFF";
+        public const float DEFAULT_LINE_THICKNESS = 2f;
 
         private const float audio_muffle_seconds = 0.2f;
 
@@ -37,6 +38,7 @@ namespace Celeste.Mod.GravityHelper.Entities
         public float FlashTime { get; private set; }
         public string Sound { get; private set; }
         public Color LineColor { get; private set; }
+        public float LineThickness { get; private set; }
 
         private readonly Version _modVersion;
         private readonly Version _pluginVersion;
@@ -47,8 +49,9 @@ namespace Celeste.Mod.GravityHelper.Entities
         private float _minAlpha;
         private float _maxAlpha;
         private float _flashTime;
-        private string _sound;
+        private string _playSound;
         private string _lineColor;
+        private float _lineThickness;
 
         private float _flashTimeRemaining;
         private float _audioMuffleSecondsRemaining;
@@ -66,14 +69,15 @@ namespace Celeste.Mod.GravityHelper.Entities
             CancelDash = data.Bool("cancelDash");
             DisableUntilExit = data.Bool("disableUntilExit");
             OnlyWhileFalling = data.Bool("onlyWhileFalling");
-            Depth = Depths.Above;
+            Depth = Depths.Above + 1; // make sure we're below spinners
 
             _defaultToController = data.Bool("defaultToController");
             _minAlpha = data.Float("minAlpha", DEFAULT_MIN_ALPHA);
             _maxAlpha = data.Float("maxAlpha", DEFAULT_MAX_ALPHA);
             _flashTime = data.Float("flashTime", DEFAULT_FLASH_TIME);
-            _sound = data.Attr("sound", string.Empty);
+            _playSound = data.Attr("playSound", DEFAULT_SOUND);
             _lineColor = data.Attr("lineColor", string.Empty);
+            _lineThickness = data.Float("lineThickness", DEFAULT_LINE_THICKNESS);
 
             var affectsPlayer = data.Bool("affectsPlayer", true);
             var affectsHoldableActors = data.Bool("affectsHoldableActors");
@@ -93,7 +97,7 @@ namespace Celeste.Mod.GravityHelper.Entities
             if (_audioMuffleSecondsRemaining > 0)
                 _audioMuffleSecondsRemaining -= Engine.DeltaTime;
 
-            var vvvvvv = Scene.GetActiveController<VvvvvvGravityController>();
+            var vvvvvv = Scene.GetActiveController<VvvvvvGravityController>(true);
             var components = Scene.Tracker.GetComponents<GravityComponent>();
 
             foreach (var component in components)
@@ -113,10 +117,11 @@ namespace Celeste.Mod.GravityHelper.Entities
                     var projectedScalar = Vector2.Dot(entity.Center - Position, TargetOffset) / Vector2.Dot(TargetOffset, TargetOffset);
                     var projectedPoint = Position + TargetOffset * projectedScalar;
                     var normal = (projectedPoint - entity.Center).SafeNormalize();
-
-                    // if the normal is really close to horizontal, snap it so that the sign will be consistent
-                    if (Math.Abs(normal.Y) < 0.0001f) normal.Y = 0;
                     var angleSign = Math.Sign(normal.Angle());
+
+                    // special case for vertical lines because they can be jank
+                    if (TargetOffset.X == 0)
+                        angleSign = entity.Center.X < Position.X ? -1 : 1;
 
                     if (_trackedComponents.TryGetValue(gravityComponent.GlobalId, out var tracked))
                     {
@@ -193,19 +198,21 @@ namespace Celeste.Mod.GravityHelper.Entities
                 _maxAlpha = visualController.LineMaxAlpha.Clamp(0f, 1f);
                 _flashTime = visualController.LineFlashTime.ClampLower(0f);
                 _lineColor = visualController.LineColor;
+                _lineThickness = visualController.LineThickness;
             }
 
             MinAlpha = _minAlpha.Clamp(0f, 1f);
             MaxAlpha = _maxAlpha.Clamp(0f, 1f);
             FlashTime = _flashTime.ClampLower(0f);
             LineColor = Calc.HexToColor(!string.IsNullOrWhiteSpace(_lineColor) ? _lineColor : DEFAULT_LINE_COLOR);
+            LineThickness = _lineThickness.ClampLower(0f);
 
             if (_defaultToController && Scene.GetActiveController<SoundGravityController>() is { } soundController)
             {
-                _sound = soundController.LineSound;
+                _playSound = soundController.LineSound;
             }
 
-            Sound = _sound;
+            Sound = _playSound;
         }
 
         public override void Render()
@@ -213,7 +220,7 @@ namespace Celeste.Mod.GravityHelper.Entities
             base.Render();
 
             var alpha = FlashTime == 0 ? MaxAlpha : Calc.LerpClamp(MinAlpha, MaxAlpha, _flashTimeRemaining / FlashTime);
-            Draw.Line(Position.Round(), (Position + TargetOffset).Round(), LineColor * alpha, 2f);
+            Draw.Line(Position.Round(), (Position + TargetOffset).Round(), LineColor * alpha, LineThickness);
         }
 
         public override void DebugRender(Camera camera)

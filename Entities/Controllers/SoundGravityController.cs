@@ -16,20 +16,27 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
         public const string DEFAULT_INVERTED_SOUND = "event:/ui/game/lookout_on";
         public const string DEFAULT_TOGGLE_SOUND = "";
 
-        public string NormalSound { get; }
-        public string InvertedSound { get; }
-        public string ToggleSound { get; }
-        public string LineSound { get; }
-        public string MusicParam { get; }
+        public string NormalSound { get; } = DEFAULT_NORMAL_SOUND;
+        public string InvertedSound { get; } = DEFAULT_INVERTED_SOUND;
+        public string ToggleSound { get; } = DEFAULT_TOGGLE_SOUND;
+        public string LineSound { get; } = GravityLine.DEFAULT_SOUND;
+        public string MusicParam { get; } = string.Empty;
 
+        // ReSharper disable once UnusedMember.Global
+        public SoundGravityController()
+        {
+            // ephemeral controller
+        }
+
+        // ReSharper disable once UnusedMember.Global
         public SoundGravityController(EntityData data, Vector2 offset)
             : base(data, offset)
         {
-            NormalSound = data.Attr("normalSound", DEFAULT_NORMAL_SOUND);
-            InvertedSound = data.Attr("invertedSound", DEFAULT_INVERTED_SOUND);
-            ToggleSound = data.Attr("toggleSound", DEFAULT_TOGGLE_SOUND);
-            LineSound = data.Attr("lineSound", string.Empty);
-            MusicParam = data.Attr("musicParam", string.Empty);
+            NormalSound = data.Attr("normalSound", NormalSound);
+            InvertedSound = data.Attr("invertedSound", InvertedSound);
+            ToggleSound = data.Attr("toggleSound", ToggleSound);
+            LineSound = data.Attr("lineSound", LineSound);
+            MusicParam = data.Attr("musicParam", MusicParam);
 
             if (Persistent)
             {

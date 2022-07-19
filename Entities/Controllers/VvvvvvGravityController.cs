@@ -13,10 +13,10 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
     [Tracked]
     public class VvvvvvGravityController : BaseGravityController<VvvvvvGravityController>
     {
-        public VvvvvvMode Mode { get; }
-        public string FlipSound { get; }
-        public bool DisableGrab { get; }
-        public bool DisableDash { get; }
+        public VvvvvvMode Mode { get; } = VvvvvvMode.Off;
+        public string FlipSound { get; } = default_flip_sound;
+        public bool DisableGrab { get; } = true;
+        public bool DisableDash { get; } = true;
 
         public bool IsVvvvvv => GravityHelperModule.Settings.VvvvvvMode == GravityHelperModuleSettings.VvvvvvSetting.Default
             ? Mode == VvvvvvMode.TriggerBased && GravityHelperModule.Session.VvvvvvTrigger || Mode == VvvvvvMode.On
@@ -33,21 +33,20 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
         private const float flip_buffer_seconds = 0.1f;
         private const string default_flip_sound = "event:/gravityhelper/toggle";
 
+        // ReSharper disable once UnusedMember.Global
         public VvvvvvGravityController()
         {
-            Mode = VvvvvvMode.Off;
-            FlipSound = default_flip_sound;
-            DisableDash = true;
-            DisableGrab = true;
+            // ephemeral controller
         }
 
+        // ReSharper disable once UnusedMember.Global
         public VvvvvvGravityController(EntityData data, Vector2 offset)
             : base(data, offset)
         {
-            Mode = data.Enum("mode", VvvvvvMode.TriggerBased);
-            FlipSound = data.Attr("flipSound", string.Empty);
-            DisableGrab = data.Bool("disableGrab", true);
-            DisableDash = data.Bool("disableDash", true);
+            Mode = data.Enum("mode", Mode);
+            FlipSound = data.Attr("flipSound", FlipSound);
+            DisableGrab = data.Bool("disableGrab", DisableGrab);
+            DisableDash = data.Bool("disableDash", DisableDash);
         }
 
         public override void Transitioned()
@@ -182,9 +181,11 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
             }
             else
             {
-                var invName = level.Session.MapData.Meta.Inventory;
-                var fieldInfo = typeof(PlayerInventory).GetField(invName, BindingFlags.Public | BindingFlags.Static);
-                var inv = fieldInfo != null ? (PlayerInventory)fieldInfo.GetValue(null) : PlayerInventory.Default;
+                var inv = PlayerInventory.Default;
+                var invName = level.Session.MapData?.Meta?.Inventory ?? string.Empty;
+                if (!string.IsNullOrWhiteSpace(invName) && typeof(PlayerInventory).GetField(invName, BindingFlags.Public | BindingFlags.Static) is { } fieldInfo)
+                    inv = (PlayerInventory)fieldInfo.GetValue(null);
+
                 level.Session.Inventory = inv;
                 player.Dashes = player.MaxDashes;
             }

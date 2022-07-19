@@ -41,13 +41,7 @@ namespace Celeste.Mod.GravityHelper
                 OnValueChange = value =>
                 {
                     VvvvvvMode = value;
-                    if (Engine.Scene is Level level)
-                    {
-                        var persistent = level.GetPersistentController<VvvvvvGravityController>();
-                        if (persistent == null)
-                            level.Add(persistent = new VvvvvvGravityController());
-                        persistent.Transitioned();
-                    }
+                    (Engine.Scene as Level)?.GetPersistentController<VvvvvvGravityController>(true)?.Transitioned();
                 }
             });
         }
@@ -61,8 +55,7 @@ namespace Celeste.Mod.GravityHelper
                 OnValueChange = value =>
                 {
                     VvvvvvAllowGrabbing = value;
-                    if (Engine.Scene is Level level)
-                        level.GetPersistentController<VvvvvvGravityController>()?.Transitioned();
+                    (Engine.Scene as Level)?.GetPersistentController<VvvvvvGravityController>()?.Transitioned();
                 }
             });
         }
@@ -76,8 +69,7 @@ namespace Celeste.Mod.GravityHelper
                 OnValueChange = value =>
                 {
                     VvvvvvAllowDashing = value;
-                    if (Engine.Scene is Level level)
-                        level.GetPersistentController<VvvvvvGravityController>()?.Transitioned();
+                    (Engine.Scene as Level)?.GetPersistentController<VvvvvvGravityController>()?.Transitioned();
                 }
             });
         }
@@ -91,8 +83,7 @@ namespace Celeste.Mod.GravityHelper
                 OnValueChange = value =>
                 {
                     VvvvvvFlipSound = value;
-                    if (Engine.Scene is Level level)
-                        level.GetPersistentController<VvvvvvGravityController>()?.Transitioned();
+                    (Engine.Scene as Level)?.GetPersistentController<VvvvvvGravityController>()?.Transitioned();
                 }
             });
         }

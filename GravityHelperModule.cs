@@ -35,6 +35,7 @@ namespace Celeste.Mod.GravityHelper
         public static PlayerGravityComponent PlayerComponent { get; internal set; }
         public static bool ShouldInvertPlayer => PlayerComponent?.ShouldInvert ?? false;
         public static bool ShouldInvertPlayerChecked => PlayerComponent?.ShouldInvertChecked ?? false;
+        internal static int OverrideSemaphore = 0;
 
         public static bool AreHooksRequiredForSession(Session session) =>
             session.MapData?.Levels?
@@ -214,26 +215,12 @@ namespace Celeste.Mod.GravityHelper
 
         #endregion
 
-        internal static bool Transitioning;
-        internal static bool SolidMoving;
-        internal static bool JumpThruMoving;
-
         public static void SaveState(Dictionary<string, object> state, Level level)
         {
-            state[nameof(Transitioning)] = Transitioning;
-            state[nameof(SolidMoving)] = SolidMoving;
-            state[nameof(JumpThruMoving)] = JumpThruMoving;
         }
 
         public static void LoadState(Dictionary<string, object> state, Level level)
         {
-            if (state[nameof(Transitioning)] is bool transitioning)
-                Transitioning = transitioning;
-            if (state[nameof(SolidMoving)] is bool solidMoving)
-                SolidMoving = solidMoving;
-            if (state[nameof(JumpThruMoving)] is bool jumpThruMoving)
-                JumpThruMoving = jumpThruMoving;
-
             // fix player component
             PlayerComponent = level.Tracker.GetEntity<Player>()?.Get<PlayerGravityComponent>();
         }

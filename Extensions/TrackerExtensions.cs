@@ -11,11 +11,11 @@ namespace Celeste.Mod.GravityHelper.Extensions
 {
     public static class TrackerExtensions
     {
-        public static TController GetActiveController<TController>(this Scene scene)
+        public static TController GetActiveController<TController>(this Scene scene, bool allowEphemeral = false)
             where TController : BaseGravityController =>
-            GetActiveController(scene, typeof(TController)) as TController;
+            GetActiveController(scene, typeof(TController), allowEphemeral) as TController;
 
-        public static BaseGravityController GetActiveController(this Scene scene, Type controllerType)
+        public static BaseGravityController GetActiveController(this Scene scene, Type controllerType, bool allowEphemeral = false)
         {
             if (scene == null || controllerType == null) return null;
             if (!scene.Tracker.Entities.TryGetValue(controllerType, out var list) || !list.Any()) return null;
@@ -26,7 +26,7 @@ namespace Celeste.Mod.GravityHelper.Extensions
             {
                 if (item is not BaseGravityController controller)
                     continue;
-                if (controller.Persistent)
+                if (controller.Persistent && (!controller.Ephemeral || allowEphemeral))
                     global = controller;
                 if (level?.IsInBounds(item) ?? false)
                     return controller;
@@ -34,14 +34,24 @@ namespace Celeste.Mod.GravityHelper.Extensions
             return global;
         }
 
-        public static TController GetPersistentController<TController>(this Scene scene)
+        public static TController GetPersistentController<TController>(this Scene scene, bool createIfRequired = false)
             where TController : BaseGravityController =>
-            GetPersistentController(scene, typeof(TController)) as TController;
+            GetPersistentController(scene, typeof(TController), createIfRequired) as TController;
 
-        public static BaseGravityController GetPersistentController(this Scene scene, Type controllerType)
+        public static BaseGravityController GetPersistentController(this Scene scene, Type controllerType, bool createIfRequired = false)
         {
-            if (!scene.Tracker.Entities.TryGetValue(controllerType, out var list)) return null;
-            return list.FirstOrDefault(e => (e as BaseGravityController)?.Persistent == true) as BaseGravityController;
+            if (!scene.Tracker.Entities.TryGetValue(controllerType, out var list) && !createIfRequired)
+                return null;
+
+            // find the persistent controller if it exists
+            var persistent = list?.FirstOrDefault(e => (e as BaseGravityController)?.Persistent == true) as BaseGravityController;
+            // if we found a persistent, just return it
+            if (persistent != null) return persistent;
+            // if we have at least one non-persistent, or if we've been told to create one, create an ephemeral persistent
+            if (createIfRequired || list?.Any() == true)
+                scene.Add(persistent = (BaseGravityController)Activator.CreateInstance(controllerType));
+            // return the new one, or null
+            return persistent;
         }
 
         public static T GetEntityOrDefault<T>(this Tracker tracker, Func<T, bool> predicate = null)

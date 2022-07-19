@@ -50,6 +50,7 @@ placements.entities.GravityHelper/GravityLine.tooltips.sound=The sound that shou
 placements.entities.GravityHelper/GravityLine.tooltips.minAlpha=The alpha to display when not flashing. Defaults to 0.45. Supports controllers.
 placements.entities.GravityHelper/GravityLine.tooltips.maxAlpha=The alpha to start a flash with. Defaults to 0.95. Supports controllers.
 placements.entities.GravityHelper/GravityLine.tooltips.flashTime=The time in seconds taken to perform a flash when triggered. If set to 0 seconds, flashing is disabled. Defaults to 0.35 seconds. Supports controllers.
+placements.entities.GravityHelper/GravityLine.tooltips.lineThickness=The thickness in pixels to render the line. Defaults to 2. Supports controllers.
 
 # Gravity Refill
 placements.entities.GravityHelper/GravityRefill.tooltips.charges=The number of gravity charges that this refill will provide.
@@ -126,6 +127,7 @@ placements.entities.GravityHelper/VisualGravityController.tooltips.fieldFlashOnT
 placements.entities.GravityHelper/VisualGravityController.tooltips.lineMinAlpha=The global setting for GravityLine minAlpha. Defaults to 0.45.
 placements.entities.GravityHelper/VisualGravityController.tooltips.lineMaxAlpha=The global setting for GravityLine maxAlpha. Defaults to 0.95.
 placements.entities.GravityHelper/VisualGravityController.tooltips.lineFlashTime=The global setting for GravityLine flashTime. Defaults to 0.35 seconds.
+placements.entities.GravityHelper/VisualGravityController.tooltips.lineThickness=The global setting for GravityLine lineThickness. Defaults to 2.
 
 # Sound Gravity Controller
 placements.entities.GravityHelper/SoundGravityController.tooltips.persistent=Whether this controller should be considered the default for its type. There should only ever be one persistent in your map, and not in a room with another controller of the same type.

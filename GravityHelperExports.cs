@@ -67,5 +67,22 @@ namespace Celeste.Mod.GravityHelper
         public static Component CreatePlayerGravityListener(Action<Player, int, float> gravityChanged) =>
             new PlayerGravityListener((e, a) =>
                 gravityChanged(e as Player, (int)a.NewValue, a.MomentumMultiplier));
+
+        public static void BeginOverride() => GravityHelperModule.OverrideSemaphore++;
+
+        public static void EndOverride() => GravityHelperModule.OverrideSemaphore--;
+
+        public static void ExecuteOverride(Action action)
+        {
+            GravityHelperModule.OverrideSemaphore++;
+            action?.Invoke();
+            GravityHelperModule.OverrideSemaphore--;
+        }
+
+        public static IDisposable WithOverride()
+        {
+            GravityHelperModule.OverrideSemaphore++;
+            return new InvokeOnDispose(() => GravityHelperModule.OverrideSemaphore--);
+        }
     }
 }

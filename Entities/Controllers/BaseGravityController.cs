@@ -106,6 +106,21 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
             var entities = self.Session.MapData?.Levels?.SelectMany(l => l.Entities) ?? Enumerable.Empty<EntityData>();
             var controllers = entities.Where(d => d.Name.StartsWith("GravityHelper") && d.Name.Contains("Controller")).ToArray();
 
+            // log controller warnings if required
+            foreach (var grouping in controllers.GroupBy(d => d.Name))
+            {
+                var persistentCount = grouping.Count(c => c.Bool("persistent"));
+                if (persistentCount > 1)
+                    Logger.Log(LogLevel.Warn, nameof(GravityHelperModule), $"Warning: Found {persistentCount} persistent controllers of type {grouping.Key}");
+
+                foreach (var roomGroup in grouping.GroupBy(d => d.Level.Name))
+                {
+                    var controllerCount = roomGroup.Count();
+                    if (controllerCount > 1)
+                        Logger.Log(LogLevel.Warn, nameof(GravityHelperModule), $"Warning: Found {controllerCount} controllers of type {grouping.Key} in room {roomGroup.Key}");
+                }
+            }
+
             foreach (var data in controllers)
             {
                 self.Session.DoNotLoad.Add(new EntityID(data.Level.Name, data.ID));
@@ -114,16 +129,11 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
 
             orig(self, playerintro, true);
 
-            // ensure we have a vvvvvv if required by settings
-            var vvvvvv = self.GetPersistentController<VvvvvvGravityController>();
-            if (vvvvvv == null && GravityHelperModule.Settings.VvvvvvMode != GravityHelperModuleSettings.VvvvvvSetting.Default)
-                self.Add(vvvvvv = new VvvvvvGravityController());
-
             // apply each controller type (this should probably be automatic)
             self.GetPersistentController<BehaviorGravityController>()?.Transitioned();
             self.GetPersistentController<SoundGravityController>()?.Transitioned();
             self.GetPersistentController<VisualGravityController>()?.Transitioned();
-            vvvvvv?.Transitioned();
+            self.GetPersistentController<VvvvvvGravityController>(GravityHelperModule.Settings.VvvvvvMode != GravityHelperModuleSettings.VvvvvvSetting.Default)?.Transitioned();
         }
     }
 }

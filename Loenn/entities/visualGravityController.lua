@@ -20,6 +20,7 @@ local placementData = helpers.createPlacementData('1', {
     lineMaxAlpha = 0.95,
     lineFlashTime = 0.35,
     lineColor = "FFFFFF",
+    lineThickness = 2.0,
 })
 
 local visualGravityController = {
@@ -28,7 +29,13 @@ local visualGravityController = {
     ignoredFields = consts.ignoredFields,
     placements = {
         {
-            name = "normal",
+            name = "single_room",
+            data = helpers.union(placementData, {
+                persistent = false,
+            }),
+        },
+        {
+            name = "persistent",
             data = helpers.union(placementData),
         },
     },
