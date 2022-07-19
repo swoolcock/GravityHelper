@@ -47,7 +47,7 @@ namespace Celeste.Mod.GravityHelper.Entities
         private float _minAlpha;
         private float _maxAlpha;
         private float _flashTime;
-        private string _sound;
+        private string _playSound;
         private string _lineColor;
 
         private float _flashTimeRemaining;
@@ -72,7 +72,7 @@ namespace Celeste.Mod.GravityHelper.Entities
             _minAlpha = data.Float("minAlpha", DEFAULT_MIN_ALPHA);
             _maxAlpha = data.Float("maxAlpha", DEFAULT_MAX_ALPHA);
             _flashTime = data.Float("flashTime", DEFAULT_FLASH_TIME);
-            _sound = data.Attr("sound", string.Empty);
+            _playSound = data.Attr("playSound", DEFAULT_SOUND);
             _lineColor = data.Attr("lineColor", string.Empty);
 
             var affectsPlayer = data.Bool("affectsPlayer", true);
@@ -202,10 +202,10 @@ namespace Celeste.Mod.GravityHelper.Entities
 
             if (_defaultToController && Scene.GetActiveController<SoundGravityController>() is { } soundController)
             {
-                _sound = soundController.LineSound;
+                _playSound = soundController.LineSound;
             }
 
-            Sound = _sound;
+            Sound = _playSound;
         }
 
         public override void Render()
