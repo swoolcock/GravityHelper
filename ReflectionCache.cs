@@ -14,24 +14,7 @@ namespace Celeste.Mod.GravityHelper
     internal static class ReflectionCache
     {
         private static List<Type> _loadableTypes;
-        public static IEnumerable<Type> LoadableTypes => _loadableTypes ??= getLoadableTypes();
-
-        private static List<Type> getLoadableTypes()
-        {
-            List<Type> types = new();
-
-            try
-            {
-                types.AddRange(typeof(ReflectionCache).Assembly.DefinedTypes);
-            }
-            catch (ReflectionTypeLoadException e)
-            {
-                types.AddRange(e.Types);
-                Logger.Log(LogLevel.Error, nameof(GravityHelperModule), $"Couldn't load {e.LoaderExceptions.Length} types.");
-            }
-
-            return types;
-        }
+        public static IEnumerable<Type> LoadableTypes => _loadableTypes ??= typeof(ReflectionCache).Assembly.GetTypesSafe().ToList();
 
         public static Type GetTypeByName(string name) =>
             AppDomain.CurrentDomain.GetAssemblies().Reverse().Select(a => a.GetType(name)).FirstOrDefault(t => t != null);
