@@ -23,6 +23,14 @@
         <Reference Include="$(CelestePrefix)\MMHOOK_Celeste.dll">
             <Private>false</Private>
         </Reference>
+        <Reference Include="CelesteNet">
+            <HintPath>lib-stripped\CelesteNet.Client.CelesteNet.Shared.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="CelesteNet">
+            <HintPath>lib-stripped\CelesteNet.Client.CelesteNet.Client.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
     </ItemGroup>
 
     <Choose>
@@ -48,7 +56,7 @@
             </ItemGroup>
         </When>
     </Choose>
-    
+
     <Target Name="CopyFiles" AfterTargets="Build">
         <Copy SourceFiles="$(OutputPath)\GravityHelper.dll" DestinationFolder="bin" />
     </Target>

@@ -13,6 +13,9 @@ namespace Celeste.Mod.GravityHelper
     // ReSharper disable InconsistentNaming
     internal static class ReflectionCache
     {
+        private static List<Type> _loadableTypes;
+        public static IEnumerable<Type> LoadableTypes => _loadableTypes ??= typeof(ReflectionCache).Assembly.GetTypesSafe().ToList();
+
         public static Type GetTypeByName(string name) =>
             AppDomain.CurrentDomain.GetAssemblies().Reverse().Select(a => a.GetType(name)).FirstOrDefault(t => t != null);
 
@@ -54,6 +57,7 @@ namespace Celeste.Mod.GravityHelper
         public static readonly FieldInfo Actor_MovementCounter = typeof (Actor).GetField("movementCounter", BindingFlags.Instance | BindingFlags.NonPublic);
         public static readonly FieldInfo Spring_PlayerCanUse = typeof(Spring).GetField("playerCanUse", BindingFlags.Instance | BindingFlags.NonPublic);
         public static readonly FieldInfo Sprite_Animations = typeof(Sprite).GetField("animations", BindingFlags.Instance | BindingFlags.NonPublic);
+        public static readonly MethodInfo FinalBoss_MoveSequence = typeof(FinalBoss).GetMethod("MoveSequence", BindingFlags.Instance | BindingFlags.NonPublic);
         public static readonly MethodInfo FlyFeather_CollectRoutine = typeof(FlyFeather).GetMethod("CollectRoutine", BindingFlags.Instance | BindingFlags.NonPublic);
         public static readonly MethodInfo Booster_BoostRoutine = typeof(Booster).GetMethod("BoostRoutine", BindingFlags.Instance | BindingFlags.NonPublic);
         public static readonly MethodInfo BadelineBoost_BoostRoutine = typeof(BadelineBoost).GetMethod("BoostRoutine", BindingFlags.Instance | BindingFlags.NonPublic);
@@ -95,6 +99,9 @@ namespace Celeste.Mod.GravityHelper
         public static MethodInfo ExtendedVariantsJumpCountSetJumpCountMethodInfo { get; private set; }
         public static Type StaminaMeterSmallStaminaMeterDisplayType { get; private set; }
         public static Type BunnelineModuleType { get; private set; }
+        public static Type CelesteNetGhostType { get; private set; }
+        public static Type CelesteNetGhostNameTagType { get; private set; }
+        public static Type CelesteNetGhostEmoteType { get; private set; }
 
         public static void LoadThirdPartyTypes()
         {
@@ -118,6 +125,9 @@ namespace Celeste.Mod.GravityHelper
             ExtendedVariantsJumpCountSetJumpCountMethodInfo = ExtendedVariantsJumpCountType?.GetMethod("SetJumpCount", BindingFlags.Public | BindingFlags.Static);
             StaminaMeterSmallStaminaMeterDisplayType = GetModdedTypeByName("StaminaMeter", "Celeste.Mod.StaminaMeter.SmallStaminaMeterDisplay");
             BunnelineModuleType = GetModdedTypeByName("Bunneline", "Celeste.Mod.Bunneline.BunnelineModule");
+            CelesteNetGhostType = GetModdedTypeByName("CelesteNet.Client", "Celeste.Mod.CelesteNet.Client.Entities.Ghost");
+            CelesteNetGhostNameTagType = GetModdedTypeByName("CelesteNet.Client", "Celeste.Mod.CelesteNet.Client.Entities.GhostNameTag");
+            CelesteNetGhostEmoteType = GetModdedTypeByName("CelesteNet.Client", "Celeste.Mod.CelesteNet.Client.Entities.GhostEmote");
         }
 
         #endregion
