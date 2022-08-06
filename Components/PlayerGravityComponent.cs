@@ -21,6 +21,7 @@ namespace Celeste.Mod.GravityHelper.Components
                 _player.StateMachine.State switch
                 {
                     Player.StDreamDash => false,
+                    Player.StAttract => false,
                     Player.StDummy when !_player.DummyGravity => false,
                     _ when _player.CurrentBooster != null => false,
                     _ => true,
