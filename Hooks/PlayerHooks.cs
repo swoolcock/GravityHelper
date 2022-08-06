@@ -71,6 +71,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             On.Celeste.Player.ClimbCheck += Player_ClimbCheck;
             On.Celeste.Player.CassetteFlyEnd += Player_CassetteFlyEnd;
             On.Celeste.Player.CreateTrail += Player_CreateTrail;
+            On.Celeste.Player.DoFlingBird += Player_DoFlingBird;
             On.Celeste.Player.DreamDashBegin += Player_DreamDashBegin;
             On.Celeste.Player.DreamDashCheck += Player_DreamDashCheck;
             On.Celeste.Player.DreamDashUpdate += Player_DreamDashUpdate;
@@ -146,6 +147,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             On.Celeste.Player.CassetteFlyEnd -= Player_CassetteFlyEnd;
             On.Celeste.Player.ClimbCheck -= Player_ClimbCheck;
             On.Celeste.Player.CreateTrail -= Player_CreateTrail;
+            On.Celeste.Player.DoFlingBird -= Player_DoFlingBird;
             On.Celeste.Player.DreamDashBegin -= Player_DreamDashBegin;
             On.Celeste.Player.DreamDashCheck -= Player_DreamDashCheck;
             On.Celeste.Player.DreamDashUpdate -= Player_DreamDashUpdate;
@@ -1182,6 +1184,13 @@ namespace Celeste.Mod.GravityHelper.Hooks
             self.Sprite.Scale.Y = -scaleY;
             orig(self);
             self.Sprite.Scale.Y = scaleY;
+        }
+
+        private static bool Player_DoFlingBird(On.Celeste.Player.orig_DoFlingBird orig, Player self, FlingBird bird)
+        {
+            if (GravityHelperModule.ShouldInvertPlayer)
+                self.SetGravity(GravityType.Normal, 0f);
+            return orig(self, bird);
         }
 
         private static void Player_DreamDashBegin(On.Celeste.Player.orig_DreamDashBegin orig, Player self)
