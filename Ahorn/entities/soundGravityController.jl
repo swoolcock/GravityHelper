@@ -39,7 +39,7 @@ const sprite = "objects/GravityHelper/gravityController/circle"
 const sprite_dot = "objects/GravityHelper/gravityController/circle_dot"
 const sprite_speaker = "objects/GravityHelper/gravityController/speaker"
 
-Ahorn.editingIgnored(entity::SoundGravityController, multiple::Bool=false) = String["modVersion", "pluginVersion"]
+Ahorn.editingIgnored(entity::SoundGravityController, multiple::Bool=false) = multiple ? String["x", "y", "modVersion", "pluginVersion"] : String["modVersion", "pluginVersion"]
 
 function Ahorn.selection(entity::SoundGravityController)
     x, y = Ahorn.position(entity)

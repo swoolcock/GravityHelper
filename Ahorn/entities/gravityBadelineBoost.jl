@@ -36,7 +36,7 @@ const gravityColors = Dict{Integer, Tuple{Real, Real, Real, Real}}(
     -1 => (1.0, 1.0, 1.0, 1.0),
 )
 
-Ahorn.editingIgnored(entity::GravityBadelineBoost, multiple::Bool=false) = String["modVersion", "pluginVersion"]
+Ahorn.editingIgnored(entity::GravityBadelineBoost, multiple::Bool=false) = multiple ? String["x", "y", "modVersion", "pluginVersion"] : String["modVersion", "pluginVersion"]
 
 Ahorn.editingOptions(entity::GravityBadelineBoost) = Dict{String, Any}(
     "gravityType" => gravityTypes,

@@ -35,7 +35,7 @@ const sprite = "objects/GravityHelper/gravityController/circle"
 const sprite_dot = "objects/GravityHelper/gravityController/circle_dot"
 const sprite_wrench = "objects/GravityHelper/gravityController/wrench"
 
-Ahorn.editingIgnored(entity::BehaviorGravityController, multiple::Bool=false) = String["modVersion", "pluginVersion"]
+Ahorn.editingIgnored(entity::BehaviorGravityController, multiple::Bool=false) = multiple ? String["x", "y", "modVersion", "pluginVersion"] : String["modVersion", "pluginVersion"]
 
 function Ahorn.selection(entity::BehaviorGravityController)
     x, y = Ahorn.position(entity)

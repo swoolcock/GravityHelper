@@ -25,7 +25,7 @@ const placements = Ahorn.PlacementDict(
 
 const sprite = "objects/GravityHelper/gravityRefill/idle00"
 
-Ahorn.editingIgnored(entity::GravityRefill, multiple::Bool=false) = String["modVersion", "pluginVersion"]
+Ahorn.editingIgnored(entity::GravityRefill, multiple::Bool=false) = multiple ? String["x", "y", "modVersion", "pluginVersion"] : String["modVersion", "pluginVersion"]
 
 function Ahorn.selection(entity::GravityRefill)
     x, y = Ahorn.position(entity)

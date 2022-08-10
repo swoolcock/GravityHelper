@@ -65,7 +65,7 @@ const placements = Ahorn.PlacementDict(
     ),
 )
 
-Ahorn.editingIgnored(entity::gravitySpringUnion, multiple::Bool=false) = String["modVersion", "pluginVersion"]
+Ahorn.editingIgnored(entity::gravitySpringUnion, multiple::Bool=false) = multiple ? String["x", "y", "modVersion", "pluginVersion"] : String["modVersion", "pluginVersion"]
 
 function Ahorn.selection(entity::GravitySpringFloor)
     x, y = Ahorn.position(entity)
