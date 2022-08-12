@@ -19,6 +19,7 @@ namespace Celeste.Mod.GravityHelper.ThirdParty
         private IDetour hook_BounceHelperModule_modDashUpdate;
         private IDetour hook_BounceHelperModule_modNormalUpdate;
         private IDetour hook_BounceHelperModule_bounce;
+        private IDetour hook_BounceHelperModule_bounce_il;
         // ReSharper restore InconsistentNaming
 
         protected override void Load()
@@ -39,6 +40,7 @@ namespace Celeste.Mod.GravityHelper.ThirdParty
             {
                 var target = GetType().GetMethod(nameof(BounceHelperModule_bounce), BindingFlags.Static | BindingFlags.NonPublic);
                 hook_BounceHelperModule_bounce = new Hook(bounceMethod, target);
+                hook_BounceHelperModule_bounce_il = new ILHook(bounceMethod, BounceHelperModule_bounce_il);
             }
         }
 
@@ -48,6 +50,10 @@ namespace Celeste.Mod.GravityHelper.ThirdParty
             hook_BounceHelperModule_modDashUpdate = null;
             hook_BounceHelperModule_modNormalUpdate?.Dispose();
             hook_BounceHelperModule_modNormalUpdate = null;
+            hook_BounceHelperModule_bounce?.Dispose();
+            hook_BounceHelperModule_bounce = null;
+            hook_BounceHelperModule_bounce_il?.Dispose();
+            hook_BounceHelperModule_bounce_il = null;
         }
 
         private static void BounceHelperModule_modDashUpdate(ILContext il) => HookUtils.SafeHook(() =>
@@ -73,5 +79,23 @@ namespace Celeste.Mod.GravityHelper.ThirdParty
                 surfaceDir = new Vector2(surfaceDir.X, -surfaceDir.Y);
             orig(module, player, bounceSpeed, bounceStrength, surfaceDir, dreamRipple, wallCheckDistance);
         }
+
+        private static void BounceHelperModule_bounce_il(ILContext il) => HookUtils.SafeHook(() =>
+        {
+            var cursor = new ILCursor(il);
+
+            if (!cursor.TryGotoNext(MoveType.After, instr => instr.MatchLdcR4(12f)))
+                throw new HookException("Couldn't find 12f");
+            cursor.Index++;
+            cursor.EmitInvertVectorDelegate();
+
+            if (!cursor.TryGotoNext(instr => instr.MatchCall<SlashFx>(nameof(SlashFx.Burst))))
+                throw new HookException("Couldn't find SlashFx.Burst");
+            cursor.EmitInvertFloatDelegate();
+
+            if (!cursor.TryGotoNext(MoveType.After, instr => instr.MatchLdfld<Vector2>(nameof(Vector2.Y))))
+                throw new HookException("Couldn't find player.Sprite.Scale.Y");
+            cursor.EmitInvertFloatDelegate();
+        });
     }
 }
