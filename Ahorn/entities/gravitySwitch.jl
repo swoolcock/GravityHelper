@@ -54,7 +54,7 @@ const normalSprite = "objects/GravityHelper/gravitySwitch/switch12"
 const invertedSprite = "objects/GravityHelper/gravitySwitch/switch01"
 const toggleSprite = "objects/GravityHelper/gravitySwitch/toggle01"
 
-Ahorn.editingIgnored(entity::GravitySwitch, multiple::Bool=false) = String["modVersion", "pluginVersion"]
+Ahorn.editingIgnored(entity::GravitySwitch, multiple::Bool=false) = multiple ? String["x", "y", "modVersion", "pluginVersion"] : String["modVersion", "pluginVersion"]
 
 function Ahorn.selection(entity::GravitySwitch)
     x, y = Ahorn.position(entity)

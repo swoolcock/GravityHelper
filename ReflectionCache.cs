@@ -102,6 +102,7 @@ namespace Celeste.Mod.GravityHelper
         public static Type CelesteNetGhostType { get; private set; }
         public static Type CelesteNetGhostNameTagType { get; private set; }
         public static Type CelesteNetGhostEmoteType { get; private set; }
+        public static Type BounceHelperModuleType { get; private set; }
 
         public static void LoadThirdPartyTypes()
         {
@@ -128,6 +129,7 @@ namespace Celeste.Mod.GravityHelper
             CelesteNetGhostType = GetModdedTypeByName("CelesteNet.Client", "Celeste.Mod.CelesteNet.Client.Entities.Ghost");
             CelesteNetGhostNameTagType = GetModdedTypeByName("CelesteNet.Client", "Celeste.Mod.CelesteNet.Client.Entities.GhostNameTag");
             CelesteNetGhostEmoteType = GetModdedTypeByName("CelesteNet.Client", "Celeste.Mod.CelesteNet.Client.Entities.GhostEmote");
+            BounceHelperModuleType = GetModdedTypeByName("BounceHelper", "Celeste.Mod.BounceHelper.BounceHelperModule");
         }
 
         #endregion

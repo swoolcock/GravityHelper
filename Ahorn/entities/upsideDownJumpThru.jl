@@ -31,7 +31,7 @@ const quads = Tuple{Integer, Integer, Integer, Integer}[
     (0, 8, 8, 5) (8, 8, 8, 5) (16, 8, 8, 5)
 ]
 
-Ahorn.editingIgnored(entity::UpsideDownJumpThru, multiple::Bool=false) = String["modVersion", "pluginVersion"]
+Ahorn.editingIgnored(entity::UpsideDownJumpThru, multiple::Bool=false) = multiple ? String["x", "y", "modVersion", "pluginVersion"] : String["modVersion", "pluginVersion"]
 
 Ahorn.editingOptions(entity::UpsideDownJumpThru) = Dict{String, Any}(
     "texture" => textures,

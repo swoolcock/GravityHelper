@@ -46,7 +46,7 @@ const placements = Ahorn.PlacementDict(
     ),
 )
 
-Ahorn.editingIgnored(trigger::GravityTrigger, multiple::Bool=false) = String["modVersion", "pluginVersion"]
+Ahorn.editingIgnored(trigger::GravityTrigger, multiple::Bool=false) = multiple ? String["x", "y", "modVersion", "pluginVersion"] : String["modVersion", "pluginVersion"]
 
 Ahorn.editingOptions(trigger::GravityTrigger) = Dict{String, Any}(
     "gravityType" => gravityTypes

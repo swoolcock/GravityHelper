@@ -38,7 +38,7 @@ const vvvvvvModes = Dict{String, Integer}(
     "On" => 2,
 )
 
-Ahorn.editingIgnored(entity::VvvvvvGravityController, multiple::Bool=false) = String["modVersion", "pluginVersion"]
+Ahorn.editingIgnored(entity::VvvvvvGravityController, multiple::Bool=false) = multiple ? String["x", "y", "modVersion", "pluginVersion"] : String["modVersion", "pluginVersion"]
 
 Ahorn.editingOptions(entity::VvvvvvGravityController) = Dict{String, Any}(
     "mode" => vvvvvvModes

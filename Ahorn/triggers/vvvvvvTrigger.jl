@@ -32,6 +32,6 @@ const placements = Ahorn.PlacementDict(
     ),
 )
 
-Ahorn.editingIgnored(trigger::VvvvvvTrigger, multiple::Bool=false) = String["modVersion", "pluginVersion"]
+Ahorn.editingIgnored(trigger::VvvvvvTrigger, multiple::Bool=false) = multiple ? String["x", "y", "modVersion", "pluginVersion"] : String["modVersion", "pluginVersion"]
 
 end
