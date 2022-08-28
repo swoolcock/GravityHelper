@@ -29,7 +29,13 @@ namespace Celeste.Mod.GravityHelper.Hooks
                 return;
             }
 
-            var invert = self.Entity?.ShouldInvert() ?? false;
+            var invert = false;
+            if (self.Entity != null &&
+                (self.Entity is BadelineOldsite || self.Entity.GetType() == ReflectionCache.CelesteNetGhostType))
+            {
+                invert = self.Entity.ShouldInvert();
+            }
+
             var scaleY = self.Scale.Y;
             if (invert) self.Scale.Y = -scaleY;
             orig(self);
