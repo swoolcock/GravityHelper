@@ -63,6 +63,9 @@ namespace Celeste.Mod.GravityHelper.Components
 
             _toRemove.Clear();
 
+            // if we're not collidable, bail
+            if (!Entity.Collidable) return;
+
             // track and trigger any new components
             var components = Entity.CollideAllByComponent<TComponent>();
             foreach (var component in components)

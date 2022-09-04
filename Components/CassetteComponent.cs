@@ -2,6 +2,7 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System;
+using System.Linq;
 using Monocle;
 
 namespace Celeste.Mod.GravityHelper.Components
@@ -41,6 +42,20 @@ namespace Celeste.Mod.GravityHelper.Components
         {
             if (_entityId != null && _entityId.Value.Level == SceneAs<Level>().Session.Level)
                 CassetteState = CassetteIndex == currentIndex ? CassetteStates.On : CassetteStates.Off;
+        }
+
+        public override void EntityAdded(Scene scene)
+        {
+            base.EntityAdded(scene);
+            if (scene is not Level level) return;
+
+            level.HasCassetteBlocks = true;
+
+            var cbm = scene.Entities.Concat(scene.Entities.ToAdd).OfType<CassetteBlockManager>().FirstOrDefault();
+            if (cbm == null)
+            {
+                scene.Add(cbm = new CassetteBlockManager());
+            }
         }
     }
 

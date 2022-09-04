@@ -52,6 +52,7 @@ namespace Celeste.Mod.GravityHelper.Entities
         private readonly int _indicatorOffset;
         private readonly bool _defaultToController;
         private IndicatorRenderer _indicatorRenderer;
+        private Vector2 _indicatorShakeOffset;
 
         // ReSharper disable once PrivateFieldCanBeConvertedToLocalVariable
         private readonly DynData<Spring> _springData;
@@ -108,6 +109,7 @@ namespace Celeste.Mod.GravityHelper.Entities
             // update callbacks
             _staticMover.OnEnable = OnEnable;
             _staticMover.OnDisable = OnDisable;
+            _staticMover.OnShake = OnShake;
             playerCollider.OnCollide = OnCollide;
             holdableCollider.OnCollide = OnHoldable;
             pufferCollider.OnCollide = OnPuffer;
@@ -178,6 +180,8 @@ namespace Celeste.Mod.GravityHelper.Entities
             else
                 Visible = false;
         }
+
+        private void OnShake(Vector2 amount) => _indicatorShakeOffset += amount;
 
         public override void Update()
         {
@@ -446,6 +450,8 @@ namespace Celeste.Mod.GravityHelper.Entities
                     Orientations.Floor => Vector2.UnitY * offset,
                     _ => Vector2.Zero,
                 };
+
+                position += _spring._indicatorShakeOffset;
 
                 _arrowTexture.DrawOutline(position, _arrowOrigin);
                 _arrowTexture.Draw(position, _arrowOrigin);
