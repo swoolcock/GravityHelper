@@ -51,17 +51,45 @@ const sprites = Dict{Integer, String}(
 )
 
 const placements = Ahorn.PlacementDict(
-    "Gravity Spring (Up) (GravityHelper)" => Ahorn.EntityPlacement(
+    "Gravity Spring (Floor) (GravityHelper)" => Ahorn.EntityPlacement(
         GravitySpringFloor,
     ),
-    "Gravity Spring (Down) (GravityHelper)" => Ahorn.EntityPlacement(
+    "Gravity Spring (Ceiling) (GravityHelper)" => Ahorn.EntityPlacement(
         GravitySpringCeiling,
     ),
-    "Gravity Spring (Right) (GravityHelper)" => Ahorn.EntityPlacement(
+    "Gravity Spring (Wall Left) (GravityHelper)" => Ahorn.EntityPlacement(
         GravitySpringWallLeft,
     ),
-    "Gravity Spring (Left) (GravityHelper)" => Ahorn.EntityPlacement(
+    "Gravity Spring (Wall Right) (GravityHelper)" => Ahorn.EntityPlacement(
         GravitySpringWallRight,
+    ),
+    "Gravity Spring (Floor, with indicator) (GravityHelper)" => Ahorn.EntityPlacement(
+        GravitySpringFloor,
+        "point",
+        Dict{String, Any}(
+            "showIndicator" => true,
+        )
+    ),
+    "Gravity Spring (Ceiling, with indicator) (GravityHelper)" => Ahorn.EntityPlacement(
+        GravitySpringCeiling,
+        "point",
+        Dict{String, Any}(
+            "showIndicator" => true,
+        )
+    ),
+    "Gravity Spring (Wall Left, with indicator) (GravityHelper)" => Ahorn.EntityPlacement(
+        GravitySpringWallLeft,
+        "point",
+        Dict{String, Any}(
+            "showIndicator" => true,
+        )
+    ),
+    "Gravity Spring (Wall Right, with indicator) (GravityHelper)" => Ahorn.EntityPlacement(
+        GravitySpringWallRight,
+        "point",
+        Dict{String, Any}(
+            "showIndicator" => true,
+        )
     ),
 )
 

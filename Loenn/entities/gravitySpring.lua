@@ -33,10 +33,19 @@ local function makeSpring(name, rotation, xOffset, yOffset, width, height, gravi
             return type.springTexture
         end,
         placements = {
-            name = "normal",
-            data = helpers.union(placementData, {
-                gravityType = gravityType,
-            }),
+            {
+                name = "normal",
+                data = helpers.union(placementData, {
+                    gravityType = gravityType,
+                }),
+            },
+            {
+                name = "withIndicator",
+                data = helpers.union(placementData, {
+                    gravityType = gravityType,
+                    showIndicator = true,
+                }),
+            }
         },
     }
 end
