@@ -27,10 +27,10 @@ namespace Celeste.Mod.GravityHelper.Hooks
             using (new DetourContext {After = {"MaxHelpingHand"}})
                 IL.Celeste.Actor.MoveVExact += Actor_MoveVExact;
 
+            On.Celeste.Actor.MoveV += Actor_MoveV;
             On.Celeste.Actor.MoveVExact += Actor_MoveVExact;
             On.Celeste.Actor.IsRiding_JumpThru += Actor_IsRiding_JumpThru;
         }
-
 
         public static void Unload()
         {
@@ -40,6 +40,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             IL.Celeste.Actor.OnGround_int -= Actor_OnGround_int;
             IL.Celeste.Actor.MoveVExact -= Actor_MoveVExact;
 
+            On.Celeste.Actor.MoveV -= Actor_MoveV;
             On.Celeste.Actor.MoveVExact -= Actor_MoveVExact;
             On.Celeste.Actor.IsRiding_JumpThru -= Actor_IsRiding_JumpThru;
         }
@@ -109,6 +110,17 @@ namespace Celeste.Mod.GravityHelper.Hooks
             });
             cursor.Emit(OpCodes.Stloc, variable);
         });
+
+        private static bool Actor_MoveV(On.Celeste.Actor.orig_MoveV orig, Actor self, float moveV, Collision onCollide, Solid pusher)
+        {
+            if (GravityHelperModule.OverrideSemaphore > 0 || !self.ShouldInvertChecked())
+                return orig(self, moveV, onCollide, pusher);
+
+            GravityHelperModule.OverrideSemaphore++;
+            var rv = orig(self, -moveV, onCollide, pusher);
+            GravityHelperModule.OverrideSemaphore--;
+            return rv;
+        }
 
         private static bool Actor_MoveVExact(On.Celeste.Actor.orig_MoveVExact orig, Actor self, int moveV, Collision onCollide, Solid pusher) =>
             orig(self,
