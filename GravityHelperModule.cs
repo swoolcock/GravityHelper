@@ -120,6 +120,7 @@ namespace Celeste.Mod.GravityHelper
             FloatySpaceBlockHooks.Load();
             FlyFeatherHooks.Load();
             GliderHooks.Load();
+            HeartGemHooks.Load();
             HoldableHooks.Load();
             InputHooks.Load();
             JumpThruHooks.Load();
@@ -168,6 +169,7 @@ namespace Celeste.Mod.GravityHelper
             FloatySpaceBlockHooks.Unload();
             FlyFeatherHooks.Unload();
             GliderHooks.Unload();
+            HeartGemHooks.Unload();
             HoldableHooks.Unload();
             InputHooks.Unload();
             JumpThruHooks.Unload();
