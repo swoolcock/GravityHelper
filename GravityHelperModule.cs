@@ -107,6 +107,7 @@ namespace Celeste.Mod.GravityHelper
             BaseGravityController.LoadHooks();
 
             ActorHooks.Load();
+            AngryOshiroHooks.Load();
             BadelineBoostHooks.Load();
             BadelineDummyHooks.Load();
             BadelineOldsiteHooks.Load();
@@ -156,6 +157,7 @@ namespace Celeste.Mod.GravityHelper
             BaseGravityController.UnloadHooks();
 
             ActorHooks.Unload();
+            AngryOshiroHooks.Unload();
             BadelineBoostHooks.Unload();
             BadelineDummyHooks.Unload();
             BadelineOldsiteHooks.Unload();
