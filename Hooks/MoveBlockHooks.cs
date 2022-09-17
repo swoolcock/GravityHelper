@@ -1,11 +1,10 @@
 // Copyright (c) Shane Woolcock. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+using System;
 using Celeste.Mod.GravityHelper.Components;
-using Celeste.Mod.GravityHelper.Extensions;
 using Microsoft.Xna.Framework;
-using Monocle;
-using MonoMod.Cil;
+using MonoMod.Utils;
 
 namespace Celeste.Mod.GravityHelper.Hooks
 {
@@ -17,7 +16,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
             On.Celeste.MoveBlock.ctor_Vector2_int_int_Directions_bool_bool += MoveBlock_ctor_Vector2_int_int_Directions_bool_bool;
             On.Celeste.MoveBlock.Render += MoveBlock_Render;
-            IL.Celeste.MoveBlock.MoveVExact += MoveBlock_MoveVExact;
+            On.Celeste.MoveBlock.MoveVExact += MoveBlock_MoveVExact;
         }
 
         public static void Unload()
@@ -26,7 +25,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
             On.Celeste.MoveBlock.ctor_Vector2_int_int_Directions_bool_bool -= MoveBlock_ctor_Vector2_int_int_Directions_bool_bool;
             On.Celeste.MoveBlock.Render -= MoveBlock_Render;
-            IL.Celeste.MoveBlock.MoveVExact -= MoveBlock_MoveVExact;
+            On.Celeste.MoveBlock.MoveVExact -= MoveBlock_MoveVExact;
         }
 
         private static void MoveBlock_ctor_Vector2_int_int_Directions_bool_bool(On.Celeste.MoveBlock.orig_ctor_Vector2_int_int_Directions_bool_bool orig, MoveBlock self, Vector2 position, int width, int height, MoveBlock.Directions direction, bool canSteer, bool fast)
@@ -50,29 +49,24 @@ namespace Celeste.Mod.GravityHelper.Hooks
             orig(self);
         }
 
-        private static void MoveBlock_MoveVExact(ILContext il) => HookUtils.SafeHook(() =>
+        private static void MoveBlock_MoveVExact(On.Celeste.MoveBlock.orig_MoveVExact orig, MoveBlock self, int move)
         {
-            var cursor = new ILCursor(il);
+            if (!GravityHelperModule.ShouldInvertPlayer)
+            {
+                orig(self, move);
+                return;
+            }
 
-            // invert all the checks that ensure we don't squish ourselves
+            var data = DynamicData.For(self);
+            var noSquish = data.Get<Player>("noSquish");
 
-            if (!cursor.TryGotoNext(MoveType.After, instr => instr.MatchLdarg(1)))
-                throw new HookException("Couldn't find move");
+            if (noSquish != null && move > 0 && noSquish.Top >= self.Bottom)
+            {
+                while (move != 0 && noSquish.CollideCheck<Solid>(noSquish.Position + Vector2.UnitY * move))
+                    move -= Math.Sign(move);
+            }
 
-            cursor.EmitInvertIntDelegate();
-
-            if (!cursor.TryGotoNext(MoveType.After, instr => instr.MatchLdarg(0),
-                instr => instr.MatchLdfld<MoveBlock>("noSquish"),
-                instr => instr.MatchCallOrCallvirt<Entity>("get_Y")))
-                throw new HookException("Couldn't find noSquish.Y");
-
-            cursor.EmitInvertFloatDelegate();
-
-            if (!cursor.TryGotoNext(MoveType.After, instr => instr.MatchLdarg(0),
-                instr => instr.MatchCallOrCallvirt<Entity>("get_Y")))
-                throw new HookException("Couldn't find this.Y");
-
-            cursor.EmitInvertFloatDelegate();
-        });
+            orig(self, move);
+        }
     }
 }
