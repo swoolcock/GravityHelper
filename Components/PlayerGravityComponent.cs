@@ -134,17 +134,37 @@ namespace Celeste.Mod.GravityHelper.Components
         public override void Added(Entity entity)
         {
             base.Added(entity);
-
             _playerData = new DynData<Player>((Player) entity);
+
+            // cache when the component is added so that it's available before the player is added to the scene
             GravityHelperModule.PlayerComponent = this;
         }
 
         public override void Removed(Entity entity)
         {
             base.Removed(entity);
-
             _playerData = null;
-            GravityHelperModule.PlayerComponent = null;
+
+            // only clear the cache if it's ourselves (note that this may never be called)
+            if (GravityHelperModule.PlayerComponent == this)
+                GravityHelperModule.PlayerComponent = null;
+        }
+
+        public override void EntityAdded(Scene scene)
+        {
+            base.EntityAdded(scene);
+
+            // cache when the player is added to the scene in case it was removed and re-added
+            GravityHelperModule.PlayerComponent = this;
+        }
+
+        public override void EntityRemoved(Scene scene)
+        {
+            base.EntityRemoved(scene);
+
+            // only clear the cache if it's ourselves
+            if (GravityHelperModule.PlayerComponent == this)
+                GravityHelperModule.PlayerComponent = null;
         }
     }
 }
