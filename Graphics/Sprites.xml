@@ -73,4 +73,9 @@
         <Center />
         <Loop id="idle" path="idle" delay="0.1" frames="0-6" />
     </gravityShield>
+    
+    <gravityIndicator path="objects/GravityHelper/gravityIndicator/">
+        <Center />
+        <Loop id="arrow" path="arrow" frames="0-15" delay="0.05" />
+    </gravityIndicator>
 </Sprites>
