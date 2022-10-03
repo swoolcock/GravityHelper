@@ -10,29 +10,27 @@ using Monocle;
 
 namespace Celeste.Mod.GravityHelper.Entities
 {
-    [CustomEntity("GravityHelper/GravityRefill")]
-    public class GravityRefill : Entity
+    [CustomEntity("GravityHelper/GravityShield")]
+    public class GravityShield : Entity
     {
-        // properties
         public bool OneUse { get; }
-        public int Charges { get; }
-        public bool RefillsDash { get; }
-        public bool RefillsStamina { get; }
         public float RespawnTime { get; }
+        public float ShieldTime { get; }
 
         private readonly Version _modVersion;
         private readonly Version _pluginVersion;
 
-        // components
-        private readonly Sprite _sprite;
-        private readonly Sprite _arrows;
+        private Level _level;
+        private float _respawnTimeRemaining;
+        private bool _emitNormal;
+
         private readonly Image _outline;
+        private readonly Sprite _sprite;
         private readonly Wiggler _wiggler;
         private readonly BloomPoint _bloom;
         private readonly VertexLight _light;
         private readonly SineWave _sine;
 
-        // particles
         private readonly ParticleType p_shatter = new ParticleType(Refill.P_Shatter)
         {
             Color = Color.Purple,
@@ -57,40 +55,24 @@ namespace Celeste.Mod.GravityHelper.Entities
             Color2 = Color.MediumVioletRed,
         };
 
-        private Level _level;
-        private float _respawnTimeRemaining;
-
-        private bool _emitNormal;
-
-        private const string gravity_toggle_charges = "GravityHelper_toggle_charges";
-        public static int NumberOfCharges
-        {
-            get => (Engine.Scene as Level)?.Session.GetCounter(gravity_toggle_charges) ?? 0;
-            set => (Engine.Scene as Level)?.Session.SetCounter(gravity_toggle_charges, value);
-        }
-
-        public GravityRefill(EntityData data, Vector2 offset)
+        public GravityShield(EntityData data, Vector2 offset)
             : base(data.Position + offset)
         {
             _modVersion = data.ModVersion();
             _pluginVersion = data.PluginVersion();
 
-            Charges = data.Int("charges", 1);
             OneUse = data.Bool("oneUse");
-            RefillsDash = data.Bool("refillsDash", true);
-            RefillsStamina = data.Bool("refillsStamina", true);
             RespawnTime = data.Float("respawnTime", 2.5f);
+            ShieldTime = data.Float("shieldTime", 3f);
 
             Collider = new Hitbox(16f, 16f, -8f, -8f);
             Depth = Depths.Pickups;
 
-            var path = "objects/GravityHelper/gravityRefill";
+            var path = "objects/GravityHelper/gravityShield";
 
-            // add components
-            Add(new PlayerCollider(OnPlayer),
+            Add(new PlayerCollider(onPlayer),
                 _outline = new Image(GFX.Game[$"{path}/outline"]) {Visible = false},
-                _sprite = GFX.SpriteBank.Create("gravityRefill"),
-                _arrows = GFX.SpriteBank.Create("gravityRefillArrows"),
+                _sprite = GFX.SpriteBank.Create("gravityShield"),
                 _wiggler = Wiggler.Create(1f, 4f, v => _sprite.Scale = Vector2.One * (float) (1.0 + (double) v * 0.2)),
                 new MirrorReflection(),
                 _bloom = new BloomPoint(0.8f, 16f),
@@ -100,7 +82,6 @@ namespace Celeste.Mod.GravityHelper.Entities
             _outline.CenterOrigin();
             _sprite.Play("idle", true, true);
             _sine.Randomize();
-            _arrows.OnFinish = _ => _arrows.Visible = false;
 
             updateY();
         }
@@ -115,17 +96,17 @@ namespace Celeste.Mod.GravityHelper.Entities
         {
             base.Update();
 
-            if (_respawnTimeRemaining > 0.0)
+            if (_respawnTimeRemaining > 0)
             {
                 _respawnTimeRemaining -= Engine.DeltaTime;
-                if (_respawnTimeRemaining <= 0.0)
+                if (_respawnTimeRemaining <= 0)
                     respawn();
             }
             else if (Scene.OnInterval(0.1f))
             {
-                var offset = Vector2.UnitY * (_emitNormal ? 5f : -5f);
+                var offset = Vector2.UnitX * (_emitNormal ? 5f : -5f);
                 var range = Vector2.One * 4f;
-                var direction = Vector2.UnitY.Angle() * (_emitNormal ? 1 : -1);
+                var direction = _emitNormal ? Vector2.UnitX.Angle() : -Vector2.UnitX.Angle();
                 var p_glow = _emitNormal ? p_glow_normal : p_glow_inverted;
                 _level.ParticlesFG.Emit(p_glow, 1, Position + offset, range, direction);
                 _emitNormal = !_emitNormal;
@@ -135,28 +116,7 @@ namespace Celeste.Mod.GravityHelper.Entities
 
             _light.Alpha = Calc.Approach(_light.Alpha, _sprite.Visible ? 1f : 0.0f, 4f * Engine.DeltaTime);
             _bloom.Alpha = _light.Alpha * 0.8f;
-
-            if (!Scene.OnInterval(2f) || !_sprite.Visible) return;
-
-            _arrows.Play("arrows", true);
-            _arrows.Visible = true;
         }
-
-        private void respawn()
-        {
-            if (Collidable) return;
-            Collidable = true;
-
-            _sprite.Visible = true;
-            _outline.Visible = false;
-            _arrows.Stop();
-            Depth = Depths.Pickups;
-            _wiggler.Start();
-            Audio.Play("event:/game/general/diamond_return", Position);
-            _level.ParticlesFG.Emit(p_regen, 16, Position, Vector2.One * 2f);
-        }
-
-        private void updateY() => _arrows.Y = _sprite.Y = _bloom.Y = _sine.Value * 2f;
 
         public override void Render()
         {
@@ -165,45 +125,56 @@ namespace Celeste.Mod.GravityHelper.Entities
             base.Render();
         }
 
-        private void OnPlayer(Player player)
+        private void updateY() => _sprite.Y = _bloom.Y = _sine.Value * 2f;
+
+        private void respawn()
         {
-            bool canUse = RefillsDash && player.Dashes < player.MaxDashes ||
-                          RefillsStamina && player.Stamina < 20 ||
-                          NumberOfCharges < Charges;
+            if (Collidable) return;
+            Collidable = true;
 
-            if (!canUse) return;
-
-            if (RefillsDash) player.RefillDash();
-            if (RefillsStamina) player.RefillStamina();
-            NumberOfCharges = Charges;
-
-            Audio.Play("event:/game/general/diamond_touch", Position);
-            Input.Rumble(RumbleStrength.Medium, RumbleLength.Medium);
-            Collidable = false;
-            Add(new Coroutine(refillRoutine(player)));
-            _respawnTimeRemaining = RespawnTime;
+            _sprite.Visible = true;
+            _outline.Visible = false;
+            Depth = Depths.Pickups;
+            _wiggler.Start();
+            Audio.Play("event:/game/general/diamond_return", Position);
+            _level.ParticlesFG.Emit(p_regen, 16, Position, Vector2.One * 2f);
         }
 
-        private IEnumerator refillRoutine(Player player)
+        private void onPlayer(Player player)
         {
-            GravityRefill refill = this;
+            if (Scene?.Tracker.GetEntity<GravityShieldIndicator>() is not { } indicator) return;
+
+            if (ShieldTime > indicator.ShieldTimeRemaining)
+            {
+                indicator.Activate(ShieldTime);
+                Audio.Play("event:/game/general/diamond_touch", Position);
+                Input.Rumble(RumbleStrength.Medium, RumbleLength.Medium);
+                Collidable = false;
+                Add(new Coroutine(shieldRoutine(player)));
+                _respawnTimeRemaining = RespawnTime;
+            }
+        }
+
+        private IEnumerator shieldRoutine(Player player)
+        {
+            GravityShield shield = this;
             Celeste.Freeze(0.05f);
             yield return null;
 
-            refill._level.Shake();
-            refill._sprite.Visible = refill._arrows.Visible = false;
-            if (!refill.OneUse)
-                refill._outline.Visible = true;
-            refill.Depth = Depths.BGDecals - 1;
+            shield._level.Shake();
+            shield._sprite.Visible = false;
+            if (!shield.OneUse)
+                shield._outline.Visible = true;
+            shield.Depth = Depths.BGDecals - 1;
             yield return 0.05f;
 
             float direction = player.Speed.Angle();
-            refill._level.ParticlesFG.Emit(refill.p_shatter, 5, refill.Position, Vector2.One * 4f, direction - (float)Math.PI / 2f);
-            refill._level.ParticlesFG.Emit(refill.p_shatter, 5, refill.Position, Vector2.One * 4f, direction + (float)Math.PI / 2f);
-            SlashFx.Burst(refill.Position, direction);
+            shield._level.ParticlesFG.Emit(shield.p_shatter, 5, shield.Position, Vector2.One * 4f, direction - (float)Math.PI / 2f);
+            shield._level.ParticlesFG.Emit(shield.p_shatter, 5, shield.Position, Vector2.One * 4f, direction + (float)Math.PI / 2f);
+            SlashFx.Burst(shield.Position, direction);
 
-            if (refill.OneUse)
-                refill.RemoveSelf();
+            if (shield.OneUse)
+                shield.RemoveSelf();
         }
     }
 }

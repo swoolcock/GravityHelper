@@ -67,4 +67,9 @@
         <Anim id="upOff" path="toggle" frames="2-12,13-14" delay="0.08" />
         <Loop id="upOffLoop" path="toggle" frames="14" delay="0.08" />
     </gravitySwitchToggle>
+
+    <gravityShield path="objects/GravityHelper/gravityShield/" start="idle">
+        <Center />
+        <Loop id="idle" path="idle" delay="0.1" frames="0-6" />
+    </gravityShield>
 </Sprites>
