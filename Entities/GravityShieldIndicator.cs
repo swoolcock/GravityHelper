@@ -12,6 +12,9 @@ namespace Celeste.Mod.GravityHelper.Entities
         public float ShieldTotalTime { get; set; }
         public float ShieldTimeRemaining { get; set; }
 
+        private const float flash_time = 1f;
+        private bool _flash;
+
         public GravityShieldIndicator()
         {
             Depth = Depths.Top;
@@ -30,13 +33,19 @@ namespace Celeste.Mod.GravityHelper.Entities
                 if (ShieldTimeRemaining <= 0)
                     Deactivate();
             }
+
+            if (ShieldTimeRemaining <= flash_time && Scene.OnInterval(0.1f))
+                _flash = !_flash;
         }
 
         public override void Render()
         {
             if (Scene?.Tracker.GetEntity<Player>() is not { } player) return;
-            var offset = GravityHelperModule.ShouldInvertPlayer ? 4f : -4f;
-            Draw.Circle(player.Center.X, player.Center.Y + offset, 14, Color.White, 3);
+            if (!_flash)
+            {
+                var offset = GravityHelperModule.ShouldInvertPlayer ? 4f : -4f;
+                Draw.Circle(player.Center.X, player.Center.Y + offset, 14, Color.White, 3);
+            }
         }
 
         public void Activate(float time)
@@ -45,6 +54,7 @@ namespace Celeste.Mod.GravityHelper.Entities
             ShieldTimeRemaining = ShieldTotalTime = time;
             Active = Visible = true;
             playerComponent.Locked = true;
+            _flash = false;
         }
 
         public void Deactivate()
