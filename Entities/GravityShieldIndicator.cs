@@ -35,7 +35,8 @@ namespace Celeste.Mod.GravityHelper.Entities
         public override void Render()
         {
             if (Scene?.Tracker.GetEntity<Player>() is not { } player) return;
-            Draw.Circle(player.Center, 16, Color.White, 2);
+            var offset = GravityHelperModule.ShouldInvertPlayer ? 4f : -4f;
+            Draw.Circle(player.Center.X, player.Center.Y + offset, 14, Color.White, 3);
         }
 
         public void Activate(float time)
