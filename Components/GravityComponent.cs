@@ -29,6 +29,8 @@ namespace Celeste.Mod.GravityHelper.Components
 
         private DynData<Entity> _data;
 
+        public bool Locked { get; set; }
+
         public bool UpdateEntity { get; set; } = true;
         public Func<bool> CheckInvert;
         public Action<GravityChangeArgs> UpdateVisuals;
@@ -79,6 +81,8 @@ namespace Celeste.Mod.GravityHelper.Components
 
         public void SetGravity(GravityType newValue, float momentumMultiplier = 1f)
         {
+            if (Locked) return;
+
             // bail for placeholder cases
             if (newValue < 0) return;
 
@@ -94,6 +98,8 @@ namespace Celeste.Mod.GravityHelper.Components
 
         private void updateGravity(GravityChangeArgs args)
         {
+            if (Locked) return;
+
             if (!UpdateEntity) return;
 
             if (UpdatePosition != null)

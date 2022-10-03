@@ -209,3 +209,9 @@ entities.GravityHelper/GravitySwitch.attributes.description.defaultToController=
 entities.GravityHelper/GravitySwitch.attributes.description.gravityType=The gravity type to set when Madeline touches the switch. Defaults to Toggle.
 entities.GravityHelper/GravitySwitch.attributes.description.cooldown=The number of seconds after activation that this switch will be disabled for. Defaults to 1 second.
 entities.GravityHelper/GravitySwitch.attributes.description.switchOnHoldables=Whether or not unheld holdables will trigger the switch. Defaults to true.
+
+# Gravity Shield
+entities.GravityHelper/GravityShield.placements.name.normal=Gravity Shield (GravityHelper)
+entities.GravityHelper/GravityShield.attributes.description.oneUse=If true, the crystal will not respawn after it has been collected. Defaults to false.
+entities.GravityHelper/GravityShield.attributes.description.shieldTime=How long in seconds until the shield will expire once collected. Defaults to 3.
+entities.GravityHelper/GravityShield.attributes.description.respawnTime=How long in seconds it will take for the crystal to respawn if enabled. Defaults to 2.5.

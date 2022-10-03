@@ -1128,6 +1128,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
                 GravityHelperModule.Session.VvvvvvTrigger = vvvvvvTrigger.Enable;
 
             scene.Add(new GravityRefillIndicator());
+            scene.Add(new GravityShieldIndicator());
         }
 
         private static void Player_CassetteFlyEnd(On.Celeste.Player.orig_CassetteFlyEnd orig, Player self)
