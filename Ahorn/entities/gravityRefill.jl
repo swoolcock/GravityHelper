@@ -21,9 +21,18 @@ const placements = Ahorn.PlacementDict(
     "Gravity Refill (GravityHelper)" => Ahorn.EntityPlacement(
         GravityRefill
     ),
+    "Gravity Refill No Dash (GravityHelper)" => Ahorn.EntityPlacement(
+        GravityRefill,
+        "point",
+        Dict{String, Any}(
+            "refillsDash" => false,
+            "refillsStamina" => false
+        )
+    )
 )
 
-const sprite = "objects/GravityHelper/gravityRefill/idle00"
+const normalSprite = "objects/GravityHelper/gravityRefill/idle00"
+const noDashSprite = "objects/GravityHelper/gravityRefill/idle_no_dash00"
 
 Ahorn.editingIgnored(entity::GravityRefill, multiple::Bool=false) = multiple ? String["x", "y", "modVersion", "pluginVersion"] : String["modVersion", "pluginVersion"]
 
@@ -32,6 +41,9 @@ function Ahorn.selection(entity::GravityRefill)
     return Ahorn.Rectangle(x - 4, y - 5, 8, 10)
 end
 
-Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::GravityRefill, room::Maple.Room) = Ahorn.drawSprite(ctx, sprite, 0, 0)
+function Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::GravityRefill, room::Maple.Room)
+    local sprite = get(entity.data, "refillsDash", true) ? normalSprite : noDashSprite
+    Ahorn.drawSprite(ctx, sprite, 0, 0)
+end
 
 end

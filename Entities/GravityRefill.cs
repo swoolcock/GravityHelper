@@ -98,7 +98,7 @@ namespace Celeste.Mod.GravityHelper.Entities
                 _sine = new SineWave(0.6f, 0.0f));
 
             _outline.CenterOrigin();
-            _sprite.Play("idle", true, true);
+            _sprite.Play(RefillsDash ? "idle" : "idle_no_dash", true, true);
             _sine.Randomize();
             _arrows.OnFinish = _ => _arrows.Visible = false;
 
