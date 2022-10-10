@@ -176,7 +176,7 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
 
             if (_dashDisabled)
             {
-                level.Session.Inventory = PlayerInventory.Prologue;
+                level.Session.Inventory = new PlayerInventory(0);
                 player.Dashes = 0;
             }
             else
