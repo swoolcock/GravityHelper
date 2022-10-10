@@ -1126,6 +1126,8 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
             if (self.CollideFirstOrDefault<VvvvvvTrigger>() is { } vvvvvvTrigger)
                 GravityHelperModule.Session.VvvvvvTrigger = vvvvvvTrigger.Enable;
+            else
+                GravityHelperModule.Session.VvvvvvTrigger = false;
 
             scene.Add(new GravityRefillIndicator());
             scene.Add(new GravityShieldIndicator());
