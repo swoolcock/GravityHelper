@@ -16,7 +16,6 @@ local placementData = helpers.createPlacementData('1', {
 local gravityRefill = {
     name = "GravityHelper/GravityRefill",
     depth = -100,
-    texture = "objects/GravityHelper/gravityRefill/idle00",
     ignoredFields = consts.ignoredFields,
     placements = {
         {
@@ -24,8 +23,21 @@ local gravityRefill = {
             ignoredFields = consts.ignoredFields,
             data = helpers.union(placementData),
         },
+        {
+            name = "noDash",
+            ignoredFields = consts.ignoredFields,
+            data = helpers.union(placementData, {
+                refillsDash = false,
+                refillsStamina = false,
+            }),
+        },
     },
 }
+
+function gravityRefill.texture(room, entity)
+    local suffix = entity.refillsDash and "" or "_no_dash"
+    return "objects/GravityHelper/gravityRefill/idle"..suffix.."00"
+end
 
 function gravityRefill.selection(room, entity)
     return utils.rectangle(entity.x - 4, entity.y - 5, 8, 10)

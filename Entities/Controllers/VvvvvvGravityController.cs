@@ -13,7 +13,7 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
     [Tracked]
     public class VvvvvvGravityController : BaseGravityController<VvvvvvGravityController>
     {
-        public VvvvvvMode Mode { get; } = VvvvvvMode.Off;
+        public VvvvvvMode Mode { get; set; } = VvvvvvMode.Off;
         public string FlipSound { get; } = default_flip_sound;
         public bool DisableGrab { get; } = true;
         public bool DisableDash { get; } = true;
@@ -176,7 +176,7 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
 
             if (_dashDisabled)
             {
-                level.Session.Inventory = PlayerInventory.Prologue;
+                level.Session.Inventory = new PlayerInventory(0);
                 player.Dashes = 0;
             }
             else

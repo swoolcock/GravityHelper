@@ -74,6 +74,7 @@ entities.GravityHelper/GravityLine.attributes.description.lineThickness=The thic
 
 # Gravity Refill
 entities.GravityHelper/GravityRefill.placements.name.normal=Gravity Refill (GravityHelper)
+entities.GravityHelper/GravityRefill.placements.name.noDash=Gravity Refill No Dash (GravityHelper)
 entities.GravityHelper/GravityRefill.attributes.description.charges=The number of charges of gravity toggle that Madeline will receive. Defaults to 1.
 entities.GravityHelper/GravityRefill.attributes.description.oneUse=If true, the crystal will not respawn after it has been collected. Defaults to false.
 entities.GravityHelper/GravityRefill.attributes.description.refillsDash=Whether collecting the crystal will also refill Madeline's dash. Defaults to true.

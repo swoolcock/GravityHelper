@@ -91,12 +91,12 @@ namespace Celeste.Mod.GravityHelper
 #endif
         }
 
-        private static bool hooksActive;
+        internal static bool HooksActive;
 
         private static void activateHooks()
         {
-            if (hooksActive) return;
-            hooksActive = true;
+            if (HooksActive) return;
+            HooksActive = true;
 
 #if !FORCE_LOAD_HOOKS
             ThirdPartyHooks.Load();
@@ -145,8 +145,8 @@ namespace Celeste.Mod.GravityHelper
 
         private static void deactivateHooks()
         {
-            if (!hooksActive) return;
-            hooksActive = false;
+            if (!HooksActive) return;
+            HooksActive = false;
 
 #if !FORCE_LOAD_HOOKS
             ThirdPartyHooks.Unload();

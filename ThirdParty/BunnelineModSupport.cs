@@ -1,11 +1,9 @@
 // Copyright (c) Shane Woolcock. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
-using System.Collections.Generic;
 using System.Reflection;
 using Celeste.Mod.GravityHelper.Extensions;
 using Celeste.Mod.GravityHelper.Hooks;
-using Microsoft.Xna.Framework;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
@@ -18,8 +16,6 @@ namespace Celeste.Mod.GravityHelper.ThirdParty
         // ReSharper disable InconsistentNaming
         private IDetour hook_BunnelineModule_Hair_Render;
         // ReSharper restore InconsistentNaming
-
-        private static List<Vector2> _tailNodes;
 
         protected override void Load()
         {
