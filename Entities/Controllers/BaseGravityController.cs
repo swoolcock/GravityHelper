@@ -129,11 +129,19 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
 
             orig(self, playerintro, true);
 
+            var triggers = self.Session.MapData?.Levels?.SelectMany(l => l.Triggers) ?? Enumerable.Empty<EntityData>();
+            var hasVvvvvvTriggers = triggers.Any(e => e.Name == "GravityHelper/VvvvvvTrigger");
+
             // apply each controller type (this should probably be automatic)
             self.GetPersistentController<BehaviorGravityController>()?.Transitioned();
             self.GetPersistentController<SoundGravityController>()?.Transitioned();
             self.GetPersistentController<VisualGravityController>()?.Transitioned();
-            self.GetPersistentController<VvvvvvGravityController>(GravityHelperModule.Settings.VvvvvvMode != GravityHelperModuleSettings.VvvvvvSetting.Default)?.Transitioned();
+
+            // vvvvvv requires extra logic when triggers exist
+            var vvvvvv = self.GetPersistentController<VvvvvvGravityController>(hasVvvvvvTriggers || GravityHelperModule.Settings.VvvvvvMode != GravityHelperModuleSettings.VvvvvvSetting.Default);
+            if (vvvvvv != null && vvvvvv.Ephemeral && hasVvvvvvTriggers)
+                vvvvvv.Mode = VvvvvvMode.TriggerBased;
+            vvvvvv?.Transitioned();
         }
     }
 }
