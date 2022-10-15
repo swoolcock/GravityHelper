@@ -35,6 +35,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             orig(self, index);
             foreach (CassetteComponent component in self.Scene.Tracker.GetComponents<CassetteComponent>())
             {
+                if (!component.Enabled) continue;
                 component.CassetteState = component.CassetteIndex == index ? CassetteStates.On : CassetteStates.Off;
             }
         }
@@ -44,6 +45,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             orig(self);
             foreach (CassetteComponent component in self.Scene.Tracker.GetComponents<CassetteComponent>())
             {
+                if (!component.Enabled) continue;
                 component.CassetteState = CassetteStates.Off;
             }
         }
@@ -53,6 +55,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             orig(self, index);
             foreach (CassetteComponent component in self.Scene.Tracker.GetComponents<CassetteComponent>())
             {
+                if (!component.Enabled) continue;
                 if (component.CassetteState == CassetteStates.Off && component.CassetteIndex == index)
                     component.CassetteState = CassetteStates.Appearing;
                 else if (component.CassetteState == CassetteStates.On && component.CassetteIndex != index)
@@ -65,6 +68,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             orig(self);
             foreach (CassetteComponent component in self.Scene.Tracker.GetComponents<CassetteComponent>())
             {
+                if (!component.Enabled) continue;
                 var currentIndex = (int)current_index_field_info.GetValue(self);
                 component.TrySetActivatedSilently(currentIndex);
             }

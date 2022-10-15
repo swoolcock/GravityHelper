@@ -3,12 +3,15 @@
 
 using System;
 using Celeste.Mod.Entities;
+using Celeste.Mod.GravityHelper.Components;
+using Celeste.Mod.GravityHelper.Entities.Controllers;
 using Celeste.Mod.GravityHelper.Extensions;
 using Microsoft.Xna.Framework;
 using Monocle;
 
 namespace Celeste.Mod.GravityHelper.Entities
 {
+    [Tracked]
     [CustomEntity("GravityHelper/GravityIndicator")]
     public class GravityIndicator : Entity
     {
@@ -18,7 +21,20 @@ namespace Celeste.Mod.GravityHelper.Entities
         public float BloomRadius { get; }
         public float IdleAlpha { get; }
         public float TurningAlpha { get; }
-        public float TurnTime { get; }
+        public bool SyncToPlayer { get; }
+        public GravityType TurnTarget { get; set; }
+
+        private float _turnTime;
+        public float TurnTime
+        {
+            get => _turnTime;
+            set
+            {
+                _turnTime = value;
+                var arrowAnimation = _arrowSprite.Animations["arrow"];
+                arrowAnimation.Delay = value / (arrowAnimation.Frames.Length / 2f);
+            }
+        }
 
         private readonly Version _modVersion;
         private readonly Version _pluginVersion;
@@ -60,15 +76,14 @@ namespace Celeste.Mod.GravityHelper.Entities
             BloomRadius = data.Float("bloomRadius", 14f);
             IdleAlpha = data.Float("idleAlpha", 1f).Clamp(0f, 1f);
             TurningAlpha = data.Float("turningAlpha", 0.4f).Clamp(0f, 1f);
-            TurnTime = data.Float("turnTime", 0.3f).ClampLower(0.1f);
+            SyncToPlayer = data.Bool("syncToPlayer", true);
 
             Add(_arrowSprite = GFX.SpriteBank.Create("gravityIndicator"));
             _arrowSprite.Rate = 0f;
             _arrowSprite.Play("arrow");
             _arrowSprite.Color = Color.White * IdleAlpha;
 
-            var arrowAnimation = _arrowSprite.Animations["arrow"];
-            arrowAnimation.Delay = TurnTime / (arrowAnimation.Frames.Length / 2f);
+            TurnTime = data.Float("turnTime", 0.3f).ClampLower(0.1f);
 
             if (ShowRipples)
                 Add(_rippleSprite = GFX.SpriteBank.Create("gravityRipple"));
@@ -83,12 +98,15 @@ namespace Celeste.Mod.GravityHelper.Entities
         public override void Added(Scene scene)
         {
             base.Added(scene);
+
             _arrowSprite.SetAnimationFrame(GravityHelperModule.ShouldInvertPlayer ? up_arrow_frame : down_arrow_frame);
             updateRipple();
         }
 
         public override void Update()
         {
+            if (SyncToPlayer) TurnTarget = GravityHelperModule.PlayerComponent?.CurrentGravity ?? GravityType.None;
+
             updateArrow();
             updateRipple();
             updateParticles();
@@ -98,7 +116,8 @@ namespace Celeste.Mod.GravityHelper.Entities
 
         private void updateArrow()
         {
-            var shouldInvert = GravityHelperModule.ShouldInvertPlayer;
+            var shouldInvert = TurnTarget == GravityType.Inverted;
+
             if (shouldInvert && _arrowSprite.CurrentAnimationFrame == up_arrow_frame ||
                 !shouldInvert && _arrowSprite.CurrentAnimationFrame == down_arrow_frame)
             {

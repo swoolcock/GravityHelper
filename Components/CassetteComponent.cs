@@ -10,6 +10,7 @@ namespace Celeste.Mod.GravityHelper.Components
     [Tracked]
     public class CassetteComponent : Component
     {
+        public bool Enabled { get; set; } = true;
         public int CassetteIndex { get; }
 
         public Action<CassetteStates> OnStateChange;

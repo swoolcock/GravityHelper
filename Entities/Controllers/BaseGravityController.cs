@@ -136,6 +136,7 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
             self.GetPersistentController<BehaviorGravityController>()?.Transitioned();
             self.GetPersistentController<SoundGravityController>()?.Transitioned();
             self.GetPersistentController<VisualGravityController>()?.Transitioned();
+            self.GetPersistentController<CassetteGravityController>()?.Transitioned();
 
             // vvvvvv requires extra logic when triggers exist
             var vvvvvv = self.GetPersistentController<VvvvvvGravityController>(hasVvvvvvTriggers || GravityHelperModule.Settings.VvvvvvMode != GravityHelperModuleSettings.VvvvvvSetting.Default);

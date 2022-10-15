@@ -6,8 +6,15 @@ local consts = require("mods").requireFromPlugin("consts")
 local helpers = require("mods").requireFromPlugin("helpers")
 
 local placementData = helpers.createPlacementData('1', {
-    showRipples = true,
     depth = 8500,
+    showRipples = false,
+    showParticles = true,
+    bloomAlpha = 0.6,
+    bloomRadius = 14.0,
+    idleAlpha = 1.0,
+    turningAlpha = 0.4,
+    turnTime = 0.3,
+    syncToPlayer = false,
 })
 
 local gravityIndicator = {
@@ -16,10 +23,17 @@ local gravityIndicator = {
     ignoredFields = consts.ignoredFields,
     placements = {
         {
-            name = "normal",
+            name = "cassetteController",
             ignoredFields = consts.ignoredFields,
             data = helpers.union(placementData),
         },
+        {
+            name = "playerSynced",
+            ignoredFields = consts.ignoredFields,
+            data = helpers.union(placementData, {
+                syncToPlayer = true,
+            }),
+        }
     },
 }
 
