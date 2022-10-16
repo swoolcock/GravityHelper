@@ -23,12 +23,12 @@ local gravityIndicator = {
     ignoredFields = consts.ignoredFields,
     placements = {
         {
-            name = "cassetteController",
+            name = "cassette_controller",
             ignoredFields = consts.ignoredFields,
             data = helpers.union(placementData),
         },
         {
-            name = "playerSynced",
+            name = "player_synced",
             ignoredFields = consts.ignoredFields,
             data = helpers.union(placementData, {
                 syncToPlayer = true,

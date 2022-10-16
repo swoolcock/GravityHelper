@@ -17,12 +17,20 @@ const PLUGIN_VERSION = "1"
     bloomRadius::Real=14.0,
     idleAlpha::Real=1.0,
     turningAlpha::Real=0.4,
-    turnTime::Real=0.3
+    turnTime::Real=0.3,
+    syncToPlayer::Bool=false
 )
 
 const placements = Ahorn.PlacementDict(
-    "Gravity Indicator (GravityHelper)" => Ahorn.EntityPlacement(
+    "Gravity Indicator (Cassette Controller) (GravityHelper)" => Ahorn.EntityPlacement(
         GravityIndicator
+    ),
+    "Gravity Indicator (Player Synced) (GravityHelper)" => Ahorn.EntityPlacement(
+        GravityIndicator,
+        "point",
+        Dict{String, Any}(
+            "syncToPlayer" => true,
+        )
     ),
 )
 
