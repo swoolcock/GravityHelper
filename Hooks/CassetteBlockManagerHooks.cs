@@ -3,6 +3,7 @@
 
 using System.Reflection;
 using Celeste.Mod.GravityHelper.Components;
+using MonoMod.Utils;
 
 // ReSharper disable PossibleInvalidCastExceptionInForeachLoop
 
@@ -33,26 +34,41 @@ namespace Celeste.Mod.GravityHelper.Hooks
         private static void CassetteBlockManager_SetActiveIndex(On.Celeste.CassetteBlockManager.orig_SetActiveIndex orig, CassetteBlockManager self, int index)
         {
             orig(self, index);
+
             foreach (CassetteComponent component in self.Scene.Tracker.GetComponents<CassetteComponent>())
             {
                 if (!component.Enabled) continue;
                 component.CassetteState = component.CassetteIndex == index ? CassetteStates.On : CassetteStates.Off;
+            }
+
+            foreach (CassetteListener component in self.Scene.Tracker.GetComponents<CassetteListener>())
+            {
+                if (!component.Enabled) continue;
+                component.DidBecomeActive?.Invoke(index);
             }
         }
 
         private static void CassetteBlockManager_StopBlocks(On.Celeste.CassetteBlockManager.orig_StopBlocks orig, CassetteBlockManager self)
         {
             orig(self);
+
             foreach (CassetteComponent component in self.Scene.Tracker.GetComponents<CassetteComponent>())
             {
                 if (!component.Enabled) continue;
                 component.CassetteState = CassetteStates.Off;
+            }
+
+            foreach (CassetteListener component in self.Scene.Tracker.GetComponents<CassetteListener>())
+            {
+                if (!component.Enabled) continue;
+                component.DidStop?.Invoke();
             }
         }
 
         private static void CassetteBlockManager_SetWillActivate(On.Celeste.CassetteBlockManager.orig_SetWillActivate orig, CassetteBlockManager self, int index)
         {
             orig(self, index);
+
             foreach (CassetteComponent component in self.Scene.Tracker.GetComponents<CassetteComponent>())
             {
                 if (!component.Enabled) continue;
@@ -61,16 +77,32 @@ namespace Celeste.Mod.GravityHelper.Hooks
                 else if (component.CassetteState == CassetteStates.On && component.CassetteIndex != index)
                     component.CassetteState = CassetteStates.Disappearing;
             }
+
+            var currentIndex = (int)current_index_field_info.GetValue(self);
+
+            foreach (CassetteListener component in self.Scene.Tracker.GetComponents<CassetteListener>())
+            {
+                if (!component.Enabled) continue;
+                component.WillToggle?.Invoke(index, currentIndex != index);
+            }
         }
 
         private static void CassetteBlockManager_SilentUpdateBlocks(On.Celeste.CassetteBlockManager.orig_SilentUpdateBlocks orig, CassetteBlockManager self)
         {
             orig(self);
+
+            var currentIndex = (int)current_index_field_info.GetValue(self);
+
             foreach (CassetteComponent component in self.Scene.Tracker.GetComponents<CassetteComponent>())
             {
                 if (!component.Enabled) continue;
-                var currentIndex = (int)current_index_field_info.GetValue(self);
                 component.TrySetActivatedSilently(currentIndex);
+            }
+
+            foreach (CassetteListener component in self.Scene.Tracker.GetComponents<CassetteListener>())
+            {
+                if (!component.Enabled) continue;
+                component.DidBecomeActive?.Invoke(currentIndex);
             }
         }
     }
