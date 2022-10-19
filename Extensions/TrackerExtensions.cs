@@ -49,7 +49,10 @@ namespace Celeste.Mod.GravityHelper.Extensions
             if (persistent != null) return persistent;
             // if we have at least one non-persistent, or if we've been told to create one, create an ephemeral persistent
             if (createIfRequired || list?.Any() == true)
+            {
                 scene.Add(persistent = (BaseGravityController)Activator.CreateInstance(controllerType));
+                scene.Entities.UpdateLists();
+            }
             // return the new one, or null
             return persistent;
         }
