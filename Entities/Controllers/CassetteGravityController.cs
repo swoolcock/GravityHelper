@@ -1,6 +1,7 @@
 // Copyright (c) Shane Woolcock. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+using System;
 using System.Linq;
 using Celeste.Mod.Entities;
 using Celeste.Mod.GravityHelper.Components;
@@ -18,10 +19,14 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
         public GravityType[] CassetteSequence { get; }
         public float MomentumMultiplier { get; }
 
+        private readonly CassetteListener _cassetteListener;
+
         // ReSharper disable once UnusedMember.Global
         public CassetteGravityController()
         {
             // ephemeral controller
+            CassetteSequence = new GravityType[0];
+            MomentumMultiplier = 1f;
         }
 
         // ReSharper disable once UnusedMember.Global
@@ -43,32 +48,35 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
 
             MomentumMultiplier = data.Float("momentumMultiplier", 1f);
 
-            for (int i = 0; i < CassetteSequence.Length; i++)
+            if (CassetteSequence.Length > 0)
             {
-                var index = i;
-                Add(new CassetteComponent(index, data)
+                Add(_cassetteListener = new CassetteListener
                 {
                     Enabled = false,
-                    OnStateChange = state =>
+                    WillToggle = (index, activate) =>
                     {
+                        // index could be out of range if more cassette blocks exist than are defined in the sequence
+                        if (index >= CassetteSequence.Length || !activate) return;
                         var type = CassetteSequence[index];
-                        if (state == CassetteStates.Appearing)
+                        var manager = Scene?.Tracker.GetEntity<CassetteBlockManager>();
+                        var managerData = DynamicData.For(manager);
+                        var tempoMult = managerData.Get<float>("tempoMult");
+                        var indicators = Scene?.Tracker.GetEntitiesOrEmpty<GravityIndicator>();
+                        foreach (GravityIndicator indicator in indicators)
                         {
-                            var manager = Scene?.Tracker.GetEntity<CassetteBlockManager>();
-                            var managerData = DynamicData.For(manager);
-                            var tempoMult = managerData.Get<float>("tempoMult");
-                            var indicators = Scene?.Tracker.GetEntitiesOrEmpty<GravityIndicator>();
-                            foreach (GravityIndicator indicator in indicators)
+                            if (!indicator.SyncToPlayer)
                             {
-                                if (!indicator.SyncToPlayer)
-                                {
-                                    indicator.TurnTarget = type;
-                                    indicator.TurnTime = tempoMult * 10f / 60f;
-                                }
+                                indicator.TurnTarget = type;
+                                indicator.TurnTime = tempoMult * 10f / 60f;
                             }
                         }
-                        else if (state == CassetteStates.On &&
-                            CassetteSequence[index] != GravityType.None &&
+                    },
+                    DidBecomeActive = index =>
+                    {
+                        // index could be out of range if more cassette blocks exist than are defined in the sequence
+                        if (index >= CassetteSequence.Length) return;
+                        var type = CassetteSequence[index];
+                        if (type != GravityType.None &&
                             GravityHelperModule.PlayerComponent is { } playerComponent &&
                             playerComponent.Entity is Player player &&
                             !player.IsIntroState)
@@ -80,21 +88,29 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
             }
         }
 
-        public override void Added(Scene scene)
-        {
-            base.Added(scene);
-            if (scene is Level level)
-            {
-                level.CassetteBlockBeats = CassetteSequence.Length;
-                level.HasCassetteBlocks = true;
-            }
-        }
-
         public override void Transitioned()
         {
-            var thisActive = ActiveController == this;
-            foreach (var component in Components.GetAll<CassetteComponent>())
-                component.Enabled = thisActive;
+            if (!Persistent || Scene is not Level level) return;
+
+            var active = ActiveController;
+
+            foreach (CassetteGravityController controller in level.Tracker.GetEntitiesOrEmpty<CassetteGravityController>())
+            {
+                if (controller._cassetteListener != null)
+                    controller._cassetteListener.Enabled = controller == active;
+            }
+
+            if (active?._cassetteListener == null) return;
+
+            // if we already have cassette blocks, don't reduce the beats
+            level.CassetteBlockBeats = Math.Max(level.CassetteBlockBeats, active.CassetteSequence.Length);
+            level.HasCassetteBlocks = true;
+
+            var cbm = level.Entities.Concat(level.Entities.ToAdd).OfType<CassetteBlockManager>().FirstOrDefault();
+            if (cbm == null)
+            {
+                level.Add(cbm = new CassetteBlockManager());
+            }
         }
     }
 }

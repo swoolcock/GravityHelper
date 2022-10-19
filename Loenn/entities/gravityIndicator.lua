@@ -19,7 +19,7 @@ local placementData = helpers.createPlacementData('1', {
 
 local gravityIndicator = {
     name = "GravityHelper/GravityIndicator",
-    texture = "objects/GravityHelper/gravityIndicator/idle00",
+    texture = "objects/GravityHelper/gravityIndicator/arrow00",
     ignoredFields = consts.ignoredFields,
     placements = {
         {

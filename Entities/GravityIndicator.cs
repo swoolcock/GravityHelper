@@ -76,7 +76,7 @@ namespace Celeste.Mod.GravityHelper.Entities
             BloomRadius = data.Float("bloomRadius", 14f);
             IdleAlpha = data.Float("idleAlpha", 1f).Clamp(0f, 1f);
             TurningAlpha = data.Float("turningAlpha", 0.4f).Clamp(0f, 1f);
-            SyncToPlayer = data.Bool("syncToPlayer", true);
+            SyncToPlayer = data.Bool("syncToPlayer", false);
 
             Add(_arrowSprite = GFX.SpriteBank.Create("gravityIndicator"));
             _arrowSprite.Rate = 0f;

@@ -131,12 +131,13 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
 
             var triggers = self.Session.MapData?.Levels?.SelectMany(l => l.Triggers) ?? Enumerable.Empty<EntityData>();
             var hasVvvvvvTriggers = triggers.Any(e => e.Name == "GravityHelper/VvvvvvTrigger");
+            var hasCassetteControllers = controllers.Any(e => e.Name == "GravityHelper/CassetteGravityController");
 
             // apply each controller type (this should probably be automatic)
             self.GetPersistentController<BehaviorGravityController>()?.Transitioned();
             self.GetPersistentController<SoundGravityController>()?.Transitioned();
             self.GetPersistentController<VisualGravityController>()?.Transitioned();
-            self.GetPersistentController<CassetteGravityController>()?.Transitioned();
+            self.GetPersistentController<CassetteGravityController>(hasCassetteControllers)?.Transitioned();
 
             // vvvvvv requires extra logic when triggers exist
             var vvvvvv = self.GetPersistentController<VvvvvvGravityController>(hasVvvvvvTriggers || GravityHelperModule.Settings.VvvvvvMode != GravityHelperModuleSettings.VvvvvvSetting.Default);

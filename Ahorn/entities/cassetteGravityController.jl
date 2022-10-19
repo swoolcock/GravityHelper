@@ -30,7 +30,7 @@ const placements = Ahorn.PlacementDict(
 
 const sprite = "objects/GravityHelper/gravityController/circle"
 const sprite_dot = "objects/GravityHelper/gravityController/circle_dot"
-const sprite_wrench = "objects/GravityHelper/gravityController/wrench"
+const sprite_cassette = "objects/GravityHelper/gravityController/cassette"
 
 Ahorn.editingIgnored(entity::CassetteGravityController, multiple::Bool=false) = multiple ? String["x", "y", "modVersion", "pluginVersion"] : String["modVersion", "pluginVersion"]
 
@@ -42,7 +42,7 @@ end
 function Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::CassetteGravityController)
     icon = get(entity.data, "persistent", false) ? sprite_dot : sprite
     Ahorn.drawSprite(ctx, icon, 0, 0)
-    Ahorn.drawSprite(ctx, sprite_wrench, 0, 0)
+    Ahorn.drawSprite(ctx, sprite_cassette, 0, 0)
 end
 
 end
