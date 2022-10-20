@@ -385,20 +385,23 @@ namespace Celeste.Mod.GravityHelper.Entities
                 self.RefillDash();
             self.RefillStamina();
 
-            var data = DynamicData.For(self);
+            using (var data = new DynData<Player>(self))
+            {
+                data["jumpGraceTimer"] = 0f;
+                data["varJumpTimer"] = 0f;
+                data["dashAttackTimer"] = 0.0f;
+                data["gliderBoostTimer"] = 0.0f;
+                data["wallSlideTimer"] = 1.2f;
+                data["wallBoostTimer"] = 0.0f;
+                data["varJumpSpeed"] = 0f;
+                data["launched"] = false;
+            }
+
             self.StateMachine.State = Player.StNormal;
-            data.Set("jumpGraceTimer", 0f);
-            data.Set("varJumpTimer", 0.2f);
-            self.AutoJump = true;
+            self.AutoJump = false;
             self.AutoJumpTimer = 0.0f;
-            data.Set("dashAttackTimer", 0f);
-            data.Set("gliderBoostTimer", 0f);
-            data.Set("wallSlideTimer", 1.2f);
-            data.Set("wallBoostTimer", 0f);
             self.Speed.X = 0.0f;
-            self.Speed.Y = -185f;
-            data.Set("varJumpSpeed", self.Speed.Y);
-            data.Set("launched", false);
+            self.Speed.Y = 185f;
 
             var level = self.SceneAs<Level>();
             level?.DirectionalShake(GravityHelperModule.ShouldInvertPlayer ? -Vector2.UnitY : Vector2.UnitY, 0.1f);
