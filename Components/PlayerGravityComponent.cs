@@ -24,6 +24,7 @@ namespace Celeste.Mod.GravityHelper.Components
                     Player.StAttract => false,
                     Player.StDummy when !_player.DummyGravity => false,
                     Player.StBoost => false,
+                    _ when _player.IsIntroState => false,
                     _ => true,
                 };
 
