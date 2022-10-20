@@ -245,6 +245,15 @@ namespace Celeste.Mod.GravityHelper.Entities
             }
 
             _semaphore--;
+
+            if (_semaphore == 0 &&
+                GravityHelperModule.PlayerComponent is { } playerComponent &&
+                ExitGravityType != GravityType.None &&
+                ExitGravityType != playerComponent.CurrentGravity)
+            {
+                playerComponent.SetGravity(ExitGravityType, MomentumMultiplier);
+                // TODO: sound?
+            }
         }
 
         public override void Added(Scene scene)

@@ -20,6 +20,7 @@ namespace Celeste.Mod.GravityHelper.Triggers
         public bool AffectsHoldableActors { get; }
         public bool AffectsOtherActors { get; }
         public GravityType GravityType { get; }
+        public GravityType ExitGravityType { get; }
         public float MomentumMultiplier { get; }
         public virtual bool ShouldAffectPlayer => true;
         protected bool AffectsNothing => !AffectsPlayer && !AffectsHoldableActors && !AffectsOtherActors;
@@ -29,6 +30,7 @@ namespace Celeste.Mod.GravityHelper.Triggers
 
         private readonly bool _defaultToController;
         private string _sound;
+        private string _exitSound;
         private float _audioMuffleSecondsRemaining;
 
         public GravityTrigger(EntityData data, Vector2 offset)
@@ -41,6 +43,7 @@ namespace Celeste.Mod.GravityHelper.Triggers
             AffectsHoldableActors = data.Bool("affectsHoldableActors");
             AffectsOtherActors = data.Bool("affectsOtherActors");
             GravityType = (GravityType)data.Int("gravityType");
+            ExitGravityType = (GravityType)data.Int("exitGravityType", (int)GravityType.None);
             MomentumMultiplier = data.Float("momentumMultiplier", 1f);
 
             _defaultToController = data.Bool("defaultToController", true);
@@ -72,6 +75,13 @@ namespace Celeste.Mod.GravityHelper.Triggers
                     _sound = soundController.InvertedSound;
                 else if (GravityType == GravityType.Toggle)
                     _sound = soundController.ToggleSound;
+
+                if (ExitGravityType == GravityType.Normal)
+                    _exitSound = soundController.NormalSound;
+                else if (ExitGravityType == GravityType.Inverted)
+                    _exitSound = soundController.InvertedSound;
+                else if (ExitGravityType == GravityType.Toggle)
+                    _exitSound = soundController.ToggleSound;
             }
         }
 
@@ -133,6 +143,19 @@ namespace Celeste.Mod.GravityHelper.Triggers
 
         protected virtual void HandleOnLeave(Player player)
         {
+            if (ExitGravityType == GravityType.None || !AffectsPlayer || !ShouldAffectPlayer)
+                return;
+
+            if (GravityHelperModule.PlayerComponent is { } playerComponent)
+            {
+                var previousGravity = playerComponent.CurrentGravity;
+                playerComponent.SetGravity(ExitGravityType, MomentumMultiplier);
+                if (!string.IsNullOrWhiteSpace(_exitSound) && playerComponent.CurrentGravity != previousGravity && _audioMuffleSecondsRemaining <= 0)
+                {
+                    Audio.Play(_exitSound);
+                    _audioMuffleSecondsRemaining = audio_muffle_seconds;
+                }
+            }
         }
     }
 }
