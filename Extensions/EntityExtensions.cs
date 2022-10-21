@@ -199,8 +199,8 @@ namespace Celeste.Mod.GravityHelper.Extensions
             return entity.Get<GravityComponent>()?.ShouldInvertChecked ?? false;
         }
 
-        public static void SetGravity(this Entity entity, GravityType gravityType, float momentumMultiplier = 1f) =>
-            entity?.Get<GravityComponent>()?.SetGravity(gravityType, momentumMultiplier);
+        public static bool SetGravity(this Entity entity, GravityType gravityType, float momentumMultiplier = 1f) =>
+            entity?.Get<GravityComponent>()?.SetGravity(gravityType, momentumMultiplier) ?? false;
 
         public static GravityType GetGravity(this Entity entity) =>
             entity?.Get<GravityComponent>()?.CurrentGravity ?? GravityType.Normal;

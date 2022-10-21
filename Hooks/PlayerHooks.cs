@@ -76,11 +76,13 @@ namespace Celeste.Mod.GravityHelper.Hooks
             On.Celeste.Player.DreamDashCheck += Player_DreamDashCheck;
             On.Celeste.Player.DreamDashUpdate += Player_DreamDashUpdate;
             On.Celeste.Player.DustParticleFromSurfaceIndex += Player_DustParticleFromSurfaceIndex;
+            On.Celeste.Player.Jump += Player_Jump;
             On.Celeste.Player.JumpThruBoostBlockedCheck += Player_JumpThruBoostBlockedCheck;
             On.Celeste.Player.ReflectBounce += Player_ReflectBounce;
             On.Celeste.Player.Render += Player_Render;
             On.Celeste.Player.StarFlyBegin += Player_StarFlyBegin;
             On.Celeste.Player.StartCassetteFly += Player_StartCassetteFly;
+            On.Celeste.Player.SuperJump += Player_SuperJump;
             On.Celeste.Player.TransitionTo += Player_TransitionTo;
             On.Celeste.Player.Update += Player_Update;
             On.Celeste.Player.WindMove += Player_WindMove;
@@ -152,11 +154,13 @@ namespace Celeste.Mod.GravityHelper.Hooks
             On.Celeste.Player.DreamDashCheck -= Player_DreamDashCheck;
             On.Celeste.Player.DreamDashUpdate -= Player_DreamDashUpdate;
             On.Celeste.Player.DustParticleFromSurfaceIndex -= Player_DustParticleFromSurfaceIndex;
+            On.Celeste.Player.Jump -= Player_Jump;
             On.Celeste.Player.JumpThruBoostBlockedCheck -= Player_JumpThruBoostBlockedCheck;
             On.Celeste.Player.ReflectBounce -= Player_ReflectBounce;
             On.Celeste.Player.Render -= Player_Render;
             On.Celeste.Player.StarFlyBegin -= Player_StarFlyBegin;
             On.Celeste.Player.StartCassetteFly -= Player_StartCassetteFly;
+            On.Celeste.Player.SuperJump -= Player_SuperJump;
             On.Celeste.Player.TransitionTo -= Player_TransitionTo;
             On.Celeste.Player.Update -= Player_Update;
             On.Celeste.Player.WindMove -= Player_WindMove;
@@ -1250,6 +1254,21 @@ namespace Celeste.Mod.GravityHelper.Hooks
             return index == 40 ? _invertedSparkyDustParticle.Value : _invertedDustParticle.Value;
         }
 
+        private static void Player_Jump(On.Celeste.Player.orig_Jump orig, Player self, bool particles, bool playsfx)
+        {
+            handleInversionBlocks(self);
+            orig(self, particles, playsfx);
+        }
+
+        private static void handleInversionBlocks(Player self)
+        {
+            foreach (InversionBlock block in self.Scene.Tracker.GetEntities<InversionBlock>())
+            {
+                if (block.TryHandlePlayer(self))
+                    return;
+            }
+        }
+
         private static bool Player_JumpThruBoostBlockedCheck(On.Celeste.Player.orig_JumpThruBoostBlockedCheck orig, Player self)
         {
             if (!GravityHelperModule.ShouldInvertPlayer)
@@ -1299,6 +1318,12 @@ namespace Celeste.Mod.GravityHelper.Hooks
         {
             GravityHelperModule.PlayerComponent?.SetGravity(GravityType.Normal);
             orig(self, targetPosition, control);
+        }
+
+        private static void Player_SuperJump(On.Celeste.Player.orig_SuperJump orig, Player self)
+        {
+            handleInversionBlocks(self);
+            orig(self);
         }
 
         private static bool Player_TransitionTo(On.Celeste.Player.orig_TransitionTo orig, Player self, Vector2 target,
