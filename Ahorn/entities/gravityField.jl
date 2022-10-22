@@ -12,7 +12,7 @@ const PLUGIN_VERSION = "1"
     width::Integer=Maple.defaultBlockWidth, height::Integer=Maple.defaultBlockHeight,
     pluginVersion::String=PLUGIN_VERSION,
     defaultToController::Bool=true,
-    gravityType::Integer=0, attachToSolids::Bool=false,
+    gravityType::Integer=0, exitGravityType::Integer=-1, attachToSolids::Bool=false,
     arrowType::Integer=-2, fieldType::Integer=-2, sound::String="",
     arrowOpacity::Real=0.5, fieldOpacity::Real=0.15, particleOpacity::Real=0.5,
     arrowColor::String="FFFFFF", fieldColor::String="", particleColor::String="FFFFFF",
@@ -30,6 +30,13 @@ const gravityColors = Dict{Integer, Tuple{Real, Real, Real, Real}}(
 )
 
 const gravityTypes = Dict{String, Integer}(
+    "None" => -1,
+    "Normal" => 0,
+    "Inverted" => 1,
+    "Toggle" => 2,
+)
+
+const exitGravityTypes = Dict{String, Integer}(
     "None" => -1,
     "Normal" => 0,
     "Inverted" => 1,
@@ -128,6 +135,7 @@ Ahorn.editingIgnored(entity::GravityField, multiple::Bool=false) = multiple ? St
 
 Ahorn.editingOptions(entity::GravityField) = Dict{String, Any}(
     "gravityType" => gravityTypes,
+    "exitGravityType" => exitGravityTypes,
     "arrowType" => visualTypes,
     "fieldType" => visualTypes
 )

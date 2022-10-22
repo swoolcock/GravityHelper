@@ -1,8 +1,13 @@
 // Copyright (c) Shane Woolcock. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+using System;
 using Celeste.Mod.GravityHelper.Components;
+using Celeste.Mod.GravityHelper.Extensions;
+using Microsoft.Xna.Framework;
+using Mono.Cecil.Cil;
 using Monocle;
+using MonoMod.Cil;
 
 namespace Celeste.Mod.GravityHelper.Hooks
 {
@@ -12,6 +17,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
         {
             Logger.Log(nameof(GravityHelperModule), $"Loading {nameof(Holdable)} hooks...");
 
+            IL.Celeste.Holdable.Release += Holdable_Release;
             On.Celeste.Holdable.Added += Holdable_Added;
         }
 
@@ -19,6 +25,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
         {
             Logger.Log(nameof(GravityHelperModule), $"Unloading {nameof(Holdable)} hooks...");
 
+            IL.Celeste.Holdable.Release -= Holdable_Release;
             On.Celeste.Holdable.Added -= Holdable_Added;
         }
 
@@ -29,5 +36,19 @@ namespace Celeste.Mod.GravityHelper.Hooks
             if (entity.Get<GravityHoldable>() != null) return;
             entity.Add(new GravityHoldable());
         }
+
+        private static void Holdable_Release(ILContext il) => HookUtils.SafeHook(() =>
+        {
+            var cursor = new ILCursor(il);
+            if (!cursor.TryGotoNext(MoveType.After, ILCursorExtensions.UnitYPredicate))
+                throw new HookException("Couldn't find Vector2.UnitY");
+            cursor.Emit(OpCodes.Ldarg_0);
+            cursor.EmitDelegate<Func<Vector2, Holdable, Vector2>>((v, h) =>
+            {
+                if (h.Entity?.ShouldInvertChecked() ?? false)
+                    return new Vector2(v.X, -v.Y);
+                return v;
+            });
+        });
     }
 }

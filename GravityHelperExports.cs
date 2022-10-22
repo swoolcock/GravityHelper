@@ -26,9 +26,11 @@ namespace Celeste.Mod.GravityHelper
 
         public static int GetActorGravity(Actor actor) => (int)(actor?.GetGravity() ?? GravityType.Normal);
 
+        // TODO: make this support instant
         public static void SetPlayerGravity(int gravityType, float momentumMultiplier) =>
             GravityHelperModule.PlayerComponent?.SetGravity((GravityType)gravityType, momentumMultiplier);
 
+        // TODO: make this support instant
         public static void SetActorGravity(Actor actor, int gravityType, float momentumMultiplier) =>
             actor?.SetGravity((GravityType)gravityType, momentumMultiplier);
 
@@ -60,10 +62,12 @@ namespace Celeste.Mod.GravityHelper
         public static Vector2 GetBottomRight(Actor actor) =>
             actor?.ShouldInvert() == true ? actor.TopRight : actor?.BottomRight ?? Vector2.Zero;
 
+        // TODO: make this support instant
         public static Component CreateGravityListener(Actor actor, Action<Entity, int, float> gravityChanged) =>
             new GravityListener(actor, (e, a) =>
                 gravityChanged(e, (int)a.NewValue, a.MomentumMultiplier));
 
+        // TODO: make this support instant
         public static Component CreatePlayerGravityListener(Action<Player, int, float> gravityChanged) =>
             new PlayerGravityListener((e, a) =>
                 gravityChanged(e as Player, (int)a.NewValue, a.MomentumMultiplier));

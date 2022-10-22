@@ -133,8 +133,7 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
 
             var active = ActiveController;
 
-            GravityHelperModule.PlayerComponent?.SetGravity(GravityType.Toggle);
-            player.Speed.Y = 160f * (player.SceneAs<Level>().InSpace ? 0.6f : 1f);
+            GravityHelperModule.PlayerComponent?.SetGravity(GravityType.Toggle, instant: true);
 
             var flipSound = active.FlipSound;
             if (GravityHelperModule.Settings.VvvvvvFlipSound == GravityHelperModuleSettings.VvvvvvSetting.Enabled)

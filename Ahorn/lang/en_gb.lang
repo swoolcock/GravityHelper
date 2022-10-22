@@ -158,3 +158,20 @@ placements.entities.GravityHelper/GravitySwitch.tooltips.switchOnHoldables=Wheth
 placements.entities.GravityHelper/GravityShield.tooltips.oneUse=If true, the crystal will not respawn after it has been collected. Defaults to false.
 placements.entities.GravityHelper/GravityShield.tooltips.shieldTime=How long in seconds until the shield will expire once collected. Defaults to 3.
 placements.entities.GravityHelper/GravityShield.tooltips.respawnTime=How long in seconds it will take for the crystal to respawn if enabled. Defaults to 2.5.
+
+# Cassette Gravity Controller
+placements.entities.GravityHelper/CassetteGravityController.tooltips.persistent=Whether this controller should be considered the default for its type.\nThere should only ever be one persistent in your map, and not in a room with another controller of the same type.
+placements.entities.GravityHelper/CassetteGravityController.tooltips.cassetteSequence=A comma separated list of gravity types (0: normal, 1: inverted, 2: toggle), one per cassette index (up to 4).
+placements.entities.GravityHelper/CassetteGravityController.tooltips.momentumMultiplier=The multiplier to apply to Madeline's Y velocity when gravity flips. 0 means instantly change, positive values give a gradual change. Defaults to 1.
+placements.entities.GravityHelper/CassetteGravityController.tooltips.instantFlip=Whether Madeline should immediately be set to at least falling speed on flip. Defaults to false.
+
+# Gravity Indicator
+placements.entities.GravityHelper/GravityIndicator.tooltips.depth=The depth that the indicator should render at. Defaults to 8500 (just in front of BGDecals).
+placements.entities.GravityHelper/GravityIndicator.tooltips.showRipples=Whether to show the ripple effect while the arrow is pointing up or down. Defaults to false.
+placements.entities.GravityHelper/GravityIndicator.tooltips.showParticles=Whether to show particles while the arrow is pointing up or down. Defaults to true.
+placements.entities.GravityHelper/GravityIndicator.tooltips.bloomAlpha=The alpha for the bloom effect. Defaults to 0.6.
+placements.entities.GravityHelper/GravityIndicator.tooltips.bloomRadiusThe radius for the bloom effect. Defaults to 14.
+placements.entities.GravityHelper/GravityIndicator.tooltips.idleAlpha=The alpha to render the arrow when it is not turning. Defaults to 1.
+placements.entities.GravityHelper/GravityIndicator.tooltips.turningAlpha=The alpha to render the arrow while it is turning. Defaults to 0.4.
+placements.entities.GravityHelper/GravityIndicator.tooltips.turnTime=The time in seconds it will take to spin the arrow if synced to the player. Defaults to 0.3 seconds.
+placements.entities.GravityHelper/GravityIndicator.tooltips.syncToPlayer=Whether the indicator should sync to the player's current gravity state. If false, will sync to the active cassette gravity controller instead. Defaults to false.

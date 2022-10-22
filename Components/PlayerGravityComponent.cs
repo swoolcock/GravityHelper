@@ -24,6 +24,7 @@ namespace Celeste.Mod.GravityHelper.Components
                     Player.StAttract => false,
                     Player.StDummy when !_player.DummyGravity => false,
                     Player.StBoost => false,
+                    _ when _player.IsIntroState => false,
                     _ => true,
                 };
 
@@ -69,7 +70,11 @@ namespace Celeste.Mod.GravityHelper.Components
             {
                 if (!args.Changed || _player.Scene == null) return;
 
-                _player.Speed.Y *= -args.MomentumMultiplier;
+                if (args.Instant)
+                    _player.EnsureFallingSpeed();
+                else
+                    _player.Speed.Y *= -args.MomentumMultiplier;
+
                 _player.DashDir.Y *= -1;
                 _playerData["varJumpTimer"] = 0f;
 

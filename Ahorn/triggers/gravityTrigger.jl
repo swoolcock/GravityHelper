@@ -12,11 +12,18 @@ const PLUGIN_VERSION = "1"
     width::Integer=Maple.defaultTriggerWidth, height::Integer=Maple.defaultTriggerHeight,
     pluginVersion::String=PLUGIN_VERSION,
     defaultToController::Bool=true,
-    gravityType::Integer=0, momentumMultiplier::Real=1.0, sound::String="",
+    gravityType::Integer=0, exitGravityType::Integer=-1, momentumMultiplier::Real=1.0, sound::String="",
     affectsPlayer::Bool=true, affectsHoldableActors::Bool=false, affectsOtherActors::Bool=false
 )
 
 const gravityTypes = Dict{String, Integer}(
+    "Normal" => 0,
+    "Inverted" => 1,
+    "Toggle" => 2,
+)
+
+const exitGravityTypes = Dict{String, Integer}(
+    "None" => -1,
     "Normal" => 0,
     "Inverted" => 1,
     "Toggle" => 2,
@@ -49,7 +56,8 @@ const placements = Ahorn.PlacementDict(
 Ahorn.editingIgnored(trigger::GravityTrigger, multiple::Bool=false) = multiple ? String["x", "y", "modVersion", "pluginVersion"] : String["modVersion", "pluginVersion"]
 
 Ahorn.editingOptions(trigger::GravityTrigger) = Dict{String, Any}(
-    "gravityType" => gravityTypes
+    "gravityType" => gravityTypes,
+    "exitGravityType" => exitGravityTypes
 )
 
 end

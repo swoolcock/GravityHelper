@@ -204,5 +204,22 @@ namespace Celeste.Mod.GravityHelper.Extensions
 
         public static GravityType GetGravity(this Entity entity) =>
             entity?.Get<GravityComponent>()?.CurrentGravity ?? GravityType.Normal;
+
+        public static bool EnsureFallingSpeed(this Actor actor)
+        {
+            if (actor.Scene is not Level level)
+                return false;
+
+            if (actor is Player player)
+                player.Speed.Y = Math.Max(Math.Abs(player.Speed.Y), 160f * (level.InSpace ? 0.6f : 1f));
+            else if (actor is TheoCrystal theoCrystal)
+                theoCrystal.Speed.Y = 200f;
+            else if (actor is Glider glider)
+                glider.Speed.Y = level.Wind.Y >= 0 ? 30f : 0f;
+            else
+                return false;
+
+            return true;
+        }
     }
 }

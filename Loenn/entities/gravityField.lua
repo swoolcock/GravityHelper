@@ -10,6 +10,7 @@ local placementData = helpers.createPlacementData('1', {
     height = 8,
     defaultToController = true,
     gravityType = consts.gravityTypes.normal.index,
+    exitGravityType = consts.gravityTypes.none.index,
     attachToSolids = false,
     arrowType = consts.gravityTypes.default.index,
     fieldType = consts.gravityTypes.default.index,
@@ -36,6 +37,7 @@ local gravityField = {
     ignoredFields = consts.ignoredFields,
     fieldInformation = {
         gravityType = consts.fieldInformation.gravityType(),
+        exitGravityType = consts.fieldInformation.gravityType(0,1,2,-1),
         arrowType = consts.fieldInformation.gravityType(0,1,2,-1,-2),
         fieldType = consts.fieldInformation.gravityType(0,1,2,-1,-2),
     },

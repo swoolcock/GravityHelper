@@ -9,6 +9,7 @@ local placementData = helpers.createPlacementData('1', {
     height = 8,
     defaultToController = true,
     gravityType = consts.gravityTypes.normal.index,
+    exitGravityType = consts.gravityTypes.none.index,
     momentumMultiplier = 1.0,
     sound = "",
     affectsPlayer = true,
@@ -21,6 +22,7 @@ local gravityTrigger = {
     ignoredFields = consts.ignoredFields,
     fieldInformation = {
         gravityType = consts.fieldInformation.gravityType(),
+        exitGravityType = consts.fieldInformation.gravityType(0,1,2,-1),
     },
     placements = {
         {
