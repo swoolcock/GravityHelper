@@ -43,7 +43,10 @@ namespace Celeste.Mod.GravityHelper.Hooks
                 UpdateSpeed = args =>
                 {
                     if (!args.Changed || self.Scene == null) return;
-                    self.Speed.Y *= -args.MomentumMultiplier;
+                    if (args.Instant)
+                        self.Speed.Y = 160f * (self.SceneAs<Level>().InSpace ? 0.6f : 1f);
+                    else
+                        self.Speed.Y *= -args.MomentumMultiplier;
                 },
                 GetSpeed = () => self.Speed,
                 SetSpeed = value => self.Speed = value,

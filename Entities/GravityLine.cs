@@ -146,8 +146,13 @@ namespace Celeste.Mod.GravityHelper.Entities
                             // if vvvvvv mode, set vertical speed to at least falling speed
                             if (vvvvvv?.IsVvvvvv ?? false)
                             {
-                                var newY = 160f * (SceneAs<Level>().InSpace ? 0.6f : 1f);
-                                gravityComponent.EntitySpeed = new Vector2(speed.X, Math.Max(newY, Math.Abs(speed.Y)));
+                                if (gravityComponent.Entity is not Actor actor || !actor.EnsureFallingSpeed())
+                                {
+                                    // if EnsureFallingSpeed couldn't safely handle it, do it manually
+                                    // this has the side effect that unsupported entities will use Madeline's terminal velocity
+                                    var newY = 160f * (SceneAs<Level>().InSpace ? 0.6f : 1f);
+                                    gravityComponent.EntitySpeed = new Vector2(speed.X, Math.Max(newY, Math.Abs(speed.Y)));
+                                }
                             }
 
                             if (!string.IsNullOrWhiteSpace(Sound) && _audioMuffleSecondsRemaining <= 0)

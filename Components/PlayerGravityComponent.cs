@@ -70,7 +70,11 @@ namespace Celeste.Mod.GravityHelper.Components
             {
                 if (!args.Changed || _player.Scene == null) return;
 
-                _player.Speed.Y *= -args.MomentumMultiplier;
+                if (args.Instant)
+                    _player.EnsureFallingSpeed();
+                else
+                    _player.Speed.Y *= -args.MomentumMultiplier;
+
                 _player.DashDir.Y *= -1;
                 _playerData["varJumpTimer"] = 0f;
 

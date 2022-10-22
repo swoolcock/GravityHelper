@@ -12,7 +12,8 @@ const PLUGIN_VERSION = "1"
     pluginVersion::String=PLUGIN_VERSION,
     persistent::Bool=true,
     cassetteSequence::String="0,1",
-    momentumMultiplier::Real=1.0
+    momentumMultiplier::Real=1.0,
+    instantFlip::Bool=false
 )
 
 const placements = Ahorn.PlacementDict(

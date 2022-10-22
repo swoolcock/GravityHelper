@@ -18,6 +18,7 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
     {
         public GravityType[] CassetteSequence { get; }
         public float MomentumMultiplier { get; }
+        public bool InstantFlip { get; }
 
         private readonly CassetteListener _cassetteListener;
 
@@ -42,11 +43,13 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
                 {
                     if (!int.TryParse(s, out var value)) return default;
                     var type = (GravityType)value;
-                    return type >= GravityType.None && type <= GravityType.Toggle ? type : default;
+                    // TODO: support none and toggle once there's a nice way to visualise them
+                    return type >= GravityType.Normal && type <= GravityType.Inverted ? type : default;
                 })
                 .ToArray();
 
             MomentumMultiplier = data.Float("momentumMultiplier", 1f);
+            InstantFlip = data.Bool("instantFlip", false);
 
             if (CassetteSequence.Length > 0)
             {
@@ -81,7 +84,7 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
                             playerComponent.Entity is Player player &&
                             !player.IsIntroState)
                         {
-                            playerComponent.SetGravity(type, MomentumMultiplier);
+                            playerComponent.SetGravity(type, MomentumMultiplier, instant: InstantFlip);
                         }
                     },
                 });

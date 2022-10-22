@@ -79,7 +79,7 @@ namespace Celeste.Mod.GravityHelper.Components
             triggerGravityListeners(new GravityChangeArgs(CurrentGravity));
         }
 
-        public void SetGravity(GravityType newValue, float momentumMultiplier = 1f)
+        public void SetGravity(GravityType newValue, float momentumMultiplier = 1f, bool instant = false)
         {
             if (Locked) return;
 
@@ -88,7 +88,7 @@ namespace Celeste.Mod.GravityHelper.Components
 
             var oldGravity = _currentGravity;
             var newGravity = newValue == GravityType.Toggle ? _currentGravity.Opposite() : newValue;
-            var args = new GravityChangeArgs(newGravity, oldGravity, momentumMultiplier, newValue == GravityType.Toggle);
+            var args = new GravityChangeArgs(newGravity, oldGravity, momentumMultiplier, newValue == GravityType.Toggle, instant);
 
             CurrentGravity = newGravity;
 

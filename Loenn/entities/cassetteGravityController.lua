@@ -9,6 +9,7 @@ local placementData = helpers.createPlacementData('1', {
     persistent = true,
     cassetteSequence = "0,1",
     momentumMultiplier = 1.0,
+    instantFlip = false,
 })
 
 local cassetteGravityController = {
