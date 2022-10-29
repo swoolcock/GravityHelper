@@ -19,6 +19,22 @@ const placements = Ahorn.PlacementDict(
     "Inversion Block (GravityHelper)" => Ahorn.EntityPlacement(
         InversionBlock,
         "rectangle",
+        Dict{String, Any}(
+            "topEnabled" => true,
+            "bottomEnabled" => true,
+            "leftEnabled" => false,
+            "rightEnabled" => false,
+        ),
+    ),
+    "Inversion Block (Toggle Sides) (GravityHelper)" => Ahorn.EntityPlacement(
+        InversionBlock,
+        "rectangle",
+        Dict{String, Any}(
+            "topEnabled" => false,
+            "bottomEnabled" => false,
+            "leftEnabled" => true,
+            "rightEnabled" => true,
+        ),
     ),
 )
 
