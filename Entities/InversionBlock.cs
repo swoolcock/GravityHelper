@@ -36,25 +36,12 @@ namespace Celeste.Mod.GravityHelper.Entities
             DirectionRange = (float)Math.PI / 4f,
         };
 
-        private readonly ParticleType _toggleToggleParticleType = new ParticleType(Player.P_Split)
+        private ParticleType particleTypeForGravity(GravityType inType, GravityType outType) => inType switch
         {
-            Color = GravityType.Toggle.Color(),
-            Color2 = GravityType.Toggle.Color().Lighter(),
-            DirectionRange = (float)Math.PI / 4f,
+            GravityType.Toggle when outType == GravityType.Normal => _normalToggleParticleType,
+            GravityType.Toggle when outType == GravityType.Inverted => _invertedToggleParticleType,
+            _ => _normalInvertedParticleType,
         };
-
-        private ParticleType particleTypeForGravity(GravityType inType, GravityType outType)
-        {
-            if (inType == GravityType.Inverted && outType == GravityType.Normal || inType == GravityType.Normal && outType == GravityType.Inverted)
-                return _normalInvertedParticleType;
-            if (inType == GravityType.Inverted && outType == GravityType.Toggle || inType == GravityType.Toggle && outType == GravityType.Inverted)
-                return _invertedToggleParticleType;
-            if (inType == GravityType.Normal && outType == GravityType.Toggle || inType == GravityType.Toggle && outType == GravityType.Normal)
-                return _normalToggleParticleType;
-            if (inType == GravityType.Toggle && outType == GravityType.Toggle)
-                return _toggleToggleParticleType;
-            return null;
-        }
 
         public Edges Edges { get; }
         public GravityType LeftGravityType { get; }
@@ -65,6 +52,10 @@ namespace Celeste.Mod.GravityHelper.Entities
         private readonly MTexture _normalEdgeTexture;
         private readonly MTexture _invertedEdgeTexture;
         private readonly MTexture _toggleEdgeTexture;
+
+        private const float flash_time_seconds = 0.2f;
+        private float _flashTimeRemaining = 0f;
+        private Color _flashColor;
 
         public Edges ActiveEdges
         {
@@ -123,6 +114,16 @@ namespace Celeste.Mod.GravityHelper.Entities
             _ => null,
         };
 
+        public override void Update()
+        {
+            base.Update();
+
+            if (_flashTimeRemaining > 0)
+            {
+                _flashTimeRemaining -= Engine.DeltaTime;
+            }
+        }
+
         public override void Render()
         {
             var leftTexture = !Edges.HasFlag(Edges.Left) ? null : textureForGravityType(LeftGravityType);
@@ -149,6 +150,13 @@ namespace Celeste.Mod.GravityHelper.Entities
                     var srcY = y == 0 ? 0 : y == heightInTiles - 1 ? 16 : 8;
                     _blockTexture.Draw(new Vector2(Left + x * tile_size, Top + y * tile_size), Vector2.Zero, Color.White, Vector2.One, 0f, new Rectangle(srcX, srcY, tile_size, tile_size));
                 }
+            }
+
+            // draw flash
+            if (_flashTimeRemaining > 0)
+            {
+                var alpha = 0.3f * _flashTimeRemaining / flash_time_seconds;
+                Draw.Rect(X, Y, Width, Height, _flashColor * alpha);
             }
 
             // top left corner
@@ -263,7 +271,7 @@ namespace Celeste.Mod.GravityHelper.Entities
                 direction = Vector2.UnitX;
                 exitPoint = player.CenterLeft;
                 inType = LeftGravityType;
-                outType = Edges.HasFlag(Edges.Right) ? RightGravityType : LeftGravityType.Opposite();
+                outType = !Edges.HasFlag(Edges.Right) || RightGravityType != GravityType.Toggle ? player.GetGravity() : GravityType.Toggle;
             }
             else if (Edges.HasFlag(Edges.Right) && player.Right > Right && player.StateMachine.State == Player.StClimb)
             {
@@ -288,7 +296,7 @@ namespace Celeste.Mod.GravityHelper.Entities
                 direction = -Vector2.UnitX;
                 exitPoint = player.CenterRight;
                 inType = RightGravityType;
-                outType = Edges.HasFlag(Edges.Left) ? LeftGravityType : RightGravityType.Opposite();
+                outType = !Edges.HasFlag(Edges.Left) || LeftGravityType != GravityType.Toggle ? player.GetGravity() : GravityType.Toggle;
             }
             else
             {
@@ -301,11 +309,15 @@ namespace Celeste.Mod.GravityHelper.Entities
             level.Displacement.AddBurst(player.Center, 0.35f, 8f, 48f, 0.25f);
 
             // emit particles
-            var particleType = particleTypeForGravity(inType, outType);
+            var particleType = particleTypeForGravity(inType, player.GetGravity());
             level.Particles.Emit(particleType, 16, exitPoint, Vector2.One * 8f, direction.Angle());
 
             // play a sound
             Audio.Play("event:/char/badeline/disappear", player.Position);
+
+            // flash
+            _flashTimeRemaining = flash_time_seconds;
+            _flashColor = player.GetGravity().Color();
 
             // we handled it
             return true;
