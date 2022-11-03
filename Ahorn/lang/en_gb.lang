@@ -177,8 +177,8 @@ placements.entities.GravityHelper/GravityIndicator.tooltips.turnTime=The time in
 placements.entities.GravityHelper/GravityIndicator.tooltips.syncToPlayer=Whether the indicator should sync to the player's current gravity state. If false, will sync to the active cassette gravity controller instead. Defaults to false.
 
 # Inversion Block
-placements.entities.GravityHelper/InversionBlock.tooltips.leftGravityType=The gravity type Madeline will become when she climb jumps on the left side. Defaults to toggle.
-placements.entities.GravityHelper/InversionBlock.tooltips.rightGravityType=The gravity type Madeline will become when she climb jumps on the right side. Defaults to toggle.
+placements.entities.GravityHelper/InversionBlock.tooltips.leftGravityType=The gravity type Madeline must have to activate the left side of the block. Defaults to toggle, which means her gravity type is ignored.
+placements.entities.GravityHelper/InversionBlock.tooltips.rightGravityType=The gravity type Madeline must have to activate the right side of the block. Defaults to toggle, which means her gravity type is ignored.
 placements.entities.GravityHelper/InversionBlock.tooltips.topEnabled=Whether jumping on the top of the block will trigger inversion.
 placements.entities.GravityHelper/InversionBlock.tooltips.bottomEnabled=Whether jumping on the bottom of the block will trigger inversion.
 placements.entities.GravityHelper/InversionBlock.tooltips.leftEnabled=Whether climb jumping on the left of the block will trigger inversion.
