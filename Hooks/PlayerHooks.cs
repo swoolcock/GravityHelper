@@ -69,6 +69,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             On.Celeste.Player.ctor += Player_ctor;
             On.Celeste.Player.Added += Player_Added;
             On.Celeste.Player.ClimbCheck += Player_ClimbCheck;
+            On.Celeste.Player.ClimbJump += Player_ClimbJump;
             On.Celeste.Player.CassetteFlyEnd += Player_CassetteFlyEnd;
             On.Celeste.Player.CreateTrail += Player_CreateTrail;
             On.Celeste.Player.DoFlingBird += Player_DoFlingBird;
@@ -76,11 +77,13 @@ namespace Celeste.Mod.GravityHelper.Hooks
             On.Celeste.Player.DreamDashCheck += Player_DreamDashCheck;
             On.Celeste.Player.DreamDashUpdate += Player_DreamDashUpdate;
             On.Celeste.Player.DustParticleFromSurfaceIndex += Player_DustParticleFromSurfaceIndex;
+            On.Celeste.Player.Jump += Player_Jump;
             On.Celeste.Player.JumpThruBoostBlockedCheck += Player_JumpThruBoostBlockedCheck;
             On.Celeste.Player.ReflectBounce += Player_ReflectBounce;
             On.Celeste.Player.Render += Player_Render;
             On.Celeste.Player.StarFlyBegin += Player_StarFlyBegin;
             On.Celeste.Player.StartCassetteFly += Player_StartCassetteFly;
+            On.Celeste.Player.SuperJump += Player_SuperJump;
             On.Celeste.Player.TransitionTo += Player_TransitionTo;
             On.Celeste.Player.Update += Player_Update;
             On.Celeste.Player.WindMove += Player_WindMove;
@@ -146,17 +149,20 @@ namespace Celeste.Mod.GravityHelper.Hooks
             On.Celeste.Player.Added -= Player_Added;
             On.Celeste.Player.CassetteFlyEnd -= Player_CassetteFlyEnd;
             On.Celeste.Player.ClimbCheck -= Player_ClimbCheck;
+            On.Celeste.Player.ClimbJump -= Player_ClimbJump;
             On.Celeste.Player.CreateTrail -= Player_CreateTrail;
             On.Celeste.Player.DoFlingBird -= Player_DoFlingBird;
             On.Celeste.Player.DreamDashBegin -= Player_DreamDashBegin;
             On.Celeste.Player.DreamDashCheck -= Player_DreamDashCheck;
             On.Celeste.Player.DreamDashUpdate -= Player_DreamDashUpdate;
             On.Celeste.Player.DustParticleFromSurfaceIndex -= Player_DustParticleFromSurfaceIndex;
+            On.Celeste.Player.Jump -= Player_Jump;
             On.Celeste.Player.JumpThruBoostBlockedCheck -= Player_JumpThruBoostBlockedCheck;
             On.Celeste.Player.ReflectBounce -= Player_ReflectBounce;
             On.Celeste.Player.Render -= Player_Render;
             On.Celeste.Player.StarFlyBegin -= Player_StarFlyBegin;
             On.Celeste.Player.StartCassetteFly -= Player_StartCassetteFly;
+            On.Celeste.Player.SuperJump -= Player_SuperJump;
             On.Celeste.Player.TransitionTo -= Player_TransitionTo;
             On.Celeste.Player.Update -= Player_Update;
             On.Celeste.Player.WindMove -= Player_WindMove;
@@ -1145,7 +1151,22 @@ namespace Celeste.Mod.GravityHelper.Hooks
         private static bool Player_ClimbCheck(On.Celeste.Player.orig_ClimbCheck orig, Player self, int dir, int yAdd) =>
             orig(self, dir, GravityHelperModule.ShouldInvertPlayer ? -yAdd : yAdd);
 
+        private static void Player_ClimbJump(On.Celeste.Player.orig_ClimbJump orig, Player self)
+        {
+            var oldFacing = self.Facing;
+            var handled = handleInversionBlocks(self);
 
+            if (handled && oldFacing == self.Facing)
+            {
+                // if we were warped and kept the same facing, we shouldn't lose stamina
+                var data = DynamicData.For(self);
+                data.Invoke("WallJump", (int)self.Facing);
+            }
+            else
+            {
+                orig(self);
+            }
+        }
 
         private static void Player_ctor(On.Celeste.Player.orig_ctor orig, Player self, Vector2 position,
             PlayerSpriteMode spriteMode)
@@ -1250,6 +1271,24 @@ namespace Celeste.Mod.GravityHelper.Hooks
             return index == 40 ? _invertedSparkyDustParticle.Value : _invertedDustParticle.Value;
         }
 
+        private static void Player_Jump(On.Celeste.Player.orig_Jump orig, Player self, bool particles, bool playsfx)
+        {
+            if (self.StateMachine.State != Player.StClimb)
+                handleInversionBlocks(self);
+            orig(self, particles, playsfx);
+        }
+
+        private static bool handleInversionBlocks(Player self)
+        {
+            foreach (InversionBlock block in self.Scene.Tracker.GetEntities<InversionBlock>())
+            {
+                if (block.TryHandlePlayer(self))
+                    return true;
+            }
+
+            return false;
+        }
+
         private static bool Player_JumpThruBoostBlockedCheck(On.Celeste.Player.orig_JumpThruBoostBlockedCheck orig, Player self)
         {
             if (!GravityHelperModule.ShouldInvertPlayer)
@@ -1299,6 +1338,12 @@ namespace Celeste.Mod.GravityHelper.Hooks
         {
             GravityHelperModule.PlayerComponent?.SetGravity(GravityType.Normal);
             orig(self, targetPosition, control);
+        }
+
+        private static void Player_SuperJump(On.Celeste.Player.orig_SuperJump orig, Player self)
+        {
+            handleInversionBlocks(self);
+            orig(self);
         }
 
         private static bool Player_TransitionTo(On.Celeste.Player.orig_TransitionTo orig, Player self, Vector2 target,
