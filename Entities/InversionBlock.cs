@@ -53,9 +53,14 @@ namespace Celeste.Mod.GravityHelper.Entities
         private readonly MTexture _invertedEdgeTexture;
         private readonly MTexture _toggleEdgeTexture;
 
-        private const float flash_time_seconds = 0.2f;
+        private const float flash_time_seconds = 0.6f;
+        private const float thick_line_thickness = 7f;
+        private const float thin_line_thickness = 5f;
+
         private float _flashTimeRemaining = 0f;
         private Color _flashColor;
+        private Vector2 _enterPosition;
+        private Vector2 _exitPosition;
 
         public Edges ActiveEdges
         {
@@ -155,8 +160,11 @@ namespace Celeste.Mod.GravityHelper.Entities
             // draw flash
             if (_flashTimeRemaining > 0)
             {
-                var alpha = 0.3f * _flashTimeRemaining / flash_time_seconds;
-                Draw.Rect(X, Y, Width, Height, _flashColor * alpha);
+                var progress = _flashTimeRemaining / flash_time_seconds;
+                Draw.Rect(X, Y, Width, Height, _flashColor * (progress * 0.3f));
+                var beamStart = Calc.LerpSnap(_enterPosition, _exitPosition, Ease.QuintOut(1 - progress)).Round();
+                Draw.Line(beamStart, _exitPosition, _flashColor * 0.3f, thick_line_thickness);
+                Draw.Line(beamStart, _exitPosition, _flashColor * 0.3f, thin_line_thickness);
             }
 
             // top left corner
@@ -221,7 +229,9 @@ namespace Celeste.Mod.GravityHelper.Entities
                     return false;
 
                 // move us
+                _enterPosition = player.BottomCenter;
                 player.Top = Bottom;
+                _exitPosition = player.TopCenter;
 
                 // configure effects
                 direction = Vector2.UnitY;
@@ -240,7 +250,9 @@ namespace Celeste.Mod.GravityHelper.Entities
                     return false;
 
                 // move us
+                _enterPosition = player.TopCenter;
                 player.Bottom = Top;
+                _exitPosition = player.BottomCenter;
 
                 // configure effects
                 direction = -Vector2.UnitY;
@@ -265,7 +277,9 @@ namespace Celeste.Mod.GravityHelper.Entities
                     player.Facing = (Facings)(-(int)player.Facing);
 
                 // move us
+                _enterPosition = player.CenterRight;
                 player.Left = Right;
+                _exitPosition = player.CenterLeft;
 
                 // configure effects
                 direction = Vector2.UnitX;
@@ -290,7 +304,9 @@ namespace Celeste.Mod.GravityHelper.Entities
                     player.Facing = (Facings)(-(int)player.Facing);
 
                 // move us
+                _enterPosition = player.CenterLeft;
                 player.Right = Left;
+                _exitPosition = player.CenterRight;
 
                 // configure effects
                 direction = -Vector2.UnitX;
@@ -314,6 +330,14 @@ namespace Celeste.Mod.GravityHelper.Entities
 
             // play a sound
             Audio.Play("event:/char/badeline/disappear", player.Position);
+
+            // clamp line
+            var lineOffset = (int)(thick_line_thickness / 2f);
+
+            if (_enterPosition.X == _exitPosition.X)
+                _exitPosition.X = _enterPosition.X = Calc.Clamp(_enterPosition.X, Left + lineOffset + 1, Right - lineOffset);
+            else if (_enterPosition.Y == _exitPosition.Y)
+                _exitPosition.Y = _enterPosition.Y = Calc.Clamp(_enterPosition.Y, Top + lineOffset + 1, Bottom - lineOffset);
 
             // flash
             _flashTimeRemaining = flash_time_seconds;
