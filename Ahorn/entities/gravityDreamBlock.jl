@@ -13,7 +13,8 @@ const PLUGIN_VERSION = "1"
     pluginVersion::String=PLUGIN_VERSION,
     fastMoving::Bool=false, oneUse::Bool=false, below::Bool=false,
     gravityType::Integer=0,
-    lineColor::String="", backColor::String="", particleColor::String=""
+    lineColor::String="", backColor::String="", particleColor::String="",
+    fall::Bool=false, climbFall::Bool=true
 )
 
 const placements = Ahorn.PlacementDict(

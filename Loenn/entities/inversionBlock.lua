@@ -7,14 +7,16 @@ local drawableSprite = require("structs.drawable_sprite")
 local drawableNinePatch = require("structs.drawable_nine_patch")
 
 local placementData = helpers.createPlacementData('1', {
-    width = 8,
-    height = 8,
+    width = 16,
+    height = 16,
     leftGravityType = 2,
     rightGravityType = 2,
     topEnabled = true,
     bottomEnabled = true,
     leftEnabled = false,
     rightEnabled = false,
+    fall = false,
+    climbFall = true,
 })
 
 local inversionBlock = {

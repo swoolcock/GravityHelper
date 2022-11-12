@@ -4,6 +4,7 @@
 using System;
 using System.Reflection;
 using Celeste.Mod.Entities;
+using Celeste.Mod.GravityHelper.Components;
 using Celeste.Mod.GravityHelper.Extensions;
 using Microsoft.Xna.Framework;
 using Monocle;
@@ -22,6 +23,9 @@ namespace Celeste.Mod.GravityHelper.Entities
         private readonly Version _pluginVersion;
 
         private readonly DynData<DreamBlock> _dreamBlockData;
+        private readonly FallingComponent _fallingComponent;
+
+        private Vector2 _shakeOffset;
 
         public GravityType GravityType { get; }
         public Color? LineColor { get; }
@@ -34,6 +38,9 @@ namespace Celeste.Mod.GravityHelper.Entities
         {
             _modVersion = data.ModVersion();
             _pluginVersion = data.PluginVersion();
+
+            if (data.Bool("fall"))
+                Add(_fallingComponent = new FallingComponent { ClimbFall = data.Bool("climbFall", true) });
 
             GravityType = (GravityType)data.Int("gravityType");
             var lineColorString = data.Attr("lineColor");
@@ -89,6 +96,21 @@ namespace Celeste.Mod.GravityHelper.Entities
             WasEntered = true;
             GravityHelperModule.PlayerComponent.PreDreamBlockGravityType = GravityHelperModule.PlayerComponent.CurrentGravity;
             GravityHelperModule.PlayerComponent.SetGravity(GravityType);
+        }
+
+        public override void Render()
+        {
+            Position += _shakeOffset;
+            base.Render();
+            Position -= _shakeOffset;
+        }
+
+        public override void OnShake(Vector2 amount) => _shakeOffset += amount;
+
+        public override void OnStaticMoverTrigger(StaticMover sm)
+        {
+            if (_fallingComponent != null)
+                _fallingComponent.Triggered = true;
         }
     }
 }

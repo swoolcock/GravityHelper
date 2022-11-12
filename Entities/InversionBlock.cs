@@ -3,6 +3,7 @@
 
 using System;
 using Celeste.Mod.Entities;
+using Celeste.Mod.GravityHelper.Components;
 using Celeste.Mod.GravityHelper.Extensions;
 using Microsoft.Xna.Framework;
 using Monocle;
@@ -52,6 +53,7 @@ namespace Celeste.Mod.GravityHelper.Entities
         private readonly MTexture _normalEdgeTexture;
         private readonly MTexture _invertedEdgeTexture;
         private readonly MTexture _toggleEdgeTexture;
+        private readonly FallingComponent _fallingComponent;
 
         private const float flash_time_seconds = 0.6f;
         private const float thick_line_thickness = 7f;
@@ -61,35 +63,38 @@ namespace Celeste.Mod.GravityHelper.Entities
         private Color _flashColor;
         private Vector2 _enterPosition;
         private Vector2 _exitPosition;
+        private Vector2 _shakeOffset;
 
+        private Edges _activeEdges;
         public Edges ActiveEdges
         {
             get
             {
                 if (GravityHelperModule.PlayerComponent is not { } playerComponent)
-                    return Edges.None;
+                    return _activeEdges;
+
                 if (playerComponent.Locked)
-                    return Edges.None;
+                    return _activeEdges = Edges.None;
 
                 var currentGravity = playerComponent.CurrentGravity;
 
                 // start with the enabled edges
-                var activeEdges = Edges;
+                _activeEdges = Edges;
 
                 // if we're normal gravity we can't use the bottom
                 if (currentGravity == GravityType.Normal)
-                    activeEdges &= ~Edges.Bottom;
+                    _activeEdges &= ~Edges.Bottom;
                 // if we're inverted gravity we can't use the top
                 else if (currentGravity == GravityType.Inverted)
-                    activeEdges &= ~Edges.Top;
+                    _activeEdges &= ~Edges.Top;
                 // if we don't match the left (and it's not toggle), we can't use left
                 if (currentGravity != LeftGravityType && LeftGravityType != GravityType.Toggle)
-                    activeEdges &= ~Edges.Left;
+                    _activeEdges &= ~Edges.Left;
                 // if we don't match the right (and it's not toggle), we can't use right
                 if (currentGravity != RightGravityType && RightGravityType != GravityType.Toggle)
-                    activeEdges &= ~Edges.Right;
+                    _activeEdges &= ~Edges.Right;
 
-                return activeEdges;
+                return _activeEdges;
             }
         }
 
@@ -109,6 +114,9 @@ namespace Celeste.Mod.GravityHelper.Entities
             Edges |= data.Bool("rightEnabled") ? Edges.Right : Edges.None;
             Edges |= data.Bool("topEnabled", true) ? Edges.Top : Edges.None;
             Edges |= data.Bool("bottomEnabled", true) ? Edges.Bottom : Edges.None;
+
+            if (data.Bool("fall"))
+                Add(_fallingComponent = new FallingComponent { ClimbFall = data.Bool("climbFall", true) });
         }
 
         private MTexture textureForGravityType(GravityType type) => type switch
@@ -118,6 +126,8 @@ namespace Celeste.Mod.GravityHelper.Entities
             GravityType.Toggle => _toggleEdgeTexture,
             _ => null,
         };
+
+        public override void OnShake(Vector2 amount) => _shakeOffset += amount;
 
         public override void Update()
         {
@@ -131,6 +141,8 @@ namespace Celeste.Mod.GravityHelper.Entities
 
         public override void Render()
         {
+            Position += _shakeOffset;
+
             var leftTexture = !Edges.HasFlag(Edges.Left) ? null : textureForGravityType(LeftGravityType);
             var rightTexture = !Edges.HasFlag(Edges.Right) ? null : textureForGravityType(RightGravityType);
             var topTexture = !Edges.HasFlag(Edges.Top) ? null : _normalEdgeTexture;
@@ -163,8 +175,11 @@ namespace Celeste.Mod.GravityHelper.Entities
                 var progress = _flashTimeRemaining / flash_time_seconds;
                 Draw.Rect(X, Y, Width, Height, _flashColor * (progress * 0.3f));
                 var beamStart = Calc.LerpSnap(_enterPosition, _exitPosition, Ease.QuintOut(1 - progress)).Round();
-                Draw.Line(beamStart, _exitPosition, _flashColor * 0.3f, thick_line_thickness);
-                Draw.Line(beamStart, _exitPosition, _flashColor * 0.3f, thin_line_thickness);
+                if ((_exitPosition - beamStart).LengthSquared() > 2)
+                {
+                    Draw.Line(beamStart, _exitPosition, _flashColor * 0.3f, thick_line_thickness);
+                    Draw.Line(beamStart, _exitPosition, _flashColor * 0.3f, thin_line_thickness);
+                }
             }
 
             // top left corner
@@ -204,6 +219,8 @@ namespace Celeste.Mod.GravityHelper.Entities
                 topTexture?.Draw(topPos, Vector2.Zero, topColor, Vector2.One, 0f, new Rectangle(tile_size, 0, tile_size, tile_size));
                 bottomTexture?.Draw(bottomPos + origin, origin, bottomColor, Vector2.One, (float)Math.PI, new Rectangle(tile_size, 0, tile_size, tile_size));
             }
+
+            Position -= _shakeOffset;
         }
 
         public bool TryHandlePlayer(Player player)
