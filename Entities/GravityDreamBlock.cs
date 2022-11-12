@@ -4,6 +4,7 @@
 using System;
 using System.Reflection;
 using Celeste.Mod.Entities;
+using Celeste.Mod.GravityHelper.Components;
 using Celeste.Mod.GravityHelper.Extensions;
 using Microsoft.Xna.Framework;
 using Monocle;
@@ -22,8 +23,14 @@ namespace Celeste.Mod.GravityHelper.Entities
         private readonly Version _pluginVersion;
 
         private readonly DynData<DreamBlock> _dreamBlockData;
+        private readonly FallingComponent _fallingComponent;
+
+        private Vector2 _shakeOffset;
 
         public GravityType GravityType { get; }
+        public Color? LineColor { get; }
+        public Color? BackColor { get; }
+        public Color? ParticleColor { get; }
         internal bool WasEntered;
 
         public GravityDreamBlock(EntityData data, Vector2 offset)
@@ -32,7 +39,17 @@ namespace Celeste.Mod.GravityHelper.Entities
             _modVersion = data.ModVersion();
             _pluginVersion = data.PluginVersion();
 
+            if (data.Bool("fall"))
+                Add(_fallingComponent = new FallingComponent { ClimbFall = data.Bool("climbFall", true) });
+
             GravityType = (GravityType)data.Int("gravityType");
+            var lineColorString = data.Attr("lineColor");
+            var backColorString = data.Attr("backColor");
+            var particleColorString = data.Attr("particleColor");
+            if (!string.IsNullOrWhiteSpace(lineColorString)) LineColor = Calc.HexToColor(lineColorString);
+            if (!string.IsNullOrWhiteSpace(backColorString)) BackColor = Calc.HexToColor(backColorString);
+            if (!string.IsNullOrWhiteSpace(particleColorString)) ParticleColor = Calc.HexToColor(particleColorString);
+
             _dreamBlockData = new DynData<DreamBlock>(this);
 
             var textures = _dreamBlockData.Get<MTexture[]>("particleTextures");
@@ -52,7 +69,7 @@ namespace Celeste.Mod.GravityHelper.Entities
 
         public void InitialiseParticleColors()
         {
-            var gravityTypeColor = GravityType.Color();
+            var baseColor = ParticleColor ?? GravityType.Color();
             var particlesObject = _dreamBlockData["particles"];
             if (particlesObject is Array particles)
             {
@@ -60,7 +77,7 @@ namespace Celeste.Mod.GravityHelper.Entities
                 {
                     var particle = particles.GetValue(i);
                     var lightness = -0.25f + Calc.Random.NextFloat();
-                    dream_particle_color_fieldinfo.SetValue(particle, gravityTypeColor.Lighter(lightness));
+                    dream_particle_color_fieldinfo.SetValue(particle, baseColor.Lighter(lightness));
                     particles.SetValue(particle, i);
                 }
             }
@@ -79,6 +96,21 @@ namespace Celeste.Mod.GravityHelper.Entities
             WasEntered = true;
             GravityHelperModule.PlayerComponent.PreDreamBlockGravityType = GravityHelperModule.PlayerComponent.CurrentGravity;
             GravityHelperModule.PlayerComponent.SetGravity(GravityType);
+        }
+
+        public override void Render()
+        {
+            Position += _shakeOffset;
+            base.Render();
+            Position -= _shakeOffset;
+        }
+
+        public override void OnShake(Vector2 amount) => _shakeOffset += amount;
+
+        public override void OnStaticMoverTrigger(StaticMover sm)
+        {
+            if (_fallingComponent != null)
+                _fallingComponent.Triggered = true;
         }
     }
 }

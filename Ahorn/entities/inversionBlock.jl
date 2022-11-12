@@ -12,6 +12,7 @@ const PLUGIN_VERSION = "1"
     width::Integer=32, height::Integer=32,
     leftGravityType::Integer=2, rightGravityType::Integer=2,
     topEnabled::Bool=true, bottomEnabled::Bool=true, leftEnabled::Bool=false, rightEnabled::Bool=false,
+    fall::Bool=false, climbFall::Bool=true,
     pluginVersion::String=PLUGIN_VERSION,
 )
 

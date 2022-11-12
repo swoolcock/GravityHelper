@@ -12,7 +12,9 @@ const PLUGIN_VERSION = "1"
     width::Integer=8, height::Integer=8,
     pluginVersion::String=PLUGIN_VERSION,
     fastMoving::Bool=false, oneUse::Bool=false, below::Bool=false,
-    gravityType::Integer=0
+    gravityType::Integer=0,
+    lineColor::String="", backColor::String="", particleColor::String="",
+    fall::Bool=false, climbFall::Bool=true
 )
 
 const placements = Ahorn.PlacementDict(
@@ -61,6 +63,10 @@ Ahorn.nodeLimits(entity::GravityDreamBlock) = 0, 1
 Ahorn.minimumSize(entity::GravityDreamBlock) = 8, 8
 Ahorn.resizable(entity::GravityDreamBlock) = true, true
 
+upArrowSprite = "objects/GravityHelper/gravityDreamBlock/upArrow"
+downArrowSprite = "objects/GravityHelper/gravityDreamBlock/downArrow"
+doubleArrowSprite = "objects/GravityHelper/gravityDreamBlock/doubleArrow"
+
 function Ahorn.selection(entity::GravityDreamBlock)
     x, y = Ahorn.position(entity)
     width = Int(get(entity.data, "width", 8))
@@ -75,6 +81,10 @@ function Ahorn.selection(entity::GravityDreamBlock)
     end
 end
 
+function lightened(color::Tuple{Real, Real, Real, Real}, amount::Real)
+    return (clamp(color[0] + amount, 0, 1), clamp(color[1] + amount, 0, 1), clamp(color[2] + amount, 0, 1), color[3])
+end
+
 function renderSpaceJam(ctx::Ahorn.Cairo.CairoContext, entity::GravityDreamBlock, x::Number, y::Number, width::Number, height::Number)
     Ahorn.Cairo.save(ctx)
 
@@ -82,10 +92,37 @@ function renderSpaceJam(ctx::Ahorn.Cairo.CairoContext, entity::GravityDreamBlock
     Ahorn.set_line_width(ctx, 1)
 
     gravityType = Int(get(entity.data, "gravityType", 0))
-    color = gravityColors[gravityType]
+    sprite = gravityType == 0 ? downArrowSprite : gravityType == 1 ? upArrowSprite : doubleArrowSprite
+    gravityColor = gravityColors[gravityType]
+    entityLineColor = get(entity.data, "lineColor", "")
+    entityBackColor = get(entity.data, "backColor", "")
+    entityParticleColor = get(entity.data, "particleColor", "")
+    lineColor = clamp.(gravityColor .+ 0.4, 0.0, 1.0)
+    fillColor = lineColor
+    particleColor = lineColor
+    
+    parsedLineColor = parseColor(entityLineColor)
+    parsedBackColor = parseColor(entityBackColor)
+    parsedParticleColor = parseColor(entityParticleColor)
 
-    Ahorn.drawRectangle(ctx, x, y, width, height, color, (1.0, 1.0, 1.0, 1.0))
+    if parsedLineColor != nothing
+        lineColor = parsedLineColor
+    end
 
+    if parsedBackColor != nothing
+        fillColor = parsedBackColor
+    end
+    
+    if parsedParticleColor != nothing
+        particleColor = parsedParticleColor
+    end
+    
+    fillColor = (fillColor[1] * 0.12, fillColor[2] * 0.12, fillColor[3] * 0.12, 1.0)
+    particleColor = (particleColor[1], particleColor[2], particleColor[3], 1.0)
+    
+    Ahorn.drawRectangle(ctx, x, y, width, height, fillColor, (lineColor[1], lineColor[2], lineColor[3], 1.0))
+
+    Ahorn.drawSprite(ctx, sprite, x + width / 2, y + height / 2, tint=particleColor)
     Ahorn.restore(ctx)
 end
 
@@ -111,6 +148,14 @@ function Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::GravityDreamBlock, 
     height = Int(get(entity.data, "height", 32))
 
     renderSpaceJam(ctx, entity, 0, 0, width, height)
+end
+
+function parseColor(hex::String)
+    if length(hex) != 6
+        return nothing
+    end
+    parsed = tryparse(Int, hex, base=16)
+    return parsed != nothing ? Ahorn.argb32ToRGBATuple(parsed)[1:3] ./ 255 : nothing
 end
 
 end
