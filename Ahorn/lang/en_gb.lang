@@ -61,6 +61,9 @@ placements.entities.GravityHelper/GravityRefill.tooltips.respawnTime=Time in sec
 
 # Gravity Dream Block
 placements.entities.GravityHelper/GravityDreamBlock.tooltips.gravityType=The gravity type to set when Madeline exits the dream block.
+placements.entities.GravityHelper/GravityDreamBlock.tooltips.lineColor=The colour to use when rendering the dream block outline. This will flash slightly brighter when the player enters the dream block. Defaults to a lighter version of the colour for the selected gravity type.
+placements.entities.GravityHelper/GravityDreamBlock.tooltips.backColor=The colour to use when rendering the dream block background. This will always be dimmed rather than the explicit colour, but it will flash when the player enters the dream block. Defaults to a lighter version of the colour for the selected gravity type.
+placements.entities.GravityHelper/GravityDreamBlock.tooltips.particleColor=The colour to use when rendering the particles inside the dream block. Defaults to a lighter version of the colour for the selected gravity type.
 
 # Gravity Bumper
 placements.entities.GravityHelper/GravityBumper.tooltips.gravityType=The gravity type to set when Madeline touches the bumper.

@@ -24,6 +24,9 @@ namespace Celeste.Mod.GravityHelper.Entities
         private readonly DynData<DreamBlock> _dreamBlockData;
 
         public GravityType GravityType { get; }
+        public Color? LineColor { get; }
+        public Color? BackColor { get; }
+        public Color? ParticleColor { get; }
         internal bool WasEntered;
 
         public GravityDreamBlock(EntityData data, Vector2 offset)
@@ -33,6 +36,13 @@ namespace Celeste.Mod.GravityHelper.Entities
             _pluginVersion = data.PluginVersion();
 
             GravityType = (GravityType)data.Int("gravityType");
+            var lineColorString = data.Attr("lineColor");
+            var backColorString = data.Attr("backColor");
+            var particleColorString = data.Attr("particleColor");
+            if (!string.IsNullOrWhiteSpace(lineColorString)) LineColor = Calc.HexToColor(lineColorString);
+            if (!string.IsNullOrWhiteSpace(backColorString)) BackColor = Calc.HexToColor(backColorString);
+            if (!string.IsNullOrWhiteSpace(particleColorString)) ParticleColor = Calc.HexToColor(particleColorString);
+
             _dreamBlockData = new DynData<DreamBlock>(this);
 
             var textures = _dreamBlockData.Get<MTexture[]>("particleTextures");
@@ -52,7 +62,7 @@ namespace Celeste.Mod.GravityHelper.Entities
 
         public void InitialiseParticleColors()
         {
-            var gravityTypeColor = GravityType.Color();
+            var baseColor = ParticleColor ?? GravityType.Color();
             var particlesObject = _dreamBlockData["particles"];
             if (particlesObject is Array particles)
             {
@@ -60,7 +70,7 @@ namespace Celeste.Mod.GravityHelper.Entities
                 {
                     var particle = particles.GetValue(i);
                     var lightness = -0.25f + Calc.Random.NextFloat();
-                    dream_particle_color_fieldinfo.SetValue(particle, gravityTypeColor.Lighter(lightness));
+                    dream_particle_color_fieldinfo.SetValue(particle, baseColor.Lighter(lightness));
                     particles.SetValue(particle, i);
                 }
             }

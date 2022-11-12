@@ -27,6 +27,9 @@ entities.GravityHelper/GravityDreamBlock.placements.name.normal=Gravity Dream Bl
 entities.GravityHelper/GravityDreamBlock.placements.name.inverted=Gravity Dream Block (Inverted) (GravityHelper)
 entities.GravityHelper/GravityDreamBlock.placements.name.toggle=Gravity Dream Block (Toggle) (GravityHelper)
 entities.GravityHelper/GravityDreamBlock.attributes.description.gravityType=The gravity type to set when Madeline exits the dream block.
+entities.GravityHelper/GravityDreamBlock.attributes.description.lineColor=The colour to use when rendering the dream block outline. This will flash slightly brighter when the player enters the dream block. Defaults to a lighter version of the colour for the selected gravity type.
+entities.GravityHelper/GravityDreamBlock.attributes.description.backColor=The colour to use when rendering the dream block background. This will always be dimmed rather than the explicit colour, but it will flash when the player enters the dream block. Defaults to a lighter version of the colour for the selected gravity type.
+entities.GravityHelper/GravityDreamBlock.attributes.description.particleColor=The colour to use when rendering the particles inside the dream block. Defaults to a lighter version of the colour for the selected gravity type.
 
 # Gravity Field
 entities.GravityHelper/GravityField.placements.name.normal=Gravity Field (Normal) (GravityHelper)
