@@ -87,6 +87,9 @@ function Ahorn.renderSelectedAbs(ctx::Ahorn.Cairo.CairoContext, entity::GravityB
         nx, ny = Int.(node)
         theta = atan(py - ny, px - nx)
         nodeType = get(nodeTypes, i + 1, globalType)
+        if nodeType == nothing
+            nodeType = globalType
+        end
         Ahorn.drawArrow(ctx, px, py, nx + cos(theta) * 8, ny + sin(theta) * 8, Ahorn.colors.selection_selected_fc, headLength=6)
         drawNode(ctx, nx, ny, nodeType)
         px, py = nx, ny
@@ -100,8 +103,11 @@ function Ahorn.renderAbs(ctx::Ahorn.Cairo.CairoContext, entity::GravityBadelineB
     nodeTypes = tryparse.(Int, split(nodeTypesString, ','))
     gravityType = get(entity.data, "gravityType", 0)
 
-    if length(nodes) > 0
-        gravityType = get(nodeTypes, 1, gravityType)
+    if length(nodes) > 0 && nodeTypes != nothing && length(nodeTypes) > 0
+        nodeGravityType = get(nodeTypes, 1, gravityType)
+        if nodeGravityType != nothing
+            gravityType = nodeGravityType
+        end
     end
 
     drawNode(ctx, x, y, gravityType)
