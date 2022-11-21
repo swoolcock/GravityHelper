@@ -23,6 +23,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
         // ReSharper disable InconsistentNaming
         private static IDetour hook_Player_DashCoroutine;
         private static IDetour hook_Player_IntroJumpCoroutine;
+        private static IDetour hook_Player_PickupCoroutine;
         private static IDetour hook_Player_orig_Update;
         private static IDetour hook_Player_orig_UpdateSprite;
         private static IDetour hook_Player_orig_WallJump;
@@ -93,6 +94,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
             hook_Player_DashCoroutine = new ILHook(ReflectionCache.Player_DashCoroutine.GetStateMachineTarget(), Player_DashCoroutine);
             hook_Player_IntroJumpCoroutine = new ILHook(ReflectionCache.Player_IntroJumpCoroutine.GetStateMachineTarget(), Player_IntroJumpCoroutine);
+            hook_Player_PickupCoroutine = new ILHook(ReflectionCache.Player_PickupCoroutine.GetStateMachineTarget(), Player_PickupCoroutine);
             hook_Player_orig_UpdateSprite = new ILHook(ReflectionCache.Player_OrigUpdateSprite, Player_orig_UpdateSprite);
             hook_Player_orig_WallJump = new ILHook(ReflectionCache.Player_OrigWallJump, Player_orig_WallJump);
             hook_Player_get_CanUnDuck = new ILHook(ReflectionCache.Player_CanUnDuck, Player_get_CanUnDuck);
@@ -172,6 +174,9 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
             hook_Player_IntroJumpCoroutine?.Dispose();
             hook_Player_IntroJumpCoroutine = null;
+
+            hook_Player_PickupCoroutine?.Dispose();
+            hook_Player_PickupCoroutine = null;
 
             hook_Player_orig_Update?.Dispose();
             hook_Player_orig_Update = null;
@@ -549,6 +554,17 @@ namespace Celeste.Mod.GravityHelper.Hooks
                 particlesBG.Emit(_invertedSummitLandCParticle.Value, 30, self.TopCenter, Vector2.UnitX * 5f);
             });
             cursor.Emit(OpCodes.Br_S, cursor2.Next);
+        });
+
+        private static void Player_PickupCoroutine(ILContext il) => HookUtils.SafeHook(() =>
+        {
+            var cursor = new ILCursor(il);
+
+            // invert the initial offset
+            if (!cursor.TryGotoNext(MoveType.After, ILCursorExtensions.SubtractionPredicate))
+                throw new HookException("Couldn't find vector subtraction");
+
+            cursor.EmitInvertVectorDelegate();
         });
 
         private static void Player_IsOverWater(ILContext il) => HookUtils.SafeHook(() =>

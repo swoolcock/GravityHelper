@@ -19,6 +19,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
             IL.Celeste.Holdable.Release += Holdable_Release;
             On.Celeste.Holdable.Added += Holdable_Added;
+            On.Celeste.Holdable.Pickup += Holdable_Pickup;
         }
 
         public static void Unload()
@@ -27,6 +28,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
             IL.Celeste.Holdable.Release -= Holdable_Release;
             On.Celeste.Holdable.Added -= Holdable_Added;
+            On.Celeste.Holdable.Pickup -= Holdable_Pickup;
         }
 
         private static void Holdable_Added(On.Celeste.Holdable.orig_Added orig, Holdable self, Entity entity)
@@ -50,5 +52,13 @@ namespace Celeste.Mod.GravityHelper.Hooks
                 return v;
             });
         });
+
+        private static bool Holdable_Pickup(On.Celeste.Holdable.orig_Pickup orig, Holdable self, Player player)
+        {
+            var rv = orig(self, player);
+            if (self.Entity?.Get<GravityHoldable>() is { } gravityHoldable)
+                gravityHoldable.SetGravityHeld();
+            return rv;
+        }
     }
 }

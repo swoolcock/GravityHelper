@@ -25,6 +25,17 @@ namespace Celeste.Mod.GravityHelper.Components
 
         public void ResetInvertTime() => _invertTimeRemaining = InvertTime;
 
+        public void SetGravityHeld()
+        {
+            if (Entity?.Get<GravityComponent>() is not { } gravityComponent) return;
+
+            ResetInvertTime();
+
+            var targetGravity = GravityHelperModule.PlayerComponent?.CurrentGravity ?? GravityType.Normal;
+            if (gravityComponent.CurrentGravity != targetGravity)
+                gravityComponent.SetGravity(targetGravity);
+        }
+
         public override void Added(Entity entity)
         {
             base.Added(entity);
@@ -60,10 +71,7 @@ namespace Celeste.Mod.GravityHelper.Components
             if (holdable == null || gravityComponent == null) return;
 
             if (holdable.IsHeld)
-            {
-                ResetInvertTime();
-                gravityComponent.SetGravity(GravityHelperModule.PlayerComponent?.CurrentGravity ?? GravityType.Normal);
-            }
+                SetGravityHeld();
             else if (InvertTime > 0 && _invertTimeRemaining > 0 && gravityComponent.CurrentGravity == GravityType.Inverted)
             {
                 _invertTimeRemaining -= Engine.DeltaTime;

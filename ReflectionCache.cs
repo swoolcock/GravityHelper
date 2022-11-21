@@ -48,6 +48,7 @@ namespace Celeste.Mod.GravityHelper
         public static readonly MethodInfo Player_OrigUpdateSprite = typeof(Player).GetMethod("orig_UpdateSprite", BindingFlags.Instance | BindingFlags.NonPublic);
         public static readonly MethodInfo Player_OrigWallJump = typeof(Player).GetMethod("orig_WallJump", BindingFlags.Instance | BindingFlags.NonPublic);
         public static readonly MethodInfo Player_OrigUpdate = typeof(Player).GetMethod(nameof(Player.orig_Update));
+        public static readonly MethodInfo Player_PickupCoroutine = typeof(Player).GetMethod("PickupCoroutine", BindingFlags.Instance | BindingFlags.NonPublic);
         public static readonly PropertyInfo Player_OnSafeGround = typeof(Player).GetProperty(nameof(Player.OnSafeGround));
 
         #endregion
