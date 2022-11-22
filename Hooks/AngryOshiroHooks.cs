@@ -44,13 +44,16 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
             var data = DynamicData.For(self);
             var bounceCollider = data.Get<PlayerCollider>("bounceCollider");
+            var normalBounceColliderTop = bounceCollider.Collider.Top;
+            var colliderOffset = self.Collider.Top - normalBounceColliderTop;
+            var invertedBounceColliderBottom = self.Collider.Bottom + colliderOffset;
 
             self.Add(new PlayerGravityListener((player, args) =>
             {
                 if (args.NewValue == GravityType.Normal)
-                    bounceCollider.Collider.Top = self.Collider.Top;
+                    bounceCollider.Collider.Top = normalBounceColliderTop;
                 else if (args.NewValue == GravityType.Inverted)
-                    bounceCollider.Collider.Bottom = self.Collider.Bottom;
+                    bounceCollider.Collider.Bottom = invertedBounceColliderBottom;
             }));
         }
 
