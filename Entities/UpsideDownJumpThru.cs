@@ -51,6 +51,7 @@ namespace Celeste.Mod.GravityHelper.Entities
                     _ => 5,
                 };
 
+            using var _ = new PushRandomDisposable(scene);
             var mtexture = GFX.Game[$"objects/jumpthru/{str}"];
             int textureWidthInTiles = mtexture.Width / 8;
             for (int i = 0; i < _columns; ++i)

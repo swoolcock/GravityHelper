@@ -69,6 +69,7 @@ namespace Celeste.Mod.GravityHelper.Entities
 
         public void InitialiseParticleColors()
         {
+            using var _ = new PushRandomDisposable(Scene);
             var baseColor = ParticleColor ?? GravityType.Color();
             var particlesObject = _dreamBlockData["particles"];
             if (particlesObject is Array particles)

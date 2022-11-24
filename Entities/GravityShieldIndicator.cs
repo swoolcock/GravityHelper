@@ -45,6 +45,7 @@ namespace Celeste.Mod.GravityHelper.Entities
             Add(_bloom = new BloomPoint(0f, 16f),
                 _light = new VertexLight(Color.White, 0f, 16, 48));
 
+            using var _ = new PushRandomDisposable(null);
             for (int index = 0; index < particle_count; ++index)
             {
                 float angle = Calc.Random.NextAngle();
@@ -63,6 +64,7 @@ namespace Celeste.Mod.GravityHelper.Entities
 
             if (ShieldTimeRemaining > 0)
             {
+                using var _ = new PushRandomDisposable(Scene);
                 for (int i = 0; i < _particles.Count; i++)
                 {
                     float maxMove = radius * _speeds[i % _speeds.Length];
