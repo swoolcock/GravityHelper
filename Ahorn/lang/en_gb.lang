@@ -66,6 +66,7 @@ placements.entities.GravityHelper/GravityDreamBlock.tooltips.backColor=The colou
 placements.entities.GravityHelper/GravityDreamBlock.tooltips.particleColor=The colour to use when rendering the particles inside the dream block. Defaults to a lighter version of the colour for the selected gravity type.
 placements.entities.GravityHelper/GravityDreamBlock.tooltips.fall=Whether the dream block should fall if stepped on or dashed through. Defaults to false.
 placements.entities.GravityHelper/GravityDreamBlock.tooltips.climbFall=Whether the dream block should fall if climbed. Requires "fall" to also be enabled. Defaults to true.
+placements.entities.GravityHelper/GravityDreamBlock.tooltips.fallUp=Whether the dream block should fall up rather than down. Requires "fall" to also be enabled. Defaults to false.
 
 # Gravity Bumper
 placements.entities.GravityHelper/GravityBumper.tooltips.gravityType=The gravity type to set when Madeline touches the bumper.
@@ -190,3 +191,4 @@ placements.entities.GravityHelper/InversionBlock.tooltips.leftEnabled=Whether cl
 placements.entities.GravityHelper/InversionBlock.tooltips.rightEnabled=Whether climb jumping on the right of the block will trigger inversion.
 placements.entities.GravityHelper/InversionBlock.tooltips.fall=Whether the inversion block should fall if stepped on. Defaults to false.
 placements.entities.GravityHelper/InversionBlock.tooltips.climbFall=Whether the inversion block should fall if climbed. Requires "fall" to also be enabled. Defaults to true.
+placements.entities.GravityHelper/InversionBlock.tooltips.fallUp=Whether the inversion block should fall up rather than down. Requires "fall" to also be enabled. Defaults to false.

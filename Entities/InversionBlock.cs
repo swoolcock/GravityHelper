@@ -116,7 +116,13 @@ namespace Celeste.Mod.GravityHelper.Entities
             Edges |= data.Bool("bottomEnabled", true) ? Edges.Bottom : Edges.None;
 
             if (data.Bool("fall"))
-                Add(_fallingComponent = new FallingComponent { ClimbFall = data.Bool("climbFall", true) });
+            {
+                Add(_fallingComponent = new FallingComponent
+                {
+                    ClimbFall = data.Bool("climbFall", true),
+                    FallUp = data.Bool("fallUp"),
+                });
+            }
         }
 
         private MTexture textureForGravityType(GravityType type) => type switch

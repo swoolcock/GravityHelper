@@ -17,6 +17,7 @@ local placementData = helpers.createPlacementData('1', {
     rightEnabled = false,
     fall = false,
     climbFall = true,
+    fallUp = false,
 })
 
 local inversionBlock = {

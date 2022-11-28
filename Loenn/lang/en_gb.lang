@@ -32,6 +32,7 @@ entities.GravityHelper/GravityDreamBlock.attributes.description.backColor=The co
 entities.GravityHelper/GravityDreamBlock.attributes.description.particleColor=The colour to use when rendering the particles inside the dream block. Defaults to a lighter version of the colour for the selected gravity type.
 entities.GravityHelper/GravityDreamBlock.attributes.description.fall=Whether the dream block should fall if stepped on or dashed through. Defaults to false.
 entities.GravityHelper/GravityDreamBlock.attributes.description.climbFall=Whether the dream block should fall if climbed. Requires "fall" to also be enabled. Defaults to true.
+entities.GravityHelper/GravityDreamBlock.attributes.description.fallUp=Whether the dream block should fall up rather than down. Requires "fall" to also be enabled. Defaults to false.
 
 # Gravity Field
 entities.GravityHelper/GravityField.placements.name.normal=Gravity Field (Normal) (GravityHelper)
@@ -254,3 +255,4 @@ entities.GravityHelper/InversionBlock.attributes.description.leftEnabled=Whether
 entities.GravityHelper/InversionBlock.attributes.description.rightEnabled=Whether climb jumping on the right of the block will trigger inversion.
 entities.GravityHelper/InversionBlock.attributes.description.fall=Whether the inversion block should fall if stepped on. Defaults to false.
 entities.GravityHelper/InversionBlock.attributes.description.climbFall=Whether the inversion block should fall if climbed. Requires "fall" to also be enabled. Defaults to true.
+entities.GravityHelper/InversionBlock.attributes.description.fallUp=Whether the inversion block should fall up rather than down. Requires "fall" to also be enabled. Defaults to false.

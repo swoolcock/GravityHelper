@@ -40,7 +40,13 @@ namespace Celeste.Mod.GravityHelper.Entities
             _pluginVersion = data.PluginVersion();
 
             if (data.Bool("fall"))
-                Add(_fallingComponent = new FallingComponent { ClimbFall = data.Bool("climbFall", true) });
+            {
+                Add(_fallingComponent = new FallingComponent
+                {
+                    ClimbFall = data.Bool("climbFall", true),
+                    FallUp = data.Bool("fallUp"),
+                });
+            }
 
             GravityType = (GravityType)data.Int("gravityType");
             var lineColorString = data.Attr("lineColor");
