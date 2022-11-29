@@ -40,7 +40,13 @@ namespace Celeste.Mod.GravityHelper.Entities
             _pluginVersion = data.PluginVersion();
 
             if (data.Bool("fall"))
-                Add(_fallingComponent = new FallingComponent { ClimbFall = data.Bool("climbFall", true) });
+            {
+                Add(_fallingComponent = new FallingComponent
+                {
+                    ClimbFall = data.Bool("climbFall", true),
+                    FallUp = data.Bool("fallUp"),
+                });
+            }
 
             GravityType = (GravityType)data.Int("gravityType");
             var lineColorString = data.Attr("lineColor");
@@ -69,6 +75,7 @@ namespace Celeste.Mod.GravityHelper.Entities
 
         public void InitialiseParticleColors()
         {
+            using var _ = new PushRandomDisposable(Scene);
             var baseColor = ParticleColor ?? GravityType.Color();
             var particlesObject = _dreamBlockData["particles"];
             if (particlesObject is Array particles)

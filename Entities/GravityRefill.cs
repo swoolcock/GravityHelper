@@ -99,7 +99,7 @@ namespace Celeste.Mod.GravityHelper.Entities
 
             _outline.CenterOrigin();
             _sprite.Play(RefillsDash ? "idle" : "idle_no_dash", true, true);
-            _sine.Randomize();
+            using (new PushRandomDisposable(data.ID)) _sine.Randomize();
             _arrows.OnFinish = _ => _arrows.Visible = false;
 
             updateY();

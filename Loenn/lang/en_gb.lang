@@ -32,6 +32,7 @@ entities.GravityHelper/GravityDreamBlock.attributes.description.backColor=The co
 entities.GravityHelper/GravityDreamBlock.attributes.description.particleColor=The colour to use when rendering the particles inside the dream block. Defaults to a lighter version of the colour for the selected gravity type.
 entities.GravityHelper/GravityDreamBlock.attributes.description.fall=Whether the dream block should fall if stepped on or dashed through. Defaults to false.
 entities.GravityHelper/GravityDreamBlock.attributes.description.climbFall=Whether the dream block should fall if climbed. Requires "fall" to also be enabled. Defaults to true.
+entities.GravityHelper/GravityDreamBlock.attributes.description.fallUp=Whether the dream block should fall up rather than down. Requires "fall" to also be enabled. Defaults to false.
 
 # Gravity Field
 entities.GravityHelper/GravityField.placements.name.normal=Gravity Field (Normal) (GravityHelper)
@@ -188,9 +189,10 @@ entities.GravityHelper/SoundGravityController.placements.name.persistent=Sound G
 entities.GravityHelper/SoundGravityController.attributes.description.persistent=Whether this controller should be considered the default for its type.\nThere should only ever be one persistent in your map, and not in a room with another controller of the same type.
 entities.GravityHelper/SoundGravityController.attributes.description.normalSound=The sound to play when gravity resets to normal.\nDefaults to event:/ui/game/lookout_off (the sound when cancelling a watch tower).
 entities.GravityHelper/SoundGravityController.attributes.description.invertedSound=The sound to play when gravity inverts.\nDefaults to event:/ui/game/lookout_on (the sound when first using a watch tower).
-entities.GravityHelper/SoundGravityController.attributes.description.toggleSound=Whether this and connected fields should attach to solids.
+entities.GravityHelper/SoundGravityController.attributes.description.toggleSound=The sound to play when gravity is toggled.\nDefaults to no sound.
 entities.GravityHelper/SoundGravityController.attributes.description.musicParam=The music parameter that should be set to 0 or 1 depending on whether gravity is currently normal or inverted.
 entities.GravityHelper/SoundGravityController.attributes.description.lineSound=The sound to play when touching a GravityLine. Defaults to a custom sound.
+entities.GravityHelper/SoundGravityController.attributes.description.inversionBlockSound=The sound to play when travelling through an InversionBlock. Defaults to event:/char/badeline/disappear (the sound when the final Badeline chaser disappears in 2A)
 
 # VVVVVV Gravity Controller
 entities.GravityHelper/VvvvvvGravityController.placements.name.single_room=VVVVVV Gravity Controller (Single Room) (GravityHelper)
@@ -254,3 +256,6 @@ entities.GravityHelper/InversionBlock.attributes.description.leftEnabled=Whether
 entities.GravityHelper/InversionBlock.attributes.description.rightEnabled=Whether climb jumping on the right of the block will trigger inversion.
 entities.GravityHelper/InversionBlock.attributes.description.fall=Whether the inversion block should fall if stepped on. Defaults to false.
 entities.GravityHelper/InversionBlock.attributes.description.climbFall=Whether the inversion block should fall if climbed. Requires "fall" to also be enabled. Defaults to true.
+entities.GravityHelper/InversionBlock.attributes.description.fallUp=Whether the inversion block should fall up rather than down. Requires "fall" to also be enabled. Defaults to false.
+entities.GravityHelper/InversionBlock.attributes.description.defaultToController=If true (default), supported properties for this entity will use the value from the active controller.
+entities.GravityHelper/InversionBlock.attributes.description.sound=The sound to play when travelling through this inversion block. Defaults to event:/char/badeline/disappear (the sound when the final Badeline chaser disappears in 2A), or the active controller.

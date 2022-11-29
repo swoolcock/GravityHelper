@@ -10,6 +10,7 @@ const PLUGIN_VERSION = "1"
 const default_normal_gravity_sound = "event:/ui/game/lookout_off"
 const default_inverted_gravity_sound = "event:/ui/game/lookout_on"
 const default_line_sound = "event:/gravityhelper/gravity_line"
+const default_inversion_block_sound = "event:/char/badeline/disappear"
 
 @mapdef Entity "GravityHelper/SoundGravityController" SoundGravityController(
     x::Integer, y::Integer,
@@ -19,6 +20,7 @@ const default_line_sound = "event:/gravityhelper/gravity_line"
     invertedSound::String=default_inverted_gravity_sound,
     toggleSound::String="",
     lineSound::String=default_line_sound,
+    inversionBlockSound::String=default_inversion_block_sound,
     musicParam::String=""
 )
 

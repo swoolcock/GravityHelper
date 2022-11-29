@@ -81,7 +81,7 @@ namespace Celeste.Mod.GravityHelper.Entities
 
             _outline.CenterOrigin();
             _sprite.Play("idle", true, true);
-            _sine.Randomize();
+            using (new PushRandomDisposable(data.ID)) _sine.Randomize();
 
             updateY();
         }

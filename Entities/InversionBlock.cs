@@ -4,6 +4,7 @@
 using System;
 using Celeste.Mod.Entities;
 using Celeste.Mod.GravityHelper.Components;
+using Celeste.Mod.GravityHelper.Entities.Controllers;
 using Celeste.Mod.GravityHelper.Extensions;
 using Microsoft.Xna.Framework;
 using Monocle;
@@ -14,6 +15,8 @@ namespace Celeste.Mod.GravityHelper.Entities
     [CustomEntity("GravityHelper/InversionBlock")]
     public class InversionBlock : Solid
     {
+        public const string DEFAULT_SOUND = "event:/char/badeline/disappear";
+
         private const int tile_size = 8;
 
         private readonly ParticleType _normalInvertedParticleType = new ParticleType(Player.P_Split)
@@ -47,6 +50,9 @@ namespace Celeste.Mod.GravityHelper.Entities
         public Edges Edges { get; }
         public GravityType LeftGravityType { get; }
         public GravityType RightGravityType { get; }
+
+        private readonly bool _defaultToController;
+        private string _sound;
 
         private readonly MTexture _blockTexture;
         private readonly MTexture _edgeTexture;
@@ -107,6 +113,9 @@ namespace Celeste.Mod.GravityHelper.Entities
             _invertedEdgeTexture = _edgeTexture.GetSubtexture(0, tile_size, 3 * tile_size, tile_size);
             _toggleEdgeTexture = _edgeTexture.GetSubtexture(0, 2 * tile_size, 3 * tile_size, tile_size);
 
+            _defaultToController = data.Bool("defaultToController", true);
+            _sound = data.Attr("sound", DEFAULT_SOUND);
+
             LeftGravityType = data.Enum("leftGravityType", GravityType.Toggle);
             RightGravityType = data.Enum("rightGravityType", GravityType.Toggle);
 
@@ -116,7 +125,23 @@ namespace Celeste.Mod.GravityHelper.Entities
             Edges |= data.Bool("bottomEnabled", true) ? Edges.Bottom : Edges.None;
 
             if (data.Bool("fall"))
-                Add(_fallingComponent = new FallingComponent { ClimbFall = data.Bool("climbFall", true) });
+            {
+                Add(_fallingComponent = new FallingComponent
+                {
+                    ClimbFall = data.Bool("climbFall", true),
+                    FallUp = data.Bool("fallUp"),
+                });
+            }
+        }
+
+        public override void Added(Scene scene)
+        {
+            base.Added(scene);
+
+            if (_defaultToController && Scene.GetActiveController<SoundGravityController>() is { } soundController)
+            {
+                _sound = soundController.InversionBlockSound;
+            }
         }
 
         private MTexture textureForGravityType(GravityType type) => type switch
@@ -346,7 +371,8 @@ namespace Celeste.Mod.GravityHelper.Entities
             level.Particles.Emit(particleType, 16, exitPoint, Vector2.One * 8f, direction.Angle());
 
             // play a sound
-            Audio.Play("event:/char/badeline/disappear", player.Position);
+            if (!string.IsNullOrWhiteSpace(_sound))
+                Audio.Play(_sound, player.Position);
 
             // clamp line
             var lineOffset = (int)(thick_line_thickness / 2f);

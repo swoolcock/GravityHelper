@@ -177,6 +177,7 @@ namespace Celeste.Mod.GravityHelper.Entities
 
             if (shouldDrawField && !_particles.Any())
             {
+                using var _ = new PushRandomDisposable(data.ID);
                 for (int index = 0; index < Width * (double) Height / 16.0; ++index)
                     _particles.Add(new Vector2(Calc.Random.NextFloat(Width - 1f), Calc.Random.NextFloat(Height - 1f)));
             }

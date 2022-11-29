@@ -34,6 +34,7 @@ local placementData = helpers.createPlacementData('1', {
     particleColor = "",
     fall = false,
     climbFall = true,
+    fallUp = false,
 })
 
 local gravityDreamBlock = {

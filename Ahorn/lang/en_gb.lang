@@ -66,6 +66,7 @@ placements.entities.GravityHelper/GravityDreamBlock.tooltips.backColor=The colou
 placements.entities.GravityHelper/GravityDreamBlock.tooltips.particleColor=The colour to use when rendering the particles inside the dream block. Defaults to a lighter version of the colour for the selected gravity type.
 placements.entities.GravityHelper/GravityDreamBlock.tooltips.fall=Whether the dream block should fall if stepped on or dashed through. Defaults to false.
 placements.entities.GravityHelper/GravityDreamBlock.tooltips.climbFall=Whether the dream block should fall if climbed. Requires "fall" to also be enabled. Defaults to true.
+placements.entities.GravityHelper/GravityDreamBlock.tooltips.fallUp=Whether the dream block should fall up rather than down. Requires "fall" to also be enabled. Defaults to false.
 
 # Gravity Bumper
 placements.entities.GravityHelper/GravityBumper.tooltips.gravityType=The gravity type to set when Madeline touches the bumper.
@@ -138,9 +139,10 @@ placements.entities.GravityHelper/VisualGravityController.tooltips.lineThickness
 placements.entities.GravityHelper/SoundGravityController.tooltips.persistent=Whether this controller should be considered the default for its type. There should only ever be one persistent in your map, and not in a room with another controller of the same type.
 placements.entities.GravityHelper/SoundGravityController.tooltips.normalSound=The sound to play when gravity resets to normal. Defaults to event:/ui/game/lookout_off (the sound when cancelling a watch tower).
 placements.entities.GravityHelper/SoundGravityController.tooltips.invertedSound=The sound to play when gravity inverts. Defaults to event:/ui/game/lookout_on (the sound when first using a watch tower).
-placements.entities.GravityHelper/SoundGravityController.tooltips.toggleSound=Whether this and connected fields should attach to solids.
+placements.entities.GravityHelper/SoundGravityController.tooltips.toggleSound=The sound to play when gravity is toggled. Defaults to no sound.
 placements.entities.GravityHelper/SoundGravityController.tooltips.musicParam=The music parameter that should be set to 0 or 1 depending on whether gravity is currently normal or inverted.
 placements.entities.GravityHelper/SoundGravityController.tooltips.lineSound=The sound to play when touching a GravityLine. Defaults to a custom sound.
+placements.entities.GravityHelper/SoundGravityController.tooltips.inversionBlockSound=The sound to play when travelling through an InversionBlock. Defaults to event:/char/badeline/disappear (the sound when the final Badeline chaser disappears in 2A)
 
 # VVVVVV Gravity Controller
 placements.entities.GravityHelper/VvvvvvGravityController.tooltips.persistent=Whether this controller should be considered the default for its type. There should only ever be one persistent in your map, and not in a room with another controller of the same type.
@@ -190,3 +192,6 @@ placements.entities.GravityHelper/InversionBlock.tooltips.leftEnabled=Whether cl
 placements.entities.GravityHelper/InversionBlock.tooltips.rightEnabled=Whether climb jumping on the right of the block will trigger inversion.
 placements.entities.GravityHelper/InversionBlock.tooltips.fall=Whether the inversion block should fall if stepped on. Defaults to false.
 placements.entities.GravityHelper/InversionBlock.tooltips.climbFall=Whether the inversion block should fall if climbed. Requires "fall" to also be enabled. Defaults to true.
+placements.entities.GravityHelper/InversionBlock.tooltips.fallUp=Whether the inversion block should fall up rather than down. Requires "fall" to also be enabled. Defaults to false.
+placements.entities.GravityHelper/InversionBlock.tooltips.defaultToController=If true (default), supported properties for this entity will use the value from the active controller.
+placements.entities.GravityHelper/InversionBlock.tooltips.sound=The sound to play when travelling through this inversion block. Defaults to event:/char/badeline/disappear (the sound when the final Badeline chaser disappears in 2A), or the active controller.
