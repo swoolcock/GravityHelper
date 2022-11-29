@@ -9,6 +9,7 @@ local drawableNinePatch = require("structs.drawable_nine_patch")
 local placementData = helpers.createPlacementData('1', {
     width = 16,
     height = 16,
+    defaultToController = true,
     leftGravityType = 2,
     rightGravityType = 2,
     topEnabled = true,
@@ -18,6 +19,7 @@ local placementData = helpers.createPlacementData('1', {
     fall = false,
     climbFall = true,
     fallUp = false,
+    sound = "event:/char/badeline/disappear",
 })
 
 local inversionBlock = {

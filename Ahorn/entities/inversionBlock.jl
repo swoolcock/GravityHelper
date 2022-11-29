@@ -7,12 +7,16 @@ using ..Ahorn, Maple
 
 const PLUGIN_VERSION = "1"
 
+const default_sound = "event:/char/badeline/disappear"
+
 @mapdef Entity "GravityHelper/InversionBlock" InversionBlock(
     x::Integer, y::Integer,
     width::Integer=32, height::Integer=32,
+    defaultToController::Bool=true,
     leftGravityType::Integer=2, rightGravityType::Integer=2,
     topEnabled::Bool=true, bottomEnabled::Bool=true, leftEnabled::Bool=false, rightEnabled::Bool=false,
     fall::Bool=false, climbFall::Bool=true, fallUp::Bool=false,
+    sound::String=default_sound,
     pluginVersion::String=PLUGIN_VERSION,
 )
 
