@@ -69,6 +69,8 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
             On.Celeste.Player.ctor += Player_ctor;
             On.Celeste.Player.Added += Player_Added;
+            On.Celeste.Player.BoostUpdate += Player_BoostUpdate;
+            On.Celeste.Player.BoostEnd += Player_BoostEnd;
             On.Celeste.Player.ClimbCheck += Player_ClimbCheck;
             On.Celeste.Player.ClimbJump += Player_ClimbJump;
             On.Celeste.Player.CassetteFlyEnd += Player_CassetteFlyEnd;
@@ -149,6 +151,8 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
             On.Celeste.Player.ctor -= Player_ctor;
             On.Celeste.Player.Added -= Player_Added;
+            On.Celeste.Player.BoostUpdate -= Player_BoostUpdate;
+            On.Celeste.Player.BoostEnd -= Player_BoostEnd;
             On.Celeste.Player.CassetteFlyEnd -= Player_CassetteFlyEnd;
             On.Celeste.Player.ClimbCheck -= Player_ClimbCheck;
             On.Celeste.Player.ClimbJump -= Player_ClimbJump;
@@ -1162,6 +1166,21 @@ namespace Celeste.Mod.GravityHelper.Hooks
             SpawnGravityTrigger trigger = self.CollideFirstOrDefault<SpawnGravityTrigger>();
             if (trigger?.FireOnBubbleReturn ?? false)
                 GravityHelperModule.PlayerComponent?.SetGravity(trigger.GravityType);
+        }
+
+        private static int Player_BoostUpdate(On.Celeste.Player.orig_BoostUpdate orig, Player self)
+        {
+            GravityHelperModule.OverrideSemaphore++;
+            var rv = orig(self);
+            GravityHelperModule.OverrideSemaphore--;
+            return rv;
+        }
+
+        private static void Player_BoostEnd(On.Celeste.Player.orig_BoostEnd orig, Player self)
+        {
+            GravityHelperModule.OverrideSemaphore++;
+            orig(self);
+            GravityHelperModule.OverrideSemaphore--;
         }
 
         private static bool Player_ClimbCheck(On.Celeste.Player.orig_ClimbCheck orig, Player self, int dir, int yAdd) =>

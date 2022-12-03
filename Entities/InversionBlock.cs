@@ -329,7 +329,7 @@ namespace Celeste.Mod.GravityHelper.Entities
                 inType = LeftGravityType;
                 outType = !Edges.HasFlag(Edges.Right) || RightGravityType != GravityType.Toggle ? player.GetGravity() : GravityType.Toggle;
             }
-            else if (Edges.HasFlag(Edges.Right) && player.Right > Right && player.StateMachine.State == Player.StClimb)
+            else if (activeEdges.HasFlag(Edges.Right) && player.Right > Right && player.StateMachine.State == Player.StClimb)
             {
                 // check whether we have space to move on the other side
                 var targetX = player.X - player.Width - Width;
