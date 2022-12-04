@@ -7,6 +7,7 @@ using System.Linq;
 using Celeste.Mod.GravityHelper.Components;
 using Celeste.Mod.GravityHelper.Entities.Controllers;
 using Celeste.Mod.GravityHelper.Hooks;
+using Celeste.Mod.GravityHelper.Hooks.Attributes;
 using Celeste.Mod.GravityHelper.ThirdParty;
 using Monocle;
 using MonoMod.ModInterop;
@@ -63,6 +64,8 @@ namespace Celeste.Mod.GravityHelper
         public override void Load()
         {
             typeof(GravityHelperExports).ModInterop();
+
+            HookFixtureAttribute.InitAll();
 
             Logger.Log(LogLevel.Info, nameof(GravityHelperModule), "Loading bootstrap hooks...");
             On.Celeste.LevelLoader.ctor += LevelLoader_ctor;
@@ -142,6 +145,8 @@ namespace Celeste.Mod.GravityHelper
                 SpringHooks.Unload();
                 StarJumpBlockHooks.Unload();
                 TheoCrystalHooks.Unload();
+
+                HookFixtureAttribute.UnloadAll();
             }
 
             CurrentHookLevel = requiredHookLevel;
@@ -199,6 +204,8 @@ namespace Celeste.Mod.GravityHelper
                 SpringHooks.Load();
                 StarJumpBlockHooks.Load();
                 TheoCrystalHooks.Load();
+
+                HookFixtureAttribute.LoadAll();
             }
         }
 

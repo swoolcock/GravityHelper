@@ -3,7 +3,9 @@
 
 using System;
 using System.Linq;
+using System.Reflection;
 using Celeste.Mod.GravityHelper.Extensions;
+using Celeste.Mod.GravityHelper.Hooks.Attributes;
 using Microsoft.Xna.Framework;
 using Mono.Cecil.Cil;
 using Monocle;
@@ -14,39 +16,41 @@ using MonoMod.RuntimeDetour;
 
 namespace Celeste.Mod.GravityHelper.Hooks
 {
+    [HookFixture(typeof(Actor))]
     public static class ActorHooks
     {
-        public static void Load()
-        {
-            Logger.Log(nameof(GravityHelperModule), $"Loading {nameof(Actor)} hooks...");
+        // public static void Load()
+        // {
+        //     Logger.Log(nameof(GravityHelperModule), $"Loading {nameof(Actor)} hooks...");
+        //
+        //     IL.Celeste.Actor.IsRiding_Solid += Actor_IsRiding_Solid;
+        //     IL.Celeste.Actor.OnGround_int += Actor_OnGround_int;
+        //     IL.Celeste.Actor.TrySquishWiggle_CollisionData_int_int += Actor_TrySquishWiggle_CollisionData_int_int;
+        //
+        //     // we need to run this after MaxHelpingHand to ensure both UDJT types are handled
+        //     using (new DetourContext {After = {"MaxHelpingHand"}})
+        //         IL.Celeste.Actor.MoveVExact += Actor_MoveVExact;
+        //
+        //     On.Celeste.Actor.MoveV += Actor_MoveV;
+        //     On.Celeste.Actor.MoveVExact += Actor_MoveVExact;
+        //     On.Celeste.Actor.IsRiding_JumpThru += Actor_IsRiding_JumpThru;
+        // }
+        //
+        // public static void Unload()
+        // {
+        //     Logger.Log(nameof(GravityHelperModule), $"Unloading {nameof(Actor)} hooks...");
+        //
+        //     IL.Celeste.Actor.IsRiding_Solid -= Actor_IsRiding_Solid;
+        //     IL.Celeste.Actor.OnGround_int -= Actor_OnGround_int;
+        //     IL.Celeste.Actor.MoveVExact -= Actor_MoveVExact;
+        //     IL.Celeste.Actor.TrySquishWiggle_CollisionData_int_int -= Actor_TrySquishWiggle_CollisionData_int_int;
+        //
+        //     On.Celeste.Actor.MoveV -= Actor_MoveV;
+        //     On.Celeste.Actor.MoveVExact -= Actor_MoveVExact;
+        //     On.Celeste.Actor.IsRiding_JumpThru -= Actor_IsRiding_JumpThru;
+        // }
 
-            IL.Celeste.Actor.IsRiding_Solid += Actor_IsRiding_Solid;
-            IL.Celeste.Actor.OnGround_int += Actor_OnGround_int;
-            IL.Celeste.Actor.TrySquishWiggle_CollisionData_int_int += Actor_TrySquishWiggle_CollisionData_int_int;
-
-            // we need to run this after MaxHelpingHand to ensure both UDJT types are handled
-            using (new DetourContext {After = {"MaxHelpingHand"}})
-                IL.Celeste.Actor.MoveVExact += Actor_MoveVExact;
-
-            On.Celeste.Actor.MoveV += Actor_MoveV;
-            On.Celeste.Actor.MoveVExact += Actor_MoveVExact;
-            On.Celeste.Actor.IsRiding_JumpThru += Actor_IsRiding_JumpThru;
-        }
-
-        public static void Unload()
-        {
-            Logger.Log(nameof(GravityHelperModule), $"Unloading {nameof(Actor)} hooks...");
-
-            IL.Celeste.Actor.IsRiding_Solid -= Actor_IsRiding_Solid;
-            IL.Celeste.Actor.OnGround_int -= Actor_OnGround_int;
-            IL.Celeste.Actor.MoveVExact -= Actor_MoveVExact;
-            IL.Celeste.Actor.TrySquishWiggle_CollisionData_int_int -= Actor_TrySquishWiggle_CollisionData_int_int;
-
-            On.Celeste.Actor.MoveV -= Actor_MoveV;
-            On.Celeste.Actor.MoveVExact -= Actor_MoveVExact;
-            On.Celeste.Actor.IsRiding_JumpThru -= Actor_IsRiding_JumpThru;
-        }
-
+        [OnHook(nameof(Actor.IsRiding), arguments: new[] { typeof(JumpThru) })]
         private static bool Actor_IsRiding_JumpThru(On.Celeste.Actor.orig_IsRiding_JumpThru orig, Actor self, JumpThru jumpThru)
         {
             // we override all other hooks, since it's the only way to accurately handle riding UDJT
@@ -58,7 +62,8 @@ namespace Celeste.Mod.GravityHelper.Hooks
                 self.CollideCheckOutside(jumpThru, self.Position + Vector2.UnitY);
         }
 
-        private static void Actor_IsRiding_Solid(ILContext il) => HookUtils.SafeHook(() =>
+        [ILHook(nameof(Actor.IsRiding), arguments: new[] { typeof(Solid) })]
+        private static void Actor_IsRiding_Solid(ILContext il)
         {
             var cursor = new ILCursor(il);
 
@@ -66,9 +71,10 @@ namespace Celeste.Mod.GravityHelper.Hooks
                 throw new HookException("Couldn't patch Actor.IsRiding for solids");
 
             cursor.EmitActorInvertVectorDelegate(OpCodes.Ldarg_0);
-        });
+        }
 
-        private static void Actor_MoveVExact(ILContext il) => HookUtils.SafeHook(() =>
+        [ILHook(nameof(Actor.MoveVExact), after: new []{"MaxHelpingHand"})]
+        private static void Actor_MoveVExact(ILContext il)
         {
             // borrowed and repurposed some code from MaxHelpingHand to check for GH UDJT
             var cursor = new ILCursor(il);
@@ -111,8 +117,9 @@ namespace Celeste.Mod.GravityHelper.Hooks
                 return platform;
             });
             cursor.Emit(OpCodes.Stloc, variable);
-        });
+        }
 
+        [OnHook(nameof(Actor.MoveV))]
         private static bool Actor_MoveV(On.Celeste.Actor.orig_MoveV orig, Actor self, float moveV, Collision onCollide, Solid pusher)
         {
             if (GravityHelperModule.OverrideSemaphore > 0 || !self.ShouldInvertChecked())
@@ -124,12 +131,14 @@ namespace Celeste.Mod.GravityHelper.Hooks
             return rv;
         }
 
+        [OnHook(nameof(Actor.MoveVExact))]
         private static bool Actor_MoveVExact(On.Celeste.Actor.orig_MoveVExact orig, Actor self, int moveV, Collision onCollide, Solid pusher) =>
             orig(self,
                 GravityHelperModule.OverrideSemaphore <= 0 &&
                 self.ShouldInvertChecked() ? -moveV : moveV, onCollide, pusher);
 
-        private static void Actor_OnGround_int(ILContext il) => HookUtils.SafeHook(() =>
+        [ILHook(nameof(Actor.OnGround), arguments: new[] { typeof(int) })]
+        private static void Actor_OnGround_int(ILContext il)
         {
             var cursor = new ILCursor(il);
 
@@ -146,9 +155,10 @@ namespace Celeste.Mod.GravityHelper.Hooks
                 ? self.CollideCheckOutsideUpsideDownJumpThru(self.Position - Vector2.UnitY * downCheck)
                 : self.CollideCheckOutsideNotUpsideDownJumpThru(self.Position + Vector2.UnitY * downCheck));
             cursor.Emit(OpCodes.Ret);
-        });
+        }
 
-        private static void Actor_TrySquishWiggle_CollisionData_int_int(ILContext il) => HookUtils.SafeHook(() =>
+        [ILHook("TrySquishWiggle", BindingFlags.Instance | BindingFlags.NonPublic, arguments: new[] { typeof(CollisionData), typeof(int), typeof(int) })]
+        private static void Actor_TrySquishWiggle_CollisionData_int_int(ILContext il)
         {
             var cursor = new ILCursor(il);
             for (int i = 0; i < 4; i++)
@@ -157,6 +167,6 @@ namespace Celeste.Mod.GravityHelper.Hooks
                     throw new HookException($"Couldn't find addition ({i})");
                 cursor.EmitActorInvertVectorDelegate(OpCodes.Ldarg_0);
             }
-        });
+        }
     }
 }

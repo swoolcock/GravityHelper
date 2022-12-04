@@ -3,28 +3,31 @@
 
 using System;
 using Celeste.Mod.GravityHelper.Extensions;
+using Celeste.Mod.GravityHelper.Hooks.Attributes;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 
 namespace Celeste.Mod.GravityHelper.Hooks
 {
+    [HookFixture(typeof(JumpThru))]
     public static class JumpThruHooks
     {
-        public static void Load()
-        {
-            Logger.Log(nameof(GravityHelperModule), $"Loading {nameof(JumpThru)} hooks...");
-            On.Celeste.JumpThru.MoveVExact += JumpThru_MoveVExact;
-            IL.Celeste.JumpThru.MoveVExact += JumpThru_MoveVExact;
-        }
+        // public static void Load()
+        // {
+        //     Logger.Log(nameof(GravityHelperModule), $"Loading {nameof(JumpThru)} hooks...");
+        //     On.Celeste.JumpThru.MoveVExact += JumpThru_MoveVExact;
+        //     IL.Celeste.JumpThru.MoveVExact += JumpThru_MoveVExact;
+        // }
+        //
+        // public static void Unload()
+        // {
+        //     Logger.Log(nameof(GravityHelperModule), $"Unloading {nameof(JumpThru)} hooks...");
+        //     On.Celeste.JumpThru.MoveVExact -= JumpThru_MoveVExact;
+        //     IL.Celeste.JumpThru.MoveVExact -= JumpThru_MoveVExact;
+        // }
 
-        public static void Unload()
-        {
-            Logger.Log(nameof(GravityHelperModule), $"Unloading {nameof(JumpThru)} hooks...");
-            On.Celeste.JumpThru.MoveVExact -= JumpThru_MoveVExact;
-            IL.Celeste.JumpThru.MoveVExact -= JumpThru_MoveVExact;
-        }
-
-        private static void JumpThru_MoveVExact(ILContext il) => HookUtils.SafeHook(() =>
+        [ILHook(nameof(JumpThru.MoveVExact))]
+        private static void JumpThru_MoveVExact(ILContext il)
         {
             var cursor = new ILCursor(il);
             if (!cursor.TryGotoNext(MoveType.After, instr => instr.MatchLdarg(1)))
@@ -33,8 +36,9 @@ namespace Celeste.Mod.GravityHelper.Hooks
             cursor.Emit(OpCodes.Ldarg_0);
             cursor.EmitDelegate<Func<int, JumpThru, int>>((move, self) =>
                 self.IsUpsideDownJumpThru() ? -move : move);
-        });
+        }
 
+        [OnHook(nameof(JumpThru.MoveVExact))]
         private static void JumpThru_MoveVExact(On.Celeste.JumpThru.orig_MoveVExact orig, JumpThru self, int move)
         {
             GravityHelperModule.OverrideSemaphore++;
