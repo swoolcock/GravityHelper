@@ -12,6 +12,7 @@ local placementData = helpers.createPlacementData('1', {
     toggleSound = consts.gravityTypes.toggle.sound,
     lineSound = "event:/gravityhelper/gravity_line",
     inversionBlockSound = "event:/char/badeline/disappear",
+    singleUseFieldSound = "event:/new_content/game/10_farewell/glider_emancipate",
     musicParam = "",
 })
 

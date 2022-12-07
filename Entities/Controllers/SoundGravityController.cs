@@ -22,6 +22,7 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
         public string LineSound { get; } = GravityLine.DEFAULT_SOUND;
         public string InversionBlockSound { get; } = InversionBlock.DEFAULT_SOUND;
         public string MusicParam { get; } = string.Empty;
+        public string SingleUseFieldSound { get; } = GravityField.DEFAULT_SINGLE_USE_SOUND;
 
         // ReSharper disable once UnusedMember.Global
         public SoundGravityController()
@@ -39,6 +40,7 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
             LineSound = data.Attr("lineSound", LineSound);
             InversionBlockSound = data.Attr("inversionBlockSound", InversionBlockSound);
             MusicParam = data.Attr("musicParam", MusicParam);
+            SingleUseFieldSound = data.Attr("singleUseFieldSound", SingleUseFieldSound);
 
             if (Persistent)
             {

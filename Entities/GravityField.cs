@@ -25,6 +25,7 @@ namespace Celeste.Mod.GravityHelper.Entities
         public const float DEFAULT_PARTICLE_OPACITY = 0.5f;
         public const string DEFAULT_ARROW_COLOR = "FFFFFF";
         public const string DEFAULT_PARTICLE_COLOR = "FFFFFF";
+        public const string DEFAULT_SINGLE_USE_SOUND = "event:/new_content/game/10_farewell/glider_emancipate";
 
         private const float audio_muffle_seconds = 0.2f;
         private const float flash_seconds = 0.5f;
@@ -48,6 +49,7 @@ namespace Celeste.Mod.GravityHelper.Entities
         public Color ParticleColor { get; private set; }
         public bool FlashOnTrigger { get; private set; }
         public string Sound { get; private set; }
+        public string SingleUseSound { get; private set; }
 
         private readonly bool _defaultToController;
         private float _arrowOpacity;
@@ -58,6 +60,7 @@ namespace Celeste.Mod.GravityHelper.Entities
         private string _particleColor;
         private bool _flashOnTrigger;
         private string _sound;
+        private string _singleUseSound;
 
         #endregion
 
@@ -131,6 +134,7 @@ namespace Celeste.Mod.GravityHelper.Entities
             _particleColor = data.Attr("particleColor", DEFAULT_PARTICLE_COLOR);
             _flashOnTrigger = data.Bool("flashOnTrigger", true);
             _sound = data.Attr("sound", string.Empty);
+            _singleUseSound = data.Attr("singleUseSound", DEFAULT_SINGLE_USE_SOUND);
 
             Collider = _normalHitbox = new Hitbox(data.Width, data.Height);
 
@@ -219,8 +223,12 @@ namespace Celeste.Mod.GravityHelper.Entities
                         _alreadyUsed = true;
                         _semaphore = 0;
 
-                        var com = _fieldGroup.GetCenterOfMass() + _staticMoverOffset;
-                        Audio.Play("event:/new_content/game/10_farewell/glider_emancipate", com);
+                        if (!string.IsNullOrWhiteSpace(SingleUseSound))
+                        {
+                            var com = _fieldGroup.GetCenterOfMass() + _staticMoverOffset;
+                            Audio.Play(SingleUseSound, com);
+                        }
+
                         _fieldGroup.Fields.ForEach(f => f.Active = f.Collidable = f.Visible = false);
                     }
                 }
@@ -302,9 +310,12 @@ namespace Celeste.Mod.GravityHelper.Entities
                     _sound = soundController.InvertedSound;
                 else if (GravityType == GravityType.Toggle)
                     _sound = soundController.ToggleSound;
+
+                _singleUseSound = soundController.SingleUseFieldSound;
             }
 
             Sound = _sound;
+            SingleUseSound = _singleUseSound;
 
             _arrowShakeOffset = Vector2.Zero;
         }
