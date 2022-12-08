@@ -2,25 +2,28 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using Celeste.Mod.GravityHelper.Extensions;
+using Celeste.Mod.GravityHelper.Hooks.Attributes;
 using MonoMod.Cil;
 
 namespace Celeste.Mod.GravityHelper.Hooks
 {
+    [HookFixture(typeof(CrushBlock))]
     public static class CrushBlockHooks
     {
-        public static void Load()
-        {
-            Logger.Log(nameof(GravityHelperModule), $"Loading {nameof(CrushBlock)} hooks...");
-            IL.Celeste.CrushBlock.Update += CrushBlock_Update;
-        }
+        // public static void Load()
+        // {
+        //     Logger.Log(nameof(GravityHelperModule), $"Loading {nameof(CrushBlock)} hooks...");
+        //     IL.Celeste.CrushBlock.Update += CrushBlock_Update;
+        // }
+        //
+        // public static void Unload()
+        // {
+        //     Logger.Log(nameof(GravityHelperModule), $"Unloading {nameof(CrushBlock)} hooks...");
+        //     IL.Celeste.CrushBlock.Update -= CrushBlock_Update;
+        // }
 
-        public static void Unload()
-        {
-            Logger.Log(nameof(GravityHelperModule), $"Unloading {nameof(CrushBlock)} hooks...");
-            IL.Celeste.CrushBlock.Update -= CrushBlock_Update;
-        }
-
-        private static void CrushBlock_Update(ILContext il) => HookUtils.SafeHook(() =>
+        [ILHook(nameof(CrushBlock.Update))]
+        private static void CrushBlock_Update(ILContext il)
         {
             var cursor = new ILCursor(il);
 
@@ -36,6 +39,6 @@ namespace Celeste.Mod.GravityHelper.Hooks
                 instr => instr.MatchLdcR4(1)))
                 throw new HookException("Couldn't find --this.face.Y");
             cursor.EmitInvertFloatDelegate();
-        });
+        }
     }
 }

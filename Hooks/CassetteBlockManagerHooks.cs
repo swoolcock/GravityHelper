@@ -3,34 +3,37 @@
 
 using System.Reflection;
 using Celeste.Mod.GravityHelper.Components;
+using Celeste.Mod.GravityHelper.Hooks.Attributes;
 using MonoMod.Utils;
 
 // ReSharper disable PossibleInvalidCastExceptionInForeachLoop
 
 namespace Celeste.Mod.GravityHelper.Hooks
 {
+    [HookFixture(typeof(CassetteBlockManager))]
     public static class CassetteBlockManagerHooks
     {
         private static readonly FieldInfo current_index_field_info = typeof(CassetteBlockManager).GetField("currentIndex", BindingFlags.Instance | BindingFlags.NonPublic);
 
-        public static void Load()
-        {
-            Logger.Log(nameof(GravityHelperModule), $"Loading {nameof(CassetteBlockManager)} hooks...");
-            On.Celeste.CassetteBlockManager.SetActiveIndex += CassetteBlockManager_SetActiveIndex;
-            On.Celeste.CassetteBlockManager.StopBlocks += CassetteBlockManager_StopBlocks;
-            On.Celeste.CassetteBlockManager.SetWillActivate += CassetteBlockManager_SetWillActivate;
-            On.Celeste.CassetteBlockManager.SilentUpdateBlocks += CassetteBlockManager_SilentUpdateBlocks;
-        }
+        // public static void Load()
+        // {
+        //     Logger.Log(nameof(GravityHelperModule), $"Loading {nameof(CassetteBlockManager)} hooks...");
+        //     On.Celeste.CassetteBlockManager.SetActiveIndex += CassetteBlockManager_SetActiveIndex;
+        //     On.Celeste.CassetteBlockManager.StopBlocks += CassetteBlockManager_StopBlocks;
+        //     On.Celeste.CassetteBlockManager.SetWillActivate += CassetteBlockManager_SetWillActivate;
+        //     On.Celeste.CassetteBlockManager.SilentUpdateBlocks += CassetteBlockManager_SilentUpdateBlocks;
+        // }
+        //
+        // public static void Unload()
+        // {
+        //     Logger.Log(nameof(GravityHelperModule), $"Unloading {nameof(CassetteBlockManager)} hooks...");
+        //     On.Celeste.CassetteBlockManager.SetActiveIndex -= CassetteBlockManager_SetActiveIndex;
+        //     On.Celeste.CassetteBlockManager.StopBlocks -= CassetteBlockManager_StopBlocks;
+        //     On.Celeste.CassetteBlockManager.SetWillActivate -= CassetteBlockManager_SetWillActivate;
+        //     On.Celeste.CassetteBlockManager.SilentUpdateBlocks -= CassetteBlockManager_SilentUpdateBlocks;
+        // }
 
-        public static void Unload()
-        {
-            Logger.Log(nameof(GravityHelperModule), $"Unloading {nameof(CassetteBlockManager)} hooks...");
-            On.Celeste.CassetteBlockManager.SetActiveIndex -= CassetteBlockManager_SetActiveIndex;
-            On.Celeste.CassetteBlockManager.StopBlocks -= CassetteBlockManager_StopBlocks;
-            On.Celeste.CassetteBlockManager.SetWillActivate -= CassetteBlockManager_SetWillActivate;
-            On.Celeste.CassetteBlockManager.SilentUpdateBlocks -= CassetteBlockManager_SilentUpdateBlocks;
-        }
-
+        [OnHook(nameof(CassetteBlockManager.SetActiveIndex))]
         private static void CassetteBlockManager_SetActiveIndex(On.Celeste.CassetteBlockManager.orig_SetActiveIndex orig, CassetteBlockManager self, int index)
         {
             orig(self, index);
@@ -48,6 +51,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             }
         }
 
+        [OnHook(nameof(CassetteBlockManager.StopBlocks))]
         private static void CassetteBlockManager_StopBlocks(On.Celeste.CassetteBlockManager.orig_StopBlocks orig, CassetteBlockManager self)
         {
             orig(self);
@@ -65,6 +69,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             }
         }
 
+        [OnHook(nameof(CassetteBlockManager.SetWillActivate))]
         private static void CassetteBlockManager_SetWillActivate(On.Celeste.CassetteBlockManager.orig_SetWillActivate orig, CassetteBlockManager self, int index)
         {
             orig(self, index);
@@ -87,6 +92,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             }
         }
 
+        [OnHook("SilentUpdateBlocks", BindingFlags.Instance | BindingFlags.NonPublic)]
         private static void CassetteBlockManager_SilentUpdateBlocks(On.Celeste.CassetteBlockManager.orig_SilentUpdateBlocks orig, CassetteBlockManager self)
         {
             orig(self);

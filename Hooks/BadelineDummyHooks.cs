@@ -2,25 +2,28 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using Celeste.Mod.GravityHelper.Extensions;
+using Celeste.Mod.GravityHelper.Hooks.Attributes;
 
 namespace Celeste.Mod.GravityHelper.Hooks
 {
+    [HookFixture(typeof(BadelineDummy))]
     public static class BadelineDummyHooks
     {
-        public static void Load()
-        {
-            Logger.Log(nameof(GravityHelperModule), $"Loading {nameof(BadelineDummy)} hooks...");
+        // public static void Load()
+        // {
+        //     Logger.Log(nameof(GravityHelperModule), $"Loading {nameof(BadelineDummy)} hooks...");
+        //
+        //     On.Celeste.BadelineDummy.Render += BadelineDummy_Render;
+        // }
+        //
+        // public static void Unload()
+        // {
+        //     Logger.Log(nameof(GravityHelperModule), $"Unloading {nameof(BadelineDummy)} hooks...");
+        //
+        //     On.Celeste.BadelineDummy.Render -= BadelineDummy_Render;
+        // }
 
-            On.Celeste.BadelineDummy.Render += BadelineDummy_Render;
-        }
-
-        public static void Unload()
-        {
-            Logger.Log(nameof(GravityHelperModule), $"Unloading {nameof(BadelineDummy)} hooks...");
-
-            On.Celeste.BadelineDummy.Render -= BadelineDummy_Render;
-        }
-
+        [OnHook(nameof(BadelineDummy.Render))]
         private static void BadelineDummy_Render(On.Celeste.BadelineDummy.orig_Render orig, BadelineDummy self)
         {
             if (!self.ShouldInvert())

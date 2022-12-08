@@ -2,8 +2,10 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System;
+using System.Reflection;
 using Celeste.Mod.GravityHelper.Entities;
 using Celeste.Mod.GravityHelper.Extensions;
+using Celeste.Mod.GravityHelper.Hooks.Attributes;
 using Monocle;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
@@ -11,31 +13,33 @@ using MonoMod.Utils;
 
 namespace Celeste.Mod.GravityHelper.Hooks
 {
+    [HookFixture(typeof(BadelineBoost))]
     public static class BadelineBoostHooks
     {
-        // ReSharper disable InconsistentNaming
-        private static IDetour hook_BadelineBoost_BoostRoutine;
-        // ReSharper restore InconsistentNaming
+        // // ReSharper disable InconsistentNaming
+        // private static IDetour hook_BadelineBoost_BoostRoutine;
+        // // ReSharper restore InconsistentNaming
+        //
+        // public static void Load()
+        // {
+        //     Logger.Log(nameof(GravityHelperModule), $"Loading {nameof(BadelineBoost)} hooks...");
+        //
+        //     On.Celeste.BadelineBoost.OnPlayer += BadelineBoost_OnPlayer;
+        //
+        //     hook_BadelineBoost_BoostRoutine = new ILHook(ReflectionCache.BadelineBoost_BoostRoutine.GetStateMachineTarget(), BadelineBoost_BoostRoutine);
+        // }
+        //
+        // public static void Unload()
+        // {
+        //     Logger.Log(nameof(GravityHelperModule), $"Unloading {nameof(BadelineBoost)} hooks...");
+        //
+        //     On.Celeste.BadelineBoost.OnPlayer -= BadelineBoost_OnPlayer;
+        //
+        //     hook_BadelineBoost_BoostRoutine?.Dispose();
+        //     hook_BadelineBoost_BoostRoutine = null;
+        // }
 
-        public static void Load()
-        {
-            Logger.Log(nameof(GravityHelperModule), $"Loading {nameof(BadelineBoost)} hooks...");
-
-            On.Celeste.BadelineBoost.OnPlayer += BadelineBoost_OnPlayer;
-
-            hook_BadelineBoost_BoostRoutine = new ILHook(ReflectionCache.BadelineBoost_BoostRoutine.GetStateMachineTarget(), BadelineBoost_BoostRoutine);
-        }
-
-        public static void Unload()
-        {
-            Logger.Log(nameof(GravityHelperModule), $"Unloading {nameof(BadelineBoost)} hooks...");
-
-            On.Celeste.BadelineBoost.OnPlayer -= BadelineBoost_OnPlayer;
-
-            hook_BadelineBoost_BoostRoutine?.Dispose();
-            hook_BadelineBoost_BoostRoutine = null;
-        }
-
+        [OnHook("OnPlayer", BindingFlags.Instance | BindingFlags.NonPublic)]
         private static void BadelineBoost_OnPlayer(On.Celeste.BadelineBoost.orig_OnPlayer orig, BadelineBoost self, Player player)
         {
             if (GravityHelperModule.PlayerComponent is { } playerComponent)
@@ -51,7 +55,8 @@ namespace Celeste.Mod.GravityHelper.Hooks
             orig(self, player);
         }
 
-        private static void BadelineBoost_BoostRoutine(ILContext il) => HookUtils.SafeHook(() =>
+        [ILHook("BoostRoutine")]
+        private static void BadelineBoost_BoostRoutine(ILContext il)
         {
             var cursor = new ILCursor(il);
 
@@ -65,6 +70,6 @@ namespace Celeste.Mod.GravityHelper.Hooks
                 dummy.SetShouldInvert(GravityHelperModule.ShouldInvertPlayer);
                 return dummy;
             });
-        });
+        }
     }
 }

@@ -2,8 +2,10 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System;
+using System.Reflection;
 using Celeste.Mod.GravityHelper.Entities;
 using Celeste.Mod.GravityHelper.Extensions;
+using Celeste.Mod.GravityHelper.Hooks.Attributes;
 using Microsoft.Xna.Framework;
 using Mono.Cecil.Cil;
 using Monocle;
@@ -13,23 +15,25 @@ using MonoMod.Cil;
 
 namespace Celeste.Mod.GravityHelper.Hooks
 {
+    [HookFixture(typeof(Bumper))]
     public static class BumperHooks
     {
-        public static void Load()
-        {
-            Logger.Log(nameof(GravityHelperModule), $"Loading {nameof(Bumper)} hooks...");
-            IL.Celeste.Bumper.OnPlayer += Bumper_OnPlayer;
-            IL.Celeste.Bumper.Update += Bumper_Update;
-        }
+        // public static void Load()
+        // {
+        //     Logger.Log(nameof(GravityHelperModule), $"Loading {nameof(Bumper)} hooks...");
+        //     IL.Celeste.Bumper.OnPlayer += Bumper_OnPlayer;
+        //     IL.Celeste.Bumper.Update += Bumper_Update;
+        // }
+        //
+        // public static void Unload()
+        // {
+        //     Logger.Log(nameof(GravityHelperModule), $"Unloading {nameof(Bumper)} hooks...");
+        //     IL.Celeste.Bumper.OnPlayer -= Bumper_OnPlayer;
+        //     IL.Celeste.Bumper.Update -= Bumper_Update;
+        // }
 
-        public static void Unload()
-        {
-            Logger.Log(nameof(GravityHelperModule), $"Unloading {nameof(Bumper)} hooks...");
-            IL.Celeste.Bumper.OnPlayer -= Bumper_OnPlayer;
-            IL.Celeste.Bumper.Update -= Bumper_Update;
-        }
-
-        private static void Bumper_OnPlayer(ILContext il) => HookUtils.SafeHook(() =>
+        [ILHook("OnPlayer", BindingFlags.Instance | BindingFlags.NonPublic)]
+        private static void Bumper_OnPlayer(ILContext il)
         {
             var cursor = new ILCursor(il);
             if (!cursor.TryGotoNext(MoveType.After, instr => instr.MatchCallvirt<Player>(nameof(Player.ExplodeLaunch))))
@@ -57,9 +61,10 @@ namespace Celeste.Mod.GravityHelper.Hooks
             cursor.Emit(OpCodes.Ldarg_0);
             cursor.EmitDelegate<Func<ParticleType, Bumper, ParticleType>>((pt, self) =>
                 self is GravityBumper gravityBumper ? gravityBumper.GetLaunchParticleType() : pt);
-        });
+        }
 
-        private static void Bumper_Update(ILContext il) => HookUtils.SafeHook(() =>
+        [ILHook(nameof(Bumper.Update))]
+        private static void Bumper_Update(ILContext il)
         {
             var cursor = new ILCursor(il);
             if (!cursor.TryGotoNext(MoveType.After, instr => instr.MatchLdsfld<Bumper>(nameof(Bumper.P_Ambience))))
@@ -68,6 +73,6 @@ namespace Celeste.Mod.GravityHelper.Hooks
             cursor.Emit(OpCodes.Ldarg_0);
             cursor.EmitDelegate<Func<ParticleType, Bumper, ParticleType>>((pt, self) =>
                 self is GravityBumper gravityBumper ? gravityBumper.GetAmbientParticleType() : pt);
-        });
+        }
     }
 }

@@ -1,8 +1,11 @@
 // Copyright (c) Shane Woolcock. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+using System;
+using System.Reflection;
 using Celeste.Mod.GravityHelper.Components;
 using Celeste.Mod.GravityHelper.Extensions;
+using Celeste.Mod.GravityHelper.Hooks.Attributes;
 using Microsoft.Xna.Framework;
 using Monocle;
 using MonoMod.Utils;
@@ -11,6 +14,7 @@ using MonoMod.Utils;
 
 namespace Celeste.Mod.GravityHelper.Hooks
 {
+    [HookFixture(typeof(AngryOshiro))]
     public static class AngryOshiroHooks
     {
         private const int StChase = 0;
@@ -20,24 +24,25 @@ namespace Celeste.Mod.GravityHelper.Hooks
         private const int StWaiting = 4;
         private const int StHurt = 5;
 
-        public static void Load()
-        {
-            Logger.Log(nameof(GravityHelperModule), $"Loading {nameof(AngryOshiro)} hooks...");
-            On.Celeste.AngryOshiro.ctor_Vector2_bool += AngryOshiro_ctor_Vector2_bool;
-            On.Celeste.AngryOshiro.OnPlayerBounce += AngryOshiro_OnPlayerBounce;
-            On.Celeste.AngryOshiro.HurtUpdate += AngryOshiro_HurtUpdate;
-            On.Celeste.AngryOshiro.Render += AngryOshiro_Render;
-        }
+        // public static void Load()
+        // {
+        //     Logger.Log(nameof(GravityHelperModule), $"Loading {nameof(AngryOshiro)} hooks...");
+        //     On.Celeste.AngryOshiro.ctor_Vector2_bool += AngryOshiro_ctor_Vector2_bool;
+        //     On.Celeste.AngryOshiro.OnPlayerBounce += AngryOshiro_OnPlayerBounce;
+        //     On.Celeste.AngryOshiro.HurtUpdate += AngryOshiro_HurtUpdate;
+        //     On.Celeste.AngryOshiro.Render += AngryOshiro_Render;
+        // }
+        //
+        // public static void Unload()
+        // {
+        //     Logger.Log(nameof(GravityHelperModule), $"Unloading {nameof(AngryOshiro)} hooks...");
+        //     On.Celeste.AngryOshiro.ctor_Vector2_bool -= AngryOshiro_ctor_Vector2_bool;
+        //     On.Celeste.AngryOshiro.OnPlayerBounce -= AngryOshiro_OnPlayerBounce;
+        //     On.Celeste.AngryOshiro.HurtUpdate -= AngryOshiro_HurtUpdate;
+        //     On.Celeste.AngryOshiro.Render -= AngryOshiro_Render;
+        // }
 
-        public static void Unload()
-        {
-            Logger.Log(nameof(GravityHelperModule), $"Unloading {nameof(AngryOshiro)} hooks...");
-            On.Celeste.AngryOshiro.ctor_Vector2_bool -= AngryOshiro_ctor_Vector2_bool;
-            On.Celeste.AngryOshiro.OnPlayerBounce -= AngryOshiro_OnPlayerBounce;
-            On.Celeste.AngryOshiro.HurtUpdate -= AngryOshiro_HurtUpdate;
-            On.Celeste.AngryOshiro.Render -= AngryOshiro_Render;
-        }
-
+        [OnHook("()", arguments: new[] { typeof(Vector2), typeof(bool) })]
         private static void AngryOshiro_ctor_Vector2_bool(On.Celeste.AngryOshiro.orig_ctor_Vector2_bool orig, AngryOshiro self, Vector2 position, bool fromCutscene)
         {
             orig(self, position, fromCutscene);
@@ -57,6 +62,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             }));
         }
 
+        [OnHook("OnPlayerBounce", BindingFlags.Instance | BindingFlags.NonPublic)]
         private static void AngryOshiro_OnPlayerBounce(On.Celeste.AngryOshiro.orig_OnPlayerBounce orig, AngryOshiro self, Player player)
         {
             if (!GravityHelperModule.ShouldInvertPlayer)
@@ -83,6 +89,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             chargeSfx.Stop();
         }
 
+        [OnHook("HurtUpdate", BindingFlags.Instance | BindingFlags.NonPublic)]
         private static int AngryOshiro_HurtUpdate(On.Celeste.AngryOshiro.orig_HurtUpdate orig, AngryOshiro self)
         {
             if (!self.ShouldInvert())
@@ -112,6 +119,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             return StChase;
         }
 
+        [OnHook(nameof(AngryOshiro.Render))]
         private static void AngryOshiro_Render(On.Celeste.AngryOshiro.orig_Render orig, AngryOshiro self)
         {
             if (!self.ShouldInvert())

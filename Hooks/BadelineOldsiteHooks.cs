@@ -5,12 +5,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Celeste.Mod.GravityHelper.Extensions;
+using Celeste.Mod.GravityHelper.Hooks.Attributes;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using Monocle;
 
 namespace Celeste.Mod.GravityHelper.Hooks
 {
+    [HookFixture(typeof(BadelineOldsite))]
     public static class BadelineOldsiteHooks
     {
         // Used for determining when the BadelineChaser. Is set in Player.ctor so this shouldn't be a problem ever.
@@ -40,19 +42,20 @@ namespace Celeste.Mod.GravityHelper.Hooks
             ChaserStateGravity.Remove(key);
         }
 
-        public static void Load()
-        {
-            Logger.Log(nameof(GravityHelperModule), $"Loading {nameof(BadelineOldsite)} hooks...");
-            IL.Celeste.BadelineOldsite.Update += BadelineOldsite_Update;
-        }
+        // public static void Load()
+        // {
+        //     Logger.Log(nameof(GravityHelperModule), $"Loading {nameof(BadelineOldsite)} hooks...");
+        //     IL.Celeste.BadelineOldsite.Update += BadelineOldsite_Update;
+        // }
+        //
+        // public static void Unload()
+        // {
+        //     Logger.Log(nameof(GravityHelperModule), $"Unloading {nameof(BadelineOldsite)} hooks...");
+        //     IL.Celeste.BadelineOldsite.Update -= BadelineOldsite_Update;
+        // }
 
-        public static void Unload()
-        {
-            Logger.Log(nameof(GravityHelperModule), $"Unloading {nameof(BadelineOldsite)} hooks...");
-            IL.Celeste.BadelineOldsite.Update -= BadelineOldsite_Update;
-        }
-
-        private static void BadelineOldsite_Update(ILContext il) => HookUtils.SafeHook(() =>
+        [ILHook(nameof(BadelineOldsite.Update))]
+        private static void BadelineOldsite_Update(ILContext il)
         {
             VariableDefinition chaserState = il.Body.Variables.FirstOrDefault(e => e.VariableType.FullName == "Celeste.Player/ChaserState");
             if (chaserState == null)
@@ -69,7 +72,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
                 if (TryGravityTypeForState(pcs.TimeStamp, out var gravityType))
                     badelineOldsiteModifyForGravity(self, gravityType);
             });
-        });
+        }
 
         private static void badelineOldsiteModifyForGravity(BadelineOldsite baddy, GravityType gravityType)
         {
