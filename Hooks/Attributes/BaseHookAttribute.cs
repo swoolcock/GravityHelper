@@ -28,7 +28,7 @@ namespace Celeste.Mod.GravityHelper.Hooks.Attributes
         protected const BindingFlags DEFAULT_FLAGS = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
 
         protected IDetour Detour;
-        protected MethodInfo TargetMethod;
+        protected MethodBase TargetMethod;
         protected MethodInfo HookMethod;
 
         protected BaseHookAttribute(
@@ -96,12 +96,17 @@ namespace Celeste.Mod.GravityHelper.Hooks.Attributes
             HookMethod = hookMethod;
             if (TargetMethod == null && !string.IsNullOrWhiteSpace(TargetMethodName))
             {
-                var methods = TargetType.GetMethods(BindingFlags).Where(m => m.Name == TargetMethodName);
+                IEnumerable<MethodBase> methods;
+                if (TargetMethodName == "()")
+                    methods = TargetType.GetConstructors(BindingFlags);
+                else
+                    methods = TargetType.GetMethods(BindingFlags).Where(m => m.Name == TargetMethodName);
+
                 TargetMethod = TargetMethodArguments == null
                     ? methods.FirstOrDefault()
                     : methods.FirstOrDefault(m => m.GetParameters()
-                            .Select(p => p.ParameterType)
-                            .SequenceEqual(TargetMethodArguments));
+                        .Select(p => p.ParameterType)
+                        .SequenceEqual(TargetMethodArguments));
             }
 
             if (TargetMethod == null)
@@ -112,8 +117,8 @@ namespace Celeste.Mod.GravityHelper.Hooks.Attributes
 
             TargetMethodName = TargetMethod.Name;
 
-            if (TargetMethod.ReturnType == typeof(IEnumerator))
-                TargetMethod = TargetMethod.GetStateMachineTarget();
+            if (TargetMethod is MethodInfo methodInfo && methodInfo.ReturnType == typeof(IEnumerator))
+                TargetMethod = methodInfo.GetStateMachineTarget();
 
             return this;
         }
