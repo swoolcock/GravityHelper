@@ -15,6 +15,7 @@ local placementData = helpers.createPlacementData('1', {
     arrowType = consts.gravityTypes.default.index,
     fieldType = consts.gravityTypes.default.index,
     singleUse = false,
+    singleUseSound = "event:/new_content/game/10_farewell/glider_emancipate",
     sound = "",
     arrowOpacity = 0.5,
     fieldOpacity = 0.15,

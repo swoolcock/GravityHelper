@@ -54,6 +54,7 @@ namespace Celeste.Mod.GravityHelper.Entities
         private readonly bool _defaultToController;
         private string _sound;
 
+        private readonly Sprite _sprite;
         private readonly MTexture _blockTexture;
         private readonly MTexture _edgeTexture;
         private readonly MTexture _normalEdgeTexture;
@@ -107,8 +108,9 @@ namespace Celeste.Mod.GravityHelper.Entities
         public InversionBlock(EntityData data, Vector2 offset)
             : base(data.Position + offset, data.Width, data.Height, true)
         {
-            _blockTexture = GFX.Game[$"objects/GravityHelper/inversionBlock/block"];
-            _edgeTexture = GFX.Game[$"objects/GravityHelper/inversionBlock/edges"];
+            _sprite = GFX.SpriteBank.Create("inversionBlock");
+            _blockTexture = _sprite.Animations["block"].Frames[0];
+            _edgeTexture = _sprite.Animations["edges"].Frames[0];
             _normalEdgeTexture = _edgeTexture.GetSubtexture(0, 0, 3 * tile_size, tile_size);
             _invertedEdgeTexture = _edgeTexture.GetSubtexture(0, tile_size, 3 * tile_size, tile_size);
             _toggleEdgeTexture = _edgeTexture.GetSubtexture(0, 2 * tile_size, 3 * tile_size, tile_size);

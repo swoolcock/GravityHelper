@@ -78,4 +78,10 @@
         <Center />
         <Loop id="arrow" path="arrow" frames="0-15" delay="0.05" />
     </gravityIndicator>
+    
+    <inversionBlock path="objects/GravityHelper/inversionBlock/">
+        <Justify x="0" y="0" />
+        <Anim id="block" path="block" />
+        <Anim id="edges" path="edges" />
+    </inversionBlock>
 </Sprites>
