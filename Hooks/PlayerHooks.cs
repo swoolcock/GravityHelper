@@ -684,6 +684,15 @@ namespace Celeste.Mod.GravityHelper.Hooks
             cursor.GotoNext(instr => instr.MatchCallvirt<Player>(nameof(Player.ReflectBounce)));
             cursor.EmitInvertVectorDelegate();
 
+            // invert next two `MoveVExact(1)`
+            for (int i = 0; i < 2; i++)
+            {
+                cursor.GotoNext(instr => instr.MatchCall<Actor>(nameof(Actor.MoveVExact)));
+                cursor.GotoPrev(MoveType.After, instr => instr.MatchLdarg(0), instr => instr.MatchLdcI4(1));
+                cursor.EmitInvertIntDelegate();
+                cursor.GotoNext(instr => instr.MatchPop());
+            }
+
             // Platform platformByPriority = SurfaceIndex.GetPlatformByPriority(this.CollideAll<Platform>(this.Position + new Vector2(0.0f, 1f), this.temp));
             cursor.GotoNext(instr => instr.MatchCall<SurfaceIndex>(nameof(SurfaceIndex.GetPlatformByPriority)));
             cursor.GotoPrev(ILCursorExtensions.AdditionPredicate);
