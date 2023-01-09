@@ -233,8 +233,10 @@ namespace Celeste.Mod.GravityHelper
 
         public static void InvalidateRun()
         {
-            if (Engine.Scene is Level level)
-                level.Session.StartedFromBeginning = false;
+            // NOTE: getting rid of this for now, if people submit invalid runs that's on them
+
+            // if (Engine.Scene is Level level)
+            //     level.Session.StartedFromBeginning = false;
         }
 
         [Command("gravity", "Changes the current gravity (0 = normal, 1 = inverted, 2 = toggle)")]
