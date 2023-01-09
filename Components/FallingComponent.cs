@@ -233,7 +233,7 @@ namespace Celeste.Mod.GravityHelper.Components
                 {
                     yield return 0.1f;
                     // if the block is dependent on the player's gravity and the player is able to trigger it, update _fallingUp
-                    if (FallType is FallingType.MatchPlayer or FallingType.OppositePlayer && PlayerFallCheck?.Invoke() != true)
+                    if (FallType is FallingType.MatchPlayer or FallingType.OppositePlayer && PlayerFallCheck?.Invoke() != false)
                         _fallingUp = FallType == FallingType.MatchPlayer && GravityHelperModule.ShouldInvertPlayer ||
                             FallType == FallingType.OppositePlayer && !GravityHelperModule.ShouldInvertPlayer;
                 }
