@@ -16,9 +16,9 @@ local placementData = helpers.createPlacementData('1', {
     bottomEnabled = true,
     leftEnabled = false,
     rightEnabled = false,
-    fall = false,
+    fallType = 0,
     climbFall = true,
-    fallUp = false,
+    endFallOnSolidTiles = true,
     sound = "event:/char/badeline/disappear",
 })
 
@@ -29,6 +29,7 @@ local inversionBlock = {
     fieldInformation = {
         leftGravityType = consts.fieldInformation.gravityType(0,1,2),
         rightGravityType = consts.fieldInformation.gravityType(0,1,2),
+        fallType = consts.fieldInformation.fallType,
     },
     placements = {
         {

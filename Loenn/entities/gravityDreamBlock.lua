@@ -32,9 +32,9 @@ local placementData = helpers.createPlacementData('1', {
     lineColor = "",
     backColor = "",
     particleColor = "",
-    fall = false,
+    fallType = 0,
     climbFall = true,
-    fallUp = false,
+    endFallOnSolidTiles = true,
 })
 
 local gravityDreamBlock = {
@@ -42,6 +42,7 @@ local gravityDreamBlock = {
     ignoredFields = consts.ignoredFields,
     fieldInformation = {
         gravityType = consts.fieldInformation.gravityType(),
+        fallType = consts.fieldInformation.fallType,
     },
     placements = {
         {

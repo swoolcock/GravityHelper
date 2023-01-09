@@ -40,8 +40,17 @@ local consts = {
                 {"Trigger-based", 0},
                 {"Off", 1},
                 {"On", 2},
-            }
-        }
+            },
+        },
+        fallType = {
+            options = {
+                {"None", 0},
+                {"Down", 1},
+                {"Up", 2},
+                {"Match Player", 3},
+                {"Opposite Player", 4},
+            },
+        },
     },
     gravityTypes = {
         -- regular gravity

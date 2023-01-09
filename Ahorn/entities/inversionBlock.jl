@@ -15,7 +15,7 @@ const default_sound = "event:/char/badeline/disappear"
     defaultToController::Bool=true,
     leftGravityType::Integer=2, rightGravityType::Integer=2,
     topEnabled::Bool=true, bottomEnabled::Bool=true, leftEnabled::Bool=false, rightEnabled::Bool=false,
-    fall::Bool=false, climbFall::Bool=true, fallUp::Bool=false,
+    fallType::Integer=0, climbFall::Bool=true, endFallOnSolidTiles::Bool=true,
     sound::String=default_sound,
     pluginVersion::String=PLUGIN_VERSION,
 )
@@ -49,11 +49,25 @@ const gravityTypes = Dict{String, Integer}(
     "Toggle" => 2,
 )
 
+const fallTypes = Dict{String, Integer}(
+    "None" => 0,
+    "Down" => 1,
+    "Up" => 2,
+    "Match Player" => 3,
+    "Opposite Player" => 4,
+)
+
 const blockSprite = "objects/GravityHelper/inversionBlock/block"
 const edgeSprite = "objects/GravityHelper/inversionBlock/edges"
 
 Ahorn.editingIgnored(entity::InversionBlock, multiple::Bool=false) = multiple ? String["x", "y", "width", "height", "modVersion", "pluginVersion"] : String["modVersion", "pluginVersion"]
-Ahorn.editingOptions(entity::InversionBlock) = Dict{String, Any}( "leftGravityType" => gravityTypes, "rightGravityType" => gravityTypes )
+
+Ahorn.editingOptions(entity::InversionBlock) = Dict{String, Any}(
+    "leftGravityType" => gravityTypes,
+    "rightGravityType" => gravityTypes,
+    "fallType" => fallTypes,
+)
+
 Ahorn.minimumSize(entity::InversionBlock) = 16, 16
 Ahorn.resizable(entity::InversionBlock) = true, true
 Ahorn.selection(entity::InversionBlock) = Ahorn.getEntityRectangle(entity)

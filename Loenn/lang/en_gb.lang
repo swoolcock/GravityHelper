@@ -30,9 +30,9 @@ entities.GravityHelper/GravityDreamBlock.attributes.description.gravityType=The 
 entities.GravityHelper/GravityDreamBlock.attributes.description.lineColor=The colour to use when rendering the dream block outline. This will flash slightly brighter when the player enters the dream block. Defaults to a lighter version of the colour for the selected gravity type.
 entities.GravityHelper/GravityDreamBlock.attributes.description.backColor=The colour to use when rendering the dream block background. This will always be dimmed rather than the explicit colour, but it will flash when the player enters the dream block. Defaults to a lighter version of the colour for the selected gravity type.
 entities.GravityHelper/GravityDreamBlock.attributes.description.particleColor=The colour to use when rendering the particles inside the dream block. Defaults to a lighter version of the colour for the selected gravity type.
-entities.GravityHelper/GravityDreamBlock.attributes.description.fall=Whether the dream block should fall if stepped on or dashed through. Defaults to false.
-entities.GravityHelper/GravityDreamBlock.attributes.description.climbFall=Whether the dream block should fall if climbed. Requires "fall" to also be enabled. Defaults to true.
-entities.GravityHelper/GravityDreamBlock.attributes.description.fallUp=Whether the dream block should fall up rather than down. Requires "fall" to also be enabled. Defaults to false.
+entities.GravityHelper/GravityDreamBlock.attributes.description.fallType=The type of fall that should be triggered if the dream block is stepped on or dashed through. Defaults to None.
+entities.GravityHelper/GravityDreamBlock.attributes.description.climbFall=Whether the dream block should fall if climbed. Requires "fallType" to be something other than None. Defaults to true.
+entities.GravityHelper/GravityDreamBlock.attributes.description.endFallOnSolidTiles=Whether the dream block should stop falling once it hits foreground tiles.\nDefaults to true, but you may want to set this to false if "fallType" is dependent on the player's gravity.
 
 # Gravity Field
 entities.GravityHelper/GravityField.placements.name.normal=Gravity Field (Normal) (GravityHelper)
@@ -254,8 +254,8 @@ entities.GravityHelper/InversionBlock.attributes.description.topEnabled=Whether 
 entities.GravityHelper/InversionBlock.attributes.description.bottomEnabled=Whether jumping on the bottom of the block will trigger inversion.
 entities.GravityHelper/InversionBlock.attributes.description.leftEnabled=Whether climb jumping on the left of the block will trigger inversion.
 entities.GravityHelper/InversionBlock.attributes.description.rightEnabled=Whether climb jumping on the right of the block will trigger inversion.
-entities.GravityHelper/InversionBlock.attributes.description.fall=Whether the inversion block should fall if stepped on. Defaults to false.
-entities.GravityHelper/InversionBlock.attributes.description.climbFall=Whether the inversion block should fall if climbed. Requires "fall" to also be enabled. Defaults to true.
-entities.GravityHelper/InversionBlock.attributes.description.fallUp=Whether the inversion block should fall up rather than down. Requires "fall" to also be enabled. Defaults to false.
+entities.GravityHelper/InversionBlock.attributes.description.fallType=The type of fall that should be triggered if the inversion block is stepped on. Defaults to None.
+entities.GravityHelper/InversionBlock.attributes.description.climbFall=Whether the inversion block should fall if climbed. Requires "fallType" to be something other than None. Defaults to true.
+entities.GravityHelper/InversionBlock.attributes.description.endFallOnSolidTiles=Whether the inversion block should stop falling once it hits foreground tiles.\nDefaults to true, but you may want to set this to false if "fallType" is dependent on the player's gravity.
 entities.GravityHelper/InversionBlock.attributes.description.defaultToController=If true (default), supported properties for this entity will use the value from the active controller.
 entities.GravityHelper/InversionBlock.attributes.description.sound=The sound to play when travelling through this inversion block. Defaults to event:/char/badeline/disappear (the sound when the final Badeline chaser disappears in 2A), or the active controller.
