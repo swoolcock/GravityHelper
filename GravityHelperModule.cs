@@ -44,6 +44,13 @@ namespace Celeste.Mod.GravityHelper
 
         public static bool IsHookRequiredForEntityData(EntityData data) => data.Name.StartsWith("GravityHelper");
 
+        internal static void ClearStatics()
+        {
+            // make sure we clear some static things
+            OverrideSemaphore = 0;
+            PlayerComponent = null;
+        }
+
         public GravityHelperModule()
         {
             Instance = this;
@@ -210,6 +217,8 @@ namespace Celeste.Mod.GravityHelper
 
         private void LevelLoader_ctor(On.Celeste.LevelLoader.orig_ctor orig, LevelLoader self, Session session, Vector2? startposition)
         {
+            ClearStatics();
+
             orig(self, session, startposition);
 
             if (Settings.AllowInAllMaps || AreHooksRequiredForSession(session))
