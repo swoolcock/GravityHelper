@@ -2,7 +2,6 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System;
-using System.Linq;
 using Celeste.Mod.GravityHelper.Extensions;
 using Microsoft.Xna.Framework;
 using Monocle;
@@ -78,72 +77,6 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
 
         public virtual void Transitioned()
         {
-        }
-
-        public static void LoadHooks()
-        {
-            On.Celeste.Level.LoadLevel += Level_LoadLevel;
-        }
-
-        public static void UnloadHooks()
-        {
-            On.Celeste.Level.LoadLevel -= Level_LoadLevel;
-        }
-
-        /// <summary>
-        /// This is hooked to ensure that LoadLevel will create and add all controllers on the entire map,
-        /// and only once when the map is first loaded, regardless of the current room.
-        /// </summary>
-        private static void Level_LoadLevel(On.Celeste.Level.orig_LoadLevel orig, Level self, Player.IntroTypes playerintro, bool isfromloader)
-        {
-            if (!isfromloader)
-            {
-                orig(self, playerintro, false);
-                return;
-            }
-
-            // find all gravity controllers
-            var entities = self.Session.MapData?.Levels?.SelectMany(l => l.Entities) ?? Enumerable.Empty<EntityData>();
-            var controllers = entities.Where(d => d.Name.StartsWith("GravityHelper") && d.Name.Contains("Controller")).ToArray();
-
-            // log controller warnings if required
-            foreach (var grouping in controllers.GroupBy(d => d.Name))
-            {
-                var persistentCount = grouping.Count(c => c.Bool("persistent"));
-                if (persistentCount > 1)
-                    Logger.Log(LogLevel.Warn, nameof(GravityHelperModule), $"Warning: Found {persistentCount} persistent controllers of type {grouping.Key}");
-
-                foreach (var roomGroup in grouping.GroupBy(d => d.Level.Name))
-                {
-                    var controllerCount = roomGroup.Count();
-                    if (controllerCount > 1)
-                        Logger.Log(LogLevel.Warn, nameof(GravityHelperModule), $"Warning: Found {controllerCount} controllers of type {grouping.Key} in room {roomGroup.Key}");
-                }
-            }
-
-            foreach (var data in controllers)
-            {
-                self.Session.DoNotLoad.Add(new EntityID(data.Level.Name, data.ID));
-                Level.LoadCustomEntity(data, self);
-            }
-
-            orig(self, playerintro, true);
-
-            var triggers = self.Session.MapData?.Levels?.SelectMany(l => l.Triggers) ?? Enumerable.Empty<EntityData>();
-            var hasVvvvvvTriggers = triggers.Any(e => e.Name == "GravityHelper/VvvvvvTrigger");
-            var hasCassetteControllers = controllers.Any(e => e.Name == "GravityHelper/CassetteGravityController");
-
-            // apply each controller type (this should probably be automatic)
-            self.GetPersistentController<BehaviorGravityController>()?.Transitioned();
-            self.GetPersistentController<SoundGravityController>()?.Transitioned();
-            self.GetPersistentController<VisualGravityController>()?.Transitioned();
-            self.GetPersistentController<CassetteGravityController>(hasCassetteControllers)?.Transitioned();
-
-            // vvvvvv requires extra logic when triggers exist
-            var vvvvvv = self.GetPersistentController<VvvvvvGravityController>(hasVvvvvvTriggers || GravityHelperModule.Settings.VvvvvvMode != GravityHelperModuleSettings.VvvvvvSetting.Default);
-            if (vvvvvv != null && vvvvvv.Ephemeral && hasVvvvvvTriggers)
-                vvvvvv.Mode = VvvvvvMode.TriggerBased;
-            vvvvvv?.Transitioned();
         }
     }
 }

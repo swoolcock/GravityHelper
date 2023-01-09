@@ -14,7 +14,7 @@ const PLUGIN_VERSION = "1"
     fastMoving::Bool=false, oneUse::Bool=false, below::Bool=false,
     gravityType::Integer=0,
     lineColor::String="", backColor::String="", particleColor::String="",
-    fall::Bool=false, climbFall::Bool=true, fallUp::Bool=false
+    fallType::Integer=0, climbFall::Bool=true, endFallOnSolidTiles::Bool=true
 )
 
 const placements = Ahorn.PlacementDict(
@@ -47,6 +47,14 @@ const gravityTypes = Dict{String, Integer}(
     "Toggle" => 2,
 )
 
+const fallTypes = Dict{String, Integer}(
+    "None" => 0,
+    "Down" => 1,
+    "Up" => 2,
+    "Match Player" => 3,
+    "Opposite Player" => 4,
+)
+
 const gravityColors = Dict{Integer, Tuple{Real, Real, Real, Real}}(
     0 => (0.0, 0.0, 1.0, 0.5),
     1 => (1.0, 0.0, 0.0, 0.5),
@@ -57,6 +65,7 @@ Ahorn.editingIgnored(entity::GravityDreamBlock, multiple::Bool=false) = multiple
 
 Ahorn.editingOptions(entity::GravityDreamBlock) = Dict{String, Any}(
     "gravityType" => gravityTypes,
+    "fallType" => fallTypes,
 )
 
 Ahorn.nodeLimits(entity::GravityDreamBlock) = 0, 1

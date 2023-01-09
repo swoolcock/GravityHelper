@@ -64,9 +64,9 @@ placements.entities.GravityHelper/GravityDreamBlock.tooltips.gravityType=The gra
 placements.entities.GravityHelper/GravityDreamBlock.tooltips.lineColor=The colour to use when rendering the dream block outline. This will flash slightly brighter when the player enters the dream block. Defaults to a lighter version of the colour for the selected gravity type.
 placements.entities.GravityHelper/GravityDreamBlock.tooltips.backColor=The colour to use when rendering the dream block background. This will always be dimmed rather than the explicit colour, but it will flash when the player enters the dream block. Defaults to a lighter version of the colour for the selected gravity type.
 placements.entities.GravityHelper/GravityDreamBlock.tooltips.particleColor=The colour to use when rendering the particles inside the dream block. Defaults to a lighter version of the colour for the selected gravity type.
-placements.entities.GravityHelper/GravityDreamBlock.tooltips.fall=Whether the dream block should fall if stepped on or dashed through. Defaults to false.
-placements.entities.GravityHelper/GravityDreamBlock.tooltips.climbFall=Whether the dream block should fall if climbed. Requires "fall" to also be enabled. Defaults to true.
-placements.entities.GravityHelper/GravityDreamBlock.tooltips.fallUp=Whether the dream block should fall up rather than down. Requires "fall" to also be enabled. Defaults to false.
+placements.entities.GravityHelper/GravityDreamBlock.tooltips.fallType=The type of fall that should be triggered if the dream block is stepped on or dashed through. Defaults to None.
+placements.entities.GravityHelper/GravityDreamBlock.tooltips.climbFall=Whether the dream block should fall if climbed. Requires "fallType" to be something other than None. Defaults to true.
+placements.entities.GravityHelper/GravityDreamBlock.tooltips.endFallOnSolidTiles=Whether the dream block should stop falling once it hits foreground tiles.\nDefaults to true, but you may want to set this to false if "fallType" is dependent on the player's gravity.
 
 # Gravity Bumper
 placements.entities.GravityHelper/GravityBumper.tooltips.gravityType=The gravity type to set when Madeline touches the bumper.
@@ -190,8 +190,8 @@ placements.entities.GravityHelper/InversionBlock.tooltips.topEnabled=Whether jum
 placements.entities.GravityHelper/InversionBlock.tooltips.bottomEnabled=Whether jumping on the bottom of the block will trigger inversion.
 placements.entities.GravityHelper/InversionBlock.tooltips.leftEnabled=Whether climb jumping on the left of the block will trigger inversion.
 placements.entities.GravityHelper/InversionBlock.tooltips.rightEnabled=Whether climb jumping on the right of the block will trigger inversion.
-placements.entities.GravityHelper/InversionBlock.tooltips.fall=Whether the inversion block should fall if stepped on. Defaults to false.
-placements.entities.GravityHelper/InversionBlock.tooltips.climbFall=Whether the inversion block should fall if climbed. Requires "fall" to also be enabled. Defaults to true.
-placements.entities.GravityHelper/InversionBlock.tooltips.fallUp=Whether the inversion block should fall up rather than down. Requires "fall" to also be enabled. Defaults to false.
+placements.entities.GravityHelper/InversionBlock.tooltips.fallType=The type of fall that should be triggered if the inversion block is stepped on. Defaults to None.
+placements.entities.GravityHelper/InversionBlock.tooltips.climbFall=Whether the inversion block should fall if climbed. Requires "fallType" to be something other than None. Defaults to true.
+placements.entities.GravityHelper/InversionBlock.tooltips.endFallOnSolidTiles=Whether the inversion block should stop falling once it hits foreground tiles.\nDefaults to true, but you may want to set this to false if "fallType" is dependent on the player's gravity.
 placements.entities.GravityHelper/InversionBlock.tooltips.defaultToController=If true (default), supported properties for this entity will use the value from the active controller.
 placements.entities.GravityHelper/InversionBlock.tooltips.sound=The sound to play when travelling through this inversion block. Defaults to event:/char/badeline/disappear (the sound when the final Badeline chaser disappears in 2A), or the active controller.

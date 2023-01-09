@@ -10,6 +10,8 @@ using Microsoft.Xna.Framework;
 using Monocle;
 using MonoMod.Utils;
 
+// ReSharper disable RedundantArgumentDefaultValue
+
 namespace Celeste.Mod.GravityHelper.Entities
 {
     [CustomEntity("GravityHelper/GravityDreamBlock")]
@@ -39,12 +41,16 @@ namespace Celeste.Mod.GravityHelper.Entities
             _modVersion = data.ModVersion();
             _pluginVersion = data.PluginVersion();
 
-            if (data.Bool("fall"))
+            var fallType = (FallingComponent.FallingType)data.Int("fallType", (int)FallingComponent.FallingType.None);
+            if (data.Bool("fall", false)) fallType = data.Bool("fallUp", false) ? FallingComponent.FallingType.Up : FallingComponent.FallingType.Down;
+
+            if (fallType != FallingComponent.FallingType.None)
             {
                 Add(_fallingComponent = new FallingComponent
                 {
                     ClimbFall = data.Bool("climbFall", true),
-                    FallUp = data.Bool("fallUp"),
+                    FallType = fallType,
+                    EndOnSolidTiles = data.Bool("endFallOnSolidTiles", true),
                 });
             }
 

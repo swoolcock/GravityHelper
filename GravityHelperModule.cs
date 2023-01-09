@@ -44,6 +44,13 @@ namespace Celeste.Mod.GravityHelper
 
         public static bool IsHookRequiredForEntityData(EntityData data) => data.Name.StartsWith("GravityHelper");
 
+        internal static void ClearStatics()
+        {
+            // make sure we clear some static things
+            OverrideSemaphore = 0;
+            PlayerComponent = null;
+        }
+
         public GravityHelperModule()
         {
             Instance = this;
@@ -104,8 +111,6 @@ namespace Celeste.Mod.GravityHelper
 
             On.Celeste.Mod.AssetReloadHelper.ReloadLevel += AssetReloadHelper_ReloadLevel;
 
-            BaseGravityController.LoadHooks();
-
             ActorHooks.Load();
             AngryOshiroHooks.Load();
             BadelineBoostHooks.Load();
@@ -153,8 +158,6 @@ namespace Celeste.Mod.GravityHelper
 #endif
 
             On.Celeste.Mod.AssetReloadHelper.ReloadLevel -= AssetReloadHelper_ReloadLevel;
-
-            BaseGravityController.UnloadHooks();
 
             ActorHooks.Unload();
             AngryOshiroHooks.Unload();
@@ -210,6 +213,8 @@ namespace Celeste.Mod.GravityHelper
 
         private void LevelLoader_ctor(On.Celeste.LevelLoader.orig_ctor orig, LevelLoader self, Session session, Vector2? startposition)
         {
+            ClearStatics();
+
             orig(self, session, startposition);
 
             if (Settings.AllowInAllMaps || AreHooksRequiredForSession(session))
@@ -233,8 +238,10 @@ namespace Celeste.Mod.GravityHelper
 
         public static void InvalidateRun()
         {
-            if (Engine.Scene is Level level)
-                level.Session.StartedFromBeginning = false;
+            // NOTE: getting rid of this for now, if people submit invalid runs that's on them
+
+            // if (Engine.Scene is Level level)
+            //     level.Session.StartedFromBeginning = false;
         }
 
         [Command("gravity", "Changes the current gravity (0 = normal, 1 = inverted, 2 = toggle)")]

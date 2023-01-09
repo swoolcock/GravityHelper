@@ -24,7 +24,8 @@ namespace Celeste.Mod.GravityHelper.Components
         public bool ClimbFall = true;
         public float FallSpeed = 160f;
         public bool ShouldManageSafe = true;
-        public bool FallUp = false;
+        public FallingType FallType = FallingType.Down;
+        public bool EndOnSolidTiles = true;
 
         // coroutine properties
         public bool Triggered;
@@ -32,6 +33,7 @@ namespace Celeste.Mod.GravityHelper.Components
 
         private Coroutine _coroutine;
         private float _fallDelayRemaining;
+        private bool _fallingUp;
 
         public new Solid Entity => base.Entity as Solid;
 
@@ -94,9 +96,9 @@ namespace Celeste.Mod.GravityHelper.Components
                 var range = Vector2.One * 4f;
                 var direction = (float)Math.PI / 2f;
                 var offset = new Vector2(x, -2f);
-                var check = FallUp ? Entity.BottomLeft - offset : Entity.TopLeft + offset;
+                var check = _fallingUp ? Entity.BottomLeft - offset : Entity.TopLeft + offset;
                 if (level.CollideCheck<Solid>(check))
-                    level.Particles.Emit(FallingBlock.P_FallDustA, 2, position, range, FallUp ? -direction : direction);
+                    level.Particles.Emit(FallingBlock.P_FallDustA, 2, position, range, _fallingUp ? -direction : direction);
                 level.Particles.Emit(FallingBlock.P_FallDustB, 2, position, range);
             }
         }
@@ -108,15 +110,15 @@ namespace Celeste.Mod.GravityHelper.Components
             for (int x = 2; x <= Entity.Width; x += 4)
             {
                 var offset = new Vector2(x, 3f);
-                var checkPosition = FallUp ? Entity.TopLeft - offset : Entity.BottomLeft + offset;
+                var checkPosition = _fallingUp ? Entity.TopLeft - offset : Entity.BottomLeft + offset;
                 if (level.CollideCheck<Solid>(checkPosition))
                 {
-                    var position = new Vector2(Entity.X + x, FallUp ? Entity.Top : Entity.Bottom);
+                    var position = new Vector2(Entity.X + x, _fallingUp ? Entity.Top : Entity.Bottom);
                     var range = Vector2.One * 4f;
                     var fallDustDirection = -(float)Math.PI / 2f;
-                    level.ParticlesFG.Emit(FallingBlock.P_FallDustA, 1, position, range, FallUp ? -fallDustDirection : fallDustDirection);
+                    level.ParticlesFG.Emit(FallingBlock.P_FallDustA, 1, position, range, _fallingUp ? -fallDustDirection : fallDustDirection);
                     var landDustDirection = x >= Entity.Width / 2f ? 0f : (float)Math.PI;
-                    level.ParticlesFG.Emit(FallingBlock.P_LandDust, 1, position, range, FallUp ? -landDustDirection : landDustDirection);
+                    level.ParticlesFG.Emit(FallingBlock.P_LandDust, 1, position, range, _fallingUp ? -landDustDirection : landDustDirection);
                 }
             }
         }
@@ -153,6 +155,9 @@ namespace Celeste.Mod.GravityHelper.Components
             // loop forever
             while (true)
             {
+                // determine whether we should fall up
+                _fallingUp = FallType == FallingType.Up || FallType == FallingType.MatchPlayer && GravityHelperModule.ShouldInvertPlayer || FallType == FallingType.OppositePlayer && !GravityHelperModule.ShouldInvertPlayer;
+
                 // start shaking
                 self.ShakeSfx?.Invoke();
                 entity.StartShaking();
@@ -176,19 +181,19 @@ namespace Celeste.Mod.GravityHelper.Components
                     // update the speed
                     speed = Calc.Approach(speed, maxSpeed, 500f * Engine.DeltaTime);
                     // try to move
-                    if (!entity.MoveVCollideSolids(speed * Engine.DeltaTime * (FallUp ? -1 : 1), true))
+                    if (!entity.MoveVCollideSolids(speed * Engine.DeltaTime * (_fallingUp ? -1 : 1), true))
                     {
                         // if we've fallen out the bottom of the screen, we should remove the entity
                         // otherwise yield for a frame and loop
-                        if (!FallUp && entity.Top <= level.Bounds.Bottom + 16 && (entity.Top <= level.Bounds.Bottom - 1 || !entity.CollideCheck<Solid>(entity.Position + Vector2.UnitY)) ||
-                            FallUp && entity.Bottom >= level.Bounds.Top - 16 && (entity.Bottom >= level.Bounds.Top + 1 || !entity.CollideCheck<Solid>(entity.Position - Vector2.UnitY)))
+                        if (!_fallingUp && entity.Top <= level.Bounds.Bottom + 16 && (entity.Top <= level.Bounds.Bottom - 1 || !entity.CollideCheck<Solid>(entity.Position + Vector2.UnitY)) ||
+                            _fallingUp && entity.Bottom >= level.Bounds.Top - 16 && (entity.Bottom >= level.Bounds.Top + 1 || !entity.CollideCheck<Solid>(entity.Position - Vector2.UnitY)))
                             yield return null;
                         else
                         {
                             // we've fallen out of the screen and should remove the entity
                             entity.Collidable = entity.Visible = false;
                             yield return 0.2f;
-                            if (level.Session.MapData.CanTransitionTo(level, new Vector2(entity.Center.X, FallUp ? (entity.Top - 12f) : (entity.Bottom + 12f))))
+                            if (level.Session.MapData.CanTransitionTo(level, new Vector2(entity.Center.X, _fallingUp ? (entity.Top - 12f) : (entity.Bottom + 12f))))
                             {
                                 yield return 0.2f;
                                 level.Shake();
@@ -210,23 +215,38 @@ namespace Celeste.Mod.GravityHelper.Components
                 // impact effects
                 self.ImpactSfx?.Invoke();
                 if (self.ShouldRumble) Input.Rumble(RumbleStrength.Strong, RumbleLength.Medium);
-                level.DirectionalShake(FallUp ? -Vector2.UnitY : Vector2.UnitY);
+                level.DirectionalShake(_fallingUp ? -Vector2.UnitY : Vector2.UnitY);
                 entity.StartShaking();
                 self.LandParticles?.Invoke();
                 yield return 0.2f;
                 entity.StopShaking();
 
                 // if it's hit the fg tiles then make it safe and end
-                if (entity.CollideCheck<SolidTiles>(entity.Position + (FallUp ? -Vector2.UnitY : Vector2.UnitY)))
+                if (EndOnSolidTiles && entity.CollideCheck<SolidTiles>(entity.Position + (_fallingUp ? -Vector2.UnitY : Vector2.UnitY)))
                 {
                     entity.Safe |= self.ShouldManageSafe;
                     yield break;
                 }
 
                 // wait until we can fall again
-                while (entity.CollideCheck<Platform>(entity.Position + (FallUp ? -Vector2.UnitY : Vector2.UnitY)))
+                while (entity.CollideCheck<Platform>(entity.Position + (_fallingUp ? -Vector2.UnitY : Vector2.UnitY)))
+                {
                     yield return 0.1f;
+                    // if the block is dependent on the player's gravity and the player is able to trigger it, update _fallingUp
+                    if (FallType is FallingType.MatchPlayer or FallingType.OppositePlayer && PlayerFallCheck?.Invoke() != false)
+                        _fallingUp = FallType == FallingType.MatchPlayer && GravityHelperModule.ShouldInvertPlayer ||
+                            FallType == FallingType.OppositePlayer && !GravityHelperModule.ShouldInvertPlayer;
+                }
             }
+        }
+
+        public enum FallingType
+        {
+            None,
+            Down,
+            Up,
+            MatchPlayer,
+            OppositePlayer,
         }
     }
 }

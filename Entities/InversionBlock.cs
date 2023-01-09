@@ -9,6 +9,8 @@ using Celeste.Mod.GravityHelper.Extensions;
 using Microsoft.Xna.Framework;
 using Monocle;
 
+// ReSharper disable RedundantArgumentDefaultValue
+
 namespace Celeste.Mod.GravityHelper.Entities
 {
     [Tracked]
@@ -126,12 +128,16 @@ namespace Celeste.Mod.GravityHelper.Entities
             Edges |= data.Bool("topEnabled", true) ? Edges.Top : Edges.None;
             Edges |= data.Bool("bottomEnabled", true) ? Edges.Bottom : Edges.None;
 
-            if (data.Bool("fall"))
+            var fallType = (FallingComponent.FallingType)data.Int("fallType", (int)FallingComponent.FallingType.None);
+            if (data.Bool("fall", false)) fallType = data.Bool("fallUp", false) ? FallingComponent.FallingType.Up : FallingComponent.FallingType.Down;
+
+            if (fallType != FallingComponent.FallingType.None)
             {
                 Add(_fallingComponent = new FallingComponent
                 {
                     ClimbFall = data.Bool("climbFall", true),
-                    FallUp = data.Bool("fallUp"),
+                    FallType = fallType,
+                    EndOnSolidTiles = data.Bool("endFallOnSolidTiles", true),
                 });
             }
         }
