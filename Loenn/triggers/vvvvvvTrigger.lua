@@ -22,7 +22,7 @@ local vvvvvvTrigger = {
             }),
         },
         {
-            name = "disabled",
+            name = "disable",
             data = helpers.union(placementData, {
                 enable = false,
             }),
