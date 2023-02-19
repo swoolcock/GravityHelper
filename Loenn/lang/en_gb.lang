@@ -259,3 +259,6 @@ entities.GravityHelper/InversionBlock.attributes.description.climbFall=Whether t
 entities.GravityHelper/InversionBlock.attributes.description.endFallOnSolidTiles=Whether the inversion block should stop falling once it hits foreground tiles.\nDefaults to true, but you may want to set this to false if "fallType" is dependent on the player's gravity.
 entities.GravityHelper/InversionBlock.attributes.description.defaultToController=If true (default), supported properties for this entity will use the value from the active controller.
 entities.GravityHelper/InversionBlock.attributes.description.sound=The sound to play when travelling through this inversion block. Defaults to event:/char/badeline/disappear (the sound when the final Badeline chaser disappears in 2A), or the active controller.
+
+# Force Load Gravity Controller
+entities.GravityHelper/ForceLoadGravityController.placements.name.normal=Force Load Gravity Controller (GravityHelper)

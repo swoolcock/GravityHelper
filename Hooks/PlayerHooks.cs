@@ -1143,7 +1143,6 @@ namespace Celeste.Mod.GravityHelper.Hooks
             });
         });
 
-
         #endregion
 
         #region On Hooks
