@@ -20,7 +20,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
         public static void Unload()
         {
             Logger.Log(nameof(GravityHelperModule), $"Unloading {nameof(Puffer)} hooks...");
-            IL.Celeste.Puffer.OnPlayer -= Puffer_Explode;
+            IL.Celeste.Puffer.Explode -= Puffer_Explode;
         }
 
         private static void Puffer_Explode(ILContext il) => HookUtils.SafeHook(() =>

@@ -37,12 +37,30 @@ namespace Celeste.Mod.GravityHelper
         public static bool ShouldInvertPlayerChecked => PlayerComponent?.ShouldInvertChecked ?? false;
         internal static int OverrideSemaphore = 0;
 
-        public static bool AreHooksRequiredForSession(Session session) =>
-            session.MapData?.Levels?
-                .Any(level => (level.Triggers?.Any(IsHookRequiredForEntityData) ?? false) ||
-                    (level.Entities?.Any(IsHookRequiredForEntityData) ?? false)) ?? false;
+        public static bool RequiresHooksForSession(Session session, out bool forceLoad)
+        {
+            forceLoad = false;
+            if (session.MapData?.Levels is not { } levels) return false;
 
-        public static bool IsHookRequiredForEntityData(EntityData data) => data.Name.StartsWith("GravityHelper");
+            foreach (var level in levels)
+            {
+                foreach (var entity in level.Entities)
+                {
+                    if (entity.Name == "GravityHelper/ForceLoadGravityController")
+                        forceLoad = true;
+                    else if (entity.Name.StartsWith("GravityHelper") && !forceLoad)
+                        return true;
+                }
+
+                foreach (var trigger in level.Triggers)
+                {
+                    if (trigger.Name.StartsWith("GravityHelper") && !forceLoad)
+                        return true;
+                }
+            }
+
+            return forceLoad;
+        }
 
         internal static void ClearStatics()
         {
@@ -99,9 +117,18 @@ namespace Celeste.Mod.GravityHelper
         }
 
         internal static bool HooksActive;
+        internal static bool RenderOnlyHooksActive;
 
-        private static void activateHooks()
+        private static void activateHooks(bool renderOnly = false)
         {
+            if (renderOnly)
+            {
+                if (RenderOnlyHooksActive) return;
+                RenderOnlyHooksActive = true;
+                ForceLoadGravityController.Load();
+                return;
+            }
+
             if (HooksActive) return;
             HooksActive = true;
 
@@ -150,6 +177,13 @@ namespace Celeste.Mod.GravityHelper
 
         private static void deactivateHooks()
         {
+            if (RenderOnlyHooksActive)
+            {
+                RenderOnlyHooksActive = false;
+                ForceLoadGravityController.Unload();
+                return;
+            }
+
             if (!HooksActive) return;
             HooksActive = false;
 
@@ -217,8 +251,10 @@ namespace Celeste.Mod.GravityHelper
 
             orig(self, session, startposition);
 
-            if (Settings.AllowInAllMaps || AreHooksRequiredForSession(session))
+            if (Settings.AllowInAllMaps)
                 activateHooks();
+            if (RequiresHooksForSession(session, out var renderOnly))
+                activateHooks(renderOnly);
             else
                 deactivateHooks();
         }
