@@ -71,147 +71,134 @@ namespace Celeste.Mod.GravityHelper
         {
             typeof(GravityHelperExports).ModInterop();
 
-#if FORCE_LOAD_HOOKS
-            // force load hooks in debug builds
-            Logger.Log(nameof(GravityHelperModule), "Force loading hooks due to debug build...");
-            activateHooks();
-#else
-            Logger.Log(nameof(GravityHelperModule), $"Loading bootstrap hooks...");
+            Logger.Log(LogLevel.Info, nameof(GravityHelperModule), "Loading bootstrap hooks...");
             On.Celeste.LevelLoader.ctor += LevelLoader_ctor;
             On.Celeste.OverworldLoader.ctor += OverworldLoader_ctor;
-#endif
         }
 
         public override void Unload()
         {
-#if !FORCE_LOAD_HOOKS
-            Logger.Log(nameof(GravityHelperModule), $"Unloading bootstrap hooks...");
+            Logger.Log(LogLevel.Info, nameof(GravityHelperModule), $"Unloading bootstrap hooks...");
             On.Celeste.LevelLoader.ctor -= LevelLoader_ctor;
             On.Celeste.OverworldLoader.ctor -= OverworldLoader_ctor;
-#endif
-            deactivateHooks();
+            updateHooks(HookLevel.None);
         }
 
-        public override void Initialize()
-        {
-            base.Initialize();
-#if FORCE_LOAD_HOOKS
-            ThirdPartyHooks.Load();
-#endif
-        }
+        internal static HookLevel CurrentHookLevel = HookLevel.None;
 
-        internal static bool HooksActive;
-        internal static bool RenderOnlyHooksActive;
-
-        private static void activateHooks(bool renderOnly = false)
+        private static void updateHooks(HookLevel requiredHookLevel)
         {
-            if (renderOnly)
+            // if we're already at the right hook level, bail
+            if (requiredHookLevel == CurrentHookLevel)
             {
-                if (RenderOnlyHooksActive) return;
-                RenderOnlyHooksActive = true;
-                ForceLoadGravityController.Load();
+                if (requiredHookLevel != HookLevel.None)
+                    Logger.Log(LogLevel.Info, nameof(GravityHelperModule), $"Required hooks ({requiredHookLevel}) already applied.");
                 return;
             }
 
-            if (HooksActive) return;
-            HooksActive = true;
-
-#if !FORCE_LOAD_HOOKS
-            ThirdPartyHooks.Load();
-#endif
-
-            On.Celeste.Mod.AssetReloadHelper.ReloadLevel += AssetReloadHelper_ReloadLevel;
-
-            ActorHooks.Load();
-            AngryOshiroHooks.Load();
-            BadelineBoostHooks.Load();
-            BadelineDummyHooks.Load();
-            BadelineOldsiteHooks.Load();
-            BoosterHooks.Load();
-            BounceBlockHooks.Load();
-            BumperHooks.Load();
-            CassetteBlockManagerHooks.Load();
-            CrushBlockHooks.Load();
-            DreamBlockHooks.Load();
-            FinalBossHooks.Load();
-            FloatySpaceBlockHooks.Load();
-            FlyFeatherHooks.Load();
-            GliderHooks.Load();
-            HeartGemHooks.Load();
-            HoldableHooks.Load();
-            InputHooks.Load();
-            JumpThruHooks.Load();
-            LevelHooks.Load();
-            LevelEnterHooks.Load();
-            MoveBlockHooks.Load();
-            PlayerDeadBodyHooks.Load();
-            PlayerHairHooks.Load();
-            PlayerHooks.Load();
-            PlayerSpriteHooks.Load();
-            PufferHooks.Load();
-            SeekerHooks.Load();
-            SnowballHooks.Load();
-            SolidHooks.Load();
-            SolidTilesHooks.Load();
-            SpikesHooks.Load();
-            SpringHooks.Load();
-            StarJumpBlockHooks.Load();
-            TheoCrystalHooks.Load();
-        }
-
-        private static void deactivateHooks()
-        {
-            if (RenderOnlyHooksActive)
+            // unload render
+            if (CurrentHookLevel == HookLevel.Render)
             {
-                RenderOnlyHooksActive = false;
+                Logger.Log(LogLevel.Info, nameof(GravityHelperModule), "Unloading render-only hooks...");
                 ForceLoadGravityController.Unload();
-                return;
+            }
+            // or unload everything
+            else if (CurrentHookLevel == HookLevel.Everything)
+            {
+                Logger.Log(LogLevel.Info, nameof(GravityHelperModule), "Unloading all hooks...");
+                ThirdPartyHooks.Unload();
+
+                On.Celeste.Mod.AssetReloadHelper.ReloadLevel -= AssetReloadHelper_ReloadLevel;
+
+                ActorHooks.Unload();
+                AngryOshiroHooks.Unload();
+                BadelineBoostHooks.Unload();
+                BadelineDummyHooks.Unload();
+                BadelineOldsiteHooks.Unload();
+                BoosterHooks.Unload();
+                BounceBlockHooks.Unload();
+                BumperHooks.Unload();
+                CassetteBlockManagerHooks.Unload();
+                CrushBlockHooks.Unload();
+                DreamBlockHooks.Unload();
+                FinalBossHooks.Unload();
+                FloatySpaceBlockHooks.Unload();
+                FlyFeatherHooks.Unload();
+                GliderHooks.Unload();
+                HeartGemHooks.Unload();
+                HoldableHooks.Unload();
+                InputHooks.Unload();
+                JumpThruHooks.Unload();
+                LevelHooks.Unload();
+                LevelEnterHooks.Unload();
+                MoveBlockHooks.Unload();
+                PlayerDeadBodyHooks.Unload();
+                PlayerHairHooks.Unload();
+                PlayerHooks.Unload();
+                PlayerSpriteHooks.Unload();
+                PufferHooks.Unload();
+                SeekerHooks.Unload();
+                SnowballHooks.Unload();
+                SolidHooks.Unload();
+                SolidTilesHooks.Unload();
+                SpikesHooks.Unload();
+                SpringHooks.Unload();
+                StarJumpBlockHooks.Unload();
+                TheoCrystalHooks.Unload();
             }
 
-            if (!HooksActive) return;
-            HooksActive = false;
+            CurrentHookLevel = requiredHookLevel;
 
-#if !FORCE_LOAD_HOOKS
-            ThirdPartyHooks.Unload();
-#endif
+            // load render
+            if (requiredHookLevel == HookLevel.Render)
+            {
+                Logger.Log(LogLevel.Info, nameof(GravityHelperModule), "Loading render-only hooks...");
+                ForceLoadGravityController.Load();
+            }
+            // or load everything
+            else if (requiredHookLevel == HookLevel.Everything)
+            {
+                Logger.Log(LogLevel.Info, nameof(GravityHelperModule), "Loading all hooks...");
+                ThirdPartyHooks.Load();
 
-            On.Celeste.Mod.AssetReloadHelper.ReloadLevel -= AssetReloadHelper_ReloadLevel;
+                On.Celeste.Mod.AssetReloadHelper.ReloadLevel += AssetReloadHelper_ReloadLevel;
 
-            ActorHooks.Unload();
-            AngryOshiroHooks.Unload();
-            BadelineBoostHooks.Unload();
-            BadelineDummyHooks.Unload();
-            BadelineOldsiteHooks.Unload();
-            BoosterHooks.Unload();
-            BounceBlockHooks.Unload();
-            BumperHooks.Unload();
-            CassetteBlockManagerHooks.Unload();
-            CrushBlockHooks.Unload();
-            DreamBlockHooks.Unload();
-            FinalBossHooks.Unload();
-            FloatySpaceBlockHooks.Unload();
-            FlyFeatherHooks.Unload();
-            GliderHooks.Unload();
-            HeartGemHooks.Unload();
-            HoldableHooks.Unload();
-            InputHooks.Unload();
-            JumpThruHooks.Unload();
-            LevelHooks.Unload();
-            LevelEnterHooks.Unload();
-            MoveBlockHooks.Unload();
-            PlayerDeadBodyHooks.Unload();
-            PlayerHairHooks.Unload();
-            PlayerHooks.Unload();
-            PlayerSpriteHooks.Unload();
-            PufferHooks.Unload();
-            SeekerHooks.Unload();
-            SnowballHooks.Unload();
-            SolidHooks.Unload();
-            SolidTilesHooks.Unload();
-            SpikesHooks.Unload();
-            SpringHooks.Unload();
-            StarJumpBlockHooks.Unload();
-            TheoCrystalHooks.Unload();
+                ActorHooks.Load();
+                AngryOshiroHooks.Load();
+                BadelineBoostHooks.Load();
+                BadelineDummyHooks.Load();
+                BadelineOldsiteHooks.Load();
+                BoosterHooks.Load();
+                BounceBlockHooks.Load();
+                BumperHooks.Load();
+                CassetteBlockManagerHooks.Load();
+                CrushBlockHooks.Load();
+                DreamBlockHooks.Load();
+                FinalBossHooks.Load();
+                FloatySpaceBlockHooks.Load();
+                FlyFeatherHooks.Load();
+                GliderHooks.Load();
+                HeartGemHooks.Load();
+                HoldableHooks.Load();
+                InputHooks.Load();
+                JumpThruHooks.Load();
+                LevelHooks.Load();
+                LevelEnterHooks.Load();
+                MoveBlockHooks.Load();
+                PlayerDeadBodyHooks.Load();
+                PlayerHairHooks.Load();
+                PlayerHooks.Load();
+                PlayerSpriteHooks.Load();
+                PufferHooks.Load();
+                SeekerHooks.Load();
+                SnowballHooks.Load();
+                SolidHooks.Load();
+                SolidTilesHooks.Load();
+                SpikesHooks.Load();
+                SpringHooks.Load();
+                StarJumpBlockHooks.Load();
+                TheoCrystalHooks.Load();
+            }
         }
 
         private static void AssetReloadHelper_ReloadLevel(On.Celeste.Mod.AssetReloadHelper.orig_ReloadLevel orig)
@@ -220,13 +207,12 @@ namespace Celeste.Mod.GravityHelper
             orig();
         }
 
-#if !FORCE_LOAD_HOOKS
         private void OverworldLoader_ctor(On.Celeste.OverworldLoader.orig_ctor orig, OverworldLoader self, Overworld.StartMode startmode, HiresSnow snow)
         {
             orig(self, startmode, snow);
 
             if (startmode != (Overworld.StartMode)(-1))
-                deactivateHooks();
+                updateHooks(HookLevel.None);
         }
 
         private void LevelLoader_ctor(On.Celeste.LevelLoader.orig_ctor orig, LevelLoader self, Session session, Vector2? startposition)
@@ -236,13 +222,12 @@ namespace Celeste.Mod.GravityHelper
             orig(self, session, startposition);
 
             if (Settings.AllowInAllMaps)
-                activateHooks();
+                updateHooks(HookLevel.Everything);
             if (RequiresHooksForSession(session, out var renderOnly))
-                activateHooks(renderOnly);
+                updateHooks(renderOnly ? HookLevel.Render : HookLevel.Everything);
             else
-                deactivateHooks();
+                updateHooks(HookLevel.None);
         }
-#endif
 
         #endregion
 
@@ -296,6 +281,13 @@ namespace Celeste.Mod.GravityHelper
             InvalidateRun();
 
             Engine.Commands.Log($"Initial gravity is now: {Session.InitialGravity}");
+        }
+
+        internal enum HookLevel
+        {
+            None,
+            Render,
+            Everything,
         }
     }
 }
