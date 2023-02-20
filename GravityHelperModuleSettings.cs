@@ -75,7 +75,7 @@ namespace Celeste.Mod.GravityHelper
                     (Engine.Scene as Level)?.GetPersistentController<VvvvvvGravityController>()?.Transitioned();
                 },
             });
-        }ww
+        }
 
         public void CreateVvvvvvFlipSoundEntry(TextMenu menu, bool inGame)
         {
