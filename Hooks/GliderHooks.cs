@@ -75,7 +75,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
         private static void Glider_Update(On.Celeste.Glider.orig_Update orig, Glider self)
         {
             var value = Input.GliderMoveY.Value;
-            if (GravityHelperModule.ShouldInvertPlayer)
+            if (GravityHelperModule.ShouldInvertPlayer && GravityHelperModule.Settings.ControlScheme == GravityHelperModuleSettings.ControlSchemeSetting.Absolute)
                 Input.GliderMoveY.Value = -value;
             orig(self);
             Input.GliderMoveY.Value = value;

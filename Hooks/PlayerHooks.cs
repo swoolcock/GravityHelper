@@ -1411,22 +1411,34 @@ namespace Celeste.Mod.GravityHelper.Hooks
                 self.Scene.GetPersistentController<VvvvvvGravityController>()?.CheckJump(self);
             }
 
-            if (GravityHelperModule.ShouldInvertPlayer)
+            var shouldInvert = GravityHelperModule.ShouldInvertPlayer;
+            var useAbsolute = GravityHelperModule.Settings.ControlScheme == GravityHelperModuleSettings.ControlSchemeSetting.Absolute;
+            var useAbsoluteFeather = GravityHelperModule.Settings.FeatherControlScheme == GravityHelperModuleSettings.ControlSchemeSetting.Absolute;
+
+            if (shouldInvert)
             {
-                Input.Aim.SetValue(new Vector2(Input.Aim.Value.X, -aimY));
-                Input.Feather.SetValue(new Vector2(Input.Feather.Value.X, -featherY));
-                Input.MoveY.Value = -moveY;
-                Input.GliderMoveY.Value = -gliderMoveY;
+                if (useAbsolute)
+                {
+                    Input.Aim.SetValue(new Vector2(Input.Aim.Value.X, -aimY));
+                    Input.MoveY.Value = -moveY;
+                    Input.GliderMoveY.Value = -gliderMoveY;
+                }
+                if (useAbsoluteFeather)
+                    Input.Feather.SetValue(new Vector2(Input.Feather.Value.X, -featherY));
             }
 
             orig(self);
 
-            if (GravityHelperModule.ShouldInvertPlayer)
+            if (shouldInvert)
             {
-                Input.GliderMoveY.Value = gliderMoveY;
-                Input.MoveY.Value = moveY;
-                Input.Feather.SetValue(new Vector2(Input.Feather.Value.X, featherY));
-                Input.Aim.SetValue(new Vector2(Input.Aim.Value.X, aimY));
+                if (useAbsoluteFeather)
+                    Input.Feather.SetValue(new Vector2(Input.Feather.Value.X, featherY));
+                if (useAbsolute)
+                {
+                    Input.GliderMoveY.Value = gliderMoveY;
+                    Input.MoveY.Value = moveY;
+                    Input.Aim.SetValue(new Vector2(Input.Aim.Value.X, aimY));
+                }
             }
         }
 

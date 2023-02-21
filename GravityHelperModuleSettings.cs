@@ -21,6 +21,9 @@ namespace Celeste.Mod.GravityHelper
         public VvvvvvSetting VvvvvvAllowGrabbing { get; set; }
         public VvvvvvSetting VvvvvvAllowDashing { get; set; }
 
+        public ControlSchemeSetting ControlScheme { get; set; } = ControlSchemeSetting.Absolute;
+        public ControlSchemeSetting FeatherControlScheme { get; set; } = ControlSchemeSetting.Absolute;
+
         public ButtonBinding ToggleInvertGravity { get; set; }
 
         public void CreateAllowInAllMapsEntry(TextMenu menu, bool inGame)
@@ -92,6 +95,26 @@ namespace Celeste.Mod.GravityHelper
             });
         }
 
+        public void CreateControlSchemeEntry(TextMenu menu, bool inGame)
+        {
+            menu.Add(new TextMenu.Option<ControlSchemeSetting>(Dialog.Get("GRAVITYHELPER_MENU_CONTROL_SCHEME"))
+            {
+                Values = getEnumOptions<ControlSchemeSetting>().ToList(),
+                Index = (int)ControlScheme,
+                OnValueChange = value => ControlScheme = value,
+            });
+        }
+
+        public void CreateFeatherControlSchemeEntry(TextMenu menu, bool inGame)
+        {
+            menu.Add(new TextMenu.Option<ControlSchemeSetting>(Dialog.Get("GRAVITYHELPER_MENU_FEATHER_CONTROL_SCHEME"))
+            {
+                Values = getEnumOptions<ControlSchemeSetting>().ToList(),
+                Index = (int)FeatherControlScheme,
+                OnValueChange = value => FeatherControlScheme = value,
+            });
+        }
+
         private static IEnumerable<Tuple<string, TEnum>> getEnumOptions<TEnum>() where TEnum : Enum =>
             Enum.GetValues(typeof(TEnum))
                 .Cast<TEnum>()
@@ -102,6 +125,12 @@ namespace Celeste.Mod.GravityHelper
             Default,
             Disabled,
             Enabled,
+        }
+
+        public enum ControlSchemeSetting
+        {
+            Absolute,
+            Relative,
         }
     }
 }
