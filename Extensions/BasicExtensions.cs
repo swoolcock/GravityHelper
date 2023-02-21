@@ -15,5 +15,13 @@ namespace Celeste.Mod.GravityHelper.Extensions
         public static float ClampLower(this float self, float min) => Math.Max(self, min);
         public static float ClampUpper(this float self, float max) => Math.Min(self, max);
         public static float Clamp(this float self, float min, float max) => Calc.Clamp(self, min, max);
+
+        public static TItem AddWithDescription<TItem>(this TextMenu self, TItem item, string description)
+            where TItem : TextMenu.Item
+        {
+            self.Add(item);
+            item.AddDescription(self, description);
+            return item;
+        }
     }
 }

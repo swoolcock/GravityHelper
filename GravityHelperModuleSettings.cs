@@ -16,6 +16,9 @@ namespace Celeste.Mod.GravityHelper
     {
         public bool AllowInAllMaps { get; set; }
 
+        public ControlSchemeSetting ControlScheme { get; set; } = ControlSchemeSetting.Absolute;
+        public ControlSchemeSetting FeatherControlScheme { get; set; } = ControlSchemeSetting.Absolute;
+
         public VvvvvvSetting VvvvvvMode { get; set; }
         public VvvvvvSetting VvvvvvFlipSound { get; set; }
         public VvvvvvSetting VvvvvvAllowGrabbing { get; set; }
@@ -25,17 +28,17 @@ namespace Celeste.Mod.GravityHelper
 
         public void CreateAllowInAllMapsEntry(TextMenu menu, bool inGame)
         {
-            menu.Add(new TextMenu.OnOff(Dialog.Get("GRAVITYHELPER_MENU_ALLOW_IN_ALL_MAPS"), AllowInAllMaps)
+            menu.AddWithDescription(new TextMenu.OnOff(Dialog.Clean("GRAVITYHELPER_MENU_ALLOW_IN_ALL_MAPS"), AllowInAllMaps)
             {
                 Disabled = inGame,
                 OnValueChange = value => AllowInAllMaps = value,
-            });
+            }, Dialog.Clean("GRAVITYHELPER_MENU_ALLOW_IN_ALL_MAPS_SUBTEXT"));
         }
 
         public void CreateVvvvvvModeEntry(TextMenu menu, bool inGame)
         {
             if (inGame && GravityHelperModule.CurrentHookLevel != GravityHelperModule.HookLevel.Everything) return;
-            menu.Add(new TextMenu.Option<VvvvvvSetting>(Dialog.Get("GRAVITYHELPER_MENU_VVVVVV_MODE"))
+            menu.Add(new TextMenu.Option<VvvvvvSetting>(Dialog.Clean("GRAVITYHELPER_MENU_VVVVVV_MODE"))
             {
                 Values = getEnumOptions<VvvvvvSetting>().ToList(),
                 Index = (int)VvvvvvMode,
@@ -50,7 +53,7 @@ namespace Celeste.Mod.GravityHelper
         public void CreateVvvvvvAllowGrabbingEntry(TextMenu menu, bool inGame)
         {
             if (inGame && GravityHelperModule.CurrentHookLevel != GravityHelperModule.HookLevel.Everything) return;
-            menu.Add(new TextMenu.Option<VvvvvvSetting>(Dialog.Get("GRAVITYHELPER_MENU_VVVVVV_ALLOW_GRABBING"))
+            menu.Add(new TextMenu.Option<VvvvvvSetting>(Dialog.Clean("GRAVITYHELPER_MENU_VVVVVV_ALLOW_GRABBING"))
             {
                 Values = getEnumOptions<VvvvvvSetting>().ToList(),
                 Index = (int)VvvvvvAllowGrabbing,
@@ -65,7 +68,7 @@ namespace Celeste.Mod.GravityHelper
         public void CreateVvvvvvAllowDashingEntry(TextMenu menu, bool inGame)
         {
             if (inGame && GravityHelperModule.CurrentHookLevel != GravityHelperModule.HookLevel.Everything) return;
-            menu.Add(new TextMenu.Option<VvvvvvSetting>(Dialog.Get("GRAVITYHELPER_MENU_VVVVVV_ALLOW_DASHING"))
+            menu.Add(new TextMenu.Option<VvvvvvSetting>(Dialog.Clean("GRAVITYHELPER_MENU_VVVVVV_ALLOW_DASHING"))
             {
                 Values = getEnumOptions<VvvvvvSetting>().ToList(),
                 Index = (int)VvvvvvAllowDashing,
@@ -80,7 +83,7 @@ namespace Celeste.Mod.GravityHelper
         public void CreateVvvvvvFlipSoundEntry(TextMenu menu, bool inGame)
         {
             if (inGame && GravityHelperModule.CurrentHookLevel != GravityHelperModule.HookLevel.Everything) return;
-            menu.Add(new TextMenu.Option<VvvvvvSetting>(Dialog.Get("GRAVITYHELPER_MENU_VVVVVV_FLIP_SOUND"))
+            menu.Add(new TextMenu.Option<VvvvvvSetting>(Dialog.Clean("GRAVITYHELPER_MENU_VVVVVV_FLIP_SOUND"))
             {
                 Values = getEnumOptions<VvvvvvSetting>().ToList(),
                 Index = (int)VvvvvvFlipSound,
@@ -90,6 +93,34 @@ namespace Celeste.Mod.GravityHelper
                     (Engine.Scene as Level)?.GetPersistentController<VvvvvvGravityController>()?.Transitioned();
                 },
             });
+        }
+
+        public void CreateControlSchemeEntry(TextMenu menu, bool inGame)
+        {
+            menu.AddWithDescription(new TextMenu.Option<ControlSchemeSetting>(Dialog.Clean("GRAVITYHELPER_MENU_CONTROL_SCHEME"))
+            {
+                Values = getEnumOptions<ControlSchemeSetting>().ToList(),
+                Index = (int)ControlScheme,
+                OnValueChange = value =>
+                {
+                    ControlScheme = value;
+                    FeatherControlScheme = ControlScheme;
+                    foreach (var item in menu.Items.OfType<TextMenu.Option<ControlSchemeSetting>>().Where(i => i.Index != (int)value))
+                    {
+                        item.Index = (int)value;
+                    }
+                },
+            }, Dialog.Clean("GRAVITYHELPER_MENU_CONTROL_SCHEME_SUBTEXT"));
+        }
+
+        public void CreateFeatherControlSchemeEntry(TextMenu menu, bool inGame)
+        {
+            menu.AddWithDescription(new TextMenu.Option<ControlSchemeSetting>(Dialog.Clean("GRAVITYHELPER_MENU_FEATHER_CONTROL_SCHEME"))
+            {
+                Values = getEnumOptions<ControlSchemeSetting>().ToList(),
+                Index = (int)FeatherControlScheme,
+                OnValueChange = value => FeatherControlScheme = value,
+            }, Dialog.Clean("GRAVITYHELPER_MENU_FEATHER_CONTROL_SCHEME_SUBTEXT"));
         }
 
         private static IEnumerable<Tuple<string, TEnum>> getEnumOptions<TEnum>() where TEnum : Enum =>
@@ -102,6 +133,12 @@ namespace Celeste.Mod.GravityHelper
             Default,
             Disabled,
             Enabled,
+        }
+
+        public enum ControlSchemeSetting
+        {
+            Absolute,
+            Relative,
         }
     }
 }

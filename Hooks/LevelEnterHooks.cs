@@ -44,7 +44,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
                 GravityHelperModule.Settings.VvvvvvAllowDashing = GravityHelperModuleSettings.VvvvvvSetting.Default;
                 GravityHelperModule.Settings.VvvvvvAllowGrabbing = GravityHelperModuleSettings.VvvvvvSetting.Default;
                 GravityHelperModule.Settings.VvvvvvFlipSound = GravityHelperModuleSettings.VvvvvvSetting.Default;
-                self.Add(_vvvvvvPostcard = new Postcard(Dialog.Get("GRAVITYHELPER_POSTCARD_VVVVVV"),
+                self.Add(_vvvvvvPostcard = new Postcard(Dialog.Clean("GRAVITYHELPER_POSTCARD_VVVVVV"),
                     "event:/ui/main/postcard_csides_in", "event:/ui/main/postcard_csides_out"));
                 yield return _vvvvvvPostcard.DisplayRoutine();
                 _vvvvvvPostcard = null;
