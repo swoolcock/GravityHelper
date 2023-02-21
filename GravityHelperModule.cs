@@ -1,10 +1,6 @@
 ﻿// Copyright (c) Shane Woolcock. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
-#if DEBUG
-#define FORCE_LOAD_HOOKS
-#endif
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,10 +10,7 @@ using Celeste.Mod.GravityHelper.Hooks;
 using Celeste.Mod.GravityHelper.ThirdParty;
 using Monocle;
 using MonoMod.ModInterop;
-
-#if !FORCE_LOAD_HOOKS
 using Microsoft.Xna.Framework;
-#endif
 
 namespace Celeste.Mod.GravityHelper
 {
@@ -223,7 +216,7 @@ namespace Celeste.Mod.GravityHelper
 
             if (Settings.AllowInAllMaps)
                 updateHooks(HookLevel.Everything);
-            if (RequiresHooksForSession(session, out var renderOnly))
+            else if (RequiresHooksForSession(session, out var renderOnly))
                 updateHooks(renderOnly ? HookLevel.Render : HookLevel.Everything);
             else
                 updateHooks(HookLevel.None);
