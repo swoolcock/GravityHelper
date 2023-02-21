@@ -101,7 +101,15 @@ namespace Celeste.Mod.GravityHelper
             {
                 Values = getEnumOptions<ControlSchemeSetting>().ToList(),
                 Index = (int)ControlScheme,
-                OnValueChange = value => ControlScheme = value,
+                OnValueChange = value =>
+                {
+                    ControlScheme = value;
+                    FeatherControlScheme = ControlScheme;
+                    foreach (var item in menu.Items.OfType<TextMenu.Option<ControlSchemeSetting>>().Where(i => i.Index != (int)value))
+                    {
+                        item.Index = (int)value;
+                    }
+                },
             }, Dialog.Clean("GRAVITYHELPER_MENU_CONTROL_SCHEME_SUBTEXT"));
         }
 
