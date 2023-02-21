@@ -35,11 +35,11 @@ namespace Celeste.Mod.GravityHelper.Components
             {
                 if (!args.Changed || _player.Scene == null) return;
 
-                Vector2 normalLightOffset = new Vector2(0.0f, -8f);
-                Vector2 duckingLightOffset = new Vector2(0.0f, -3f);
+                Vector2 normalLightOffset = new Vector2(0.0f, args.NewValue == GravityType.Normal ? -8f : 8f);
+                Vector2 duckingLightOffset = new Vector2(0.0f, args.NewValue == GravityType.Normal ? -3f : 3f);
 
-                _playerData["normalLightOffset"] = args.NewValue == GravityType.Normal ? normalLightOffset : -normalLightOffset;
-                _playerData["duckingLightOffset"] = args.NewValue == GravityType.Normal ? duckingLightOffset : -duckingLightOffset;
+                _playerData["normalLightOffset"] = normalLightOffset;
+                _playerData["duckingLightOffset"] = duckingLightOffset;
                 _player.Light.Position = _player.Ducking ? duckingLightOffset : normalLightOffset;
 
                 var starFlyBloom = _playerData.Get<BloomPoint>("starFlyBloom");
