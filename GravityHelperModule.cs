@@ -130,6 +130,8 @@ namespace Celeste.Mod.GravityHelper
                 PlayerHooks.Unload();
                 PlayerSpriteHooks.Unload();
                 PufferHooks.Unload();
+                RisingLavaHooks.Unload();
+                SandwichLavaHooks.Unload();
                 SeekerHooks.Unload();
                 SnowballHooks.Unload();
                 SolidHooks.Unload();
@@ -183,6 +185,8 @@ namespace Celeste.Mod.GravityHelper
                 PlayerHooks.Load();
                 PlayerSpriteHooks.Load();
                 PufferHooks.Load();
+                RisingLavaHooks.Load();
+                SandwichLavaHooks.Load();
                 SeekerHooks.Load();
                 SnowballHooks.Load();
                 SolidHooks.Load();
