@@ -115,11 +115,13 @@ namespace Celeste.Mod.GravityHelper
                 CrushBlockHooks.Unload();
                 DreamBlockHooks.Unload();
                 FinalBossHooks.Unload();
+                FireBarrierHooks.Unload();
                 FloatySpaceBlockHooks.Unload();
                 FlyFeatherHooks.Unload();
                 GliderHooks.Unload();
                 HeartGemHooks.Unload();
                 HoldableHooks.Unload();
+                IceBlockHooks.Unload();
                 InputHooks.Unload();
                 JumpThruHooks.Unload();
                 LevelHooks.Unload();
@@ -130,6 +132,8 @@ namespace Celeste.Mod.GravityHelper
                 PlayerHooks.Unload();
                 PlayerSpriteHooks.Unload();
                 PufferHooks.Unload();
+                RisingLavaHooks.Unload();
+                SandwichLavaHooks.Unload();
                 SeekerHooks.Unload();
                 SnowballHooks.Unload();
                 SolidHooks.Unload();
@@ -168,11 +172,13 @@ namespace Celeste.Mod.GravityHelper
                 CrushBlockHooks.Load();
                 DreamBlockHooks.Load();
                 FinalBossHooks.Load();
+                FireBarrierHooks.Load();
                 FloatySpaceBlockHooks.Load();
                 FlyFeatherHooks.Load();
                 GliderHooks.Load();
                 HeartGemHooks.Load();
                 HoldableHooks.Load();
+                IceBlockHooks.Load();
                 InputHooks.Load();
                 JumpThruHooks.Load();
                 LevelHooks.Load();
@@ -183,6 +189,8 @@ namespace Celeste.Mod.GravityHelper
                 PlayerHooks.Load();
                 PlayerSpriteHooks.Load();
                 PufferHooks.Load();
+                RisingLavaHooks.Load();
+                SandwichLavaHooks.Load();
                 SeekerHooks.Load();
                 SnowballHooks.Load();
                 SolidHooks.Load();
