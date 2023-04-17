@@ -8,68 +8,37 @@ using Celeste.Mod.GravityHelper.Extensions;
 using Celeste.Mod.GravityHelper.Hooks.Attributes;
 using Monocle;
 using MonoMod.Cil;
-using MonoMod.RuntimeDetour;
-using MonoMod.Utils;
 
-namespace Celeste.Mod.GravityHelper.Hooks
-{
-    [HookFixture(typeof(BadelineBoost))]
-    public static class BadelineBoostHooks
-    {
-        // // ReSharper disable InconsistentNaming
-        // private static IDetour hook_BadelineBoost_BoostRoutine;
-        // // ReSharper restore InconsistentNaming
-        //
-        // public static void Load()
-        // {
-        //     Logger.Log(nameof(GravityHelperModule), $"Loading {nameof(BadelineBoost)} hooks...");
-        //
-        //     On.Celeste.BadelineBoost.OnPlayer += BadelineBoost_OnPlayer;
-        //
-        //     hook_BadelineBoost_BoostRoutine = new ILHook(ReflectionCache.BadelineBoost_BoostRoutine.GetStateMachineTarget(), BadelineBoost_BoostRoutine);
-        // }
-        //
-        // public static void Unload()
-        // {
-        //     Logger.Log(nameof(GravityHelperModule), $"Unloading {nameof(BadelineBoost)} hooks...");
-        //
-        //     On.Celeste.BadelineBoost.OnPlayer -= BadelineBoost_OnPlayer;
-        //
-        //     hook_BadelineBoost_BoostRoutine?.Dispose();
-        //     hook_BadelineBoost_BoostRoutine = null;
-        // }
+namespace Celeste.Mod.GravityHelper.Hooks;
 
-        [OnHook("OnPlayer", BindingFlags.Instance | BindingFlags.NonPublic)]
-        private static void BadelineBoost_OnPlayer(On.Celeste.BadelineBoost.orig_OnPlayer orig, BadelineBoost self, Player player)
-        {
-            if (GravityHelperModule.PlayerComponent is { } playerComponent)
-            {
-                // update to the expected gravity if custom entity
-                if (self is GravityBadelineBoost gravityBadelineBoost)
-                    playerComponent.SetGravity(gravityBadelineBoost.CurrentDirection, 0f);
-                // otherwise force normal gravity to prevent regular badeline boosts from breaking
-                else if (playerComponent.CurrentGravity != GravityType.Normal)
-                    playerComponent.SetGravity(GravityType.Normal, 0f);
-            }
-
-            orig(self, player);
+[HookFixture(typeof(BadelineBoost))]
+public static class BadelineBoostHooks {
+    [OnHook("OnPlayer", BindingFlags.Instance | BindingFlags.NonPublic)]
+    private static void BadelineBoost_OnPlayer(On.Celeste.BadelineBoost.orig_OnPlayer orig, BadelineBoost self, Player player) {
+        if (GravityHelperModule.PlayerComponent is { } playerComponent) {
+            // update to the expected gravity if custom entity
+            if (self is GravityBadelineBoost gravityBadelineBoost)
+                playerComponent.SetGravity(gravityBadelineBoost.CurrentDirection, 0f);
+            // otherwise force normal gravity to prevent regular badeline boosts from breaking
+            else if (playerComponent.CurrentGravity != GravityType.Normal)
+                playerComponent.SetGravity(GravityType.Normal, 0f);
         }
 
-        [ILHook("BoostRoutine")]
-        private static void BadelineBoost_BoostRoutine(ILContext il)
-        {
-            var cursor = new ILCursor(il);
+        orig(self, player);
+    }
 
-            if (!cursor.TryGotoNext(instr => instr.MatchLdfld<BadelineDummy>(nameof(BadelineDummy.Sprite)),
-                instr => instr.MatchLdflda<GraphicsComponent>(nameof(GraphicsComponent.Scale))))
-                throw new HookException("Couldn't find BadelineDummy.Sprite.Scale");
+    [ILHook("BoostRoutine")]
+    private static void BadelineBoost_BoostRoutine(ILContext il) {
+        var cursor = new ILCursor(il);
 
-            // flip Badeline if Madeline is also flipped
-            cursor.EmitDelegate<Func<BadelineDummy, BadelineDummy>>(dummy =>
-            {
-                dummy.SetShouldInvert(GravityHelperModule.ShouldInvertPlayer);
-                return dummy;
-            });
-        }
+        if (!cursor.TryGotoNext(instr => instr.MatchLdfld<BadelineDummy>(nameof(BadelineDummy.Sprite)),
+            instr => instr.MatchLdflda<GraphicsComponent>(nameof(GraphicsComponent.Scale))))
+            throw new HookException("Couldn't find BadelineDummy.Sprite.Scale");
+
+        // flip Badeline if Madeline is also flipped
+        cursor.EmitDelegate<Func<BadelineDummy, BadelineDummy>>(dummy => {
+            dummy.SetShouldInvert(GravityHelperModule.ShouldInvertPlayer);
+            return dummy;
+        });
     }
 }

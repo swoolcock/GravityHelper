@@ -5,45 +5,39 @@ using System;
 using System.Reflection;
 using MonoMod.RuntimeDetour;
 
-namespace Celeste.Mod.GravityHelper.Hooks.Attributes
-{
-    internal sealed class OnHookAttribute : BaseHookAttribute
-    {
-        public OnHookAttribute(
-            string targetMethodName,
-            BindingFlags bindingFlags = DEFAULT_FLAGS,
-            string[] before = null,
-            string[] after = null,
-            Type[] arguments = null)
-            : base(targetMethodName, bindingFlags, before, after, arguments)
-        {
-        }
+namespace Celeste.Mod.GravityHelper.Hooks.Attributes;
 
-        public OnHookAttribute(
-            Type targetType,
-            string targetMethodName,
-            BindingFlags bindingFlags = DEFAULT_FLAGS,
-            string[] before = null,
-            string[] after = null,
-            Type[] arguments = null)
-            : base(targetType, targetMethodName, bindingFlags, before, after, arguments)
-        {
-        }
+internal sealed class OnHookAttribute : BaseHookAttribute {
+    public OnHookAttribute(
+        string targetMethodName,
+        BindingFlags bindingFlags = DEFAULT_FLAGS,
+        string[] before = null,
+        string[] after = null,
+        Type[] arguments = null)
+        : base(targetMethodName, bindingFlags, before, after, arguments) {
+    }
 
-        public OnHookAttribute(
-            string targetTypeName,
-            string targetMethodName,
-            BindingFlags bindingFlags = DEFAULT_FLAGS,
-            string[] before = null,
-            string[] after = null,
-            Type[] arguments = null)
-            : base(targetTypeName, targetMethodName, bindingFlags, before, after, arguments)
-        {
-        }
+    public OnHookAttribute(
+        Type targetType,
+        string targetMethodName,
+        BindingFlags bindingFlags = DEFAULT_FLAGS,
+        string[] before = null,
+        string[] after = null,
+        Type[] arguments = null)
+        : base(targetType, targetMethodName, bindingFlags, before, after, arguments) {
+    }
 
-        protected override void DoLoad()
-        {
-            Detour = new Hook(TargetMethod, HookMethod);
-        }
+    public OnHookAttribute(
+        string targetTypeName,
+        string targetMethodName,
+        BindingFlags bindingFlags = DEFAULT_FLAGS,
+        string[] before = null,
+        string[] after = null,
+        Type[] arguments = null)
+        : base(targetTypeName, targetMethodName, bindingFlags, before, after, arguments) {
+    }
+
+    protected override void DoLoad() {
+        Detour = new Hook(TargetMethod, HookMethod);
     }
 }

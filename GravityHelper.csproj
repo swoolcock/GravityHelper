@@ -4,7 +4,7 @@
         <TargetFramework>net452</TargetFramework>
         <AssemblyName>GravityHelper</AssemblyName>
         <RootNamespace>Celeste.Mod.GravityHelper</RootNamespace>
-        <LangVersion>preview</LangVersion>
+        <LangVersion>latest</LangVersion>
         <CelestePrefix Condition="'$(CelestePrefix)' == '' And Exists('..\..\Celeste.exe')">..\..</CelestePrefix>
         <CelestePrefix Condition="'$(CelestePrefix)' == ''">lib-stripped</CelestePrefix>
         <CelesteType Condition="'$(CelesteType)' == '' And Exists('$(CelestePrefix)\BuildIsXNA.txt')">XNA</CelesteType>

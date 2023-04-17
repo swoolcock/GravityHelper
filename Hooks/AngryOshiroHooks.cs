@@ -1,8 +1,6 @@
 // Copyright (c) Shane Woolcock. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
-using System;
-using System.Reflection;
 using Celeste.Mod.GravityHelper.Components;
 using Celeste.Mod.GravityHelper.Extensions;
 using Celeste.Mod.GravityHelper.Hooks.Attributes;
@@ -12,126 +10,98 @@ using MonoMod.Utils;
 
 // ReSharper disable InconsistentNaming
 
-namespace Celeste.Mod.GravityHelper.Hooks
-{
-    [HookFixture(typeof(AngryOshiro))]
-    public static class AngryOshiroHooks
-    {
-        private const int StChase = 0;
-        private const int StChargeUp = 1;
-        private const int StAttack = 2;
-        private const int StDummy = 3;
-        private const int StWaiting = 4;
-        private const int StHurt = 5;
+namespace Celeste.Mod.GravityHelper.Hooks;
 
-        // public static void Load()
-        // {
-        //     Logger.Log(nameof(GravityHelperModule), $"Loading {nameof(AngryOshiro)} hooks...");
-        //     On.Celeste.AngryOshiro.ctor_Vector2_bool += AngryOshiro_ctor_Vector2_bool;
-        //     On.Celeste.AngryOshiro.OnPlayerBounce += AngryOshiro_OnPlayerBounce;
-        //     On.Celeste.AngryOshiro.HurtUpdate += AngryOshiro_HurtUpdate;
-        //     On.Celeste.AngryOshiro.Render += AngryOshiro_Render;
-        // }
-        //
-        // public static void Unload()
-        // {
-        //     Logger.Log(nameof(GravityHelperModule), $"Unloading {nameof(AngryOshiro)} hooks...");
-        //     On.Celeste.AngryOshiro.ctor_Vector2_bool -= AngryOshiro_ctor_Vector2_bool;
-        //     On.Celeste.AngryOshiro.OnPlayerBounce -= AngryOshiro_OnPlayerBounce;
-        //     On.Celeste.AngryOshiro.HurtUpdate -= AngryOshiro_HurtUpdate;
-        //     On.Celeste.AngryOshiro.Render -= AngryOshiro_Render;
-        // }
+[HookFixture(typeof(AngryOshiro))]
+public static class AngryOshiroHooks {
+    private const int StChase = 0;
+    private const int StChargeUp = 1;
+    private const int StAttack = 2;
+    private const int StDummy = 3;
+    private const int StWaiting = 4;
+    private const int StHurt = 5;
 
-        [OnHook("()", arguments: new[] { typeof(Vector2), typeof(bool) })]
-        private static void AngryOshiro_ctor_Vector2_bool(On.Celeste.AngryOshiro.orig_ctor_Vector2_bool orig, AngryOshiro self, Vector2 position, bool fromCutscene)
-        {
-            orig(self, position, fromCutscene);
+    [OnHook("()", arguments: new[] { typeof(Vector2), typeof(bool) })]
+    private static void AngryOshiro_ctor_Vector2_bool(On.Celeste.AngryOshiro.orig_ctor_Vector2_bool orig, AngryOshiro self, Vector2 position, bool fromCutscene) {
+        orig(self, position, fromCutscene);
 
-            var data = DynamicData.For(self);
-            var bounceCollider = data.Get<PlayerCollider>("bounceCollider");
-            var normalBounceColliderTop = bounceCollider.Collider.Top;
-            var colliderOffset = self.Collider.Top - normalBounceColliderTop;
-            var invertedBounceColliderBottom = self.Collider.Bottom + colliderOffset;
+        var data = DynamicData.For(self);
+        var bounceCollider = data.Get<PlayerCollider>("bounceCollider");
+        var normalBounceColliderTop = bounceCollider.Collider.Top;
+        var colliderOffset = self.Collider.Top - normalBounceColliderTop;
+        var invertedBounceColliderBottom = self.Collider.Bottom + colliderOffset;
 
-            self.Add(new PlayerGravityListener((player, args) =>
-            {
-                if (args.NewValue == GravityType.Normal)
-                    bounceCollider.Collider.Top = normalBounceColliderTop;
-                else if (args.NewValue == GravityType.Inverted)
-                    bounceCollider.Collider.Bottom = invertedBounceColliderBottom;
-            }));
+        self.Add(new PlayerGravityListener((player, args) => {
+            if (args.NewValue == GravityType.Normal)
+                bounceCollider.Collider.Top = normalBounceColliderTop;
+            else if (args.NewValue == GravityType.Inverted)
+                bounceCollider.Collider.Bottom = invertedBounceColliderBottom;
+        }));
+    }
+
+    [OnHook("OnPlayerBounce")]
+    private static void AngryOshiro_OnPlayerBounce(On.Celeste.AngryOshiro.orig_OnPlayerBounce orig, AngryOshiro self, Player player) {
+        if (!GravityHelperModule.ShouldInvertPlayer) {
+            orig(self, player);
+            return;
         }
 
-        [OnHook("OnPlayerBounce", BindingFlags.Instance | BindingFlags.NonPublic)]
-        private static void AngryOshiro_OnPlayerBounce(On.Celeste.AngryOshiro.orig_OnPlayerBounce orig, AngryOshiro self, Player player)
-        {
-            if (!GravityHelperModule.ShouldInvertPlayer)
-            {
-                orig(self, player);
-                return;
-            }
+        var data = DynamicData.For(self);
+        var state = data.Get<StateMachine>("state");
 
-            var data = DynamicData.For(self);
-            var state = data.Get<StateMachine>("state");
+        if (state.State != StAttack || player.Top < self.Bottom - 6)
+            return;
 
-            if (state.State != StAttack || player.Top < self.Bottom - 6)
-                return;
+        self.SetShouldInvert(true);
 
-            self.SetShouldInvert(true);
+        var prechargeSfx = data.Get<SoundSource>("prechargeSfx");
+        var chargeSfx = data.Get<SoundSource>("chargeSfx");
+        Audio.Play("event:/game/general/thing_booped", self.Position);
+        Celeste.Freeze(0.2f);
+        player.Bounce(self.Bottom - 2f);
+        state.State = StHurt;
+        prechargeSfx.Stop();
+        chargeSfx.Stop();
+    }
 
-            var prechargeSfx = data.Get<SoundSource>("prechargeSfx");
-            var chargeSfx = data.Get<SoundSource>("chargeSfx");
-            Audio.Play("event:/game/general/thing_booped", self.Position);
-            Celeste.Freeze(0.2f);
-            player.Bounce(self.Bottom - 2f);
-            state.State = StHurt;
-            prechargeSfx.Stop();
-            chargeSfx.Stop();
+    [OnHook("HurtUpdate")]
+    private static int AngryOshiro_HurtUpdate(On.Celeste.AngryOshiro.orig_HurtUpdate orig, AngryOshiro self) {
+        if (!self.ShouldInvert())
+            return orig(self);
+
+        var data = DynamicData.For(self);
+
+        self.X += 100f * Engine.DeltaTime;
+        self.Y -= 200f * Engine.DeltaTime;
+
+        if (self.Bottom >= (double) (self.SceneAs<Level>().Bounds.Top - 20))
+            return StHurt;
+
+        self.SetShouldInvert(false);
+
+        if (data.Get<bool>("leaving")) {
+            self.RemoveSelf();
+            return StHurt;
         }
 
-        [OnHook("HurtUpdate", BindingFlags.Instance | BindingFlags.NonPublic)]
-        private static int AngryOshiro_HurtUpdate(On.Celeste.AngryOshiro.orig_HurtUpdate orig, AngryOshiro self)
-        {
-            if (!self.ShouldInvert())
-                return orig(self);
+        self.X = self.SceneAs<Level>().Camera.Left - 48f;
+        data.Set("cameraXOffset", -48f);
+        data.Set("doRespawnAnim", true);
+        self.Visible = false;
 
-            var data = DynamicData.For(self);
+        return StChase;
+    }
 
-            self.X += 100f * Engine.DeltaTime;
-            self.Y -= 200f * Engine.DeltaTime;
-
-            if (self.Bottom >= (double) (self.SceneAs<Level>().Bounds.Top - 20))
-                return StHurt;
-
-            self.SetShouldInvert(false);
-
-            if (data.Get<bool>("leaving"))
-            {
-                self.RemoveSelf();
-                return StHurt;
-            }
-
-            self.X = self.SceneAs<Level>().Camera.Left - 48f;
-            data.Set("cameraXOffset", -48f);
-            data.Set("doRespawnAnim", true);
-            self.Visible = false;
-
-            return StChase;
-        }
-
-        [OnHook(nameof(AngryOshiro.Render))]
-        private static void AngryOshiro_Render(On.Celeste.AngryOshiro.orig_Render orig, AngryOshiro self)
-        {
-            if (!self.ShouldInvert())
-            {
-                orig(self);
-                return;
-            }
-
-            var scaleY = self.Sprite.Scale.Y;
-            self.Sprite.Scale.Y = -scaleY;
+    [OnHook(nameof(AngryOshiro.Render))]
+    private static void AngryOshiro_Render(On.Celeste.AngryOshiro.orig_Render orig, AngryOshiro self) {
+        if (!self.ShouldInvert()) {
             orig(self);
-            self.Sprite.Scale.Y = scaleY;
+            return;
         }
+
+        var scaleY = self.Sprite.Scale.Y;
+        self.Sprite.Scale.Y = -scaleY;
+        orig(self);
+        self.Sprite.Scale.Y = scaleY;
     }
 }

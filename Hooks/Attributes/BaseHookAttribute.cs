@@ -10,154 +10,137 @@ using JetBrains.Annotations;
 using MonoMod.RuntimeDetour;
 using MonoMod.Utils;
 
-namespace Celeste.Mod.GravityHelper.Hooks.Attributes
-{
-    [MeansImplicitUse]
-    [AttributeUsage(AttributeTargets.Method)]
-    internal abstract class BaseHookAttribute : Attribute
-    {
-        public Type TargetType { get; set; }
-        public string TargetTypeName { get; set; }
-        public string TargetMethodName { get; set; }
-        public Type[] TargetMethodArguments { get; set; }
-        public BindingFlags BindingFlags { get; set; }
+namespace Celeste.Mod.GravityHelper.Hooks.Attributes;
 
-        protected List<string> Before = new List<string>();
-        protected List<string> After = new List<string>();
+[MeansImplicitUse]
+[AttributeUsage(AttributeTargets.Method)]
+internal abstract class BaseHookAttribute : Attribute {
+    public Type TargetType { get; set; }
+    public string TargetTypeName { get; set; }
+    public string TargetMethodName { get; set; }
+    public Type[] TargetMethodArguments { get; set; }
+    public BindingFlags BindingFlags { get; set; }
 
-        protected const BindingFlags DEFAULT_FLAGS = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
+    protected List<string> Before = new List<string>();
+    protected List<string> After = new List<string>();
 
-        protected IDetour Detour;
-        protected MethodBase TargetMethod;
-        protected MethodInfo HookMethod;
+    protected const BindingFlags DEFAULT_FLAGS = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
 
-        protected BaseHookAttribute(
-            string targetMethodName,
-            BindingFlags bindingFlags = DEFAULT_FLAGS,
-            IEnumerable<string> before = null,
-            IEnumerable<string> after = null,
-            Type[] arguments = null)
-        {
-            TargetMethodName = targetMethodName;
-            TargetMethodArguments = arguments;
-            BindingFlags = bindingFlags;
-            if (before != null)
-                Before.AddRange(before);
-            if (after != null)
-                After.AddRange(after);
-        }
+    protected IDetour Detour;
+    protected MethodBase TargetMethod;
+    protected MethodInfo HookMethod;
 
-        protected BaseHookAttribute(
-            Type targetType,
-            string targetMethodName,
-            BindingFlags bindingFlags = DEFAULT_FLAGS,
-            IEnumerable<string> before = null,
-            IEnumerable<string> after = null,
-            Type[] arguments = null)
-            : this(targetMethodName, bindingFlags, before, after, arguments)
-        {
-            TargetType = targetType;
-        }
+    protected BaseHookAttribute(
+        string targetMethodName,
+        BindingFlags bindingFlags = DEFAULT_FLAGS,
+        IEnumerable<string> before = null,
+        IEnumerable<string> after = null,
+        Type[] arguments = null) {
+        TargetMethodName = targetMethodName;
+        TargetMethodArguments = arguments;
+        BindingFlags = bindingFlags;
+        if (before != null)
+            Before.AddRange(before);
+        if (after != null)
+            After.AddRange(after);
+    }
 
-        protected BaseHookAttribute(
-            string targetTypeName,
-            string targetMethodName,
-            BindingFlags bindingFlags = DEFAULT_FLAGS,
-            IEnumerable<string> before = null,
-            IEnumerable<string> after = null,
-            Type[] arguments = null)
-            : this(targetMethodName, bindingFlags, before, after, arguments)
-        {
-            TargetTypeName = targetTypeName;
-        }
+    protected BaseHookAttribute(
+        Type targetType,
+        string targetMethodName,
+        BindingFlags bindingFlags = DEFAULT_FLAGS,
+        IEnumerable<string> before = null,
+        IEnumerable<string> after = null,
+        Type[] arguments = null)
+        : this(targetMethodName, bindingFlags, before, after, arguments) {
+        TargetType = targetType;
+    }
 
-        public BaseHookAttribute Init(Type fixtureType, MethodInfo hookMethod)
-        {
-            Logger.Log(LogLevel.Info, nameof(GravityHelperModule), $"Initialising hook method: {fixtureType.Name}.{hookMethod.Name}");
+    protected BaseHookAttribute(
+        string targetTypeName,
+        string targetMethodName,
+        BindingFlags bindingFlags = DEFAULT_FLAGS,
+        IEnumerable<string> before = null,
+        IEnumerable<string> after = null,
+        Type[] arguments = null)
+        : this(targetMethodName, bindingFlags, before, after, arguments) {
+        TargetTypeName = targetTypeName;
+    }
 
-            var fixtureAttribute = (HookFixtureAttribute)fixtureType.GetCustomAttribute(typeof(HookFixtureAttribute));
-            if (TargetType == null && !string.IsNullOrWhiteSpace(TargetTypeName))
-            {
-                try
-                {
-                    TargetType = Type.GetType(TargetTypeName);
-                }
-                catch (Exception)
-                {
-                    Logger.Log(LogLevel.Error, nameof(GravityHelperModule), $"Couldn't find target type: {TargetTypeName}");
-                    return null;
-                }
-            }
+    public BaseHookAttribute Init(Type fixtureType, MethodInfo hookMethod) {
+        Logger.Log(LogLevel.Info, nameof(GravityHelperModule), $"Initialising hook method: {fixtureType.Name}.{hookMethod.Name}");
 
-            TargetType ??= fixtureAttribute.TargetType;
-
-            TargetTypeName = TargetType.Name;
-
-            HookMethod = hookMethod;
-            if (TargetMethod == null && !string.IsNullOrWhiteSpace(TargetMethodName))
-            {
-                IEnumerable<MethodBase> methods;
-                if (TargetMethodName == "()")
-                    methods = TargetType.GetConstructors(BindingFlags);
-                else
-                    methods = TargetType.GetMethods(BindingFlags).Where(m => m.Name == TargetMethodName);
-
-                TargetMethod = TargetMethodArguments == null
-                    ? methods.FirstOrDefault()
-                    : methods.FirstOrDefault(m => m.GetParameters()
-                        .Select(p => p.ParameterType)
-                        .SequenceEqual(TargetMethodArguments));
-            }
-
-            if (TargetMethod == null)
-            {
-                Logger.Log(LogLevel.Error, nameof(GravityHelperModule), $"Couldn't find target method: {TargetMethodName}");
+        var fixtureAttribute = (HookFixtureAttribute) fixtureType.GetCustomAttribute(typeof(HookFixtureAttribute));
+        if (TargetType == null && !string.IsNullOrWhiteSpace(TargetTypeName)) {
+            try {
+                TargetType = Type.GetType(TargetTypeName);
+            } catch (Exception) {
+                Logger.Log(LogLevel.Error, nameof(GravityHelperModule), $"Couldn't find target type: {TargetTypeName}");
                 return null;
             }
-
-            TargetMethodName = TargetMethod.Name;
-
-            if (TargetMethod is MethodInfo methodInfo && methodInfo.ReturnType == typeof(IEnumerator))
-                TargetMethod = methodInfo.GetStateMachineTarget();
-
-            return this;
         }
 
-        public virtual void Load()
-        {
-            if (Detour != null) return;
+        TargetType ??= fixtureAttribute.TargetType;
 
-            Logger.Log(LogLevel.Info, nameof(GravityHelperModule), $"Loading hook: {TargetTypeName}.{TargetMethodName}");
+        TargetTypeName = TargetType.Name;
 
-            if (!Before.Any() && !After.Any())
-            {
-                DoLoad();
-                return;
-            }
+        HookMethod = hookMethod;
+        if (TargetMethod == null && !string.IsNullOrWhiteSpace(TargetMethodName)) {
+            IEnumerable<MethodBase> methods;
+            if (TargetMethodName == "()")
+                methods = TargetType.GetConstructors(BindingFlags);
+            else
+                methods = TargetType.GetMethods(BindingFlags).Where(m => m.Name == TargetMethodName);
 
-            using (var context = new DetourContext())
-            {
-                if (Before.Any())
-                    context.Before.AddRange(Before);
-                if (After.Any())
-                    context.After.AddRange(After);
-                DoLoad();
-            }
+            TargetMethod = TargetMethodArguments == null
+                ? methods.FirstOrDefault()
+                : methods.FirstOrDefault(m => m.GetParameters()
+                    .Select(p => p.ParameterType)
+                    .SequenceEqual(TargetMethodArguments));
         }
 
-        public virtual void Unload()
-        {
-            if (Detour == null) return;
-            Logger.Log(LogLevel.Info, nameof(GravityHelperModule), $"Unloading hook: {TargetTypeName}.{TargetMethodName}");
-            DoUnload();
+        if (TargetMethod == null) {
+            Logger.Log(LogLevel.Error, nameof(GravityHelperModule), $"Couldn't find target method: {TargetMethodName}");
+            return null;
         }
 
-        protected abstract void DoLoad();
+        TargetMethodName = TargetMethod.Name;
 
-        protected virtual void DoUnload()
-        {
-            Detour?.Dispose();
-            Detour = null;
+        if (TargetMethod is MethodInfo methodInfo && methodInfo.ReturnType == typeof(IEnumerator))
+            TargetMethod = methodInfo.GetStateMachineTarget();
+
+        return this;
+    }
+
+    public virtual void Load() {
+        if (Detour != null) return;
+
+        Logger.Log(LogLevel.Info, nameof(GravityHelperModule), $"Loading hook: {TargetTypeName}.{TargetMethodName}");
+
+        if (!Before.Any() && !After.Any()) {
+            DoLoad();
+            return;
         }
+
+        using (var context = new DetourContext()) {
+            if (Before.Any())
+                context.Before.AddRange(Before);
+            if (After.Any())
+                context.After.AddRange(After);
+            DoLoad();
+        }
+    }
+
+    public virtual void Unload() {
+        if (Detour == null) return;
+        Logger.Log(LogLevel.Info, nameof(GravityHelperModule), $"Unloading hook: {TargetTypeName}.{TargetMethodName}");
+        DoUnload();
+    }
+
+    protected abstract void DoLoad();
+
+    protected virtual void DoUnload() {
+        Detour?.Dispose();
+        Detour = null;
     }
 }

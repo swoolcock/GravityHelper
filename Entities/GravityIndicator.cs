@@ -3,8 +3,6 @@
 
 using System;
 using Celeste.Mod.Entities;
-using Celeste.Mod.GravityHelper.Components;
-using Celeste.Mod.GravityHelper.Entities.Controllers;
 using Celeste.Mod.GravityHelper.Extensions;
 using Microsoft.Xna.Framework;
 using Monocle;
