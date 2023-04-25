@@ -67,8 +67,10 @@ namespace Celeste.Mod.GravityHelper.Entities
         private const float flash_time_seconds = 0.6f;
         private const float thick_line_thickness = 7f;
         private const float thin_line_thickness = 5f;
+        private const float cooldown_time_seconds = 0.1f;
 
-        private float _flashTimeRemaining = 0f;
+        private float _cooldownTimeRemaining;
+        private float _flashTimeRemaining;
         private Color _flashColor;
         private Vector2 _enterPosition;
         private Vector2 _exitPosition;
@@ -166,10 +168,8 @@ namespace Celeste.Mod.GravityHelper.Entities
         {
             base.Update();
 
-            if (_flashTimeRemaining > 0)
-            {
-                _flashTimeRemaining -= Engine.DeltaTime;
-            }
+            if (_flashTimeRemaining > 0) _flashTimeRemaining -= Engine.DeltaTime;
+            if (_cooldownTimeRemaining > 0) _cooldownTimeRemaining -= Engine.DeltaTime;
         }
 
         public override void Render()
@@ -256,9 +256,63 @@ namespace Celeste.Mod.GravityHelper.Entities
             Position -= _shakeOffset;
         }
 
+        private bool hasPlayerRiderOrBuffered(Player player)
+        {
+            // if we're actually riding then it's fine
+            if (HasPlayerRider()) return true;
+
+            // only allow these states
+            switch (player.StateMachine.State)
+            {
+                case Player.StNormal:
+                case Player.StDash:
+                case Player.StRedDash:
+                case Player.StStarFly:
+                case Player.StHitSquash:
+                case Player.StClimb:
+                    break;
+                default:
+                    return false;
+            }
+
+            // we can't be holding
+            if (player.Holding != null) return false;
+
+            // we must be grabbing
+            if (!Input.GrabCheck) return false;
+
+            // we can't be comf
+            if (!player.CanUnDuck) return false;
+
+            // we must have stamina
+            if (player.Stamina <= 0) return false;
+
+            const float buffer = 3f;
+
+            // if we're on the left, facing right, and within a few pixels
+            var activeEdges = ActiveEdges;
+            if (activeEdges.HasFlag(Edges.Left) &&
+                player.Right <= Left &&
+                player.Facing == Facings.Right &&
+                player.CollideCheck(this, player.Position + Vector2.UnitX * buffer) &&
+                !ClimbBlocker.Check(Scene, player, player.Position + Vector2.UnitX * buffer))
+                return true;
+
+            // if we're on the right, facing left, and within a few pixels
+            if (activeEdges.HasFlag(Edges.Right) &&
+                player.Left >= Right &&
+                player.Facing == Facings.Left &&
+                player.CollideCheck(this, player.Position - Vector2.UnitX * buffer) &&
+                !ClimbBlocker.Check(Scene, player, player.Position - Vector2.UnitX * buffer))
+                return true;
+
+            return false;
+        }
+
         public bool TryHandlePlayer(Player player)
         {
-            if (!HasPlayerRider() || Scene is not Level level) return false;
+            if (_cooldownTimeRemaining > 0) return false;
+            if (!hasPlayerRiderOrBuffered(player) || Scene is not Level level) return false;
 
             var currentGravity = player.GetGravity();
             var activeEdges = ActiveEdges;
@@ -268,7 +322,7 @@ namespace Celeste.Mod.GravityHelper.Entities
             var inType = GravityType.Normal;
             var outType = GravityType.Inverted;
 
-            if (activeEdges.HasFlag(Edges.Top) && player.Top < Top && player.StateMachine.State != Player.StClimb)
+            if (activeEdges.HasFlag(Edges.Top) && player.Bottom <= Top && player.StateMachine.State != Player.StClimb)
             {
                 // check whether we have space to move on the other side
                 if (player.CollideCheck<Solid>(new Vector2(player.X, Bottom + player.Height)))
@@ -289,7 +343,7 @@ namespace Celeste.Mod.GravityHelper.Entities
                 inType = GravityType.Normal;
                 outType = GravityType.Inverted;
             }
-            else if (activeEdges.HasFlag(Edges.Bottom) && player.Bottom > Bottom && player.StateMachine.State != Player.StClimb)
+            else if (activeEdges.HasFlag(Edges.Bottom) && player.Top >= Bottom && player.StateMachine.State != Player.StClimb)
             {
                 // check whether we have space to move on the other side
                 if (player.CollideCheck<Solid>(new Vector2(player.X, Top - player.Height)))
@@ -310,10 +364,10 @@ namespace Celeste.Mod.GravityHelper.Entities
                 inType = GravityType.Inverted;
                 outType = GravityType.Normal;
             }
-            else if (activeEdges.HasFlag(Edges.Left) && player.Left < Left && player.StateMachine.State == Player.StClimb)
+            else if (activeEdges.HasFlag(Edges.Left) && player.Right <= Left)
             {
                 // check whether we have space to move on the other side
-                var targetX = player.X + player.Width + Width;
+                var targetX = Right - player.Collider.Left;
                 var targetY = currentGravity == GravityType.Normal ? player.Bottom : player.Top;
                 if (player.CollideCheck<Solid>(new Vector2(targetX, targetY)))
                     return false;
@@ -337,10 +391,10 @@ namespace Celeste.Mod.GravityHelper.Entities
                 inType = LeftGravityType;
                 outType = !Edges.HasFlag(Edges.Right) || RightGravityType != GravityType.Toggle ? player.GetGravity() : GravityType.Toggle;
             }
-            else if (activeEdges.HasFlag(Edges.Right) && player.Right > Right && player.StateMachine.State == Player.StClimb)
+            else if (activeEdges.HasFlag(Edges.Right) && player.Left >= Right)
             {
                 // check whether we have space to move on the other side
-                var targetX = player.X - player.Width - Width;
+                var targetX = Left - player.Collider.Right;
                 var targetY = currentGravity == GravityType.Normal ? player.Bottom : player.Top;
                 if (player.CollideCheck<Solid>(new Vector2(targetX, targetY)))
                     return false;
@@ -393,6 +447,9 @@ namespace Celeste.Mod.GravityHelper.Entities
             // flash
             _flashTimeRemaining = flash_time_seconds;
             _flashColor = player.GetGravity().Color();
+
+            // cooldown
+            _cooldownTimeRemaining = cooldown_time_seconds;
 
             // we handled it
             return true;
