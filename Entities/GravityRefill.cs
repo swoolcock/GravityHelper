@@ -33,25 +33,25 @@ namespace Celeste.Mod.GravityHelper.Entities
         private readonly SineWave _sine;
 
         // particles
-        private readonly ParticleType p_shatter = new ParticleType(Refill.P_Shatter)
+        public static readonly ParticleType P_Shatter = new ParticleType(Refill.P_Shatter)
         {
             Color = Color.Purple,
             Color2 = Color.MediumPurple,
         };
 
-        private readonly ParticleType p_regen = new ParticleType(Refill.P_Regen)
+        public static readonly ParticleType P_Regen = new ParticleType(Refill.P_Regen)
         {
             Color = Color.BlueViolet,
             Color2 = Color.Violet,
         };
 
-        private readonly ParticleType p_glow_normal = new ParticleType(Refill.P_Glow)
+        public static readonly ParticleType P_Glow_Normal = new ParticleType(Refill.P_Glow)
         {
             Color = Color.Blue,
             Color2 = Color.BlueViolet,
         };
 
-        private readonly ParticleType p_glow_inverted = new ParticleType(Refill.P_Glow)
+        public static readonly ParticleType P_Glow_Inverted = new ParticleType(Refill.P_Glow)
         {
             Color = Color.Red,
             Color2 = Color.MediumVioletRed,
@@ -126,7 +126,7 @@ namespace Celeste.Mod.GravityHelper.Entities
                 var offset = Vector2.UnitY * (_emitNormal ? 5f : -5f);
                 var range = Vector2.One * 4f;
                 var direction = Vector2.UnitY.Angle() * (_emitNormal ? 1 : -1);
-                var p_glow = _emitNormal ? p_glow_normal : p_glow_inverted;
+                var p_glow = _emitNormal ? P_Glow_Normal : P_Glow_Inverted;
                 _level.ParticlesFG.Emit(p_glow, 1, Position + offset, range, direction);
                 _emitNormal = !_emitNormal;
             }
@@ -153,7 +153,7 @@ namespace Celeste.Mod.GravityHelper.Entities
             Depth = Depths.Pickups;
             _wiggler.Start();
             Audio.Play("event:/game/general/diamond_return", Position);
-            _level.ParticlesFG.Emit(p_regen, 16, Position, Vector2.One * 2f);
+            _level.ParticlesFG.Emit(P_Regen, 16, Position, Vector2.One * 2f);
         }
 
         private void updateY() => _arrows.Y = _sprite.Y = _bloom.Y = _sine.Value * 2f;
@@ -198,8 +198,8 @@ namespace Celeste.Mod.GravityHelper.Entities
             yield return 0.05f;
 
             float direction = player.Speed.Angle();
-            refill._level.ParticlesFG.Emit(refill.p_shatter, 5, refill.Position, Vector2.One * 4f, direction - (float)Math.PI / 2f);
-            refill._level.ParticlesFG.Emit(refill.p_shatter, 5, refill.Position, Vector2.One * 4f, direction + (float)Math.PI / 2f);
+            refill._level.ParticlesFG.Emit(P_Shatter, 5, refill.Position, Vector2.One * 4f, direction - (float)Math.PI / 2f);
+            refill._level.ParticlesFG.Emit(P_Shatter, 5, refill.Position, Vector2.One * 4f, direction + (float)Math.PI / 2f);
             SlashFx.Burst(refill.Position, direction);
 
             if (refill.OneUse)

@@ -259,6 +259,14 @@ entities.GravityHelper/InversionBlock.attributes.description.climbFall=Whether t
 entities.GravityHelper/InversionBlock.attributes.description.endFallOnSolidTiles=Whether the inversion block should stop falling once it hits foreground tiles.\nDefaults to true, but you may want to set this to false if "fallType" is dependent on the player's gravity.
 entities.GravityHelper/InversionBlock.attributes.description.defaultToController=If true (default), supported properties for this entity will use the value from the active controller.
 entities.GravityHelper/InversionBlock.attributes.description.sound=The sound to play when travelling through this inversion block. Defaults to event:/char/badeline/disappear (the sound when the final Badeline chaser disappears in 2A), or the active controller.
+entities.GravityHelper/InversionBlock.attributes.description.autotile=Whether this block should be rendered as a tile entity, similar to a falling block. Defaults to false.
+entities.GravityHelper/InversionBlock.attributes.description.tiletype=The tile type to use, if autotile is enabled. Defaults to Snow.
+entities.GravityHelper/InversionBlock.attributes.description.refillDashCount=The number of dashes to refill when the block is triggered. Defaults to 0.
+entities.GravityHelper/InversionBlock.attributes.description.refillStamina=Whether the block should refill stamina when triggered. Defaults to false, but will always refill stamina if refilling dash.
+entities.GravityHelper/InversionBlock.attributes.description.refillRespawnTime=How long in seconds it takes for the refill to respawn, if it should. Defaults to 2.5 seconds.
+entities.GravityHelper/InversionBlock.attributes.description.giveGravityRefill=Whether the block should give a gravity refill rather than a regular refill. Defaults to false, and overrides Refill Dash Count if true.
+entities.GravityHelper/InversionBlock.attributes.description.refillOneUse=Whether the refill has a single use and should not respawn. Defaults to false.
+entities.GravityHelper/InversionBlock.attributes.description.blockOneUse=Whether the block has a single use and will be disabled once triggered. Defaults to false.
 
 # Force Load Gravity Controller
 entities.GravityHelper/ForceLoadGravityController.placements.name.normal=Force Load Gravity Controller
