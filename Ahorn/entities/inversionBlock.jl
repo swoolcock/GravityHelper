@@ -17,6 +17,9 @@ const default_sound = "event:/char/badeline/disappear"
     topEnabled::Bool=true, bottomEnabled::Bool=true, leftEnabled::Bool=false, rightEnabled::Bool=false,
     fallType::Integer=0, climbFall::Bool=true, endFallOnSolidTiles::Bool=true,
     sound::String=default_sound,
+    autotile::Bool=false, tiletype::String="3",
+    refillDashCount::Integer=0, refillStamina::Bool=false, refillRespawnTime::Real=2.5,
+    giveGravityRefill::Bool=false, refillOneUse::Bool=false, blockOneUse::Bool=false,
     pluginVersion::String=PLUGIN_VERSION,
 )
 
@@ -66,6 +69,7 @@ Ahorn.editingOptions(entity::InversionBlock) = Dict{String, Any}(
     "leftGravityType" => gravityTypes,
     "rightGravityType" => gravityTypes,
     "fallType" => fallTypes,
+    "tiletype" => Ahorn.tiletypeEditingOptions(),
 )
 
 Ahorn.minimumSize(entity::InversionBlock) = 16, 16
@@ -141,7 +145,15 @@ function Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::InversionBlock, roo
         end
         Ahorn.restore(ctx)
     end
-    
+
+    if get(entity.data, "giveGravityRefill", false)
+        Ahorn.drawSprite(ctx, "objects/GravityHelper/gravityRefill/idle00", width / 2, height / 2)
+    elseif get(entity.data, "refillDashCount", 0) == 2
+        Ahorn.drawSprite(ctx, "objects/refillTwo/idle00", width / 2, height / 2)
+    elseif get(entity.data, "refillDashCount", 0) > 0
+        Ahorn.drawSprite(ctx, "objects/refill/idle00", width / 2, height / 2)
+    end
+
     Ahorn.restore(ctx)
 end
 

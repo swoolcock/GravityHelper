@@ -2,6 +2,7 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System;
+using System.Collections;
 using Celeste.Mod.Entities;
 using Celeste.Mod.GravityHelper.Components;
 using Celeste.Mod.GravityHelper.Entities.Controllers;
@@ -52,6 +53,12 @@ namespace Celeste.Mod.GravityHelper.Entities
         public Edges Edges { get; }
         public GravityType LeftGravityType { get; }
         public GravityType RightGravityType { get; }
+        public bool BlockOneUse { get; }
+        public bool RefillOneUse { get; }
+        public int RefillDashCount { get; }
+        public bool RefillStamina { get; }
+        public float RefillRespawnTime { get; }
+        public bool GiveGravityRefill { get; }
 
         private readonly bool _defaultToController;
         private string _sound;
@@ -63,16 +70,33 @@ namespace Celeste.Mod.GravityHelper.Entities
         private readonly MTexture _invertedEdgeTexture;
         private readonly MTexture _toggleEdgeTexture;
         private readonly FallingComponent _fallingComponent;
+        private readonly TileGrid _tiles;
+        private readonly Sprite _refillSprite;
+        private readonly Image _refillOutlineImage;
+        private readonly Wiggler _wiggler;
 
         private const float flash_time_seconds = 0.6f;
         private const float thick_line_thickness = 7f;
         private const float thin_line_thickness = 5f;
+        private const float cooldown_time_seconds = 0.1f;
 
-        private float _flashTimeRemaining = 0f;
+        private float _respawnTimeRemaining;
+        private float _cooldownTimeRemaining;
+        private float _flashTimeRemaining;
         private Color _flashColor;
         private Vector2 _enterPosition;
         private Vector2 _exitPosition;
         private Vector2 _shakeOffset;
+        private bool _blockUsed;
+        private bool _refillUsed;
+
+        private ParticleType p_shatter;
+        private ParticleType p_regen;
+        private ParticleType p_glow1;
+        private ParticleType p_glow2;
+
+        private Random particlesRandom;
+        private Vector2[] particles;
 
         private Edges _activeEdges;
         public Edges ActiveEdges
@@ -110,6 +134,10 @@ namespace Celeste.Mod.GravityHelper.Entities
         public InversionBlock(EntityData data, Vector2 offset)
             : base(data.Position + offset, data.Width, data.Height, true)
         {
+            using var _ = new PushRandomDisposable(data.ID);
+
+            Depth = Depths.Above;
+
             _sprite = GFX.SpriteBank.Create("inversionBlock");
             _blockTexture = _sprite.Animations["block"].Frames[0];
             _edgeTexture = _sprite.Animations["edges"].Frames[0];
@@ -117,11 +145,76 @@ namespace Celeste.Mod.GravityHelper.Entities
             _invertedEdgeTexture = _edgeTexture.GetSubtexture(0, tile_size, 3 * tile_size, tile_size);
             _toggleEdgeTexture = _edgeTexture.GetSubtexture(0, 2 * tile_size, 3 * tile_size, tile_size);
 
+            if (data.Bool("autotile", true))
+            {
+                Add(_tiles = GFX.FGAutotiler.GenerateBox(data.Char("tiletype", '3'), data.Width / 8, data.Height / 8).TileGrid);
+            }
+
             _defaultToController = data.Bool("defaultToController", true);
             _sound = data.Attr("sound", DEFAULT_SOUND);
 
             LeftGravityType = data.Enum("leftGravityType", GravityType.Toggle);
             RightGravityType = data.Enum("rightGravityType", GravityType.Toggle);
+            RefillDashCount = data.Int("refillDashCount", 0);
+            RefillStamina = data.Bool("refillStamina", false);
+            RefillRespawnTime = data.Float("refillRespawnTime", 2.5f);
+            GiveGravityRefill = data.Bool("giveGravityRefill", false);
+            RefillOneUse = data.Bool("refillOneUse", false);
+            BlockOneUse = data.Bool("blockOneUse", false);
+
+            if (GiveGravityRefill)
+            {
+                p_shatter = GravityRefill.P_Shatter;
+                p_regen = GravityRefill.P_Regen;
+                p_glow1 = GravityRefill.P_Glow_Normal;
+                p_glow2 = GravityRefill.P_Glow_Inverted;
+                Add(_refillSprite = GFX.SpriteBank.Create("gravityRefill"));
+                Add(_refillOutlineImage = new Image(GFX.Game["objects/GravityHelper/gravityRefill/outline"]));
+            }
+            else if (RefillDashCount > 0)
+            {
+                if (RefillDashCount == 2)
+                {
+                    p_shatter = Refill.P_ShatterTwo;
+                    p_regen = Refill.P_RegenTwo;
+                    p_glow1 = Refill.P_GlowTwo;
+                    Add(_refillSprite = new Sprite(GFX.Game, "objects/refillTwo/idle"));
+                    Add(_refillOutlineImage = new Image(GFX.Game["objects/refillTwo/outline"]));
+                }
+                else
+                {
+                    p_shatter = Refill.P_Shatter;
+                    p_regen = Refill.P_Regen;
+                    p_glow1 = Refill.P_Glow;
+                    Add(_refillSprite = new Sprite(GFX.Game, "objects/refill/idle"));
+                    Add(_refillOutlineImage = new Image(GFX.Game["objects/refill/outline"]));
+                }
+                _refillSprite.AddLoop("idle", "", 0.1f);
+                _refillSprite.Play("idle");
+                _refillSprite.CenterOrigin();
+            }
+
+            if (_refillSprite != null && _refillOutlineImage != null)
+            {
+                _refillOutlineImage.Visible = false;
+                _refillOutlineImage.Position = _refillSprite.Position = new Vector2(Width / 2, Height / 2);
+                _refillOutlineImage.CenterOrigin();
+                Add(_wiggler = Wiggler.Create(1f, 4f, v => _refillSprite.Scale = Vector2.One * (1f + v * 0.2f)));
+
+                int w = (data.Width / 8) - 2;
+                int h = (data.Height / 8) - 2;
+                if (w > 0 && h > 0)
+                {
+                    particlesRandom = new Random(Calc.Random.Next());
+                    particles = new Vector2[w * h];
+                    for (int i = 0; i < particles.Length; i++)
+                    {
+                        float x = (i % w) * 8 + 8;
+                        float y = (i / w) * 8 + 8;
+                        particles[i] = new Vector2(x + particlesRandom.NextFloat(8), y + particlesRandom.NextFloat(8));
+                    }
+                }
+            }
 
             Edges |= data.Bool("leftEnabled") ? Edges.Left : Edges.None;
             Edges |= data.Bool("rightEnabled") ? Edges.Right : Edges.None;
@@ -160,15 +253,56 @@ namespace Celeste.Mod.GravityHelper.Entities
             _ => null,
         };
 
+        private void respawnRefill()
+        {
+            _refillSprite.Visible = true;
+            _refillOutlineImage.Visible = false;
+            _wiggler.Start();
+            Audio.Play(RefillDashCount == 2 ? "event:/new_content/game/10_farewell/pinkdiamond_return" : "event:/game/general/diamond_return", Position);
+            SceneAs<Level>().ParticlesFG.Emit(p_regen, 16, Center, Vector2.One * 2f);
+        }
+
         public override void OnShake(Vector2 amount) => _shakeOffset += amount;
 
         public override void Update()
         {
             base.Update();
 
-            if (_flashTimeRemaining > 0)
+            if (_flashTimeRemaining > 0) _flashTimeRemaining -= Engine.DeltaTime;
+            if (_cooldownTimeRemaining > 0) _cooldownTimeRemaining -= Engine.DeltaTime;
+
+            if (_respawnTimeRemaining > 0)
             {
-                _flashTimeRemaining -= Engine.DeltaTime;
+                _respawnTimeRemaining -= Engine.DeltaTime;
+                if (_respawnTimeRemaining <= 0 && (!_refillUsed || !RefillOneUse))
+                    respawnRefill();
+            }
+
+            emitParticles();
+        }
+
+        private void emitParticles()
+        {
+            if (_refillSprite?.Visible == true && particles.Length > 0 && particlesRandom != null && Scene.OnInterval(0.2f))
+            {
+                foreach (var particle in particles)
+                {
+                    const float chance = 0.5f;
+                    const int amount = 2;
+                    if (particlesRandom.NextFloat() < chance)
+                    {
+                        var pos = Position + particle;
+                        if (p_glow2 != null)
+                        {
+                            SceneAs<Level>().ParticlesFG.Emit(p_glow1, amount / 2, pos, Vector2.One * 4f, Vector2.UnitY.Angle());
+                            SceneAs<Level>().ParticlesFG.Emit(p_glow2, amount / 2, pos, Vector2.One * 4f, (-Vector2.UnitY).Angle());
+                        }
+                        else
+                        {
+                            SceneAs<Level>().ParticlesFG.Emit(p_glow1, amount, pos, Vector2.One * 4f, (pos - Center).Angle());
+                        }
+                    }
+                }
             }
         }
 
@@ -184,6 +318,8 @@ namespace Celeste.Mod.GravityHelper.Entities
             var activeEdges = ActiveEdges;
             var activeColor = Color.White;
             var inactiveColor = new Color(0.5f, 0.5f, 0.5f);
+            var expired = _blockUsed && BlockOneUse;
+            var centreColor = expired ? inactiveColor : Color.White;
             var leftColor = activeEdges.HasFlag(Edges.Left) ? activeColor : inactiveColor;
             var rightColor = activeEdges.HasFlag(Edges.Right) ? activeColor : inactiveColor;
             var topColor = activeEdges.HasFlag(Edges.Top) ? activeColor : inactiveColor;
@@ -191,15 +327,23 @@ namespace Celeste.Mod.GravityHelper.Entities
             int widthInTiles = (int) (Width / tile_size);
             int heightInTiles = (int) (Height / tile_size);
 
-            // draw 9-patch
-            for (int y = 0; y < heightInTiles; y++)
+            // draw 9-patch if we don't have an autotile
+            if (_tiles == null)
             {
-                for (int x = 0; x < widthInTiles; x++)
+                for (int y = 0; y < heightInTiles; y++)
                 {
-                    var srcX = x == 0 ? 0 : x == widthInTiles - 1 ? 16 : 8;
-                    var srcY = y == 0 ? 0 : y == heightInTiles - 1 ? 16 : 8;
-                    _blockTexture.Draw(new Vector2(Left + x * tile_size, Top + y * tile_size), Vector2.Zero, Color.White, Vector2.One, 0f, new Rectangle(srcX, srcY, tile_size, tile_size));
+                    for (int x = 0; x < widthInTiles; x++)
+                    {
+                        var srcX = x == 0 ? 0 : x == widthInTiles - 1 ? 16 : 8;
+                        var srcY = y == 0 ? 0 : y == heightInTiles - 1 ? 16 : 8;
+                        _blockTexture.Draw(new Vector2(Left + x * tile_size, Top + y * tile_size), Vector2.Zero, centreColor, Vector2.One, 0f, new Rectangle(srcX, srcY, tile_size, tile_size));
+                    }
                 }
+            }
+            else
+            {
+                _tiles.Render();
+                _tiles.Color = centreColor;
             }
 
             // draw flash
@@ -215,50 +359,114 @@ namespace Celeste.Mod.GravityHelper.Entities
                 }
             }
 
-            // top left corner
-            var position = TopLeft;
-            leftTexture?.Draw(position + origin, origin, leftColor, Vector2.One, (float)-Math.PI / 2, new Rectangle(2 * tile_size, 0, tile_size, tile_size));
-            topTexture?.Draw(position, Vector2.Zero, topColor, Vector2.One, 0f, new Rectangle(0, 0, tile_size, tile_size));
+            // draw refill crystal if we have it
+            if (_refillSprite?.Visible == true) _refillSprite.Render();
+            if (_refillOutlineImage?.Visible == true) _refillOutlineImage.Render();
 
-            // top right corner
-            position = TopRight - Vector2.UnitX * tile_size;
-            rightTexture?.Draw(position + origin, origin, rightColor, Vector2.One, (float)Math.PI / 2, new Rectangle(0, 0, tile_size, tile_size));
-            topTexture?.Draw(position, Vector2.Zero, topColor, Vector2.One, 0f, new Rectangle(2 * tile_size, 0, tile_size, tile_size));
-
-            // bottom left corner
-            position = BottomLeft - Vector2.UnitY * tile_size;
-            leftTexture?.Draw(position + origin, origin, leftColor, Vector2.One, (float)-Math.PI / 2, new Rectangle(0, 0, tile_size, tile_size));
-            bottomTexture?.Draw(position + origin, origin, bottomColor, Vector2.One, (float)Math.PI, new Rectangle(2 * tile_size, 0, tile_size, tile_size));
-
-            // bottom right corner
-            position = BottomRight - Vector2.One * tile_size;
-            rightTexture?.Draw(position + origin, origin, rightColor, Vector2.One, (float)Math.PI / 2, new Rectangle(2 * tile_size, 0, tile_size, tile_size));
-            bottomTexture?.Draw(position + origin, origin, bottomColor, Vector2.One, (float)Math.PI, new Rectangle(0, 0, tile_size, tile_size));
-
-            // horizontal edges
-            for (int y = tile_size; y < Height - tile_size; y += tile_size)
+            // only draw the edges if it's not expired
+            if (!expired)
             {
-                var leftPos = new Vector2(Left, Top + y);
-                var rightPos = new Vector2(Right - tile_size, Top + y);
-                leftTexture?.Draw(leftPos + origin, origin, leftColor, Vector2.One, (float)-Math.PI / 2, new Rectangle(tile_size, 0, tile_size, tile_size));
-                rightTexture?.Draw(rightPos + origin, origin, rightColor, Vector2.One, (float)Math.PI / 2, new Rectangle(tile_size, 0, tile_size, tile_size));
-            }
+                // top left corner
+                var position = TopLeft;
+                leftTexture?.Draw(position + origin, origin, leftColor, Vector2.One, (float)-Math.PI / 2, new Rectangle(2 * tile_size, 0, tile_size, tile_size));
+                topTexture?.Draw(position, Vector2.Zero, topColor, Vector2.One, 0f, new Rectangle(0, 0, tile_size, tile_size));
 
-            // vertical edges
-            for (int x = tile_size; x < Width - tile_size; x += tile_size)
-            {
-                var topPos = new Vector2(Left + x, Top);
-                var bottomPos = new Vector2(Left + x, Bottom - tile_size);
-                topTexture?.Draw(topPos, Vector2.Zero, topColor, Vector2.One, 0f, new Rectangle(tile_size, 0, tile_size, tile_size));
-                bottomTexture?.Draw(bottomPos + origin, origin, bottomColor, Vector2.One, (float)Math.PI, new Rectangle(tile_size, 0, tile_size, tile_size));
+                // top right corner
+                position = TopRight - Vector2.UnitX * tile_size;
+                rightTexture?.Draw(position + origin, origin, rightColor, Vector2.One, (float)Math.PI / 2, new Rectangle(0, 0, tile_size, tile_size));
+                topTexture?.Draw(position, Vector2.Zero, topColor, Vector2.One, 0f, new Rectangle(2 * tile_size, 0, tile_size, tile_size));
+
+                // bottom left corner
+                position = BottomLeft - Vector2.UnitY * tile_size;
+                leftTexture?.Draw(position + origin, origin, leftColor, Vector2.One, (float)-Math.PI / 2, new Rectangle(0, 0, tile_size, tile_size));
+                bottomTexture?.Draw(position + origin, origin, bottomColor, Vector2.One, (float)Math.PI, new Rectangle(2 * tile_size, 0, tile_size, tile_size));
+
+                // bottom right corner
+                position = BottomRight - Vector2.One * tile_size;
+                rightTexture?.Draw(position + origin, origin, rightColor, Vector2.One, (float)Math.PI / 2, new Rectangle(2 * tile_size, 0, tile_size, tile_size));
+                bottomTexture?.Draw(position + origin, origin, bottomColor, Vector2.One, (float)Math.PI, new Rectangle(0, 0, tile_size, tile_size));
+
+                // horizontal edges
+                for (int y = tile_size; y < Height - tile_size; y += tile_size)
+                {
+                    var leftPos = new Vector2(Left, Top + y);
+                    var rightPos = new Vector2(Right - tile_size, Top + y);
+                    leftTexture?.Draw(leftPos + origin, origin, leftColor, Vector2.One, (float)-Math.PI / 2, new Rectangle(tile_size, 0, tile_size, tile_size));
+                    rightTexture?.Draw(rightPos + origin, origin, rightColor, Vector2.One, (float)Math.PI / 2, new Rectangle(tile_size, 0, tile_size, tile_size));
+                }
+
+                // vertical edges
+                for (int x = tile_size; x < Width - tile_size; x += tile_size)
+                {
+                    var topPos = new Vector2(Left + x, Top);
+                    var bottomPos = new Vector2(Left + x, Bottom - tile_size);
+                    topTexture?.Draw(topPos, Vector2.Zero, topColor, Vector2.One, 0f, new Rectangle(tile_size, 0, tile_size, tile_size));
+                    bottomTexture?.Draw(bottomPos + origin, origin, bottomColor, Vector2.One, (float)Math.PI, new Rectangle(tile_size, 0, tile_size, tile_size));
+                }
             }
 
             Position -= _shakeOffset;
         }
 
+        private bool hasPlayerRiderOrBuffered(Player player)
+        {
+            // if we're actually riding then it's fine
+            if (HasPlayerRider()) return true;
+
+            // only allow these states
+            switch (player.StateMachine.State)
+            {
+                case Player.StNormal:
+                case Player.StDash:
+                case Player.StRedDash:
+                case Player.StStarFly:
+                case Player.StHitSquash:
+                case Player.StClimb:
+                    break;
+                default:
+                    return false;
+            }
+
+            // we can't be holding
+            if (player.Holding != null) return false;
+
+            // we must be grabbing
+            if (!Input.GrabCheck) return false;
+
+            // we can't be comf
+            if (!player.CanUnDuck) return false;
+
+            // we must have stamina
+            if (player.Stamina <= 0) return false;
+
+            const float buffer = 3f;
+
+            // if we're on the left, facing right, and within a few pixels
+            var activeEdges = ActiveEdges;
+            if (activeEdges.HasFlag(Edges.Left) &&
+                player.Right <= Left &&
+                player.Facing == Facings.Right &&
+                player.CollideCheck(this, player.Position + Vector2.UnitX * buffer) &&
+                !ClimbBlocker.Check(Scene, player, player.Position + Vector2.UnitX * buffer))
+                return true;
+
+            // if we're on the right, facing left, and within a few pixels
+            if (activeEdges.HasFlag(Edges.Right) &&
+                player.Left >= Right &&
+                player.Facing == Facings.Left &&
+                player.CollideCheck(this, player.Position - Vector2.UnitX * buffer) &&
+                !ClimbBlocker.Check(Scene, player, player.Position - Vector2.UnitX * buffer))
+                return true;
+
+            return false;
+        }
+
         public bool TryHandlePlayer(Player player)
         {
-            if (!HasPlayerRider() || Scene is not Level level) return false;
+            if (_cooldownTimeRemaining > 0) return false;
+            if (_blockUsed && BlockOneUse) return false;
+
+            if (!hasPlayerRiderOrBuffered(player) || Scene is not Level level) return false;
 
             var currentGravity = player.GetGravity();
             var activeEdges = ActiveEdges;
@@ -268,7 +476,7 @@ namespace Celeste.Mod.GravityHelper.Entities
             var inType = GravityType.Normal;
             var outType = GravityType.Inverted;
 
-            if (activeEdges.HasFlag(Edges.Top) && player.Top < Top && player.StateMachine.State != Player.StClimb)
+            if (activeEdges.HasFlag(Edges.Top) && player.Bottom <= Top && player.StateMachine.State != Player.StClimb)
             {
                 // check whether we have space to move on the other side
                 if (player.CollideCheck<Solid>(new Vector2(player.X, Bottom + player.Height)))
@@ -289,7 +497,7 @@ namespace Celeste.Mod.GravityHelper.Entities
                 inType = GravityType.Normal;
                 outType = GravityType.Inverted;
             }
-            else if (activeEdges.HasFlag(Edges.Bottom) && player.Bottom > Bottom && player.StateMachine.State != Player.StClimb)
+            else if (activeEdges.HasFlag(Edges.Bottom) && player.Top >= Bottom && player.StateMachine.State != Player.StClimb)
             {
                 // check whether we have space to move on the other side
                 if (player.CollideCheck<Solid>(new Vector2(player.X, Top - player.Height)))
@@ -310,10 +518,10 @@ namespace Celeste.Mod.GravityHelper.Entities
                 inType = GravityType.Inverted;
                 outType = GravityType.Normal;
             }
-            else if (activeEdges.HasFlag(Edges.Left) && player.Left < Left && player.StateMachine.State == Player.StClimb)
+            else if (activeEdges.HasFlag(Edges.Left) && player.Right <= Left)
             {
                 // check whether we have space to move on the other side
-                var targetX = player.X + player.Width + Width;
+                var targetX = Right - player.Collider.Left;
                 var targetY = currentGravity == GravityType.Normal ? player.Bottom : player.Top;
                 if (player.CollideCheck<Solid>(new Vector2(targetX, targetY)))
                     return false;
@@ -337,10 +545,10 @@ namespace Celeste.Mod.GravityHelper.Entities
                 inType = LeftGravityType;
                 outType = !Edges.HasFlag(Edges.Right) || RightGravityType != GravityType.Toggle ? player.GetGravity() : GravityType.Toggle;
             }
-            else if (activeEdges.HasFlag(Edges.Right) && player.Right > Right && player.StateMachine.State == Player.StClimb)
+            else if (activeEdges.HasFlag(Edges.Right) && player.Left >= Right)
             {
                 // check whether we have space to move on the other side
-                var targetX = player.X - player.Width - Width;
+                var targetX = Left - player.Collider.Right;
                 var targetY = currentGravity == GravityType.Normal ? player.Bottom : player.Top;
                 if (player.CollideCheck<Solid>(new Vector2(targetX, targetY)))
                     return false;
@@ -393,6 +601,40 @@ namespace Celeste.Mod.GravityHelper.Entities
             // flash
             _flashTimeRemaining = flash_time_seconds;
             _flashColor = player.GetGravity().Color();
+
+            // cooldown
+            _cooldownTimeRemaining = cooldown_time_seconds;
+            _blockUsed = true;
+
+            // always refill stamina if required
+            if (RefillStamina) player.RefillStamina();
+
+            // refill dash and provide gravity refill if required and not single use
+            if (_respawnTimeRemaining <= 0 && (!_refillUsed || !RefillOneUse))
+            {
+                var targetDashes = Math.Max(RefillDashCount, player.Dashes);
+                var targetGravityRefills = Math.Max(GravityRefill.NumberOfCharges, GiveGravityRefill ? 1 : 0);
+                var staminaWarning = player.Stamina < 20;
+
+                if (targetDashes > player.Dashes || targetGravityRefills > GravityRefill.NumberOfCharges || staminaWarning)
+                {
+                    _refillUsed = true;
+                    _respawnTimeRemaining = RefillRespawnTime;
+                    player.Dashes = targetDashes;
+                    player.RefillStamina();
+                    GravityRefill.NumberOfCharges = targetGravityRefills;
+                    Audio.Play(RefillDashCount == 2 ? "event:/new_content/game/10_farewell/pinkdiamond_touch" : "event:/game/general/diamond_touch", Position);
+                    _refillSprite.Visible = false;
+
+                    float particleDirection = player.Speed.Angle();
+                    level.ParticlesFG.Emit(p_shatter, 5, Center, Vector2.One * 4f, particleDirection - (float)Math.PI / 2f);
+                    level.ParticlesFG.Emit(p_shatter, 5, Center, Vector2.One * 4f, particleDirection + (float)Math.PI / 2f);
+                    SlashFx.Burst(Center, particleDirection);
+
+                    if (!RefillOneUse)
+                        _refillOutlineImage.Visible = true;
+                }
+            }
 
             // we handled it
             return true;

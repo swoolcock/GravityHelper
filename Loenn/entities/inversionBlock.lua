@@ -5,6 +5,7 @@ local consts = require("mods").requireFromPlugin("consts")
 local helpers = require("mods").requireFromPlugin("helpers")
 local drawableSprite = require("structs.drawable_sprite")
 local drawableNinePatch = require("structs.drawable_nine_patch")
+local fakeTilesHelper = require("helpers.fake_tiles")
 
 local placementData = helpers.createPlacementData('1', {
     width = 16,
@@ -20,6 +21,14 @@ local placementData = helpers.createPlacementData('1', {
     climbFall = true,
     endFallOnSolidTiles = true,
     sound = "event:/char/badeline/disappear",
+    autotile = false,
+    tiletype = '3',
+    refillDashCount = 0,
+    refillStamina = false,
+    refillRespawnTime = 2.5,
+    giveGravityRefill = false,
+    refillOneUse = false,
+    blockOneUse = false,
 })
 
 local inversionBlock = {
@@ -30,6 +39,16 @@ local inversionBlock = {
         leftGravityType = consts.fieldInformation.gravityType(0,1,2),
         rightGravityType = consts.fieldInformation.gravityType(0,1,2),
         fallType = consts.fieldInformation.fallType,
+        tiletype = {
+            options = fakeTilesHelper.getTilesOptions(),
+            editable = false,
+        },
+        refillDashCount = {
+            fieldType = "integer",
+        },
+        refillRespawnTime = {
+            fieldType = "number",
+        }
     },
     placements = {
         {
@@ -53,6 +72,8 @@ local inversionBlock = {
     },
 }
 
+local fakeTilesSpriteFunction = fakeTilesHelper.getEntitySpriteFunction("tiletype", false)
+
 local ninePatchOptions = {
     mode = "fill",
     borderMode = "repeat",
@@ -72,14 +93,20 @@ local function getEdgeSprite(entity, drawX, drawY, row, column, rotation)
     return sprite
 end
 
-function inversionBlock.sprite(room, entity)
+function inversionBlock.sprite(room, entity, node)
     local blockTexture = "objects/GravityHelper/inversionBlock/block"
+    local topGravityType, bottomGravityType = 0, 1
     local x, y = entity.x or 0, entity.y or 0
     local width, height = entity.width or 24, entity.height or 24
     local widthInTiles, heightInTiles = width / 8, height / 8
-    local ninePatch = drawableNinePatch.fromTexture(blockTexture, ninePatchOptions, x, y, width, height)
-    local sprites = ninePatch:getDrawableSprite()
-    local topGravityType, bottomGravityType = 0, 1
+
+    local sprites
+    if entity.autotile then
+        sprites = fakeTilesSpriteFunction(room, entity, node)
+    else
+        local ninePatch = drawableNinePatch.fromTexture(blockTexture, ninePatchOptions, x, y, width, height)
+        sprites = ninePatch:getDrawableSprite()
+    end
 
     if entity.leftEnabled then
         table.insert(sprites, getEdgeSprite(entity, 0, 0, entity.leftGravityType, 2, -math.pi / 2))
@@ -112,7 +139,21 @@ function inversionBlock.sprite(room, entity)
             table.insert(sprites, getEdgeSprite(entity, i * 8, height - 8, bottomGravityType, 1, math.pi))
         end
     end
-    
+
+    local refillSprite
+    if entity.giveGravityRefill then
+        refillSprite = drawableSprite.fromTexture("objects/GravityHelper/gravityRefill/idle00", entity)
+    elseif entity.refillDashCount == 2 then
+        refillSprite = drawableSprite.fromTexture("objects/refillTwo/idle00", entity)
+    elseif entity.refillDashCount > 0 then
+        refillSprite = drawableSprite.fromTexture("objects/refill/idle00", entity)
+    end
+
+    if refillSprite ~= nil then
+        refillSprite:addPosition(entity.width / 2, entity.height / 2)
+        table.insert(sprites, refillSprite)
+    end
+
     return sprites
 end
 
