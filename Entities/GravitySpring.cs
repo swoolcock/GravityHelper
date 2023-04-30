@@ -385,17 +385,15 @@ namespace Celeste.Mod.GravityHelper.Entities
                 self.RefillDash();
             self.RefillStamina();
 
-            using (var data = new DynData<Player>(self))
-            {
-                data["jumpGraceTimer"] = 0f;
-                data["varJumpTimer"] = 0f;
-                data["dashAttackTimer"] = 0.0f;
-                data["gliderBoostTimer"] = 0.0f;
-                data["wallSlideTimer"] = 1.2f;
-                data["wallBoostTimer"] = 0.0f;
-                data["varJumpSpeed"] = 0f;
-                data["launched"] = false;
-            }
+            var data = DynamicData.For(self);
+            data.Set("jumpGraceTimer", 0f);
+            data.Set("varJumpTimer", 0f);
+            data.Set("dashAttackTimer", 0.0f);
+            data.Set("gliderBoostTimer", 0.0f);
+            data.Set("wallSlideTimer", 1.2f);
+            data.Set("wallBoostTimer", 0.0f);
+            data.Set("varJumpSpeed", 0f);
+            data.Set("launched", false);
 
             self.StateMachine.State = Player.StNormal;
             self.AutoJump = false;
