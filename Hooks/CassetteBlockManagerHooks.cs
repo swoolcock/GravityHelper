@@ -3,7 +3,6 @@
 
 using System.Reflection;
 using Celeste.Mod.GravityHelper.Components;
-using MonoMod.Utils;
 
 // ReSharper disable PossibleInvalidCastExceptionInForeachLoop
 
