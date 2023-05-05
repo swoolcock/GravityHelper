@@ -41,6 +41,8 @@ namespace Celeste.Mod.GravityHelper.Components
         public Func<Vector2> GetSpeed;
         public Action<Vector2> SetSpeed;
 
+        public string Flag;
+
         public Vector2 EntitySpeed
         {
             get => GetSpeed?.Invoke() ?? Vector2.Zero;
@@ -123,6 +125,8 @@ namespace Celeste.Mod.GravityHelper.Components
 
             UpdateSpeed?.Invoke(args);
             UpdateVisuals?.Invoke(args);
+
+            if (Flag != null) SceneAs<Level>()?.Session.SetFlag(Flag, args.NewValue == GravityType.Inverted);
         }
 
         private void triggerGravityListeners(GravityChangeArgs args)
