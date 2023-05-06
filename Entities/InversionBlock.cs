@@ -577,6 +577,12 @@ namespace Celeste.Mod.GravityHelper.Entities
                 return false;
             }
 
+            // trigger falling if we should
+            if (_fallingComponent != null)
+            {
+                _fallingComponent.Triggered = true;
+            }
+
             // add displacements
             level.Displacement.AddBurst(oldPosition, 0.35f, 8f, 48f, 0.25f);
             level.Displacement.AddBurst(player.Center, 0.35f, 8f, 48f, 0.25f);
