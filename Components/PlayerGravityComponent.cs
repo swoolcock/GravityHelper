@@ -96,6 +96,8 @@ namespace Celeste.Mod.GravityHelper.Components
 
             GetSpeed = () => _player.Speed;
             SetSpeed = value => _player.Speed = value;
+
+            Flag = "GravityHelper_PlayerInverted";
         }
 
         private static void invertHitbox(Hitbox hitbox) => hitbox.Position.Y = -hitbox.Position.Y - hitbox.Height;

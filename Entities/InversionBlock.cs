@@ -407,6 +407,12 @@ namespace Celeste.Mod.GravityHelper.Entities
             Position -= _shakeOffset;
         }
 
+        public override void OnStaticMoverTrigger(StaticMover sm)
+        {
+            if (_fallingComponent != null)
+                _fallingComponent.Triggered = true;
+        }
+
         private bool hasPlayerRiderOrBuffered(Player player)
         {
             // if we're actually riding then it's fine
@@ -575,6 +581,12 @@ namespace Celeste.Mod.GravityHelper.Entities
             {
                 // just fail
                 return false;
+            }
+
+            // trigger falling if we should
+            if (_fallingComponent != null)
+            {
+                _fallingComponent.Triggered = true;
             }
 
             // add displacements
