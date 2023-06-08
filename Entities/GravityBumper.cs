@@ -28,7 +28,7 @@ namespace Celeste.Mod.GravityHelper.Entities
 
         public GravityType GravityType { get; }
 
-        private readonly DynData<Bumper> _data;
+        private readonly DynamicData _data;
         private readonly Sprite _sprite;
         private readonly Sprite _rippleSprite;
         private readonly Sprite _maskSprite;
@@ -36,7 +36,7 @@ namespace Celeste.Mod.GravityHelper.Entities
         public GravityBumper(EntityData data, Vector2 offset)
             : base(data, offset)
         {
-            _data = new DynData<Bumper>(this);
+            _data = DynamicData.For(this);
 
             _modVersion = data.ModVersion();
             _pluginVersion = data.PluginVersion();

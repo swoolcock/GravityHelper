@@ -13,7 +13,7 @@ namespace Celeste.Mod.GravityHelper.Components
     {
         public GravityType PreDreamBlockGravityType { get; set; }
         private Player _player => Entity as Player;
-        private DynData<Player> _playerData;
+        private DynamicData _playerData;
 
         public PlayerGravityComponent()
         {
@@ -38,8 +38,8 @@ namespace Celeste.Mod.GravityHelper.Components
                 Vector2 normalLightOffset = new Vector2(0.0f, args.NewValue == GravityType.Normal ? -8f : 8f);
                 Vector2 duckingLightOffset = new Vector2(0.0f, args.NewValue == GravityType.Normal ? -3f : 3f);
 
-                _playerData["normalLightOffset"] = normalLightOffset;
-                _playerData["duckingLightOffset"] = duckingLightOffset;
+                _playerData.Set("normalLightOffset", normalLightOffset);
+                _playerData.Set("duckingLightOffset", duckingLightOffset);
                 _player.Light.Position = _player.Ducking ? duckingLightOffset : normalLightOffset;
 
                 var starFlyBloom = _playerData.Get<BloomPoint>("starFlyBloom");
@@ -79,18 +79,18 @@ namespace Celeste.Mod.GravityHelper.Components
                     _player.Speed.Y *= -args.MomentumMultiplier;
 
                 _player.DashDir.Y *= -1;
-                _playerData["varJumpTimer"] = 0f;
+                _playerData.Set("varJumpTimer", 0f);
 
                 // update player on ground status
                 checkGround(_player, args.NewValue, out var onGround, out var onSafeGround);
 
                 var oldOnGround = _playerData.Get<bool>("onGround");
                 if (oldOnGround && !onGround)
-                    _playerData["jumpGraceTimer"] = 0f;
+                    _playerData.Set("jumpGraceTimer", 0f);
                 else if (!oldOnGround && onGround)
                     _player.StartJumpGraceTime();
 
-                _playerData["onGround"] = onGround;
+                _playerData.Set("onGround", onGround);
                 _player.SetOnSafeGround(onSafeGround);
             };
 
@@ -144,7 +144,7 @@ namespace Celeste.Mod.GravityHelper.Components
         public override void Added(Entity entity)
         {
             base.Added(entity);
-            _playerData = new DynData<Player>((Player) entity);
+            _playerData = DynamicData.For(entity);
 
             // cache when the component is added so that it's available before the player is added to the scene
             GravityHelperModule.PlayerComponent = this;

@@ -188,10 +188,10 @@ namespace Celeste.Mod.GravityHelper.Extensions
             new Rectangle((int)collider.Left, (int)collider.Top, (int)collider.Width, (int)collider.Height);
 
         public static void SetShouldInvert(this Entity entity, bool invert) =>
-            new DynData<Entity>(entity).Data[GravityComponent.INVERTED_KEY] = invert;
+            DynamicData.For(entity).Data[GravityComponent.INVERTED_KEY] = invert;
 
         public static bool ShouldInvert(this Entity entity) =>
-            new DynData<Entity>(entity).Data.TryGetValue(GravityComponent.INVERTED_KEY, out var value) && (bool)value;
+            DynamicData.For(entity).Data.TryGetValue(GravityComponent.INVERTED_KEY, out var value) && (bool)value;
 
         public static bool ShouldInvertChecked(this Entity entity)
         {

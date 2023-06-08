@@ -35,7 +35,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             orig(self, scene);
             if (self.Get<GravityComponent>() != null) return;
 
-            var data = new DynData<TheoCrystal>(self);
+            var data = DynamicData.For(self);
 
             self.Add(new GravityComponent
             {

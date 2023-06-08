@@ -55,7 +55,7 @@ namespace Celeste.Mod.GravityHelper.Entities
         private Vector2 _indicatorShakeOffset;
 
         // ReSharper disable once PrivateFieldCanBeConvertedToLocalVariable
-        private readonly DynData<Spring> _springData;
+        private readonly DynamicData _springData;
 
         public static Entity LoadFloor(Level level, LevelData levelData, Vector2 offset, EntityData entityData) =>
             new GravitySpring(entityData, offset, Orientations.Floor);
@@ -72,7 +72,7 @@ namespace Celeste.Mod.GravityHelper.Entities
         public GravitySpring(EntityData data, Vector2 offset, Orientations orientation)
             : base(data.Position + offset, (Spring.Orientations)((int)orientation % 3), data.Bool("playerCanUse", true))
         {
-            _springData = new DynData<Spring>(this);
+            _springData = DynamicData.For(this);
 
             _modVersion = data.ModVersion();
             _pluginVersion = data.PluginVersion();
@@ -282,10 +282,10 @@ namespace Celeste.Mod.GravityHelper.Entities
             {
                 // do nothing if moving away
                 if (theoCrystal.Speed.Y > 0) return false;
-                var data = new DynData<TheoCrystal>(theoCrystal);
+                var data = DynamicData.For(theoCrystal);
                 theoCrystal.Speed.X *= x_multiplier;
                 theoCrystal.Speed.Y = y_value;
-                data["noGravityTimer"] = no_gravity_timer;
+                data.Set("noGravityTimer", no_gravity_timer);
                 return true;
             }
 
@@ -294,10 +294,10 @@ namespace Celeste.Mod.GravityHelper.Entities
             {
                 // do nothing if moving away
                 if (glider.Speed.Y > 0) return false;
-                var data = new DynData<Glider>(glider);
+                var data = DynamicData.For(glider);
                 glider.Speed.X *= x_multiplier;
                 glider.Speed.Y = y_value;
-                data["noGravityTimer"] = no_gravity_timer;
+                data.Set("noGravityTimer", no_gravity_timer);
                 data.Get<Wiggler>("wiggler").Start();
                 return true;
             }
@@ -343,7 +343,7 @@ namespace Celeste.Mod.GravityHelper.Entities
 
         private bool pufferHitCeilingSpring(Puffer p)
         {
-            var data = new DynData<Puffer>(p);
+            var data = DynamicData.For(p);
             if (data.Get<Vector2>("hitSpeed").Y > 0)
                 return false;
 

@@ -38,7 +38,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
         private static void Seeker_Update(On.Celeste.Seeker.orig_Update orig, Seeker self)
         {
-            var data = new DynData<Seeker>(self);
+            var data = DynamicData.For(self);
             var bounceHitbox = data.Get<Hitbox>("bounceHitbox");
             var attackHitbox = data.Get<Hitbox>("attackHitbox");
 

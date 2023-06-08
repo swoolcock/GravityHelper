@@ -24,7 +24,7 @@ namespace Celeste.Mod.GravityHelper.Entities
         private readonly Version _modVersion;
         private readonly Version _pluginVersion;
 
-        private readonly DynData<DreamBlock> _dreamBlockData;
+        private readonly DynamicData _dreamBlockData;
         private readonly FallingComponent _fallingComponent;
 
         private Vector2 _shakeOffset;
@@ -62,7 +62,7 @@ namespace Celeste.Mod.GravityHelper.Entities
             if (!string.IsNullOrWhiteSpace(backColorString)) BackColor = Calc.HexToColor(backColorString);
             if (!string.IsNullOrWhiteSpace(particleColorString)) ParticleColor = Calc.HexToColor(particleColorString);
 
-            _dreamBlockData = new DynData<DreamBlock>(this);
+            _dreamBlockData = DynamicData.For(this);
 
             var textures = _dreamBlockData.Get<MTexture[]>("particleTextures");
             var prefix = GravityType switch
@@ -83,7 +83,7 @@ namespace Celeste.Mod.GravityHelper.Entities
         {
             using var _ = new PushRandomDisposable(Scene);
             var baseColor = ParticleColor ?? GravityType.Color();
-            var particlesObject = _dreamBlockData["particles"];
+            var particlesObject = _dreamBlockData.Get("particles");
             if (particlesObject is Array particles)
             {
                 for (int i = 0; i < particles.Length; i++)

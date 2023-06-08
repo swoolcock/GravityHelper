@@ -61,7 +61,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
                 return;
             }
 
-            var data = new DynData<Glider>(self);
+            var data = DynamicData.For(self);
             var sprite = data.Get<Sprite>("sprite");
             var oldScale = sprite.Scale;
             var oldRotation = sprite.Rotation;

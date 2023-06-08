@@ -508,7 +508,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             cursor.EmitDelegate<Func<float, Player, float>>((y, self) =>
             {
                 if (!GravityHelperModule.ShouldInvertPlayer) return y;
-                var data = new DynData<Player>(self);
+                var data = DynamicData.For(self);
                 var level = data.Get<Level>("level");
                 return level.Bounds.Top + 24;
             });
@@ -548,7 +548,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             cursor.Emit(OpCodes.Ldloc, playerVar);
             cursor.EmitDelegate<Action<Player>>(self =>
             {
-                var data = new DynData<Player>(self);
+                var data = DynamicData.For(self);
                 var level = data.Get<Level>("level");
                 var particles = level.Particles;
                 var particlesBG = level.ParticlesBG;
@@ -1264,7 +1264,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
         {
             orig(self);
 
-            var data = new DynData<Player>(self);
+            var data = DynamicData.For(self);
             var dreamBlock = data.Get<DreamBlock>("dreamBlock");
             if (GravityHelperModule.PlayerComponent != null && dreamBlock is GravityDreamBlock gravityDreamBlock)
                 gravityDreamBlock.PlayerEntered();
@@ -1291,7 +1291,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             if (!GravityHelperModule.ShouldInvertPlayer)
                 return orig(self);
 
-            var player = new DynData<Player>(self);
+            var player = DynamicData.For(self);
 
             self.Speed.Y *= -1;
             self.DashDir.Y *= -1;
