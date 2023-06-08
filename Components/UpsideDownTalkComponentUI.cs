@@ -16,7 +16,7 @@ namespace Celeste.Mod.GravityHelper.Components
 
         public override void Render()
         {
-            var data = new DynData<TalkComponent.TalkComponentUI>(this);
+            var data = DynamicData.For(this);
             float slide = data.Get<float>(nameof(slide));
             float timer = data.Get<float>(nameof(timer));
             float alpha = data.Get<float>(nameof(alpha));

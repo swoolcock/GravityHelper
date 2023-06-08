@@ -110,7 +110,7 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
             // for now we'll only allow normal state
             if (player.StateMachine != Player.StNormal) return false;
 
-            var playerData = new DynData<Player>(player);
+            var playerData = DynamicData.For(player);
 
             // never allow from dream jumps
             if (playerData.Get<bool>("dreamJump")) return false;

@@ -27,7 +27,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
         private static void Snowball_Update(On.Celeste.Snowball.orig_Update orig, Snowball self)
         {
-            var data = new DynData<Snowball>(self);
+            var data = DynamicData.For(self);
             var bounceCollider = (Hitbox)data.Get<Collider>("bounceCollider");
             var collider = self.Collider;
 

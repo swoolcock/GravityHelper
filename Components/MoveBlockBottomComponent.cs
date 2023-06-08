@@ -14,7 +14,7 @@ namespace Celeste.Mod.GravityHelper.Components
         public readonly List<Image> Images = new();
         public bool BottomPressed;
 
-        private DynData<MoveBlock> _moveBlockData;
+        private DynamicData _moveBlockData;
 
         public MoveBlockBottomComponent() : base(true, false)
         {
@@ -26,7 +26,7 @@ namespace Celeste.Mod.GravityHelper.Components
 
             if (entity is not MoveBlock moveBlock) return;
 
-            _moveBlockData = new DynData<MoveBlock>(moveBlock);
+            _moveBlockData = DynamicData.For(moveBlock);
 
             // add button
             MTexture buttonTexture = GFX.Game["objects/moveBlock/button"];

@@ -192,6 +192,13 @@ namespace Celeste.Mod.GravityHelper.Entities
                 _refillSprite.Play("idle");
                 _refillSprite.CenterOrigin();
             }
+            else
+            {
+                // just in case
+                p_shatter = Refill.P_Shatter;
+                p_regen = Refill.P_Regen;
+                p_glow1 = p_glow2 = Refill.P_Glow;
+            }
 
             if (_refillSprite != null && _refillOutlineImage != null)
             {
@@ -416,7 +423,7 @@ namespace Celeste.Mod.GravityHelper.Entities
         private bool hasPlayerRiderOrBuffered(Player player)
         {
             // if we're actually riding then it's fine
-            if (HasPlayerRider()) return true;
+            if (HasPlayerClimbing() && player.Stamina > 0 || HasPlayerOnTop()) return true;
 
             // only allow these states
             switch (player.StateMachine.State)
@@ -621,7 +628,7 @@ namespace Celeste.Mod.GravityHelper.Entities
             if (RefillStamina) player.RefillStamina();
 
             // refill dash and provide gravity refill if required and not single use
-            if (_respawnTimeRemaining <= 0 && (!_refillUsed || !RefillOneUse))
+            if (_respawnTimeRemaining <= 0 && (!_refillUsed || !RefillOneUse) && (RefillDashCount > 0 || GiveGravityRefill))
             {
                 var targetDashes = Math.Max(RefillDashCount, player.Dashes);
                 var targetGravityRefills = Math.Max(GravityRefill.NumberOfCharges, GiveGravityRefill ? 1 : 0);
@@ -635,14 +642,15 @@ namespace Celeste.Mod.GravityHelper.Entities
                     player.RefillStamina();
                     GravityRefill.NumberOfCharges = targetGravityRefills;
                     Audio.Play(RefillDashCount == 2 ? "event:/new_content/game/10_farewell/pinkdiamond_touch" : "event:/game/general/diamond_touch", Position);
-                    _refillSprite.Visible = false;
+                    if (_refillSprite != null)
+                        _refillSprite.Visible = false;
 
                     float particleDirection = player.Speed.Angle();
                     level.ParticlesFG.Emit(p_shatter, 5, Center, Vector2.One * 4f, particleDirection - (float)Math.PI / 2f);
                     level.ParticlesFG.Emit(p_shatter, 5, Center, Vector2.One * 4f, particleDirection + (float)Math.PI / 2f);
                     SlashFx.Burst(Center, particleDirection);
 
-                    if (!RefillOneUse)
+                    if (!RefillOneUse && _refillOutlineImage != null)
                         _refillOutlineImage.Visible = true;
                 }
             }

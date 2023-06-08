@@ -20,7 +20,7 @@ namespace Celeste.Mod.GravityHelper.Entities
         public GravityType GravityType { get; }
         public string NodeGravityTypes { get; }
 
-        private readonly DynData<BadelineBoost> _data;
+        private readonly DynamicData _data;
         private readonly Sprite _sprite;
         private readonly Sprite _rippleSprite;
         private readonly Sprite _maskSprite;
@@ -38,7 +38,7 @@ namespace Celeste.Mod.GravityHelper.Entities
             _modVersion = data.ModVersion();
             _pluginVersion = data.PluginVersion();
 
-            _data = new DynData<BadelineBoost>(this);
+            _data = DynamicData.For(this);
             _sprite = _data.Get<Sprite>("sprite");
 
             GravityType = data.Enum<GravityType>("gravityType");

@@ -27,7 +27,7 @@ namespace Celeste.Mod.GravityHelper.Components
             }
         }
 
-        private DynData<Entity> _data;
+        private DynamicData _data;
 
         public bool Locked { get; set; }
 
@@ -61,7 +61,7 @@ namespace Celeste.Mod.GravityHelper.Components
         {
             base.Added(entity);
 
-            _data = new DynData<Entity>(entity);
+            _data = DynamicData.For(entity);
             _data.Data[INVERTED_KEY] = _currentGravity == GravityType.Inverted;
         }
 
