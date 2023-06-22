@@ -15,6 +15,12 @@ placements.triggers.GravityHelper/GravityTrigger.tooltips.affectsHoldableActors=
 placements.triggers.GravityHelper/GravityTrigger.tooltips.affectsOtherActors=Whether the trigger affects non-holdable Actors. Defaults to false.
 placements.triggers.GravityHelper/GravityTrigger.tooltips.sound=The sound that should be played. Defaults to an embedded sound, set your own or clear it for no sound. Supports controllers.
 
+# Upside Down Jumpthru
+placements.entities.GravityHelper/UpsideDownJumpThru.tooltips.texture=The sprite to use for the jump through.
+placements.entities.GravityHelper/UpsideDownJumpThru.tooltips.surfaceIndex=The sound to use for the jump through. Defaults to -1, which uses the expected sound for the texture.
+placements.entities.GravityHelper/UpsideDownJumpThru.tooltips.attached=Whether the upside down jump through should attach to solids. Defaults to false.
+placements.entities.GravityHelper/UpsideDownJumpThru.tooltips.triggerFalling=Whether an attached upside down jump through should trigger falling blocks. Defaults to true.
+
 # Spawn Gravity Trigger
 placements.triggers.GravityHelper/SpawnGravityTrigger.tooltips.gravityType=The gravity type to set when Madeline spawns inside the trigger.
 placements.triggers.GravityHelper/SpawnGravityTrigger.tooltips.fireOnBubbleReturn=Whether this trigger should also activate at the end of a cassette bubble.

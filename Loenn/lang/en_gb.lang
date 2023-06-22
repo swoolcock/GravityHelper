@@ -134,8 +134,18 @@ entities.GravityHelper/UpsideDownJumpThru.placements.name.cliffside=Upside Down 
 entities.GravityHelper/UpsideDownJumpThru.placements.name.reflection=Upside Down Jump Through (Reflection)
 entities.GravityHelper/UpsideDownJumpThru.placements.name.core=Upside Down Jump Through (Core)
 entities.GravityHelper/UpsideDownJumpThru.placements.name.moon=Upside Down Jump Through (Moon)
+entities.GravityHelper/UpsideDownJumpThru.placements.name.woodAttached=Upside Down Jump Through (Wood, Attached)
+entities.GravityHelper/UpsideDownJumpThru.placements.name.dreamAttached=Upside Down Jump Through (Dream, Attached)
+entities.GravityHelper/UpsideDownJumpThru.placements.name.templeAttached=Upside Down Jump Through (Temple, Attached)
+entities.GravityHelper/UpsideDownJumpThru.placements.name.templeBAttached=Upside Down Jump Through (Temple B, Attached)
+entities.GravityHelper/UpsideDownJumpThru.placements.name.cliffsideAttached=Upside Down Jump Through (Cliffside, Attached)
+entities.GravityHelper/UpsideDownJumpThru.placements.name.reflectionAttached=Upside Down Jump Through (Reflection, Attached)
+entities.GravityHelper/UpsideDownJumpThru.placements.name.coreAttached=Upside Down Jump Through (Core, Attached)
+entities.GravityHelper/UpsideDownJumpThru.placements.name.moonAttached=Upside Down Jump Through (Moon, Attached)
 entities.GravityHelper/UpsideDownJumpThru.attributes.description.texture=The sprite to use for the jump through.
 entities.GravityHelper/UpsideDownJumpThru.attributes.description.surfaceIndex=The sound to use for the jump through. Defaults to -1, which uses the expected sound for the texture.
+entities.GravityHelper/UpsideDownJumpThru.attributes.description.attached=Whether the upside down jump through should attach to solids. Defaults to false.
+entities.GravityHelper/UpsideDownJumpThru.attributes.description.triggerFalling=Whether an attached upside down jump through should trigger falling blocks. Defaults to true.
 
 # Upside Down Watch Tower
 entities.GravityHelper/UpsideDownWatchTower.placements.name.normal=Upside Down Watch Tower

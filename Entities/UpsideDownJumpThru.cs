@@ -3,6 +3,7 @@
 
 using System;
 using Celeste.Mod.Entities;
+using Celeste.Mod.GravityHelper.Components;
 using Celeste.Mod.GravityHelper.Extensions;
 using Microsoft.Xna.Framework;
 using Monocle;
@@ -19,6 +20,12 @@ namespace Celeste.Mod.GravityHelper.Entities
         private readonly int _columns;
         private readonly string _overrideTexture;
         private readonly int _overrideSoundIndex;
+        private readonly bool _attached;
+        private readonly bool _triggerFalling;
+
+        private Vector2 shakeOffset;
+        private Platform _attachedPlatform;
+        private bool _hasTriggered;
 
         public UpsideDownJumpThru(EntityData data, Vector2 offset)
             : base(data.Position + offset, data.Width, true)
@@ -29,9 +36,58 @@ namespace Celeste.Mod.GravityHelper.Entities
             _columns = data.Width / 8;
             _overrideTexture = data.Attr("texture", "default");
             _overrideSoundIndex = data.Int("surfaceIndex", -1);
+            _attached = data.Bool("attached", false);
+            _triggerFalling = data.Bool("triggerFalling", true);
+
+            if (_attached)
+            {
+                Add(new StaticMover
+                {
+                    SolidChecker = solid => CollideCheck(solid, Position - Vector2.UnitX) || CollideCheck(solid, Position + Vector2.UnitX),
+                    OnMove = amount =>
+                    {
+                        MoveH(amount.X);
+                        MoveV(amount.Y);
+                    },
+                    OnShake = amount => shakeOffset += amount,
+                    OnAttach = p => _attachedPlatform = p,
+                });
+            }
 
             Depth = -60;
             Collider.Top = 3;
+        }
+
+        public override void Render()
+        {
+            Position += shakeOffset;
+            base.Render();
+            Position -= shakeOffset;
+        }
+
+        public override void Update()
+        {
+            base.Update();
+
+            if (!_hasTriggered && _attachedPlatform != null && _attached && _triggerFalling && HasPlayerRider())
+            {
+                if (_attachedPlatform is FallingBlock fallingBlock)
+                {
+                    fallingBlock.Triggered = true;
+                    _hasTriggered = true;
+                }
+                else if (_attachedPlatform.Get<FallingComponent>() is { } fallingComponent)
+                {
+                    fallingComponent.Triggered = true;
+                    _hasTriggered = true;
+                }
+            }
+        }
+
+        public override void Removed(Scene scene)
+        {
+            base.Removed(scene);
+            _attachedPlatform = null;
         }
 
         public override void Awake(Scene scene)
