@@ -19,7 +19,7 @@ placements.triggers.GravityHelper/GravityTrigger.tooltips.sound=The sound that s
 placements.entities.GravityHelper/UpsideDownJumpThru.tooltips.texture=The sprite to use for the jump through.
 placements.entities.GravityHelper/UpsideDownJumpThru.tooltips.surfaceIndex=The sound to use for the jump through. Defaults to -1, which uses the expected sound for the texture.
 placements.entities.GravityHelper/UpsideDownJumpThru.tooltips.attached=Whether the upside down jump through should attach to solids. Defaults to false.
-placements.entities.GravityHelper/UpsideDownJumpThru.tooltips.triggerFalling=Whether an attached upside down jump through should trigger falling blocks. Defaults to true.
+placements.entities.GravityHelper/UpsideDownJumpThru.tooltips.triggerStaticMovers=Whether an attached upside down jump through should trigger static movers. Defaults to true.
 
 # Spawn Gravity Trigger
 placements.triggers.GravityHelper/SpawnGravityTrigger.tooltips.gravityType=The gravity type to set when Madeline spawns inside the trigger.

@@ -3,7 +3,6 @@
 
 using System;
 using Celeste.Mod.Entities;
-using Celeste.Mod.GravityHelper.Components;
 using Celeste.Mod.GravityHelper.Extensions;
 using Microsoft.Xna.Framework;
 using Monocle;
@@ -21,11 +20,11 @@ namespace Celeste.Mod.GravityHelper.Entities
         private readonly string _overrideTexture;
         private readonly int _overrideSoundIndex;
         private readonly bool _attached;
-        private readonly bool _triggerFalling;
+        private readonly bool _triggerStaticMovers;
 
         private Vector2 shakeOffset;
         private Platform _attachedPlatform;
-        private bool _hasTriggered;
+        private readonly StaticMover _staticMover;
 
         public UpsideDownJumpThru(EntityData data, Vector2 offset)
             : base(data.Position + offset, data.Width, true)
@@ -37,11 +36,11 @@ namespace Celeste.Mod.GravityHelper.Entities
             _overrideTexture = data.Attr("texture", "default");
             _overrideSoundIndex = data.Int("surfaceIndex", -1);
             _attached = data.Bool("attached", false);
-            _triggerFalling = data.Bool("triggerFalling", true);
+            _triggerStaticMovers = data.Bool("triggerStaticMovers", true);
 
             if (_attached)
             {
-                Add(new StaticMover
+                Add(_staticMover = new StaticMover
                 {
                     SolidChecker = solid => CollideCheck(solid, Position - Vector2.UnitX) || CollideCheck(solid, Position + Vector2.UnitX),
                     OnMove = amount =>
@@ -69,18 +68,9 @@ namespace Celeste.Mod.GravityHelper.Entities
         {
             base.Update();
 
-            if (!_hasTriggered && _attachedPlatform != null && _attached && _triggerFalling && HasPlayerRider())
+            if (_attachedPlatform != null && _attached && _triggerStaticMovers && HasPlayerRider())
             {
-                if (_attachedPlatform is FallingBlock fallingBlock)
-                {
-                    fallingBlock.Triggered = true;
-                    _hasTriggered = true;
-                }
-                else if (_attachedPlatform.Get<FallingComponent>() is { } fallingComponent)
-                {
-                    fallingComponent.Triggered = true;
-                    _hasTriggered = true;
-                }
+                _attachedPlatform.OnStaticMoverTrigger(_staticMover);
             }
         }
 

@@ -145,7 +145,7 @@ entities.GravityHelper/UpsideDownJumpThru.placements.name.moonAttached=Upside Do
 entities.GravityHelper/UpsideDownJumpThru.attributes.description.texture=The sprite to use for the jump through.
 entities.GravityHelper/UpsideDownJumpThru.attributes.description.surfaceIndex=The sound to use for the jump through. Defaults to -1, which uses the expected sound for the texture.
 entities.GravityHelper/UpsideDownJumpThru.attributes.description.attached=Whether the upside down jump through should attach to solids. Defaults to false.
-entities.GravityHelper/UpsideDownJumpThru.attributes.description.triggerFalling=Whether an attached upside down jump through should trigger falling blocks. Defaults to true.
+entities.GravityHelper/UpsideDownJumpThru.attributes.description.triggerStaticMovers=Whether an attached upside down jump through should trigger static movers. Defaults to true.
 
 # Upside Down Watch Tower
 entities.GravityHelper/UpsideDownWatchTower.placements.name.normal=Upside Down Watch Tower

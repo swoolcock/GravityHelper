@@ -14,7 +14,7 @@ const PLUGIN_VERSION = "1"
     texture::String="wood",
     surfaceIndex::Int=-1,
     attached::Bool=false,
-    triggerFalling::Bool=true
+    triggerStaticMovers::Bool=true
 )
 
 const textures = ["wood", "dream", "temple", "templeB", "cliffside", "reflection", "core", "moon"]
