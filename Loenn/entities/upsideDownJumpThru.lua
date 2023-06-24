@@ -29,14 +29,14 @@ local upsideDownJumpThru = {
 }
 
 for i, texture in ipairs(textures) do
-    upsideDownJumpThru.placements[2 * i] = {
+    upsideDownJumpThru.placements[2 * i - 1] = {
         name = texture,
         data = helpers.union(placementData, {
             texture = texture,
         }),
     }
-    upsideDownJumpThru.placements[2 * i + 1] = {
-        name = texture.."Attached",
+    upsideDownJumpThru.placements[2 * i] = {
+        name = texture .. "Attached",
         data = helpers.union(placementData, {
             texture = texture,
             attached = true,
