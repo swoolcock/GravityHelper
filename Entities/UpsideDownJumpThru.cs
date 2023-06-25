@@ -2,6 +2,7 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System;
+using System.Collections.Generic;
 using Celeste.Mod.Entities;
 using Celeste.Mod.GravityHelper.Extensions;
 using Microsoft.Xna.Framework;
@@ -19,6 +20,12 @@ namespace Celeste.Mod.GravityHelper.Entities
         private readonly int _columns;
         private readonly string _overrideTexture;
         private readonly int _overrideSoundIndex;
+        private readonly bool _attached;
+        private readonly bool _triggerStaticMovers;
+
+        private Vector2 shakeOffset;
+        private Platform _attachedPlatform;
+        private readonly StaticMover _staticMover;
 
         public UpsideDownJumpThru(EntityData data, Vector2 offset)
             : base(data.Position + offset, data.Width, true)
@@ -29,9 +36,74 @@ namespace Celeste.Mod.GravityHelper.Entities
             _columns = data.Width / 8;
             _overrideTexture = data.Attr("texture", "default");
             _overrideSoundIndex = data.Int("surfaceIndex", -1);
+            _attached = data.Bool("attached", false);
+            _triggerStaticMovers = data.Bool("triggerStaticMovers", true);
+
+            if (_attached)
+            {
+                List<Actor> sharedRiders = new();
+                Add(_staticMover = new StaticMover
+                {
+                    SolidChecker = solid =>
+                        solid is not FloatySpaceBlock && // moon blocks handle attached jumpthrus automatically
+                        (CollideCheck(solid, Position - Vector2.UnitX) || CollideCheck(solid, Position + Vector2.UnitX)),
+                    OnMove = amount =>
+                    {
+                        sharedRiders.Clear();
+                        // get all the actors that are riding both the jumpthru and the attached solid, and make them ignore jumpthrus
+                        if (_attachedPlatform is Solid solid)
+                        {
+                            foreach (Actor actor in Scene?.Tracker.GetEntities<Actor>())
+                            {
+                                if (actor.IsRiding(this) && actor.IsRiding(solid) && !actor.IgnoreJumpThrus)
+                                {
+                                    actor.IgnoreJumpThrus = true;
+                                    sharedRiders.Add(actor);
+                                }
+                            }
+                        }
+
+                        // move the jumpthru and any riders that aren't also riding the attached solid
+                        MoveH(amount.X);
+                        MoveV(amount.Y);
+
+                        // reset ignore jumpthrus if we must
+                        foreach (var rider in sharedRiders)
+                        {
+                            rider.IgnoreJumpThrus = false;
+                        }
+                        sharedRiders.Clear();
+                    },
+                    OnShake = amount => shakeOffset += amount,
+                    OnAttach = p => _attachedPlatform = p,
+                });
+            }
 
             Depth = -60;
             Collider.Top = 3;
+        }
+
+        public override void Render()
+        {
+            Position += shakeOffset;
+            base.Render();
+            Position -= shakeOffset;
+        }
+
+        public override void Update()
+        {
+            base.Update();
+
+            if (_attachedPlatform != null && _attached && _triggerStaticMovers && HasPlayerRider())
+            {
+                _attachedPlatform.OnStaticMoverTrigger(_staticMover);
+            }
+        }
+
+        public override void Removed(Scene scene)
+        {
+            base.Removed(scene);
+            _attachedPlatform = null;
         }
 
         public override void Awake(Scene scene)

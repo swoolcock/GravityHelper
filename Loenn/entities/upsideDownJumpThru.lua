@@ -16,6 +16,8 @@ end
 local placementData = helpers.createPlacementData('1', {
     width = 8,
     texture = "wood",
+    attached = false,
+    triggerStaticMovers = true,
 })
 
 local upsideDownJumpThru = {
@@ -27,10 +29,17 @@ local upsideDownJumpThru = {
 }
 
 for i, texture in ipairs(textures) do
-    upsideDownJumpThru.placements[i] = {
+    upsideDownJumpThru.placements[2 * i - 1] = {
         name = texture,
         data = helpers.union(placementData, {
             texture = texture,
+        }),
+    }
+    upsideDownJumpThru.placements[2 * i] = {
+        name = texture .. "Attached",
+        data = helpers.union(placementData, {
+            texture = texture,
+            attached = true,
         }),
     }
 end

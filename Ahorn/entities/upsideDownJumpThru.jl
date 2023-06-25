@@ -12,7 +12,9 @@ const PLUGIN_VERSION = "1"
     width::Integer=8,
     pluginVersion::String=PLUGIN_VERSION,
     texture::String="wood",
-    surfaceIndex::Int=-1
+    surfaceIndex::Int=-1,
+    attached::Bool=false,
+    triggerStaticMovers::Bool=true
 )
 
 const textures = ["wood", "dream", "temple", "templeB", "cliffside", "reflection", "core", "moon"]
@@ -22,6 +24,14 @@ const placements = Ahorn.PlacementDict(
         "rectangle",
         Dict{String, Any}(
             "texture" => "wood"
+        )
+    )
+    "Upside Down Jump Through (Attached) (GravityHelper)" => Ahorn.EntityPlacement(
+        UpsideDownJumpThru,
+        "rectangle",
+        Dict{String, Any}(
+            "texture" => "wood",
+            "attached" => true
         )
     )
 )
