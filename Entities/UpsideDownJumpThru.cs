@@ -2,6 +2,7 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System;
+using System.Collections.Generic;
 using Celeste.Mod.Entities;
 using Celeste.Mod.GravityHelper.Extensions;
 using Microsoft.Xna.Framework;
@@ -40,6 +41,7 @@ namespace Celeste.Mod.GravityHelper.Entities
 
             if (_attached)
             {
+                List<Actor> sharedRiders = new();
                 Add(_staticMover = new StaticMover
                 {
                     SolidChecker = solid =>
@@ -47,8 +49,30 @@ namespace Celeste.Mod.GravityHelper.Entities
                         (CollideCheck(solid, Position - Vector2.UnitX) || CollideCheck(solid, Position + Vector2.UnitX)),
                     OnMove = amount =>
                     {
+                        sharedRiders.Clear();
+                        // get all the actors that are riding both the jumpthru and the attached solid, and make them ignore jumpthrus
+                        if (_attachedPlatform is Solid solid)
+                        {
+                            foreach (Actor actor in Scene?.Tracker.GetEntities<Actor>())
+                            {
+                                if (actor.IsRiding(this) && actor.IsRiding(solid) && !actor.IgnoreJumpThrus)
+                                {
+                                    actor.IgnoreJumpThrus = true;
+                                    sharedRiders.Add(actor);
+                                }
+                            }
+                        }
+
+                        // move the jumpthru and any riders that aren't also riding the attached solid
                         MoveH(amount.X);
                         MoveV(amount.Y);
+
+                        // reset ignore jumpthrus if we must
+                        foreach (var rider in sharedRiders)
+                        {
+                            rider.IgnoreJumpThrus = false;
+                        }
+                        sharedRiders.Clear();
                     },
                     OnShake = amount => shakeOffset += amount,
                     OnAttach = p => _attachedPlatform = p,
