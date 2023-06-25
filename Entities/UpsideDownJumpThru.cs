@@ -42,7 +42,9 @@ namespace Celeste.Mod.GravityHelper.Entities
             {
                 Add(_staticMover = new StaticMover
                 {
-                    SolidChecker = solid => CollideCheck(solid, Position - Vector2.UnitX) || CollideCheck(solid, Position + Vector2.UnitX),
+                    SolidChecker = solid =>
+                        solid is not FloatySpaceBlock && // moon blocks handle attached jumpthrus automatically
+                        (CollideCheck(solid, Position - Vector2.UnitX) || CollideCheck(solid, Position + Vector2.UnitX)),
                     OnMove = amount =>
                     {
                         MoveH(amount.X);
