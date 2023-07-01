@@ -28,9 +28,9 @@ namespace Celeste.Mod.GravityHelper.Entities
 
         public GravityType CurrentDirection { get; private set; } = GravityType.Normal;
 
-        private bool travelling => _data.Get<bool>("travelling");
-        private int nodeIndex => _data.Get<int>("nodeIndex");
-        private GravityType currentNodeGravityType => _gravityTypes == null ? GravityType : _gravityTypes[nodeIndex];
+        private bool baseTravelling => _data.Get<bool>("travelling");
+        private int baseNodeIndex => _data.Get<int>("nodeIndex");
+        private GravityType currentNodeGravityType => _gravityTypes == null ? GravityType : _gravityTypes[baseNodeIndex];
 
         public GravityBadelineBoost(EntityData data, Vector2 offset)
             : base(data.NodesWithPosition(offset), data.Bool("lockCamera", true), data.Bool("canSkip"))
@@ -64,7 +64,7 @@ namespace Celeste.Mod.GravityHelper.Entities
 
             _rippleSprite.Visible = false;
 
-            if (_sprite.Visible && !travelling && GravityHelperModule.PlayerComponent is { } playerComponent)
+            if (_sprite.Visible && !baseTravelling && GravityHelperModule.PlayerComponent is { } playerComponent)
             {
                 _rippleSprite.Visible = true;
                 _rippleSprite.Position = _sprite.Position;
