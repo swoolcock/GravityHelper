@@ -621,9 +621,39 @@ namespace Celeste.Mod.GravityHelper.Hooks
             cursor.replaceGetLiftBoost(3);
             cursor.Goto(0);
 
-            // if (!this.CollideCheck<Solid>(this.Position + Vector2.UnitY * (float) -index) && this.ClimbCheck((int) this.Facing, -index))
-            cursor.GotoNextUnitY(MoveType.After);
-            cursor.EmitInvertVectorDelegate();
+            /* FIX 2 pixel wall grab leniency
+            if (!SaveData.Instance.Assists.NoGrabbing && (double) (float) Input.MoveY < 1.0 && (double) this.level.Wind.Y <= 0.0)
+            {
+              for (int index = 1; index <= 2; ++index)
+              {
+                if (!this.CollideCheck<Solid>(this.Position + Vector2.UnitY * (float) -index) && this.ClimbCheck((int) this.Facing, -index))
+                {
+                  this.MoveVExact(-index);
+                  this.Ducking = false;
+                  return 1;
+                }
+              }
+            }
+            */
+            if (!cursor.TryGotoNext(MoveType.After, instr => instr.MatchLdflda<Level>(nameof(Level.Wind)),
+                instr => instr.MatchLdfld<Vector2>(nameof(Vector2.Y))))
+                throw new HookException("Couldn't find Level.Wind.Y");
+
+            // flip the Wind.Y check, since we're grabbing the other way now
+            cursor.EmitInvertFloatDelegate();
+
+            // find the start of the loop
+            int leniencyIndex = 0;
+            if (!cursor.TryGotoNext(MoveType.After, instr => instr.MatchLdcI4(1), instr => instr.MatchStloc(out leniencyIndex)))
+                throw new HookException("Couldn't find start of grab leniency loop");
+
+            // invert ldloc of leniency index three times
+            for (int i = 0; i < 3; i++)
+            {
+                if (!cursor.TryGotoNext(MoveType.After, instr => instr.MatchLdloc(leniencyIndex)))
+                    throw new HookException($"Couldn't find iteration {i} of ldloc.{leniencyIndex}");
+                cursor.EmitInvertIntDelegate();
+            }
 
             if (!cursor.TryGotoNext(instr => instr.MatchStfld<Player>("wallSlideDir")))
                 throw new HookException("Couldn't find wallSlideDir");
