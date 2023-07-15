@@ -40,8 +40,8 @@ namespace Celeste.Mod.GravityHelper.Entities
         public Color LineColor { get; private set; }
         public float LineThickness { get; private set; }
 
-        private readonly Version _modVersion;
-        private readonly Version _pluginVersion;
+        private readonly VersionInfo _modVersion;
+        private readonly VersionInfo _pluginVersion;
 
         private readonly Dictionary<int, ComponentTracking> _trackedComponents = new();
 

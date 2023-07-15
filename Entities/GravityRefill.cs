@@ -21,8 +21,8 @@ namespace Celeste.Mod.GravityHelper.Entities
         public bool RefillsStamina { get; }
         public float RespawnTime { get; }
 
-        private readonly Version _modVersion;
-        private readonly Version _pluginVersion;
+        private readonly VersionInfo _modVersion;
+        private readonly VersionInfo _pluginVersion;
 
         // components
         private readonly Sprite _sprite;

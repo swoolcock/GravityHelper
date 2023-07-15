@@ -14,8 +14,8 @@ namespace Celeste.Mod.GravityHelper.Entities
     [CustomEntity("GravityHelper/GravityBadelineBoost")]
     public class GravityBadelineBoost : BadelineBoost
     {
-        private readonly Version _modVersion;
-        private readonly Version _pluginVersion;
+        private readonly VersionInfo _modVersion;
+        private readonly VersionInfo _pluginVersion;
 
         public GravityType GravityType { get; }
         public string NodeGravityTypes { get; }

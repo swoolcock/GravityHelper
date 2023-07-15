@@ -37,8 +37,8 @@ namespace Celeste.Mod.GravityHelper.Entities
             _ => id,
         };
 
-        private readonly Version _modVersion;
-        private readonly Version _pluginVersion;
+        private readonly VersionInfo _modVersion;
+        private readonly VersionInfo _pluginVersion;
 
         private readonly Sprite _sprite;
         private readonly StaticMover _staticMover;
