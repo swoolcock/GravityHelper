@@ -17,84 +17,84 @@ using MonoMod.Utils;
 namespace Celeste.Mod.GravityHelper.ThirdParty
 {
     [ThirdPartyMod("MaxHelpingHand")]
-    public class MaxHelpingHandModSupport : ThirdPartyModSupport
+    public class MaddieHelpingHandModSupport : ThirdPartyModSupport
     {
         // ReSharper disable InconsistentNaming
-        private static IDetour hook_MaxHelpingHand_UpsideDownJumpThru_playerMovingUp;
-        private static IDetour hook_MaxHelpingHand_UpsideDownJumpThru_updateClimbMove;
-        private static IDetour hook_MaxHelpingHand_UpsideDownJumpThru_onJumpthruHasPlayerRider;
-        private static IDetour hook_MaxHelpingHand_UpsideDownJumpThru_onPlayerOnCollideV;
-        private static IDetour hook_MaxHelpingHand_GroupedTriggerSpikes_GetPlayerCollideIndex;
-        private static IDetour hook_MaxHelpingHand_GroupedTriggerSpikes_ctor;
+        private static IDetour hook_MaddieHelpingHand_UpsideDownJumpThru_playerMovingUp;
+        private static IDetour hook_MaddieHelpingHand_UpsideDownJumpThru_updateClimbMove;
+        private static IDetour hook_MaddieHelpingHand_UpsideDownJumpThru_onJumpthruHasPlayerRider;
+        private static IDetour hook_MaddieHelpingHand_UpsideDownJumpThru_onPlayerOnCollideV;
+        private static IDetour hook_MaddieHelpingHand_GroupedTriggerSpikes_GetPlayerCollideIndex;
+        private static IDetour hook_MaddieHelpingHand_GroupedTriggerSpikes_ctor;
         // ReSharper restore InconsistentNaming
 
         protected override void Load()
         {
-            var mhhudjt = ReflectionCache.MaxHelpingHandUpsideDownJumpThruType;
+            var mhhudjt = ReflectionCache.MaddieHelpingHandUpsideDownJumpThruType;
 
             var playerMovingUpMethod = mhhudjt?.GetMethod("playerMovingUp", BindingFlags.Static | BindingFlags.NonPublic);
             if (playerMovingUpMethod != null)
             {
-                var target = GetType().GetMethod(nameof(MaxHelpingHand_UpsideDownJumpThru_playerMovingUp), BindingFlags.Static | BindingFlags.NonPublic);
-                hook_MaxHelpingHand_UpsideDownJumpThru_playerMovingUp = new Hook(playerMovingUpMethod, target);
+                var target = GetType().GetMethod(nameof(MaddieHelpingHand_UpsideDownJumpThru_playerMovingUp), BindingFlags.Static | BindingFlags.NonPublic);
+                hook_MaddieHelpingHand_UpsideDownJumpThru_playerMovingUp = new Hook(playerMovingUpMethod, target);
             }
 
             var updateClimbMoveMethod = mhhudjt?.GetMethod("updateClimbMove", BindingFlags.Static | BindingFlags.NonPublic);
             if (updateClimbMoveMethod != null)
             {
-                var target = GetType().GetMethod(nameof(MaxHelpingHand_UpsideDownJumpThru_updateClimbMove), BindingFlags.Static | BindingFlags.NonPublic);
-                hook_MaxHelpingHand_UpsideDownJumpThru_updateClimbMove = new Hook(updateClimbMoveMethod, target);
+                var target = GetType().GetMethod(nameof(MaddieHelpingHand_UpsideDownJumpThru_updateClimbMove), BindingFlags.Static | BindingFlags.NonPublic);
+                hook_MaddieHelpingHand_UpsideDownJumpThru_updateClimbMove = new Hook(updateClimbMoveMethod, target);
             }
 
             var onJumpthruHasPlayerRiderMethod = mhhudjt?.GetMethod("onJumpthruHasPlayerRider", BindingFlags.Static | BindingFlags.NonPublic);
             if (onJumpthruHasPlayerRiderMethod != null)
             {
-                hook_MaxHelpingHand_UpsideDownJumpThru_onJumpthruHasPlayerRider = new ILHook(onJumpthruHasPlayerRiderMethod, MaxHelpingHand_onJumpthruHasPlayerRider);
+                hook_MaddieHelpingHand_UpsideDownJumpThru_onJumpthruHasPlayerRider = new ILHook(onJumpthruHasPlayerRiderMethod, MaddieHelpingHand_onJumpthruHasPlayerRider);
             }
 
             var onPlayerOnCollideVMethod = mhhudjt?.GetMethod("onPlayerOnCollideV", BindingFlags.Static | BindingFlags.NonPublic);
             if (onPlayerOnCollideVMethod != null)
             {
-                hook_MaxHelpingHand_UpsideDownJumpThru_onPlayerOnCollideV = new ILHook(onPlayerOnCollideVMethod, MaxHelpingHand_onPlayerOnCollideV);
+                hook_MaddieHelpingHand_UpsideDownJumpThru_onPlayerOnCollideV = new ILHook(onPlayerOnCollideVMethod, MaddieHelpingHand_onPlayerOnCollideV);
             }
 
-            var mhhgtst = ReflectionCache.MaxHelpingHandGroupedTriggerSpikesType;
+            var mhhgtst = ReflectionCache.MaddieHelpingHandGroupedTriggerSpikesType;
             var getPlayerCollideIndexMethod = mhhgtst?.GetMethod("GetPlayerCollideIndex", BindingFlags.Instance | BindingFlags.NonPublic);
             if (getPlayerCollideIndexMethod != null)
             {
-                hook_MaxHelpingHand_GroupedTriggerSpikes_GetPlayerCollideIndex = new ILHook(getPlayerCollideIndexMethod, GroupedTriggerSpikes_GetPlayerCollideIndex);
+                hook_MaddieHelpingHand_GroupedTriggerSpikes_GetPlayerCollideIndex = new ILHook(getPlayerCollideIndexMethod, GroupedTriggerSpikes_GetPlayerCollideIndex);
             }
 
             var ctor = mhhgtst?.GetConstructors().FirstOrDefault(c => c.GetParameters().Length > 3);
             if (ctor != null)
             {
-                hook_MaxHelpingHand_GroupedTriggerSpikes_ctor = new ILHook(ctor, GroupedTriggerSpikes_ctor);
+                hook_MaddieHelpingHand_GroupedTriggerSpikes_ctor = new ILHook(ctor, GroupedTriggerSpikes_ctor);
             }
         }
 
         protected override void Unload()
         {
-            hook_MaxHelpingHand_UpsideDownJumpThru_playerMovingUp?.Dispose();
-            hook_MaxHelpingHand_UpsideDownJumpThru_playerMovingUp = null;
-            hook_MaxHelpingHand_UpsideDownJumpThru_updateClimbMove?.Dispose();
-            hook_MaxHelpingHand_UpsideDownJumpThru_updateClimbMove = null;
-            hook_MaxHelpingHand_UpsideDownJumpThru_onJumpthruHasPlayerRider?.Dispose();
-            hook_MaxHelpingHand_UpsideDownJumpThru_onJumpthruHasPlayerRider = null;
-            hook_MaxHelpingHand_UpsideDownJumpThru_onPlayerOnCollideV?.Dispose();
-            hook_MaxHelpingHand_UpsideDownJumpThru_onPlayerOnCollideV = null;
-            hook_MaxHelpingHand_GroupedTriggerSpikes_GetPlayerCollideIndex?.Dispose();
-            hook_MaxHelpingHand_GroupedTriggerSpikes_GetPlayerCollideIndex = null;
-            hook_MaxHelpingHand_GroupedTriggerSpikes_ctor?.Dispose();
-            hook_MaxHelpingHand_GroupedTriggerSpikes_ctor = null;
+            hook_MaddieHelpingHand_UpsideDownJumpThru_playerMovingUp?.Dispose();
+            hook_MaddieHelpingHand_UpsideDownJumpThru_playerMovingUp = null;
+            hook_MaddieHelpingHand_UpsideDownJumpThru_updateClimbMove?.Dispose();
+            hook_MaddieHelpingHand_UpsideDownJumpThru_updateClimbMove = null;
+            hook_MaddieHelpingHand_UpsideDownJumpThru_onJumpthruHasPlayerRider?.Dispose();
+            hook_MaddieHelpingHand_UpsideDownJumpThru_onJumpthruHasPlayerRider = null;
+            hook_MaddieHelpingHand_UpsideDownJumpThru_onPlayerOnCollideV?.Dispose();
+            hook_MaddieHelpingHand_UpsideDownJumpThru_onPlayerOnCollideV = null;
+            hook_MaddieHelpingHand_GroupedTriggerSpikes_GetPlayerCollideIndex?.Dispose();
+            hook_MaddieHelpingHand_GroupedTriggerSpikes_GetPlayerCollideIndex = null;
+            hook_MaddieHelpingHand_GroupedTriggerSpikes_ctor?.Dispose();
+            hook_MaddieHelpingHand_GroupedTriggerSpikes_ctor = null;
         }
 
-        private static int MaxHelpingHand_UpsideDownJumpThru_updateClimbMove(Func<Player, int, int> orig, Player player, int lastClimbMove) =>
+        private static int MaddieHelpingHand_UpsideDownJumpThru_updateClimbMove(Func<Player, int, int> orig, Player player, int lastClimbMove) =>
             GravityHelperModule.ShouldInvertPlayer ? lastClimbMove : orig(player, lastClimbMove);
 
-        private static bool MaxHelpingHand_UpsideDownJumpThru_playerMovingUp(Func<Player, bool> orig, Player player) =>
+        private static bool MaddieHelpingHand_UpsideDownJumpThru_playerMovingUp(Func<Player, bool> orig, Player player) =>
             orig(player) != GravityHelperModule.ShouldInvertPlayer;
 
-        private static void MaxHelpingHand_onJumpthruHasPlayerRider(ILContext il) => HookUtils.SafeHook(() =>
+        private static void MaddieHelpingHand_onJumpthruHasPlayerRider(ILContext il) => HookUtils.SafeHook(() =>
         {
             var cursor = new ILCursor(il);
 
@@ -104,7 +104,7 @@ namespace Celeste.Mod.GravityHelper.ThirdParty
             cursor.Emit(OpCodes.Ret);
         });
 
-        private static void MaxHelpingHand_onPlayerOnCollideV(ILContext il) => HookUtils.SafeHook(() =>
+        private static void MaddieHelpingHand_onPlayerOnCollideV(ILContext il) => HookUtils.SafeHook(() =>
         {
             var cursor = new ILCursor(il);
             var cursor2 = cursor.Clone();
@@ -140,7 +140,7 @@ namespace Celeste.Mod.GravityHelper.ThirdParty
             {
                 var data = new DynamicData(self);
                 var direction = data.Get<Spikes.Directions>("direction");
-                var method = ReflectionCache.MaxHelpingHandGroupedTriggerSpikesType.GetMethod("UpSafeBlockCheck", BindingFlags.NonPublic | BindingFlags.Instance);
+                var method = ReflectionCache.MaddieHelpingHandGroupedTriggerSpikesType.GetMethod("UpSafeBlockCheck", BindingFlags.NonPublic | BindingFlags.Instance);
 
                 // we add a disabled ledge blocker for downward spikes
                 if (direction == Spikes.Directions.Down)

@@ -72,7 +72,7 @@ namespace Celeste.Mod.GravityHelper.Extensions
         {
             if (entity.CollideCheck<UpsideDownJumpThru>())
                 return true;
-            if (ReflectionCache.MaxHelpingHandUpsideDownJumpThruType != null && entity.CollideCheck(ReflectionCache.MaxHelpingHandUpsideDownJumpThruType))
+            if (ReflectionCache.MaddieHelpingHandUpsideDownJumpThruType != null && entity.CollideCheck(ReflectionCache.MaddieHelpingHandUpsideDownJumpThruType))
                 return true;
             return false;
         }
@@ -85,7 +85,7 @@ namespace Celeste.Mod.GravityHelper.Extensions
             _entityList.Clear();
             Collide.All(entity, entities, _entityList);
             var coll = _entityList.Any(e =>
-                e.GetType() != ReflectionCache.MaxHelpingHandUpsideDownJumpThruType);
+                e.GetType() != ReflectionCache.MaddieHelpingHandUpsideDownJumpThruType);
             _entityList.Clear();
             return coll;
         }
@@ -94,7 +94,7 @@ namespace Celeste.Mod.GravityHelper.Extensions
         {
             if (entity.CollideCheck<UpsideDownJumpThru>(at))
                 return true;
-            if (ReflectionCache.MaxHelpingHandUpsideDownJumpThruType != null && entity.CollideCheck(ReflectionCache.MaxHelpingHandUpsideDownJumpThruType, at))
+            if (ReflectionCache.MaddieHelpingHandUpsideDownJumpThruType != null && entity.CollideCheck(ReflectionCache.MaddieHelpingHandUpsideDownJumpThruType, at))
                 return true;
             return false;
         }
@@ -107,7 +107,7 @@ namespace Celeste.Mod.GravityHelper.Extensions
             _entityList.Clear();
             Collide.All(entity, entities, _entityList, at);
             var coll = _entityList.Any(e =>
-                e.GetType() != ReflectionCache.MaxHelpingHandUpsideDownJumpThruType);
+                e.GetType() != ReflectionCache.MaddieHelpingHandUpsideDownJumpThruType);
             _entityList.Clear();
             return coll;
         }
@@ -116,7 +116,7 @@ namespace Celeste.Mod.GravityHelper.Extensions
         {
             if (entity.CollideCheckOutside<UpsideDownJumpThru>(at))
                 return true;
-            if (ReflectionCache.MaxHelpingHandUpsideDownJumpThruType != null && entity.CollideCheckOutside(ReflectionCache.MaxHelpingHandUpsideDownJumpThruType, at))
+            if (ReflectionCache.MaddieHelpingHandUpsideDownJumpThruType != null && entity.CollideCheckOutside(ReflectionCache.MaddieHelpingHandUpsideDownJumpThruType, at))
                 return true;
             return false;
         }
@@ -125,7 +125,7 @@ namespace Celeste.Mod.GravityHelper.Extensions
         {
             foreach (Entity b in entity.Scene.Tracker.Entities[typeof(JumpThru)])
             {
-                if (b is UpsideDownJumpThru || b.GetType() == ReflectionCache.MaxHelpingHandUpsideDownJumpThruType)
+                if (b is UpsideDownJumpThru || b.GetType() == ReflectionCache.MaddieHelpingHandUpsideDownJumpThruType)
                     continue;
                 if (!Collide.Check(entity, b) && Collide.Check(entity, b, at))
                     return true;
@@ -138,8 +138,8 @@ namespace Celeste.Mod.GravityHelper.Extensions
         {
             JumpThru collide = entity.CollideFirstOutside<UpsideDownJumpThru>(at);
 
-            if (collide == null && ReflectionCache.MaxHelpingHandUpsideDownJumpThruType != null)
-                collide = (JumpThru) entity.CollideFirstOutside(ReflectionCache.MaxHelpingHandUpsideDownJumpThruType, at);
+            if (collide == null && ReflectionCache.MaddieHelpingHandUpsideDownJumpThruType != null)
+                collide = (JumpThru) entity.CollideFirstOutside(ReflectionCache.MaddieHelpingHandUpsideDownJumpThruType, at);
 
             return collide;
         }
@@ -148,7 +148,7 @@ namespace Celeste.Mod.GravityHelper.Extensions
         {
             foreach (Entity b in entity.Scene.Tracker.Entities[typeof(JumpThru)])
             {
-                if (b is UpsideDownJumpThru || b.GetType() == ReflectionCache.MaxHelpingHandUpsideDownJumpThruType)
+                if (b is UpsideDownJumpThru || b.GetType() == ReflectionCache.MaddieHelpingHandUpsideDownJumpThruType)
                     continue;
                 if (!Collide.Check(entity, b) && Collide.Check(entity, b, at))
                     return b as JumpThru;
@@ -160,7 +160,7 @@ namespace Celeste.Mod.GravityHelper.Extensions
         public static bool IsUpsideDownJumpThru(this JumpThru jumpThru)
         {
             if (jumpThru is UpsideDownJumpThru) return true;
-            if (jumpThru.GetType() == ReflectionCache.MaxHelpingHandUpsideDownJumpThruType) return true;
+            if (jumpThru.GetType() == ReflectionCache.MaddieHelpingHandUpsideDownJumpThruType) return true;
             return false;
         }
 

@@ -323,7 +323,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             cursor.GotoNextAddition();
             cursor.EmitInvertVectorDelegate();
 
-            // borrowed from MaxHelpingHand
+            // borrowed from MaddieHelpingHand
             if (cursor.TryGotoNext(instr => instr.MatchStfld<Vector2>("Y"),
                 instr => instr.MatchLdarg(0),
                 instr => instr.MatchLdfld<Player>("climbNoMoveTimer"),
@@ -1505,7 +1505,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
                     return false;
 
                 var ghUdjt = self.Scene.Tracker.GetEntitiesOrEmpty<UpsideDownJumpThru>();
-                var mhhUdjt = self.Scene.Tracker.GetEntitiesOrEmpty(ReflectionCache.MaxHelpingHandUpsideDownJumpThruType);
+                var mhhUdjt = self.Scene.Tracker.GetEntitiesOrEmpty(ReflectionCache.MaddieHelpingHandUpsideDownJumpThruType);
                 var entities = ghUdjt.Concat(mhhUdjt);
 
                 foreach (var entity in entities)
