@@ -80,7 +80,13 @@ local gravityRefill = {
 }
 
 function gravityRefill.texture(room, entity)
-    local suffix = entity.refillsDash and "" or "_no_dash"
+    local suffix = ""
+    if entity.refillsDash and entity.dashes == 2 then
+        suffix = "_two_dash"
+    elseif not entity.refillsDash then
+        suffix = "_no_dash"
+    end
+
     return "objects/GravityHelper/gravityRefill/idle"..suffix.."00"
 end
 

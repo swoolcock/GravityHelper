@@ -67,6 +67,7 @@ const placements = Ahorn.PlacementDict(
 
 const normalSprite = "objects/GravityHelper/gravityRefill/idle00"
 const noDashSprite = "objects/GravityHelper/gravityRefill/idle_no_dash00"
+const twoDashSprite = "objects/GravityHelper/gravityRefill/idle_two_dash00"
 
 Ahorn.editingIgnored(entity::GravityRefill, multiple::Bool=false) = multiple ? String["x", "y", "modVersion", "pluginVersion"] : String["modVersion", "pluginVersion"]
 
@@ -76,7 +77,9 @@ function Ahorn.selection(entity::GravityRefill)
 end
 
 function Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::GravityRefill, room::Maple.Room)
-    local sprite = get(entity.data, "refillsDash", true) ? normalSprite : noDashSprite
+    local refillsDash = get(entity.data, "refillsDash", true)
+    local dashes = get(entity.data, "dashes", -1)
+    local sprite = refillsDash && dashes == 2 ? twoDashSprite : !refillsDash ? noDashSprite : normalSprite;
     Ahorn.drawSprite(ctx, sprite, 0, 0)
 end
 
