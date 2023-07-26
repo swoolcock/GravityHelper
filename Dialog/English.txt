@@ -9,3 +9,4 @@ GRAVITYHELPER_MENU_CONTROL_SCHEME_SUBTEXT= Absolute: Madeline will always go in 
 GRAVITYHELPER_MENU_FEATHER_CONTROL_SCHEME= Control Scheme (Feathers)
 GRAVITYHELPER_MENU_FEATHER_CONTROL_SCHEME_SUBTEXT= As with Control Scheme, but for feathers.
 GRAVITYHELPER_POSTCARD_VVVVVV= This map contains VVVVVV mechanics.{n}Your custom settings have been restored to default.
+GRAVITYHELPER_POSTCARD_UDJT_CORRECTION= For compatibility reasons, GravityHelper applies corner correction to MaddieHelpingHand upside down jumpthrus even if the map does not contain GravityHelper entities.{n}If this is undesirable, please return to map and disable Allow In All Maps in Mod Options.
