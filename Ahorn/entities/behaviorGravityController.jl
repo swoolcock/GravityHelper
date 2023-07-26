@@ -5,14 +5,14 @@ module GravityHelperBehaviorGravityController
 
 using ..Ahorn, Maple
 
-const PLUGIN_VERSION = "1"
+const PLUGIN_VERSION = "2"
 
 @mapdef Entity "GravityHelper/BehaviorGravityController" BehaviorGravityController(
     x::Integer, y::Integer,
     pluginVersion::String=PLUGIN_VERSION,
     persistent::Bool=true,
     holdableResetTime::Real=2.0,
-    springCooldown::Real=0.1,
+    springCooldown::Real=0,
     switchCooldown::Real=1.0,
     switchOnHoldables::Bool=true,
     dashToToggle::Bool=false

@@ -77,11 +77,15 @@ namespace Celeste.Mod.GravityHelper.Entities
             _modVersion = data.ModVersion();
             _pluginVersion = data.PluginVersion();
 
+            var defaultCooldown = _pluginVersion.Major >= 2
+                ? BehaviorGravityController.DEFAULT_SPRING_COOLDOWN_V2
+                : BehaviorGravityController.DEFAULT_SPRING_COOLDOWN_V1;
+
             PlayerCanUse = data.Bool("playerCanUse", true);
             GravityType = data.Enum<GravityType>("gravityType");
 
             _defaultToController = data.Bool("defaultToController");
-            _gravityCooldown = data.Float("gravityCooldown", BehaviorGravityController.DEFAULT_SPRING_COOLDOWN);
+            _gravityCooldown = data.Float("gravityCooldown", defaultCooldown);
             _showIndicator = data.Bool("showIndicator");
             _largeIndicator = data.Bool("largeIndicator");
             _indicatorOffset = data.Int("indicatorOffset", 8);

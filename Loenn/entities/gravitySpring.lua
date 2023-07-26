@@ -5,11 +5,11 @@ local consts = require("mods").requireFromPlugin("consts")
 local helpers = require("mods").requireFromPlugin("helpers")
 local utils = require("utils")
 
-local placementData = helpers.createPlacementData('1', {
+local placementData = helpers.createPlacementData('2', {
     defaultToController = true,
     playerCanUse = true,
     gravityType = consts.gravityTypes.normal.index,
-    gravityCooldown = 0.1,
+    gravityCooldown = 0,
     showIndicator = false,
     largeIndicator = false,
     indicatorOffset = 8,
