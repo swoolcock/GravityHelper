@@ -10,6 +10,7 @@ using Celeste.Mod.GravityHelper.Entities.Controllers;
 using Celeste.Mod.GravityHelper.Extensions;
 using Celeste.Mod.GravityHelper.Triggers;
 using Microsoft.Xna.Framework;
+using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Monocle;
 using MonoMod.Cil;
@@ -642,18 +643,45 @@ namespace Celeste.Mod.GravityHelper.Hooks
             // flip the Wind.Y check, since we're grabbing the other way now
             cursor.EmitInvertFloatDelegate();
 
-            // find the start of the loop
-            int leniencyIndex = 0;
-            if (!cursor.TryGotoNext(MoveType.After, instr => instr.MatchLdcI4(1), instr => instr.MatchStloc(out leniencyIndex)))
-                throw new HookException("Couldn't find start of grab leniency loop");
+            // find the Position.Y
+            if (!cursor.TryGotoNext(MoveType.After, instr => instr.MatchLdfld<Entity>(nameof(Entity.Position)),
+                instr => instr.MatchCall<Vector2>("get_UnitY"),
+                instr => instr.MatchLdloc(out _)))
+                throw new HookException("Couldn't find Vector2.UnitY * -index");
 
-            // invert ldloc of leniency index three times
-            for (int i = 0; i < 3; i++)
+            // invert
+            cursor.EmitInvertIntDelegate();
+
+            // find CollideCheck<Solid>
+            GenericInstanceMethod collideCheckSolid = null;
+            if (!cursor.TryGotoNext(instr => instr.MatchCallGeneric<Entity>(nameof(Entity.CollideCheck), out collideCheckSolid)))
+                throw new HookException("Couldn't find CollideCheck<Solid>.");
+
+            // add a new vector2 local
+            var firstParam = collideCheckSolid.Parameters.First();
+            var vecDef = new VariableDefinition(firstParam.ParameterType);
+            il.Body.Variables.Add(vecDef);
+
+            // take a local copy of the vector2 argument to CollideCheck<Solid>
+            cursor.Emit(OpCodes.Dup);
+            cursor.Emit(OpCodes.Stloc, vecDef);
+
+            // skip to the brtrue
+            if (!cursor.TryGotoNext(instr => instr.MatchBrtrue(out _)))
+                throw new HookException("Couldn't find brtrue");
+
+            // add an additional check for jumpthrus
+            cursor.Emit(OpCodes.Ldarg_0);
+            cursor.Emit(OpCodes.Ldloc, vecDef);
+            cursor.EmitDelegate<Func<bool, Entity, Vector2, bool>>((ccs, self, at) =>
             {
-                if (!cursor.TryGotoNext(MoveType.After, instr => instr.MatchLdloc(leniencyIndex)))
-                    throw new HookException($"Couldn't find iteration {i} of ldloc.{leniencyIndex}");
-                cursor.EmitInvertIntDelegate();
-            }
+                // if CollideCheck<Solid> already returned true, nothing to do
+                if (ccs) return true;
+                // collide with an upside down jumpthru (relative to the player's gravity)
+                return GravityHelperModule.ShouldInvertPlayer
+                    ? self.CollideCheckNotUpsideDownJumpThru(at)
+                    : self.CollideCheckUpsideDownJumpThru(at);
+            });
 
             if (!cursor.TryGotoNext(instr => instr.MatchStfld<Player>("wallSlideDir")))
                 throw new HookException("Couldn't find wallSlideDir");
