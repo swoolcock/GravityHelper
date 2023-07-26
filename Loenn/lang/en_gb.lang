@@ -80,8 +80,13 @@ entities.GravityHelper/GravityLine.attributes.description.lineThickness=The thic
 
 # Gravity Refill
 entities.GravityHelper/GravityRefill.placements.name.normal=Gravity Refill
-entities.GravityHelper/GravityRefill.placements.name.noDash=Gravity Refill (No Dash)
+entities.GravityHelper/GravityRefill.placements.name.normalSingleUse=Gravity Refill (Single Use)
+entities.GravityHelper/GravityRefill.placements.name.noDash=Gravity Refill (No Dash/Stamina)
+entities.GravityHelper/GravityRefill.placements.name.noDashSingleUse=Gravity Refill (No Dash/Stamina, Single Use)
+entities.GravityHelper/GravityRefill.placements.name.twoDash=Gravity Refill (Two Dashes/Charges)
+entities.GravityHelper/GravityRefill.placements.name.twoDashSingleUse=Gravity Refill (Two Dashes/Charges, Single Use)
 entities.GravityHelper/GravityRefill.attributes.description.charges=The number of charges of gravity toggle that Madeline will receive. Defaults to 1.
+entities.GravityHelper/GravityRefill.attributes.description.dashes=The number of dashes to refill, if refillsDash is true. Negative value means Player.MaxDashes. Defaults to -1.
 entities.GravityHelper/GravityRefill.attributes.description.oneUse=If true, the crystal will not respawn after it has been collected. Defaults to false.
 entities.GravityHelper/GravityRefill.attributes.description.refillsDash=Whether collecting the crystal will also refill Madeline's dash. Defaults to true.
 entities.GravityHelper/GravityRefill.attributes.description.refillsStamina=Whether collecting the crystal will also refill Madeline's stamina. Defaults to true.

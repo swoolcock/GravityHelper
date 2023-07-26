@@ -11,6 +11,7 @@ const PLUGIN_VERSION = "1"
     x::Integer, y::Integer,
     pluginVersion::String=PLUGIN_VERSION,
     charges::Integer=1,
+    dashes::Integer=-1,
     oneUse::Bool=false,
     refillsDash::Bool=true,
     refillsStamina::Bool=true,
@@ -21,14 +22,47 @@ const placements = Ahorn.PlacementDict(
     "Gravity Refill (GravityHelper)" => Ahorn.EntityPlacement(
         GravityRefill
     ),
-    "Gravity Refill No Dash (GravityHelper)" => Ahorn.EntityPlacement(
+    "Gravity Refill (Single Use) (GravityHelper)" => Ahorn.EntityPlacement(
+        GravityRefill,
+        "point",
+        Dict{String, Any}(
+            "oneUse" => true
+        )
+    ),
+    "Gravity Refill (No Dash/Stamina) (GravityHelper)" => Ahorn.EntityPlacement(
         GravityRefill,
         "point",
         Dict{String, Any}(
             "refillsDash" => false,
             "refillsStamina" => false
         )
-    )
+    ),
+    "Gravity Refill (No Dash/Stamina, Single Use) (GravityHelper)" => Ahorn.EntityPlacement(
+        GravityRefill,
+        "point",
+        Dict{String, Any}(
+            "refillsDash" => false,
+            "refillsStamina" => false,
+            "oneUse" => true
+        )
+    ),
+    "Gravity Refill (Two Dashes/Charges) (GravityHelper)" => Ahorn.EntityPlacement(
+        GravityRefill,
+        "point",
+        Dict{String, Any}(
+            "dashes" => 2,
+            "charges" => 2
+        )
+    ),
+    "Gravity Refill (Two Dashes/Charges, Single Use) (GravityHelper)" => Ahorn.EntityPlacement(
+        GravityRefill,
+        "point",
+        Dict{String, Any}(
+            "dashes" => 2,
+            "charges" => 2,
+            "oneUse" => true
+        )
+    ),
 )
 
 const normalSprite = "objects/GravityHelper/gravityRefill/idle00"

@@ -16,6 +16,7 @@ namespace Celeste.Mod.GravityHelper.Entities
         // properties
         public bool OneUse { get; }
         public int Charges { get; }
+        public int Dashes { get; }
         public bool RefillsDash { get; }
         public bool RefillsStamina { get; }
         public float RespawnTime { get; }
@@ -76,6 +77,7 @@ namespace Celeste.Mod.GravityHelper.Entities
             _pluginVersion = data.PluginVersion();
 
             Charges = data.Int("charges", 1);
+            Dashes = data.Int("dashes", -1);
             OneUse = data.Bool("oneUse");
             RefillsDash = data.Bool("refillsDash", true);
             RefillsStamina = data.Bool("refillsStamina", true);
@@ -97,8 +99,10 @@ namespace Celeste.Mod.GravityHelper.Entities
                 _light = new VertexLight(Color.White, 1f, 16, 48),
                 _sine = new SineWave(0.6f, 0.0f));
 
+            var animationName = !RefillsDash ? "idle_no_dash" : Dashes == 2 ? "idle_two_dash" : "idle";
+
             _outline.CenterOrigin();
-            _sprite.Play(RefillsDash ? "idle" : "idle_no_dash", true, true);
+            _sprite.Play(animationName, true, true);
             using (new PushRandomDisposable(data.ID)) _sine.Randomize();
             _arrows.OnFinish = _ => _arrows.Visible = false;
 
@@ -167,13 +171,18 @@ namespace Celeste.Mod.GravityHelper.Entities
 
         private void OnPlayer(Player player)
         {
-            bool canUse = RefillsDash && player.Dashes < player.MaxDashes ||
+            var dashes = Dashes < 0 ? player.MaxDashes : Dashes;
+            bool canUse = RefillsDash && player.Dashes < dashes ||
                           RefillsStamina && player.Stamina < 20 ||
                           NumberOfCharges < Charges;
 
             if (!canUse) return;
 
-            if (RefillsDash) player.RefillDash();
+            if (RefillsDash && Dashes < 0)
+                player.RefillDash();
+            else if (RefillsDash && player.Dashes < Dashes)
+                player.Dashes = Dashes;
+
             if (RefillsStamina) player.RefillStamina();
             NumberOfCharges = Charges;
 

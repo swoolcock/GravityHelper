@@ -60,6 +60,7 @@ placements.entities.GravityHelper/GravityLine.tooltips.lineThickness=The thickne
 
 # Gravity Refill
 placements.entities.GravityHelper/GravityRefill.tooltips.charges=The number of gravity charges that this refill will provide.
+placements.entities.GravityHelper/GravityRefill.tooltips.dashes=The number of dashes to refill, if refillsDash is true. Negative value means Player.MaxDashes. Defaults to -1.
 placements.entities.GravityHelper/GravityRefill.tooltips.oneUse=Whether the gravity refill has a single use and will not respawn.
 placements.entities.GravityHelper/GravityRefill.tooltips.refillsDash=Whether the gravity refill will also refill Madeline's dash.
 placements.entities.GravityHelper/GravityRefill.tooltips.refillsStamina=Whether the gravity refill will also refill Madeline's stamina.

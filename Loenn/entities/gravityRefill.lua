@@ -7,6 +7,7 @@ local helpers = require("mods").requireFromPlugin("helpers")
 
 local placementData = helpers.createPlacementData('1', {
     charges = 1,
+    dashes = -1,
     oneUse = false,
     refillsDash = true,
     refillsStamina = true,
@@ -17,6 +18,17 @@ local gravityRefill = {
     name = "GravityHelper/GravityRefill",
     depth = -100,
     ignoredFields = consts.ignoredFields,
+    fieldInformation = {
+        charges = {
+            fieldType = "integer",
+        },
+        dashes = {
+            fieldType = "integer",
+        },
+        respawnTime = {
+            fieldType = "number",
+        },
+    },
     placements = {
         {
             name = "normal",
@@ -24,11 +36,44 @@ local gravityRefill = {
             data = helpers.union(placementData),
         },
         {
+            name = "normalSingleUse",
+            ignoredFields = consts.ignoredFields,
+            data = helpers.union(placementData, {
+                oneUse = true,
+            }),
+        },
+        {
+            name = "twoDash",
+            ignoredFields = consts.ignoredFields,
+            data = helpers.union(placementData, {
+                dashes = 2,
+                charges = 2,
+            }),
+        },
+        {
+            name = "twoDashSingleUse",
+            ignoredFields = consts.ignoredFields,
+            data = helpers.union(placementData, {
+                dashes = 2,
+                charges = 2,
+                oneUse = true,
+            }),
+        },
+        {
             name = "noDash",
             ignoredFields = consts.ignoredFields,
             data = helpers.union(placementData, {
                 refillsDash = false,
                 refillsStamina = false,
+            }),
+        },
+        {
+            name = "noDashSingleUse",
+            ignoredFields = consts.ignoredFields,
+            data = helpers.union(placementData, {
+                refillsDash = false,
+                refillsStamina = false,
+                oneUse = true,
             }),
         },
     },
