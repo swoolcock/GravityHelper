@@ -90,7 +90,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
             // loop through (potentially) every entity in the map
             int found = 0;
-            foreach (var e in session.MapData.Levels.SelectMany(levelData => levelData.Entities))
+            foreach (var e in session.MapData.Levels.SelectMany(levelData => levelData.Entities.Concat(levelData.Triggers)))
             {
                 // check the entity names or mods we're looking for
                 for (int i = 0; i < entityNames.Length; i++)
