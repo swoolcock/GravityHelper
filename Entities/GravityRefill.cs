@@ -60,6 +60,7 @@ namespace Celeste.Mod.GravityHelper.Entities
 
         private Level _level;
         private float _respawnTimeRemaining;
+        private float _arrowIntervalOffset;
 
         private bool _emitNormal;
 
@@ -87,10 +88,12 @@ namespace Celeste.Mod.GravityHelper.Entities
             Depth = Depths.Pickups;
 
             var path = "objects/GravityHelper/gravityRefill";
+            var outlineName = Dashes == 2 ? "outline_two_dash" : "outline";
+            var animationName = !RefillsDash ? "idle_no_dash" : Dashes == 2 ? "idle_two_dash" : "idle";
 
             // add components
             Add(new PlayerCollider(OnPlayer),
-                _outline = new Image(GFX.Game[$"{path}/outline"]) {Visible = false},
+                _outline = new Image(GFX.Game[$"{path}/{outlineName}"]) {Visible = false},
                 _sprite = GFX.SpriteBank.Create("gravityRefill"),
                 _arrows = GFX.SpriteBank.Create("gravityRefillArrows"),
                 _wiggler = Wiggler.Create(1f, 4f, v => _sprite.Scale = Vector2.One * (float) (1.0 + (double) v * 0.2)),
@@ -99,12 +102,15 @@ namespace Celeste.Mod.GravityHelper.Entities
                 _light = new VertexLight(Color.White, 1f, 16, 48),
                 _sine = new SineWave(0.6f, 0.0f));
 
-            var animationName = !RefillsDash ? "idle_no_dash" : Dashes == 2 ? "idle_two_dash" : "idle";
-
             _outline.CenterOrigin();
+
+            // this uses a random sample but so as to not break existing maps i'm leaving it above the PushRandomDisposable
             _sprite.Play(animationName, true, true);
-            using (new PushRandomDisposable(data.ID)) _sine.Randomize();
+
+            using var _ = new PushRandomDisposable(data.ID);
+            _sine.Randomize();
             _arrows.OnFinish = _ => _arrows.Visible = false;
+            _arrowIntervalOffset = Calc.Random.NextFloat(2f);
 
             updateY();
         }
@@ -140,9 +146,10 @@ namespace Celeste.Mod.GravityHelper.Entities
             _light.Alpha = Calc.Approach(_light.Alpha, _sprite.Visible ? 1f : 0.0f, 4f * Engine.DeltaTime);
             _bloom.Alpha = _light.Alpha * 0.8f;
 
-            if (!Scene.OnInterval(2f) || !_sprite.Visible) return;
+            if (!Scene.OnInterval(2f, _arrowIntervalOffset) || !_sprite.Visible) return;
 
-            _arrows.Play("arrows", true);
+            var arrowName = Dashes == 2 ? "arrows_two_dash" : "arrows";
+            _arrows.Play(arrowName, true);
             _arrows.Visible = true;
         }
 
