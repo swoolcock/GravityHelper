@@ -66,7 +66,19 @@ namespace Celeste.Mod.GravityHelper.Extensions
 
         #region UpsideDownJumpThru Collision Helpers
 
-        private static readonly List<Entity> _entityList = new List<Entity>();
+        private static readonly List<Entity> _entityList = new();
+        private static readonly List<Component> _componentList = new();
+
+        public static bool CollideCheckJumpThru(this Entity entity, JumpThruCollision.JumpThruCollisionType type)
+        {
+            var components = entity.Scene.Tracker.GetComponents<JumpThruCollision>();
+            foreach (JumpThruCollision jtc in components)
+            {
+                if (jtc.Type == type) return true;
+            }
+
+            return false;
+        }
 
         public static bool CollideCheckUpsideDownJumpThru(this Entity entity)
         {

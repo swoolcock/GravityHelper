@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using Celeste.Mod.GravityHelper.Components;
 using Celeste.Mod.GravityHelper.Extensions;
 using Microsoft.Xna.Framework;
 using Mono.Cecil.Cil;
@@ -49,13 +50,14 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
         private static bool Actor_IsRiding_JumpThru(On.Celeste.Actor.orig_IsRiding_JumpThru orig, Actor self, JumpThru jumpThru)
         {
+            return jumpThru.IsActorRiding(self);
             // we override all other hooks, since it's the only way to accurately handle riding UDJT
-            if (self.IgnoreJumpThrus) return false;
-            var shouldInvert = self.ShouldInvertChecked();
-            return shouldInvert && jumpThru.IsUpsideDownJumpThru() &&
-                self.CollideCheckOutside(jumpThru, self.Position - Vector2.UnitY) ||
-                !shouldInvert && !jumpThru.IsUpsideDownJumpThru() &&
-                self.CollideCheckOutside(jumpThru, self.Position + Vector2.UnitY);
+            // if (self.IgnoreJumpThrus) return false;
+            // var shouldInvert = self.ShouldInvertChecked();
+            // return shouldInvert && jumpThru.IsUpsideDownJumpThru() &&
+            //     self.CollideCheckOutside(jumpThru, self.Position - Vector2.UnitY) ||
+            //     !shouldInvert && !jumpThru.IsUpsideDownJumpThru() &&
+            //     self.CollideCheckOutside(jumpThru, self.Position + Vector2.UnitY);
         }
 
         private static void Actor_IsRiding_Solid(ILContext il) => HookUtils.SafeHook(() =>
