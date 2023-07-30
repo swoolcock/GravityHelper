@@ -69,17 +69,22 @@ const normalSprite = "objects/GravityHelper/gravityRefill/idle00"
 const noDashSprite = "objects/GravityHelper/gravityRefill/idle_no_dash00"
 const twoDashSprite = "objects/GravityHelper/gravityRefill/idle_two_dash00"
 
+function spriteForEntity(entity::GravityRefill)
+    local refillsDash = get(entity.data, "refillsDash", true)
+    local dashes = get(entity.data, "dashes", -1)
+    return refillsDash && dashes == 2 ? twoDashSprite : !refillsDash ? noDashSprite : normalSprite
+end
+
 Ahorn.editingIgnored(entity::GravityRefill, multiple::Bool=false) = multiple ? String["x", "y", "modVersion", "pluginVersion"] : String["modVersion", "pluginVersion"]
 
 function Ahorn.selection(entity::GravityRefill)
     x, y = Ahorn.position(entity)
-    return Ahorn.Rectangle(x - 4, y - 5, 8, 10)
+    local sprite = spriteForEntity(entity)
+    return sprite == twoDashSprite ? Ahorn.Rectangle(x - 5, y - 7, 10, 14) : Ahorn.Rectangle(x - 4, y - 5, 8, 10)
 end
 
 function Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::GravityRefill, room::Maple.Room)
-    local refillsDash = get(entity.data, "refillsDash", true)
-    local dashes = get(entity.data, "dashes", -1)
-    local sprite = refillsDash && dashes == 2 ? twoDashSprite : !refillsDash ? noDashSprite : normalSprite;
+    local sprite = spriteForEntity(entity)
     Ahorn.drawSprite(ctx, sprite, 0, 0)
 end
 
