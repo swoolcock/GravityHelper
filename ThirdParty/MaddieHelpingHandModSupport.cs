@@ -52,10 +52,13 @@ namespace Celeste.Mod.GravityHelper.ThirdParty
                 hook_MaddieHelpingHand_UpsideDownJumpThru_onJumpthruHasPlayerRider = new ILHook(onJumpthruHasPlayerRiderMethod, MaddieHelpingHand_onJumpthruHasPlayerRider);
             }
 
-            var onPlayerOnCollideVMethod = mhhudjt?.GetMethod("onPlayerOnCollideV", BindingFlags.Static | BindingFlags.NonPublic);
-            if (onPlayerOnCollideVMethod != null)
+            if (GravityHelperModule.Settings.MHHUDJTCornerCorrection)
             {
-                hook_MaddieHelpingHand_UpsideDownJumpThru_onPlayerOnCollideV = new ILHook(onPlayerOnCollideVMethod, MaddieHelpingHand_onPlayerOnCollideV);
+                var onPlayerOnCollideVMethod = mhhudjt?.GetMethod("onPlayerOnCollideV", BindingFlags.Static | BindingFlags.NonPublic);
+                if (onPlayerOnCollideVMethod != null)
+                {
+                    hook_MaddieHelpingHand_UpsideDownJumpThru_onPlayerOnCollideV = new ILHook(onPlayerOnCollideVMethod, MaddieHelpingHand_onPlayerOnCollideV);
+                }
             }
 
             var mhhgtst = ReflectionCache.MaddieHelpingHandGroupedTriggerSpikesType;

@@ -2,6 +2,7 @@
 // See the LICENCE file in the repository root for full licence text.
 
 // ReSharper disable UnusedMember.Global
+// ReSharper disable InconsistentNaming
 
 using System;
 using System.Collections.Generic;
@@ -24,6 +25,8 @@ namespace Celeste.Mod.GravityHelper
         public VvvvvvSetting VvvvvvAllowGrabbing { get; set; }
         public VvvvvvSetting VvvvvvAllowDashing { get; set; }
 
+        public bool MHHUDJTCornerCorrection { get; set; } = true;
+
         public ButtonBinding ToggleInvertGravity { get; set; }
 
         public void CreateAllowInAllMapsEntry(TextMenu menu, bool inGame)
@@ -33,6 +36,15 @@ namespace Celeste.Mod.GravityHelper
                 Disabled = inGame,
                 OnValueChange = value => AllowInAllMaps = value,
             }, Dialog.Clean("GRAVITYHELPER_MENU_ALLOW_IN_ALL_MAPS_SUBTEXT"));
+        }
+
+        public void CreateMHHUDJTCornerCorrectionEntry(TextMenu menu, bool inGame)
+        {
+            menu.AddWithDescription(new TextMenu.OnOff(Dialog.Clean("GRAVITYHELPER_MENU_MHH_UDJT_CORNER_CORRECTION"), MHHUDJTCornerCorrection)
+            {
+                Disabled = inGame,
+                OnValueChange = value => MHHUDJTCornerCorrection = value,
+            }, Dialog.Clean("GRAVITYHELPER_MENU_MHH_UDJT_CORNER_CORRECTION_SUBTEXT"));
         }
 
         public void CreateVvvvvvModeEntry(TextMenu menu, bool inGame)
