@@ -50,7 +50,7 @@ namespace Celeste.Mod.GravityHelper
         public void CreateVvvvvvModeEntry(TextMenu menu, bool inGame)
         {
             if (inGame && GravityHelperModule.CurrentHookLevel != GravityHelperModule.HookLevel.Everything) return;
-            menu.Add(new TextMenu.Option<VvvvvvSetting>(Dialog.Clean("GRAVITYHELPER_MENU_VVVVVV_MODE"))
+            menu.AddWithDescription(new TextMenu.Option<VvvvvvSetting>(Dialog.Clean("GRAVITYHELPER_MENU_VVVVVV_MODE"))
             {
                 Values = getEnumOptions<VvvvvvSetting>().ToList(),
                 Index = (int)VvvvvvMode,
@@ -59,13 +59,13 @@ namespace Celeste.Mod.GravityHelper
                     VvvvvvMode = value;
                     (Engine.Scene as Level)?.GetPersistentController<VvvvvvGravityController>(true)?.Transitioned();
                 },
-            });
+            }, Dialog.Clean("GRAVITYHELPER_MENU_VVVVVV_MODE_SUBTEXT"));
         }
 
         public void CreateVvvvvvAllowGrabbingEntry(TextMenu menu, bool inGame)
         {
             if (inGame && GravityHelperModule.CurrentHookLevel != GravityHelperModule.HookLevel.Everything) return;
-            menu.Add(new TextMenu.Option<VvvvvvSetting>(Dialog.Clean("GRAVITYHELPER_MENU_VVVVVV_ALLOW_GRABBING"))
+            menu.AddWithDescription(new TextMenu.Option<VvvvvvSetting>(Dialog.Clean("GRAVITYHELPER_MENU_VVVVVV_ALLOW_GRABBING"))
             {
                 Values = getEnumOptions<VvvvvvSetting>().ToList(),
                 Index = (int)VvvvvvAllowGrabbing,
@@ -74,13 +74,13 @@ namespace Celeste.Mod.GravityHelper
                     VvvvvvAllowGrabbing = value;
                     (Engine.Scene as Level)?.GetPersistentController<VvvvvvGravityController>()?.Transitioned();
                 },
-            });
+            }, Dialog.Clean("GRAVITYHELPER_MENU_VVVVVV_ALLOW_GRABBING_SUBTEXT"));
         }
 
         public void CreateVvvvvvAllowDashingEntry(TextMenu menu, bool inGame)
         {
             if (inGame && GravityHelperModule.CurrentHookLevel != GravityHelperModule.HookLevel.Everything) return;
-            menu.Add(new TextMenu.Option<VvvvvvSetting>(Dialog.Clean("GRAVITYHELPER_MENU_VVVVVV_ALLOW_DASHING"))
+            menu.AddWithDescription(new TextMenu.Option<VvvvvvSetting>(Dialog.Clean("GRAVITYHELPER_MENU_VVVVVV_ALLOW_DASHING"))
             {
                 Values = getEnumOptions<VvvvvvSetting>().ToList(),
                 Index = (int)VvvvvvAllowDashing,
@@ -89,13 +89,13 @@ namespace Celeste.Mod.GravityHelper
                     VvvvvvAllowDashing = value;
                     (Engine.Scene as Level)?.GetPersistentController<VvvvvvGravityController>()?.Transitioned();
                 },
-            });
+            }, Dialog.Clean("GRAVITYHELPER_MENU_VVVVVV_ALLOW_DASHING_SUBTEXT"));
         }
 
         public void CreateVvvvvvFlipSoundEntry(TextMenu menu, bool inGame)
         {
             if (inGame && GravityHelperModule.CurrentHookLevel != GravityHelperModule.HookLevel.Everything) return;
-            menu.Add(new TextMenu.Option<VvvvvvSetting>(Dialog.Clean("GRAVITYHELPER_MENU_VVVVVV_FLIP_SOUND"))
+            menu.AddWithDescription(new TextMenu.Option<VvvvvvSetting>(Dialog.Clean("GRAVITYHELPER_MENU_VVVVVV_FLIP_SOUND"))
             {
                 Values = getEnumOptions<VvvvvvSetting>().ToList(),
                 Index = (int)VvvvvvFlipSound,
@@ -104,7 +104,7 @@ namespace Celeste.Mod.GravityHelper
                     VvvvvvFlipSound = value;
                     (Engine.Scene as Level)?.GetPersistentController<VvvvvvGravityController>()?.Transitioned();
                 },
-            });
+            }, Dialog.Clean("GRAVITYHELPER_MENU_VVVVVV_FLIP_SOUND_SUBTEXT"));
         }
 
         public void CreateControlSchemeEntry(TextMenu menu, bool inGame)

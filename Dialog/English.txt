@@ -1,9 +1,13 @@
 GRAVITYHELPER_MENU_ALLOW_IN_ALL_MAPS= Allow In All Maps
 GRAVITYHELPER_MENU_ALLOW_IN_ALL_MAPS_SUBTEXT= Allows the use of the debug flip key or VVVVVV modes in any map.{n}This can only be changed from the overworld.
 GRAVITYHELPER_MENU_VVVVVV_MODE= V6 Mode
+GRAVITYHELPER_MENU_VVVVVV_MODE_SUBTEXT= Enables or disables VVVVVV mode.{n}Default uses the settings for the current map.
 GRAVITYHELPER_MENU_VVVVVV_FLIP_SOUND= V6 Flip Sound
+GRAVITYHELPER_MENU_VVVVVV_FLIP_SOUND_SUBTEXT= Enables or disables the flip sound in VVVVVV mode.{n}Default uses the settings for the current map.
 GRAVITYHELPER_MENU_VVVVVV_ALLOW_DASHING= V6 Allow Dashing
+GRAVITYHELPER_MENU_VVVVVV_ALLOW_DASHING_SUBTEXT= Enables or disables dashing in VVVVVV mode.{n}Default uses the settings for the current map.
 GRAVITYHELPER_MENU_VVVVVV_ALLOW_GRABBING= V6 Allow Grabbing
+GRAVITYHELPER_MENU_VVVVVV_ALLOW_GRABBING_SUBTEXT= Enables or disables grabbing in VVVVVV mode.{n}Default uses the settings for the current map.
 GRAVITYHELPER_MENU_CONTROL_SCHEME= Control Scheme
 GRAVITYHELPER_MENU_CONTROL_SCHEME_SUBTEXT= Absolute: Madeline will go in the exact direction you press, aka "up to crouch".{n}Relative: Vertical inputs are flipped while upside down, aka "down to crouch".
 GRAVITYHELPER_MENU_FEATHER_CONTROL_SCHEME= Control Scheme (Feathers)
