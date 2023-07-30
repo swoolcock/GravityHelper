@@ -22,11 +22,13 @@
         <Center />
         <Loop id="idle" path="idle" delay="0.1" frames="0-7" />
         <Loop id="idle_no_dash" path="idle_no_dash" delay="0.1" frames="0-7" />
+        <Loop id="idle_two_dash" path="idle_two_dash" delay="0.1" frames="0-7" />
     </gravityRefill>
 
     <gravityRefillArrows path="objects/GravityHelper/gravityRefill/">
         <Center />
         <Anim id="arrows" path="arrows" delay="0.07" frames="0-7" />
+        <Anim id="arrows_two_dash" path="arrows_two_dash" delay="0.07" frames="0-7" />
     </gravityRefillArrows>
 
     <gravityRefillIndicator path="objects/GravityHelper/gravityRefill/">

@@ -133,7 +133,7 @@ namespace Celeste.Mod.GravityHelper.Extensions
                 else if (instr.MatchBlt(out label)) str += $"   {label.Target.Offset:x4}";
                 else if (instr.MatchBltUn(out label)) str += $"   {label.Target.Offset:x4}";
 
-                Logger.Log(nameof(GravityHelperModule), str);
+                Logger.Log(LogLevel.Warn, nameof(GravityHelperModule), str);
 
                 thisCursor.Index++;
                 if (thisCursor.Next == null) break;

@@ -5,9 +5,9 @@ module GravityHelperGravitySpring
 
 using ..Ahorn, Maple
 
-const PLUGIN_VERSION = "1"
+const PLUGIN_VERSION = "2"
 
-const default_cooldown = 0.1
+const default_cooldown = 0
 
 @mapdef Entity "GravityHelper/GravitySpringFloor" GravitySpringFloor(
     x::Integer, y::Integer,

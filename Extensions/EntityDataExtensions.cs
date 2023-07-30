@@ -1,7 +1,6 @@
 // Copyright (c) Shane Woolcock. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
-using System;
 using Microsoft.Xna.Framework;
 
 namespace Celeste.Mod.GravityHelper.Extensions
@@ -11,17 +10,17 @@ namespace Celeste.Mod.GravityHelper.Extensions
         private const string mod_version_key = "modVersion";
         private const string plugin_version_key = "pluginVersion";
 
-        public static Version ModVersion(this EntityData self) => self.ModVersion(new Version(0, 1));
-        public static Version PluginVersion(this EntityData self) => self.PluginVersion(new Version(0, 1));
-        public static Version ModVersion(this EntityData self, Version defaultValue) => self.Version(mod_version_key, defaultValue);
-        public static Version PluginVersion(this EntityData self, Version defaultValue) => self.Version(plugin_version_key, defaultValue);
+        public static VersionInfo ModVersion(this EntityData self) => self.ModVersion(new VersionInfo(0, 1));
+        public static VersionInfo PluginVersion(this EntityData self) => self.PluginVersion(new VersionInfo(0, 1));
+        public static VersionInfo ModVersion(this EntityData self, VersionInfo defaultValue) => self.Version(mod_version_key, defaultValue);
+        public static VersionInfo PluginVersion(this EntityData self, VersionInfo defaultValue) => self.Version(plugin_version_key, defaultValue);
 
-        public static Version Version(this EntityData self, string key, Version defaultValue = default) => self.TryVersion(key, out var value) ? value : defaultValue;
+        public static VersionInfo Version(this EntityData self, string key, VersionInfo defaultValue = default) => self.TryVersion(key, out var value) ? value : defaultValue;
 
-        public static bool TryVersion(this EntityData self, string key, out Version version)
+        public static bool TryVersion(this EntityData self, string key, out VersionInfo version)
         {
             var value = self.Attr(key, string.Empty) ?? string.Empty;
-            return System.Version.TryParse(value, out version);
+            return VersionInfo.TryParse(value, out version);
         }
 
         public static bool TryAttr(this EntityData self, string key, out string value)

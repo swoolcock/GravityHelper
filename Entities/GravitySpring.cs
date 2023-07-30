@@ -37,8 +37,8 @@ namespace Celeste.Mod.GravityHelper.Entities
             _ => id,
         };
 
-        private readonly Version _modVersion;
-        private readonly Version _pluginVersion;
+        private readonly VersionInfo _modVersion;
+        private readonly VersionInfo _pluginVersion;
 
         private readonly Sprite _sprite;
         private readonly StaticMover _staticMover;
@@ -77,11 +77,15 @@ namespace Celeste.Mod.GravityHelper.Entities
             _modVersion = data.ModVersion();
             _pluginVersion = data.PluginVersion();
 
+            var defaultCooldown = _pluginVersion.Major >= 2
+                ? BehaviorGravityController.DEFAULT_SPRING_COOLDOWN_V2
+                : BehaviorGravityController.DEFAULT_SPRING_COOLDOWN_V1;
+
             PlayerCanUse = data.Bool("playerCanUse", true);
             GravityType = data.Enum<GravityType>("gravityType");
 
             _defaultToController = data.Bool("defaultToController");
-            _gravityCooldown = data.Float("gravityCooldown", BehaviorGravityController.DEFAULT_SPRING_COOLDOWN);
+            _gravityCooldown = data.Float("gravityCooldown", defaultCooldown);
             _showIndicator = data.Bool("showIndicator");
             _largeIndicator = data.Bool("largeIndicator");
             _indicatorOffset = data.Int("indicatorOffset", 8);

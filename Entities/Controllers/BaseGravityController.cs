@@ -1,7 +1,6 @@
 // Copyright (c) Shane Woolcock. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
-using System;
 using Celeste.Mod.GravityHelper.Extensions;
 using Microsoft.Xna.Framework;
 using Monocle;
@@ -24,8 +23,8 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
 
     public abstract class BaseGravityController : Entity
     {
-        protected readonly Version ModVersion;
-        protected readonly Version PluginVersion;
+        protected readonly VersionInfo ModVersion;
+        protected readonly VersionInfo PluginVersion;
 
         /// <summary>
         /// Whether or not this is the master controller that should handle everything for this type.
@@ -38,8 +37,8 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
 
         protected BaseGravityController()
         {
-            ModVersion = new Version(0, 1);
-            PluginVersion = new Version(0, 1);
+            ModVersion = new VersionInfo(0, 1);
+            PluginVersion = new VersionInfo(0, 1);
 
             Visible = Collidable = false;
             Ephemeral = Active = Persistent = true;

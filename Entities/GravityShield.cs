@@ -17,8 +17,8 @@ namespace Celeste.Mod.GravityHelper.Entities
         public float RespawnTime { get; }
         public float ShieldTime { get; }
 
-        private readonly Version _modVersion;
-        private readonly Version _pluginVersion;
+        private readonly VersionInfo _modVersion;
+        private readonly VersionInfo _pluginVersion;
 
         private Level _level;
         private float _respawnTimeRemaining;

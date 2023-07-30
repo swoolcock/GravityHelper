@@ -1,7 +1,6 @@
 // Copyright (c) Shane Woolcock. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
-using System;
 using System.Linq;
 using Celeste.Mod.Entities;
 using Celeste.Mod.GravityHelper.Extensions;
@@ -23,8 +22,8 @@ namespace Celeste.Mod.GravityHelper.Entities
         private static ParticleType P_Launch_Toggle;
         // ReSharper restore InconsistentNaming
 
-        private readonly Version _modVersion;
-        private readonly Version _pluginVersion;
+        private readonly VersionInfo _modVersion;
+        private readonly VersionInfo _pluginVersion;
 
         public GravityType GravityType { get; }
 

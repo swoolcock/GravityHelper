@@ -21,8 +21,8 @@ namespace Celeste.Mod.GravityHelper.Entities
         private static readonly Type dream_particle_type = typeof(DreamBlock).GetNestedType("DreamParticle", BindingFlags.NonPublic);
         private static readonly FieldInfo dream_particle_color_fieldinfo = dream_particle_type.GetField("Color", BindingFlags.Instance | BindingFlags.Public);
 
-        private readonly Version _modVersion;
-        private readonly Version _pluginVersion;
+        private readonly VersionInfo _modVersion;
+        private readonly VersionInfo _pluginVersion;
 
         private readonly DynamicData _dreamBlockData;
         private readonly FallingComponent _fallingComponent;

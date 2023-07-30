@@ -1,7 +1,6 @@
 // Copyright (c) Shane Woolcock. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
-using System;
 using Celeste.Mod.Entities;
 using Celeste.Mod.GravityHelper.Extensions;
 using Microsoft.Xna.Framework;
@@ -12,8 +11,8 @@ namespace Celeste.Mod.GravityHelper.Entities
     [CustomEntity("GravityHelper/GravityBooster")]
     public class GravityBooster : Booster
     {
-        private readonly Version _modVersion;
-        private readonly Version _pluginVersion;
+        private readonly VersionInfo _modVersion;
+        private readonly VersionInfo _pluginVersion;
 
         public GravityType GravityType { get; }
 

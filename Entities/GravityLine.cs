@@ -40,8 +40,8 @@ namespace Celeste.Mod.GravityHelper.Entities
         public Color LineColor { get; private set; }
         public float LineThickness { get; private set; }
 
-        private readonly Version _modVersion;
-        private readonly Version _pluginVersion;
+        private readonly VersionInfo _modVersion;
+        private readonly VersionInfo _pluginVersion;
 
         private readonly Dictionary<int, ComponentTracking> _trackedComponents = new();
 
@@ -195,6 +195,14 @@ namespace Celeste.Mod.GravityHelper.Entities
 
         public override void Added(Scene scene)
         {
+            // if the line is less than 8 pixels in length, log a warning and remove ourselves
+            if (TargetOffset.LengthSquared() < 8 * 8)
+            {
+                Logger.Log(LogLevel.Warn, nameof(GravityHelperModule), $"GravityLine in room {(scene as Level)?.Session.Level} at ({X}, {Y}) is shorter than 8 pixels, removing.");
+                RemoveSelf();
+                return;
+            }
+
             base.Added(scene);
 
             if (_defaultToController && Scene.GetActiveController<VisualGravityController>() is { } visualController)

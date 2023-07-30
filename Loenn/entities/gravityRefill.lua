@@ -7,6 +7,7 @@ local helpers = require("mods").requireFromPlugin("helpers")
 
 local placementData = helpers.createPlacementData('1', {
     charges = 1,
+    dashes = -1,
     oneUse = false,
     refillsDash = true,
     refillsStamina = true,
@@ -17,11 +18,46 @@ local gravityRefill = {
     name = "GravityHelper/GravityRefill",
     depth = -100,
     ignoredFields = consts.ignoredFields,
+    fieldInformation = {
+        charges = {
+            fieldType = "integer",
+        },
+        dashes = {
+            fieldType = "integer",
+        },
+        respawnTime = {
+            fieldType = "number",
+        },
+    },
     placements = {
         {
             name = "normal",
             ignoredFields = consts.ignoredFields,
             data = helpers.union(placementData),
+        },
+        {
+            name = "normalSingleUse",
+            ignoredFields = consts.ignoredFields,
+            data = helpers.union(placementData, {
+                oneUse = true,
+            }),
+        },
+        {
+            name = "twoDash",
+            ignoredFields = consts.ignoredFields,
+            data = helpers.union(placementData, {
+                dashes = 2,
+                charges = 2,
+            }),
+        },
+        {
+            name = "twoDashSingleUse",
+            ignoredFields = consts.ignoredFields,
+            data = helpers.union(placementData, {
+                dashes = 2,
+                charges = 2,
+                oneUse = true,
+            }),
         },
         {
             name = "noDash",
@@ -31,11 +67,26 @@ local gravityRefill = {
                 refillsStamina = false,
             }),
         },
+        {
+            name = "noDashSingleUse",
+            ignoredFields = consts.ignoredFields,
+            data = helpers.union(placementData, {
+                refillsDash = false,
+                refillsStamina = false,
+                oneUse = true,
+            }),
+        },
     },
 }
 
 function gravityRefill.texture(room, entity)
-    local suffix = entity.refillsDash and "" or "_no_dash"
+    local suffix = ""
+    if entity.refillsDash and entity.dashes == 2 then
+        suffix = "_two_dash"
+    elseif not entity.refillsDash then
+        suffix = "_no_dash"
+    end
+
     return "objects/GravityHelper/gravityRefill/idle"..suffix.."00"
 end
 

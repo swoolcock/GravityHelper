@@ -5,10 +5,10 @@ local consts = require("mods").requireFromPlugin("consts")
 local helpers = require("mods").requireFromPlugin("helpers")
 local drawableSprite = require("structs.drawable_sprite")
 
-local placementData = helpers.createPlacementData('1', {
+local placementData = helpers.createPlacementData('2', {
     persistent = true,
     holdableResetTime = 2.0,
-    springCooldown = 0.1,
+    springCooldown = 0,
     switchCooldown = 1.0,
     switchOnHoldables = true,
     dashToToggle = false,

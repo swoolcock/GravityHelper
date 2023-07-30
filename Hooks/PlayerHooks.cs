@@ -10,6 +10,7 @@ using Celeste.Mod.GravityHelper.Entities.Controllers;
 using Celeste.Mod.GravityHelper.Extensions;
 using Celeste.Mod.GravityHelper.Triggers;
 using Microsoft.Xna.Framework;
+using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Monocle;
 using MonoMod.Cil;
@@ -323,7 +324,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             cursor.GotoNextAddition();
             cursor.EmitInvertVectorDelegate();
 
-            // borrowed from MaxHelpingHand
+            // borrowed from MaddieHelpingHand
             if (cursor.TryGotoNext(instr => instr.MatchStfld<Vector2>("Y"),
                 instr => instr.MatchLdarg(0),
                 instr => instr.MatchLdfld<Player>("climbNoMoveTimer"),
@@ -621,9 +622,66 @@ namespace Celeste.Mod.GravityHelper.Hooks
             cursor.replaceGetLiftBoost(3);
             cursor.Goto(0);
 
-            // if (!this.CollideCheck<Solid>(this.Position + Vector2.UnitY * (float) -index) && this.ClimbCheck((int) this.Facing, -index))
-            cursor.GotoNextUnitY(MoveType.After);
-            cursor.EmitInvertVectorDelegate();
+            /* FIX 2 pixel wall grab leniency
+            if (!SaveData.Instance.Assists.NoGrabbing && (double) (float) Input.MoveY < 1.0 && (double) this.level.Wind.Y <= 0.0)
+            {
+              for (int index = 1; index <= 2; ++index)
+              {
+                if (!this.CollideCheck<Solid>(this.Position + Vector2.UnitY * (float) -index) && this.ClimbCheck((int) this.Facing, -index))
+                {
+                  this.MoveVExact(-index);
+                  this.Ducking = false;
+                  return 1;
+                }
+              }
+            }
+            */
+            if (!cursor.TryGotoNext(MoveType.After, instr => instr.MatchLdflda<Level>(nameof(Level.Wind)),
+                instr => instr.MatchLdfld<Vector2>(nameof(Vector2.Y))))
+                throw new HookException("Couldn't find Level.Wind.Y");
+
+            // flip the Wind.Y check, since we're grabbing the other way now
+            cursor.EmitInvertFloatDelegate();
+
+            // find the Position.Y
+            if (!cursor.TryGotoNext(MoveType.After, instr => instr.MatchLdfld<Entity>(nameof(Entity.Position)),
+                instr => instr.MatchCall<Vector2>("get_UnitY"),
+                instr => instr.MatchLdloc(out _)))
+                throw new HookException("Couldn't find Vector2.UnitY * -index");
+
+            // invert
+            cursor.EmitInvertIntDelegate();
+
+            // find CollideCheck<Solid>
+            GenericInstanceMethod collideCheckSolid = null;
+            if (!cursor.TryGotoNext(instr => instr.MatchCallGeneric<Entity>(nameof(Entity.CollideCheck), out collideCheckSolid)))
+                throw new HookException("Couldn't find CollideCheck<Solid>.");
+
+            // add a new vector2 local
+            var firstParam = collideCheckSolid.Parameters.First();
+            var vecDef = new VariableDefinition(firstParam.ParameterType);
+            il.Body.Variables.Add(vecDef);
+
+            // take a local copy of the vector2 argument to CollideCheck<Solid>
+            cursor.Emit(OpCodes.Dup);
+            cursor.Emit(OpCodes.Stloc, vecDef);
+
+            // skip to the brtrue
+            if (!cursor.TryGotoNext(instr => instr.MatchBrtrue(out _)))
+                throw new HookException("Couldn't find brtrue");
+
+            // add an additional check for jumpthrus
+            cursor.Emit(OpCodes.Ldarg_0);
+            cursor.Emit(OpCodes.Ldloc, vecDef);
+            cursor.EmitDelegate<Func<bool, Entity, Vector2, bool>>((ccs, self, at) =>
+            {
+                // if CollideCheck<Solid> already returned true, nothing to do
+                if (ccs) return true;
+                // collide with an upside down jumpthru (relative to the player's gravity)
+                return GravityHelperModule.ShouldInvertPlayer
+                    ? self.CollideCheckNotUpsideDownJumpThru(at)
+                    : self.CollideCheckUpsideDownJumpThru(at);
+            });
 
             if (!cursor.TryGotoNext(instr => instr.MatchStfld<Player>("wallSlideDir")))
                 throw new HookException("Couldn't find wallSlideDir");
@@ -1475,7 +1533,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
                     return false;
 
                 var ghUdjt = self.Scene.Tracker.GetEntitiesOrEmpty<UpsideDownJumpThru>();
-                var mhhUdjt = self.Scene.Tracker.GetEntitiesOrEmpty(ReflectionCache.MaxHelpingHandUpsideDownJumpThruType);
+                var mhhUdjt = self.Scene.Tracker.GetEntitiesOrEmpty(ReflectionCache.MaddieHelpingHandUpsideDownJumpThruType);
                 var entities = ghUdjt.Concat(mhhUdjt);
 
                 foreach (var entity in entities)

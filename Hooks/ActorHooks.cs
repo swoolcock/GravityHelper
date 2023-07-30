@@ -24,7 +24,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             IL.Celeste.Actor.OnGround_int += Actor_OnGround_int;
             IL.Celeste.Actor.TrySquishWiggle_CollisionData_int_int += Actor_TrySquishWiggle_CollisionData_int_int;
 
-            // we need to run this after MaxHelpingHand to ensure both UDJT types are handled
+            // we need to run this after MaddieHelpingHand to ensure both UDJT types are handled
             using (new DetourContext {After = {"MaxHelpingHand"}})
                 IL.Celeste.Actor.MoveVExact += Actor_MoveVExact;
 
@@ -70,7 +70,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
         private static void Actor_MoveVExact(ILContext il) => HookUtils.SafeHook(() =>
         {
-            // borrowed and repurposed some code from MaxHelpingHand to check for GH UDJT
+            // borrowed and repurposed some code from MaddieHelpingHand to check for GH UDJT
             var cursor = new ILCursor(il);
             VariableDefinition variable = il.Method.Body.Variables.FirstOrDefault(v =>
                 v.VariableType.FullName == "Celeste.Platform");

@@ -73,8 +73,8 @@ namespace Celeste.Mod.GravityHelper.Entities
 
         #endregion
 
-        private readonly Version _modVersion;
-        private readonly Version _pluginVersion;
+        private readonly VersionInfo _modVersion;
+        private readonly VersionInfo _pluginVersion;
 
         private MTexture _arrowTexture;
         private MTexture _arrowSmallTexture;

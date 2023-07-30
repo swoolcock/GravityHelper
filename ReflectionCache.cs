@@ -80,8 +80,8 @@ namespace Celeste.Mod.GravityHelper
 
         #region Optional Dependencies
 
-        public static Type MaxHelpingHandUpsideDownJumpThruType { get; private set; }
-        public static Type MaxHelpingHandGroupedTriggerSpikesType { get; private set; }
+        public static Type MaddieHelpingHandUpsideDownJumpThruType { get; private set; }
+        public static Type MaddieHelpingHandGroupedTriggerSpikesType { get; private set; }
         public static Type FancyFallingBlockType { get; private set; }
         public static MethodInfo FancyFallingBlock_SurfaceSoundIndexAt { get; private set; }
         public static Type MaddyCrownModuleType { get; private set; }
@@ -110,8 +110,8 @@ namespace Celeste.Mod.GravityHelper
             FancyFallingBlockType = GetModdedTypeByName("FancyTileEntities", "Celeste.Mod.FancyTileEntities.FancyFallingBlock");
             FancyFallingBlock_SurfaceSoundIndexAt = FancyFallingBlockType?.GetMethod("SurfaceSoundIndexAt", BindingFlags.Instance | BindingFlags.NonPublic);
             MaddyCrownModuleType = GetModdedTypeByName("MaddyCrown", "Celeste.Mod.MaddyCrown.MaddyCrownModule");
-            MaxHelpingHandUpsideDownJumpThruType = GetModdedTypeByName("MaxHelpingHand", "Celeste.Mod.MaxHelpingHand.Entities.UpsideDownJumpThru");
-            MaxHelpingHandGroupedTriggerSpikesType = GetModdedTypeByName("MaxHelpingHand", "Celeste.Mod.MaxHelpingHand.Entities.GroupedTriggerSpikes");
+            MaddieHelpingHandUpsideDownJumpThruType = GetModdedTypeByName("MaxHelpingHand", "Celeste.Mod.MaxHelpingHand.Entities.UpsideDownJumpThru");
+            MaddieHelpingHandGroupedTriggerSpikesType = GetModdedTypeByName("MaxHelpingHand", "Celeste.Mod.MaxHelpingHand.Entities.GroupedTriggerSpikes");
             FrostHelperCustomSpringType = GetModdedTypeByName("FrostHelper", "FrostHelper.CustomSpring");
             OutbackHelperPortalType = GetModdedTypeByName("OutbackHelper", "Celeste.Mod.OutbackHelper.Portal");
             CatelineModuleType = GetModdedTypeByName("Cateline", "Celeste.Mod.Cateline.CatelineModule");
