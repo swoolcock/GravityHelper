@@ -198,7 +198,7 @@ namespace Celeste.Mod.GravityHelper.Entities
             // if the line is less than 8 pixels in length, log a warning and remove ourselves
             if (TargetOffset.LengthSquared() < 8 * 8)
             {
-                Logger.Log(LogLevel.Warn, nameof(GravityHelperModule), $"GravityLine in room {SceneAs<Level>().Session.Level} at ({X}, {Y}) is shorter than 8 pixels, removing.");
+                Logger.Log(LogLevel.Warn, nameof(GravityHelperModule), $"GravityLine in room {(scene as Level)?.Session.Level} at ({X}, {Y}) is shorter than 8 pixels, removing.");
                 RemoveSelf();
                 return;
             }
