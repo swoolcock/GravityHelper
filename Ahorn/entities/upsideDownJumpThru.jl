@@ -25,7 +25,7 @@ const placements = Ahorn.PlacementDict(
         Dict{String, Any}(
             "texture" => "wood"
         )
-    )
+    ),
     "Upside Down Jump Through (Attached) (GravityHelper)" => Ahorn.EntityPlacement(
         UpsideDownJumpThru,
         "rectangle",
