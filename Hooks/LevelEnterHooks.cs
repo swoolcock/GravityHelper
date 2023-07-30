@@ -2,15 +2,12 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System.Collections;
-using System.Linq;
 
 namespace Celeste.Mod.GravityHelper.Hooks
 {
     public static class LevelEnterHooks
     {
-        private static bool _hasGravityHelper;
         private static bool _hasVvvvvv;
-
         private static Postcard _vvvvvvPostcard;
 
         public static void Load()
@@ -58,43 +55,18 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
         private static void LevelEnter_Go(On.Celeste.LevelEnter.orig_Go orig, Session session, bool fromsavedata)
         {
-            var found = checkForEntities(session, "GravityHelper/", "GravityHelper/VvvvvvGravityController");
-            _hasGravityHelper = found[0];
-            _hasVvvvvv = found[1];
-
+            checkForVvvvvv(session);
             orig(session, fromsavedata);
         }
 
-        private static bool[] checkForEntities(Session session, params string[] entityNames)
+        private static void checkForVvvvvv(Session session)
         {
-            var rv = new bool[entityNames.Length];
             if (AreaData.Areas.Count <= session.Area.ID ||
                 AreaData.Areas[session.Area.ID].Mode.Length <= (int)session.Area.Mode ||
                 AreaData.Areas[session.Area.ID].Mode[(int)session.Area.Mode] == null)
-                return rv;
+                return;
 
-            // check whether the requested entity names are just mod names
-            var wildcards = entityNames.Select(n => n.EndsWith("/")).ToArray();
-
-            // loop through (potentially) every entity in the map
-            int found = 0;
-            foreach (var e in session.MapData.Levels.SelectMany(levelData => levelData.Entities.Concat(levelData.Triggers)))
-            {
-                // check the entity names or mods we're looking for
-                for (int i = 0; i < entityNames.Length; i++)
-                {
-                    if (!rv[i] && (wildcards[i] ? e.Name.StartsWith(entityNames[i]) : e.Name == entityNames[i]))
-                    {
-                        rv[i] = true;
-                        found++;
-                    }
-                }
-                // if we've found all of them at least once, we don't need to check any more
-                if (found >= entityNames.Length)
-                    break;
-            }
-
-            return rv;
+            _hasVvvvvv = session.MapData.Levels.Exists(levelData => levelData.Entities.Exists(e => e.Name == "GravityHelper/VvvvvvGravityController"));
         }
     }
 }
