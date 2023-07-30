@@ -11,4 +11,3 @@ GRAVITYHELPER_MENU_FEATHER_CONTROL_SCHEME_SUBTEXT= As with Control Scheme, but f
 GRAVITYHELPER_MENU_MHH_UDJT_CORNER_CORRECTION= MHH Jumpthru Corner Correction
 GRAVITYHELPER_MENU_MHH_UDJT_CORNER_CORRECTION_SUBTEXT= For backward compatibility reasons, GravityHelper applies{n}corner correction to MaddieHelpingHand upside down jumpthrus.{n}If this is undesirable, switch this off.{n}Note that GravityHelper jumpthrus will ALWAYS corner correct.
 GRAVITYHELPER_POSTCARD_VVVVVV= This map contains VVVVVV mechanics.{n}Your custom settings have been restored to default.
-GRAVITYHELPER_POSTCARD_UDJT_CORRECTION= For compatibility reasons, GravityHelper applies corner correction to MaddieHelpingHand upside down jumpthrus. If this is undesirable, please return to map and disable Allow In All Maps in Mod Options.

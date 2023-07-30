@@ -10,10 +10,8 @@ namespace Celeste.Mod.GravityHelper.Hooks
     {
         private static bool _hasGravityHelper;
         private static bool _hasVvvvvv;
-        private static bool _hasMHHUDJT;
 
         private static Postcard _vvvvvvPostcard;
-        private static Postcard _udjtCorrectionPostcard;
 
         public static void Load()
         {
@@ -35,7 +33,6 @@ namespace Celeste.Mod.GravityHelper.Hooks
         {
             orig(self);
             _vvvvvvPostcard?.BeforeRender();
-            _udjtCorrectionPostcard?.BeforeRender();
         }
 
         private static IEnumerator LevelEnter_Routine(On.Celeste.LevelEnter.orig_Routine orig, LevelEnter self)
@@ -56,23 +53,14 @@ namespace Celeste.Mod.GravityHelper.Hooks
                 _vvvvvvPostcard = null;
             }
 
-            if (!_hasGravityHelper && _hasMHHUDJT && GravityHelperModule.Settings.AllowInAllMaps)
-            {
-                self.Add(_udjtCorrectionPostcard = new Postcard(Dialog.Clean("GRAVITYHELPER_POSTCARD_UDJT_CORRECTION"),
-                    "event:/ui/main/postcard_csides_in", "event:/ui/main/postcard_csides_out"));
-                yield return _udjtCorrectionPostcard.DisplayRoutine();
-                _udjtCorrectionPostcard = null;
-            }
-
             yield return new SwapImmediately(orig(self));
         }
 
         private static void LevelEnter_Go(On.Celeste.LevelEnter.orig_Go orig, Session session, bool fromsavedata)
         {
-            var found = checkForEntities(session, "GravityHelper/", "GravityHelper/VvvvvvGravityController", "MaxHelpingHand/UpsideDownJumpThru");
+            var found = checkForEntities(session, "GravityHelper/", "GravityHelper/VvvvvvGravityController");
             _hasGravityHelper = found[0];
             _hasVvvvvv = found[1];
-            _hasMHHUDJT = found[2];
 
             orig(session, fromsavedata);
         }
