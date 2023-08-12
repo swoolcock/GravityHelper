@@ -72,6 +72,9 @@ namespace Celeste.Mod.GravityHelper.Hooks
             cursor.Emit(loadHairOpCode);
             cursor.EmitDelegate<Func<Vector2, PlayerHair, Vector2>>((v, p) =>
             {
+                // null entity could happen on the everest core error screen, apparently
+                if (p?.Entity is null) return v;
+
                 var inverted = new Vector2(v.X, -v.Y);
 
                 // do player check by itself since this is a hot path
