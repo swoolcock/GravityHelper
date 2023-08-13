@@ -58,6 +58,7 @@ entities.GravityHelper/GravityField.attributes.description.affectsPlayer=Whether
 entities.GravityHelper/GravityField.attributes.description.affectsHoldableActors=Whether the field affects Actors with a Holdable component while they are not being held. Defaults to false.
 entities.GravityHelper/GravityField.attributes.description.affectsOtherActors=Whether the field affects non-holdable Actors. Defaults to false.
 entities.GravityHelper/GravityField.attributes.description.cassetteIndex=Which cassette block index the field should be active on. Defaults to -1, which disables cassette block logic.
+entities.GravityHelper/GravityField.attributes.description.cassetteSequence=A comma separated list of gravity types (0: normal, 1: inverted, 2: toggle), one per cassette index (up to 4). Acts like a cassette gravity controller, but only within this field.
 
 # Gravity Line
 entities.GravityHelper/GravityLine.placements.name.crossable=Gravity Line (Crossable)

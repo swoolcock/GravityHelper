@@ -39,6 +39,7 @@ namespace Celeste.Mod.GravityHelper.Entities
         public VisualType FieldType { get; }
         public bool AttachToSolids { get; }
         public bool SingleUse { get; }
+        public GravityType[] CassetteSequence { get; }
 
         #endregion
 
@@ -66,8 +67,8 @@ namespace Celeste.Mod.GravityHelper.Entities
 
         #region Private Helper Properties
 
-        private GravityType arrowGravityType => ArrowType == VisualType.Default ? GravityType : (GravityType) ArrowType;
-        private GravityType fieldGravityType => FieldType == VisualType.Default ? GravityType : (GravityType) FieldType;
+        private GravityType arrowGravityType => ArrowType == VisualType.Default ? GravityType : (GravityType)ArrowType;
+        private GravityType fieldGravityType => FieldType == VisualType.Default ? GravityType : (GravityType)FieldType;
         private bool shouldDrawArrows => !(ArrowType == VisualType.None || ArrowType == VisualType.Default && GravityType == GravityType.None);
         private bool shouldDrawField => !(FieldType == VisualType.None || FieldType == VisualType.Default && GravityType == GravityType.None);
 
@@ -86,7 +87,7 @@ namespace Celeste.Mod.GravityHelper.Entities
         private readonly Hitbox _staticMoverHitbox;
 
         private readonly List<Vector2> _particles = new List<Vector2>();
-        private readonly float[] _speeds = {12f, 20f, 40f};
+        private readonly float[] _speeds = { 12f, 20f, 40f };
         private GravityFieldGroup _fieldGroup;
         private Vector2 _staticMoverOffset;
         private CassetteComponent _cassetteComponent;
@@ -111,12 +112,39 @@ namespace Celeste.Mod.GravityHelper.Entities
 
             // entity properties
             AttachToSolids = data.Bool("attachToSolids");
-            ArrowType = (VisualType)data.Int("arrowType", (int) VisualType.Default);
-            FieldType = (VisualType)data.Int("fieldType", (int) VisualType.Default);
+            ArrowType = (VisualType)data.Int("arrowType", (int)VisualType.Default);
+            FieldType = (VisualType)data.Int("fieldType", (int)VisualType.Default);
             SingleUse = data.Bool("singleUse");
 
+            var cassetteSequenceString = data.Attr("cassetteSequence").Replace("|", ",");
             var cassetteIndex = data.Int("cassetteIndex", -1);
-            if (cassetteIndex >= 0)
+
+            if (!string.IsNullOrWhiteSpace(cassetteSequenceString))
+            {
+                CassetteSequence = cassetteSequenceString
+                    .Split(',')
+                    .Select(s =>
+                    {
+                        if (!int.TryParse(s, out var value)) return default;
+                        var type = (GravityType)value;
+                        // TODO: support none and toggle once there's a nice way to visualise them
+                        return type >= GravityType.Normal && type <= GravityType.Inverted ? type : default;
+                    })
+                    .ToArray();
+                if (CassetteSequence.Length > 0)
+                {
+                    Add(new CassetteListener
+                    {
+                        DidBecomeActive = index =>
+                        {
+                            GravityType = index < 0 || index >= CassetteSequence.Length ? GravityType.None : CassetteSequence[index];
+                            // hopefully calling configure here isn't too expensive
+                            // TODO: configure(Scene);
+                        },
+                    });
+                }
+            }
+            else if (cassetteIndex >= 0)
             {
                 Add(_cassetteComponent = new CassetteComponent(cassetteIndex, data)
                 {
@@ -164,6 +192,18 @@ namespace Celeste.Mod.GravityHelper.Entities
             if (shouldDrawArrows && !shouldDrawField)
                 Depth = Depths.FGDecals - 1;
 
+            UpdateVisuals();
+
+            if (shouldDrawField && !_particles.Any())
+            {
+                using var _ = new PushRandomDisposable(data.ID);
+                for (int index = 0; index < Width * (double)Height / 16.0; ++index)
+                    _particles.Add(new Vector2(Calc.Random.NextFloat(Width - 1f), Calc.Random.NextFloat(Height - 1f)));
+            }
+        }
+
+        protected void UpdateVisuals()
+        {
             if (shouldDrawArrows)
             {
                 var prefix = arrowGravityType switch
@@ -177,13 +217,6 @@ namespace Celeste.Mod.GravityHelper.Entities
                 _arrowSmallTexture = GFX.Game[$"objects/GravityHelper/gravityField/{prefix}ArrowSmall"];
                 _arrowOrigin = new Vector2(_arrowTexture.Width / 2f, _arrowTexture.Height / 2f);
                 _arrowSmallOrigin = new Vector2(_arrowSmallTexture.Width / 2f, _arrowSmallTexture.Height / 2f);
-            }
-
-            if (shouldDrawField && !_particles.Any())
-            {
-                using var _ = new PushRandomDisposable(data.ID);
-                for (int index = 0; index < Width * (double) Height / 16.0; ++index)
-                    _particles.Add(new Vector2(Calc.Random.NextFloat(Width - 1f), Calc.Random.NextFloat(Height - 1f)));
             }
         }
 
@@ -381,8 +414,8 @@ namespace Celeste.Mod.GravityHelper.Entities
 
             if (shouldDrawArrows)
             {
-                int widthInTiles = (int) (Width / 8);
-                int heightInTiles = (int) (Height / 8);
+                int widthInTiles = (int)(Width / 8);
+                int heightInTiles = (int)(Height / 8);
 
                 // one arrow every 2 tiles, rounded down, but at least one
                 int arrowsX = Math.Max(widthInTiles / 2, 1);

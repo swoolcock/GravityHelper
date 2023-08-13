@@ -29,6 +29,7 @@ local placementData = helpers.createPlacementData('1', {
     affectsOtherActors = false,
     momentumMultiplier = 1.0,
     cassetteIndex = -1,
+    cassetteSequence = "",
 })
 
 local gravityField = {
