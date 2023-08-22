@@ -92,27 +92,28 @@ namespace Celeste.Mod.GravityHelper.Hooks
             On.Celeste.Player.Update += Player_Update;
             On.Celeste.Player.WindMove += Player_WindMove;
 
-            using (new DetourContext { Before = { "MaxHelpingHand", "SpringCollab2020" }})
+            using (new DetourContext { Before = { "MaxHelpingHand", "SpringCollab2020" }}) {
                 hook_Player_orig_Update = new ILHook(ReflectionCache.Player_OrigUpdate, Player_orig_Update);
 
-            hook_Player_DashCoroutine = new ILHook(ReflectionCache.Player_DashCoroutine.GetStateMachineTarget(), Player_DashCoroutine);
-            hook_Player_IntroJumpCoroutine = new ILHook(ReflectionCache.Player_IntroJumpCoroutine.GetStateMachineTarget(), Player_IntroJumpCoroutine);
-            hook_Player_PickupCoroutine = new ILHook(ReflectionCache.Player_PickupCoroutine.GetStateMachineTarget(), Player_PickupCoroutine);
-            hook_Player_orig_UpdateSprite = new ILHook(ReflectionCache.Player_OrigUpdateSprite, Player_orig_UpdateSprite);
-            hook_Player_orig_WallJump = new ILHook(ReflectionCache.Player_OrigWallJump, Player_orig_WallJump);
-            hook_Player_get_CanUnDuck = new ILHook(ReflectionCache.Player_CanUnDuck, Player_get_CanUnDuck);
-            hook_Player_get_CameraTarget = new ILHook(ReflectionCache.Player_CameraTarget, Player_get_CameraTarget);
+                hook_Player_DashCoroutine = new ILHook(ReflectionCache.Player_DashCoroutine.GetStateMachineTarget(), Player_DashCoroutine);
+                hook_Player_IntroJumpCoroutine = new ILHook(ReflectionCache.Player_IntroJumpCoroutine.GetStateMachineTarget(), Player_IntroJumpCoroutine);
+                hook_Player_PickupCoroutine = new ILHook(ReflectionCache.Player_PickupCoroutine.GetStateMachineTarget(), Player_PickupCoroutine);
+                hook_Player_orig_UpdateSprite = new ILHook(ReflectionCache.Player_OrigUpdateSprite, Player_orig_UpdateSprite);
+                hook_Player_orig_WallJump = new ILHook(ReflectionCache.Player_OrigWallJump, Player_orig_WallJump);
+                hook_Player_get_CanUnDuck = new ILHook(ReflectionCache.Player_CanUnDuck, Player_get_CanUnDuck);
+                hook_Player_get_CameraTarget = new ILHook(ReflectionCache.Player_CameraTarget, Player_get_CameraTarget);
 
-            // we assume the first .ctor method that accepts (string) is Sprite.OnFrameChange +=
-            var spriteOnFrameChange = typeof(Player).GetRuntimeMethods().FirstOrDefault(m =>
-            {
-                if (!m.Name.Contains(".ctor")) return false;
-                var parameters = m.GetParameters();
-                return parameters.Length == 1 && parameters[0].ParameterType == typeof(string);
-            });
+                // we assume the first .ctor method that accepts (string) is Sprite.OnFrameChange +=
+                var spriteOnFrameChange = typeof(Player).GetRuntimeMethods().FirstOrDefault(m =>
+                {
+                    if (!m.Name.Contains(".ctor")) return false;
+                    var parameters = m.GetParameters();
+                    return parameters.Length == 1 && parameters[0].ParameterType == typeof(string);
+                });
 
-            if (spriteOnFrameChange != null)
-                hook_Player_ctor_OnFrameChange = new ILHook(spriteOnFrameChange, Player_ctor_OnFrameChange);
+                if (spriteOnFrameChange != null)
+                    hook_Player_ctor_OnFrameChange = new ILHook(spriteOnFrameChange, Player_ctor_OnFrameChange);
+            }
         }
 
         public static void Unload()
