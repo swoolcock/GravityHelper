@@ -25,6 +25,7 @@ namespace Celeste.Mod.GravityHelper.Entities
         private readonly VersionInfo _pluginVersion;
 
         public GravityType GravityType { get; }
+        public bool IgnoreCoreMode { get; }
 
         private readonly Sprite _rippleSprite;
         private readonly Sprite _maskSprite;
@@ -36,19 +37,28 @@ namespace Celeste.Mod.GravityHelper.Entities
             _pluginVersion = data.PluginVersion();
 
             GravityType = (GravityType)data.Int("gravityType");
+            IgnoreCoreMode = data.Bool("ignoreCoreMode");
+
+            if (IgnoreCoreMode && Get<CoreModeListener>() is { } coreModeListener)
+                Remove(coreModeListener);
 
             sine.Rate = data.Float("wobbleRate", 1f);
 
-            _maskSprite = GFX.SpriteBank.Create("gravityBumper");
-            _maskSprite.Play("mask");
+            if (GravityType != GravityType.None)
+            {
+                _maskSprite = GFX.SpriteBank.Create("gravityBumper");
+                _maskSprite.Play("mask");
 
-            Add(_rippleSprite = GFX.SpriteBank.Create("gravityRipple"));
-            _rippleSprite.Color = GravityType.Color();
-            _rippleSprite.Play("loop");
+                Add(_rippleSprite = GFX.SpriteBank.Create("gravityRipple"));
+                _rippleSprite.Color = GravityType.Color();
+                _rippleSprite.Play("loop");
+            }
         }
 
         public ParticleType GetAmbientParticleType()
         {
+            if (GravityType == GravityType.None) return P_Ambience;
+
             if (P_Ambience_Normal == null)
             {
                 const float lightness = 0.5f;
@@ -80,6 +90,8 @@ namespace Celeste.Mod.GravityHelper.Entities
 
         public ParticleType GetLaunchParticleType()
         {
+            if (GravityType == GravityType.None) return P_Launch;
+
             if (P_Launch_Normal == null)
             {
                 const float lightness = 0.5f;
@@ -109,9 +121,21 @@ namespace Celeste.Mod.GravityHelper.Entities
             };
         }
 
+        public override void Added(Scene scene)
+        {
+            base.Added(scene);
+
+            if (IgnoreCoreMode)
+            {
+                fireMode = false;
+                spriteEvil.Visible = fireMode;
+                sprite.Visible = !fireMode;
+            }
+        }
+
         public override void Render()
         {
-            if (sprite.Visible)
+            if (sprite.Visible && GravityType != GravityType.None)
             {
                 var animation = _maskSprite.Animations["mask"];
                 var frameIndex = 0;
@@ -140,18 +164,21 @@ namespace Celeste.Mod.GravityHelper.Entities
         {
             base.Update();
 
-            const float ripple_offset = 8f;
-            var currentGravity = GravityHelperModule.PlayerComponent?.CurrentGravity ?? GravityType.Normal;
+            if (_rippleSprite != null)
+            {
+                const float ripple_offset = 8f;
+                var currentGravity = GravityHelperModule.PlayerComponent?.CurrentGravity ?? GravityType.Normal;
 
-            if (GravityType == GravityType.Inverted || GravityType == GravityType.Toggle && currentGravity == GravityType.Normal)
-            {
-                _rippleSprite.Y = -ripple_offset;
-                _rippleSprite.Scale.Y = 1f;
-            }
-            else if (GravityType == GravityType.Normal || GravityType == GravityType.Toggle && currentGravity == GravityType.Inverted)
-            {
-                _rippleSprite.Y = ripple_offset;
-                _rippleSprite.Scale.Y = -1f;
+                if (GravityType == GravityType.Inverted || GravityType == GravityType.Toggle && currentGravity == GravityType.Normal)
+                {
+                    _rippleSprite.Y = -ripple_offset;
+                    _rippleSprite.Scale.Y = 1f;
+                }
+                else if (GravityType == GravityType.Normal || GravityType == GravityType.Toggle && currentGravity == GravityType.Inverted)
+                {
+                    _rippleSprite.Y = ripple_offset;
+                    _rippleSprite.Scale.Y = -1f;
+                }
             }
         }
     }

@@ -19,8 +19,10 @@ entities.GravityHelper/GravityBooster.attributes.red=Whether to act the same as 
 entities.GravityHelper/GravityBumper.placements.name.normal=Gravity Bumper (Normal)
 entities.GravityHelper/GravityBumper.placements.name.inverted=Gravity Bumper (Inverted)
 entities.GravityHelper/GravityBumper.placements.name.toggle=Gravity Bumper (Toggle)
+entities.GravityHelper/GravityBumper.placements.name.none=Gravity Bumper (None, Ignore Core Mode)
 entities.GravityHelper/GravityBumper.attributes.description.gravityType=The gravity type to set when Madeline touches the bumper.
 entities.GravityHelper/GravityBumper.attributes.description.wobbleRate=The rate multiplier at which the bumper will wobble back and forth.  Set to 0 to disable wobbling.  Defaults to 1 (vanilla).
+entities.GravityHelper/GravityBumper.attributes.description.ignoreCoreMode=Whether the bumper should stay in "cold" mode even if the core mode is set to "hot".  Defaults to false.
 
 # Gravity Dream Block
 entities.GravityHelper/GravityDreamBlock.placements.name.normal=Gravity Dream Block (Normal)
