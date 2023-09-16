@@ -61,6 +61,7 @@
 
     <Target Name="CopyFiles" AfterTargets="Build">
         <Copy SourceFiles="$(OutputPath)\GravityHelper.dll" DestinationFolder="bin" />
+        <Copy SourceFiles="$(OutputPath)\GravityHelper.pdb" DestinationFolder="bin" />
     </Target>
 
 </Project>
