@@ -101,6 +101,8 @@ namespace Celeste.Mod.GravityHelper.Entities
 
         #endregion
 
+        public bool ShouldDrawField => shouldDrawField;
+
         // We'll always handle it ourselves to cover connected fields
         public override bool ShouldAffectPlayer => false;
 
