@@ -3,7 +3,6 @@
 
 using Microsoft.Xna.Framework;
 using Monocle;
-using MonoMod.Utils;
 
 namespace Celeste.Mod.GravityHelper.Hooks
 {
@@ -31,10 +30,9 @@ namespace Celeste.Mod.GravityHelper.Hooks
                 return;
             }
 
-            var data = DynamicData.For(self);
-            if (data.Get<float>("delay") > 0f) return;
-            var topRect = data.Get<LavaRect>("topRect");
-            var loopSfx = data.Get<SoundSource>("loopSfx");
+            if (self.delay > 0f) return;
+            var topRect = self.topRect;
+            var loopSfx = self.loopSfx;
 
             int num = player.Y < self.Y + topRect.Position.Y + topRect.Height + 32.0 ? 1 : -1;
             float from = self.Y;
@@ -42,7 +40,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             player.Speed.Y = -num * 200;
             if (num > 0) player.RefillDash();
             Tween.Set(self, Tween.TweenMode.Oneshot, 0.4f, Ease.CubeOut, t => self.Y = MathHelper.Lerp(from, to, t.Eased));
-            data.Set("delay", 0.5f);
+            self.delay = 0.5f;
             loopSfx.Param("rising", 0.0f);
             Audio.Play("event:/game/general/assist_screenbottom", player.Position);
         }

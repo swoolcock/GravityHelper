@@ -2,13 +2,11 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System;
-using System.Reflection;
 using Celeste.Mod.Entities;
 using Celeste.Mod.GravityHelper.Components;
 using Celeste.Mod.GravityHelper.Extensions;
 using Microsoft.Xna.Framework;
 using Monocle;
-using MonoMod.Utils;
 
 // ReSharper disable RedundantArgumentDefaultValue
 
@@ -18,13 +16,9 @@ namespace Celeste.Mod.GravityHelper.Entities
     [TrackedAs(typeof(DreamBlock))]
     public class GravityDreamBlock : DreamBlock
     {
-        private static readonly Type dream_particle_type = typeof(DreamBlock).GetNestedType("DreamParticle", BindingFlags.NonPublic);
-        private static readonly FieldInfo dream_particle_color_fieldinfo = dream_particle_type.GetField("Color", BindingFlags.Instance | BindingFlags.Public);
-
         private readonly VersionInfo _modVersion;
         private readonly VersionInfo _pluginVersion;
 
-        private readonly DynamicData _dreamBlockData;
         private readonly FallingComponent _fallingComponent;
 
         private Vector2 _shakeOffset;
@@ -62,9 +56,7 @@ namespace Celeste.Mod.GravityHelper.Entities
             if (!string.IsNullOrWhiteSpace(backColorString)) BackColor = Calc.HexToColor(backColorString);
             if (!string.IsNullOrWhiteSpace(particleColorString)) ParticleColor = Calc.HexToColor(particleColorString);
 
-            _dreamBlockData = DynamicData.For(this);
-
-            var textures = _dreamBlockData.Get<MTexture[]>("particleTextures");
+            var textures = particleTextures;
             var prefix = GravityType switch
             {
                 GravityType.Normal => "down",
@@ -83,15 +75,14 @@ namespace Celeste.Mod.GravityHelper.Entities
         {
             using var _ = new PushRandomDisposable(Scene);
             var baseColor = ParticleColor ?? GravityType.Color();
-            var particlesObject = _dreamBlockData.Get("particles");
-            if (particlesObject is Array particles)
+            if (particles is Array particlesArray)
             {
-                for (int i = 0; i < particles.Length; i++)
+                for (int i = 0; i < particlesArray.Length; i++)
                 {
-                    var particle = particles.GetValue(i);
+                    var particle = (DreamParticle)particlesArray.GetValue(i);
                     var lightness = -0.25f + Calc.Random.NextFloat();
-                    dream_particle_color_fieldinfo.SetValue(particle, baseColor.Lighter(lightness));
-                    particles.SetValue(particle, i);
+                    particle.Color = baseColor.Lighter(lightness);
+                    particlesArray.SetValue(particle, i);
                 }
             }
         }

@@ -4,7 +4,6 @@
 using System;
 using Microsoft.Xna.Framework;
 using Monocle;
-using MonoMod.Utils;
 
 namespace Celeste.Mod.GravityHelper.Components
 {
@@ -16,13 +15,6 @@ namespace Celeste.Mod.GravityHelper.Components
 
         public override void Render()
         {
-            var data = DynamicData.For(this);
-            float slide = data.Get<float>(nameof(slide));
-            float timer = data.Get<float>(nameof(timer));
-            float alpha = data.Get<float>(nameof(alpha));
-            Wiggler wiggler = data.Get<Wiggler>(nameof(wiggler));
-            Color lineColor = data.Get<Color>(nameof(lineColor));
-
             Level level = SceneAs<Level>();
             if (level.FrozenOrPaused || slide <= 0f || Handler.Entity == null)
                 return;

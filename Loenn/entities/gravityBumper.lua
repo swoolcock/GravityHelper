@@ -9,6 +9,7 @@ local drawableSprite = require("structs.drawable_sprite")
 local placementData = helpers.createPlacementData('1', {
     gravityType = consts.gravityTypes.normal.index,
     wobbleRate = 1,
+    ignoreCoreMode = false,
 })
 
 local gravityBumper = {
@@ -16,7 +17,7 @@ local gravityBumper = {
     depth = 0,
     ignoredFields = consts.ignoredFields,
     fieldInformation = {
-        gravityType = consts.fieldInformation.gravityType(),
+        gravityType = consts.fieldInformation.gravityType(0,1,2,-1),
     },
     placements = {
         {
@@ -37,6 +38,13 @@ local gravityBumper = {
                 gravityType = consts.gravityTypes.toggle.index,
             }),
         },
+        {
+            name = "none",
+            data = helpers.union(placementData, {
+                gravityType = consts.gravityTypes.none.index,
+                ignoreCoreMode = true,
+            }),
+        },
     },
 }
 
@@ -53,8 +61,13 @@ end
 
 function gravityBumper.sprite(room, entity)
     local gravityType = entity.gravityType
-    local maskSprite = drawableSprite.fromTexture("objects/GravityHelper/gravityBumper/mask00", entity)
     local bumperSprite = drawableSprite.fromTexture("objects/Bumper/Idle22", entity)
+
+    if gravityType == consts.gravityTypes.none.index then
+        return bumperSprite
+    end
+
+    local maskSprite = drawableSprite.fromTexture("objects/GravityHelper/gravityBumper/mask00", entity)
     local gravityInfo = consts.gravityTypeForIndex(gravityType)
 
     maskSprite:setColor(gravityInfo.color)

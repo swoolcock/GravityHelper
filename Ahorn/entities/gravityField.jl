@@ -20,7 +20,7 @@ const DEFAULT_SINGLE_USE_SOUND = "event:/new_content/game/10_farewell/glider_ema
     flashOnTrigger::Bool=true,
     affectsPlayer::Bool=true, affectsHoldableActors::Bool=false, affectsOtherActors::Bool=false,
     momentumMultiplier::Real=1.0, singleUse::Bool=false, singleUseSound::String=DEFAULT_SINGLE_USE_SOUND,
-    cassetteIndex::Integer=-1
+    cassetteIndex::Integer=-1, cassetteSequence::String=""
 )
 
 const gravityColors = Dict{Integer, Tuple{Real, Real, Real, Real}}(

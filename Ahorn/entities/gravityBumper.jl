@@ -11,7 +11,8 @@ const PLUGIN_VERSION = "1"
     x::Integer, y::Integer,
     pluginVersion::String=PLUGIN_VERSION,
     gravityType::Integer=0,
-    wobbleRate::Real=1.0
+    wobbleRate::Real=1.0,
+    ignoreCoreMode::Bool=false
 )
 
 const placements = Ahorn.PlacementDict(
@@ -35,6 +36,14 @@ const placements = Ahorn.PlacementDict(
         Dict{String, Any}(
             "gravityType" => 2,
         )
+    ),
+    "Gravity Bumper (None, Ignore Core Mode) (GravityHelper)" => Ahorn.EntityPlacement(
+        GravityBumper,
+        "point",
+        Dict{String, Any}(
+            "gravityType" => -1,
+            "ignoreCoreMode" => true,
+        )
     )
 )
 
@@ -42,6 +51,7 @@ const gravityTypes = Dict{String, Integer}(
     "Normal" => 0,
     "Inverted" => 1,
     "Toggle" => 2,
+    "None" => -1,
 )
 
 const gravityColors = Dict{Integer, Tuple{Real, Real, Real, Real}}(

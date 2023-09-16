@@ -7,7 +7,6 @@ using Celeste.Mod.Entities;
 using Celeste.Mod.GravityHelper.Extensions;
 using Microsoft.Xna.Framework;
 using Monocle;
-using MonoMod.Utils;
 
 namespace Celeste.Mod.GravityHelper.Entities
 {
@@ -20,26 +19,19 @@ namespace Celeste.Mod.GravityHelper.Entities
         public GravityType GravityType { get; }
         public string NodeGravityTypes { get; }
 
-        private readonly DynamicData _data;
-        private readonly Sprite _sprite;
         private readonly Sprite _rippleSprite;
         private readonly Sprite _maskSprite;
         private readonly GravityType[] _gravityTypes;
 
         public GravityType CurrentDirection { get; private set; } = GravityType.Normal;
 
-        private bool baseTravelling => _data.Get<bool>("travelling");
-        private int baseNodeIndex => _data.Get<int>("nodeIndex");
-        private GravityType currentNodeGravityType => _gravityTypes == null ? GravityType : _gravityTypes[baseNodeIndex];
+        private GravityType currentNodeGravityType => _gravityTypes == null ? GravityType : _gravityTypes[nodeIndex];
 
         public GravityBadelineBoost(EntityData data, Vector2 offset)
             : base(data.NodesWithPosition(offset), data.Bool("lockCamera", true), data.Bool("canSkip"))
         {
             _modVersion = data.ModVersion();
             _pluginVersion = data.PluginVersion();
-
-            _data = DynamicData.For(this);
-            _sprite = _data.Get<Sprite>("sprite");
 
             GravityType = data.Enum<GravityType>("gravityType");
             NodeGravityTypes = data.Attr("nodeGravityTypes", string.Empty);
@@ -64,10 +56,10 @@ namespace Celeste.Mod.GravityHelper.Entities
 
             _rippleSprite.Visible = false;
 
-            if (_sprite.Visible && !baseTravelling && GravityHelperModule.PlayerComponent is { } playerComponent)
+            if (sprite.Visible && !travelling && GravityHelperModule.PlayerComponent is { } playerComponent)
             {
                 _rippleSprite.Visible = true;
-                _rippleSprite.Position = _sprite.Position;
+                _rippleSprite.Position = sprite.Position;
 
                 var currentPlayerGravity = playerComponent.CurrentGravity;
                 var currentNodeGravity = currentNodeGravityType;
@@ -96,15 +88,15 @@ namespace Celeste.Mod.GravityHelper.Entities
 
         public override void Render()
         {
-            if (_sprite.Visible)
+            if (sprite.Visible)
             {
                 var animation = _maskSprite.Animations["mask"];
                 var frameIndex = 0;
-                if (_sprite.CurrentAnimationID == "blink" && _sprite.CurrentAnimationFrame < 3)
-                    frameIndex = _sprite.CurrentAnimationFrame + 1;
+                if (sprite.CurrentAnimationID == "blink" && sprite.CurrentAnimationFrame < 3)
+                    frameIndex = sprite.CurrentAnimationFrame + 1;
                 var frame = animation.Frames[frameIndex];
 
-                frame.DrawCentered(Position + _sprite.Position, currentNodeGravityType.Color());
+                frame.DrawCentered(Position + sprite.Position, currentNodeGravityType.Color());
             }
 
             base.Render();

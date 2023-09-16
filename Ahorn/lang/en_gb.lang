@@ -40,6 +40,7 @@ placements.entities.GravityHelper/GravityField.tooltips.affectsPlayer=Whether th
 placements.entities.GravityHelper/GravityField.tooltips.affectsHoldableActors=Whether the field affects Actors with a Holdable component while they are not being held. Defaults to false.
 placements.entities.GravityHelper/GravityField.tooltips.affectsOtherActors=Whether the field affects non-holdable Actors. Defaults to false.
 placements.entities.GravityHelper/GravityField.tooltips.cassetteIndex=Which cassette block index the field should be active on. Defaults to -1, which disables cassette block logic.
+placements.entities.GravityHelper/GravityField.tooltips.cassetteSequence=A comma separated list of gravity types (0: normal, 1: inverted, 2: toggle), one per cassette index (up to 4). Acts like a cassette gravity controller, but only within this field.
 
 # Gravity Line
 placements.entities.GravityHelper/GravityLine.tooltips.defaultToController=If true (default), supported properties for this entity will use the value from the active controller.
@@ -77,7 +78,8 @@ placements.entities.GravityHelper/GravityDreamBlock.tooltips.endFallOnSolidTiles
 
 # Gravity Bumper
 placements.entities.GravityHelper/GravityBumper.tooltips.gravityType=The gravity type to set when Madeline touches the bumper.
-placements.entities.GravityHelper/GravityBumper.tooltips.wobbleRate=The rate multiplier at which the bumper will wobble back and forth.  Set to 0 to disable wobbling.  Defaults to 1 (vanilla).  
+placements.entities.GravityHelper/GravityBumper.tooltips.wobbleRate=The rate multiplier at which the bumper will wobble back and forth.  Set to 0 to disable wobbling.  Defaults to 1 (vanilla).
+placements.entities.GravityHelper/GravityBumper.tooltips.ignoreCoreMode=Whether the bumper should stay in "cold" mode even if the core mode is set to "hot".  Defaults to false.
 
 # Gravity Booster
 placements.entities.GravityHelper/GravityBooster.tooltips.gravityType=The gravity type to set when Madeline leaves the booster (bubble).

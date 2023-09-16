@@ -6,10 +6,10 @@ using System;
 namespace Celeste.Mod.GravityHelper;
 
 public struct VersionInfo : IComparable<VersionInfo> {
-    private int major;
-    private int minor;
-    private int build;
-    private int revision;
+    private int major = 0;
+    private int minor = 0;
+    private int build = 0;
+    private int revision = 0;
 
     public int Major => major;
     public int Minor => minor;

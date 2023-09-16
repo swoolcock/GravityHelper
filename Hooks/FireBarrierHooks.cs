@@ -3,7 +3,6 @@
 
 using Celeste.Mod.GravityHelper.Components;
 using Monocle;
-using MonoMod.Utils;
 
 namespace Celeste.Mod.GravityHelper.Hooks
 {
@@ -25,8 +24,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
         {
             orig(self, scene);
 
-            var data = DynamicData.For(self);
-            var solid = data.Get<Solid>("solid");
+            var solid = self.solid;
             var initialY = solid.Y;
 
             self.Add(new PlayerGravityListener((player, args) =>

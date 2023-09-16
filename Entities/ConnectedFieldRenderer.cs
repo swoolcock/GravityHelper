@@ -203,7 +203,7 @@ namespace Celeste.Mod.GravityHelper.Entities
 
             public void OnRenderBloom()
             {
-                if (_list.Any(e => !e.Visible))
+                if (_list.Any(e => !e.Visible || !e.ShouldDrawField))
                     return;
 
                 foreach (var entity in _list)
@@ -228,7 +228,7 @@ namespace Celeste.Mod.GravityHelper.Entities
                 if (_list.Count <= 0)
                     return;
 
-                if (_list.Any(e => !e.Visible))
+                if (_list.Any(e => !e.Visible || !e.ShouldDrawField))
                     return;
 
                 var multiplier = (Entity as ConnectedFieldRenderer<TEntity>)?.AlphaMultiplier ?? 1f;

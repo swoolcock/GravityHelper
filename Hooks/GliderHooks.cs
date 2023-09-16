@@ -8,7 +8,6 @@ using Microsoft.Xna.Framework;
 using Mono.Cecil.Cil;
 using Monocle;
 using MonoMod.Cil;
-using MonoMod.Utils;
 
 namespace Celeste.Mod.GravityHelper.Hooks
 {
@@ -61,8 +60,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
                 return;
             }
 
-            var data = DynamicData.For(self);
-            var sprite = data.Get<Sprite>("sprite");
+            var sprite = self.sprite;
             var oldScale = sprite.Scale;
             var oldRotation = sprite.Rotation;
             sprite.Scale = new Vector2(oldScale.X, -oldScale.Y);
@@ -110,27 +108,18 @@ namespace Celeste.Mod.GravityHelper.Hooks
                 if (self.Left < bounds.Left)
                 {
                     self.Left = bounds.Left;
-                    ReflectionCache.Glider_OnCollideH.Invoke(self, new object[]
-                    {
-                        new CollisionData { Direction = -Vector2.UnitX },
-                    });
+                    self.OnCollideH(new CollisionData { Direction = -Vector2.UnitX });
                 }
                 else if (self.Right > bounds.Right)
                 {
                     self.Right = bounds.Right;
-                    ReflectionCache.Glider_OnCollideH.Invoke(self, new object[]
-                    {
-                        new CollisionData { Direction = Vector2.UnitX },
-                    });
+                    self.OnCollideH(new CollisionData { Direction = Vector2.UnitX });
                 }
 
                 if (self.Bottom > bounds.Bottom)
                 {
                     self.Bottom = bounds.Bottom;
-                    ReflectionCache.Glider_OnCollideV.Invoke(self, new object[]
-                    {
-                        new CollisionData { Direction = Vector2.UnitY },
-                    });
+                    self.OnCollideV(new CollisionData { Direction = Vector2.UnitY });
                 }
                 else if (self.Bottom < bounds.Top - 16)
                 {
