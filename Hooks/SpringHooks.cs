@@ -30,14 +30,14 @@ namespace Celeste.Mod.GravityHelper.Hooks
             }
 
             // check copied from orig
-            if (player.StateMachine.State == Player.StDreamDash || !self.GetPlayerCanUse())
+            if (player.StateMachine.State == Player.StDreamDash || !self.playerCanUse)
                 return;
 
             // do nothing if moving away
             if (player.Speed.Y > 0)
                 return;
 
-            self.CallBounceAnimate();
+            self.BounceAnimate();
             GravitySpring.InvertedSuperBounce(player, self.Top);
         }
     }

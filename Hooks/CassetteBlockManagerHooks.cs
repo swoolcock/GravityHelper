@@ -1,7 +1,6 @@
 // Copyright (c) Shane Woolcock. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
-using System.Reflection;
 using Celeste.Mod.GravityHelper.Components;
 
 // ReSharper disable PossibleInvalidCastExceptionInForeachLoop
@@ -10,8 +9,6 @@ namespace Celeste.Mod.GravityHelper.Hooks
 {
     public static class CassetteBlockManagerHooks
     {
-        private static readonly FieldInfo current_index_field_info = typeof(CassetteBlockManager).GetField("currentIndex", BindingFlags.Instance | BindingFlags.NonPublic);
-
         public static void Load()
         {
             Logger.Log(nameof(GravityHelperModule), $"Loading {nameof(CassetteBlockManager)} hooks...");
@@ -77,7 +74,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
                     component.CassetteState = CassetteStates.Disappearing;
             }
 
-            var currentIndex = (int)current_index_field_info.GetValue(self);
+            var currentIndex = self.currentIndex;
 
             foreach (CassetteListener component in self.Scene.Tracker.GetComponents<CassetteListener>())
             {
@@ -90,7 +87,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
         {
             orig(self);
 
-            var currentIndex = (int)current_index_field_info.GetValue(self);
+            var currentIndex = self.currentIndex;
 
             foreach (CassetteComponent component in self.Scene.Tracker.GetComponents<CassetteComponent>())
             {

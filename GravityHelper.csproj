@@ -20,13 +20,15 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="BepInEx.AssemblyPublicizer.MSBuild" Version="0.4.1" PrivateAssets="all" />
+
         <PackageReference Include="MonoMod.RuntimeDetour" Version="22.5.1.1" PrivateAssets="all" ExcludeAssets="runtime">
           <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
     </ItemGroup>
 
     <ItemGroup>
-        <Reference Include="$(CelestePrefix)\Celeste.exe">
+        <Reference Include="$(CelestePrefix)\Celeste.exe" Publicize="True">
             <Private>false</Private>
         </Reference>
         <Reference Include="$(CelestePrefix)\MMHOOK_Celeste.dll">

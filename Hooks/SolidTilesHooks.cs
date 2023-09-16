@@ -31,9 +31,9 @@ namespace Celeste.Mod.GravityHelper.Hooks
             if (!GravityHelperModule.ShouldInvertPlayer)
                 return orig(self, entity);
 
-            int num = self.CallSurfaceSoundIndexAt(entity.TopCenter - Vector2.UnitY * 4f);
-            if (num == -1) num = self.CallSurfaceSoundIndexAt(entity.TopLeft - Vector2.UnitY * 4f);
-            if (num == -1) num = self.CallSurfaceSoundIndexAt(entity.TopRight - Vector2.UnitY * 4f);
+            int num = self.SurfaceSoundIndexAt(entity.TopCenter - Vector2.UnitY * 4f);
+            if (num == -1) num = self.SurfaceSoundIndexAt(entity.TopLeft - Vector2.UnitY * 4f);
+            if (num == -1) num = self.SurfaceSoundIndexAt(entity.TopRight - Vector2.UnitY * 4f);
             return num;
         }
 
@@ -42,9 +42,9 @@ namespace Celeste.Mod.GravityHelper.Hooks
             if (!GravityHelperModule.ShouldInvertPlayer)
                 return orig(self, entity);
 
-            int num = self.CallSurfaceSoundIndexAt(entity.TopCenter - Vector2.UnitY * 4f);
-            if (num == -1) num = self.CallSurfaceSoundIndexAt(entity.TopLeft - Vector2.UnitY * 4f);
-            if (num == -1) num = self.CallSurfaceSoundIndexAt(entity.TopRight - Vector2.UnitY * 4f);
+            int num = self.SurfaceSoundIndexAt(entity.TopCenter - Vector2.UnitY * 4f);
+            if (num == -1) num = self.SurfaceSoundIndexAt(entity.TopLeft - Vector2.UnitY * 4f);
+            if (num == -1) num = self.SurfaceSoundIndexAt(entity.TopRight - Vector2.UnitY * 4f);
             return num;
         }
     }

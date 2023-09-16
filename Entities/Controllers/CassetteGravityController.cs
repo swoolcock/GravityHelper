@@ -8,7 +8,6 @@ using Celeste.Mod.GravityHelper.Components;
 using Celeste.Mod.GravityHelper.Extensions;
 using Microsoft.Xna.Framework;
 using Monocle;
-using MonoMod.Utils;
 
 namespace Celeste.Mod.GravityHelper.Entities.Controllers
 {
@@ -62,8 +61,7 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
                         if (index >= CassetteSequence.Length || !activate) return;
                         var type = CassetteSequence[index];
                         var manager = Scene?.Tracker.GetEntity<CassetteBlockManager>();
-                        var managerData = DynamicData.For(manager);
-                        var tempoMult = managerData.Get<float>("tempoMult");
+                        var tempoMult = manager?.tempoMult ?? 1f;
                         var indicators = Scene?.Tracker.GetEntitiesOrEmpty<GravityIndicator>();
                         foreach (GravityIndicator indicator in indicators)
                         {

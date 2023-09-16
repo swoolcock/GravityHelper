@@ -2,7 +2,6 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System;
-using System.Reflection;
 using Celeste.Mod.GravityHelper.Extensions;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
@@ -38,12 +37,10 @@ namespace Celeste.Mod.GravityHelper.Hooks
             if (!cursor.TryGotoNext(MoveType.After, instr => instr.MatchLdcR4(12f)))
                 throw new HookException("Couldn't find 12f");
 
-            var yLerpField = typeof(StarJumpBlock).GetField("yLerp", BindingFlags.Instance | BindingFlags.NonPublic);
-
             cursor.Emit(OpCodes.Ldarg_0);
             cursor.EmitDelegate<Func<float, StarJumpBlock, float>>((f, self) =>
             {
-                var yLerp = (float)yLerpField.GetValue(self);
+                var yLerp = self.yLerp;
                 return f * Math.Sign(yLerp);
             });
         });

@@ -6,7 +6,6 @@ using Celeste.Mod.Entities;
 using Celeste.Mod.GravityHelper.Extensions;
 using Microsoft.Xna.Framework;
 using Monocle;
-using MonoMod.Utils;
 
 namespace Celeste.Mod.GravityHelper.Entities
 {
@@ -27,25 +26,18 @@ namespace Celeste.Mod.GravityHelper.Entities
 
         public GravityType GravityType { get; }
 
-        private readonly DynamicData _data;
-        private readonly Sprite _sprite;
         private readonly Sprite _rippleSprite;
         private readonly Sprite _maskSprite;
 
         public GravityBumper(EntityData data, Vector2 offset)
             : base(data, offset)
         {
-            _data = DynamicData.For(this);
-
             _modVersion = data.ModVersion();
             _pluginVersion = data.PluginVersion();
 
             GravityType = (GravityType)data.Int("gravityType");
 
-            var sine = _data.Get<SineWave>("sine");
             sine.Rate = data.Float("wobbleRate", 1f);
-
-            _sprite = _data.Get<Sprite>("sprite");
 
             _maskSprite = GFX.SpriteBank.Create("gravityBumper");
             _maskSprite.Play("mask");
@@ -119,16 +111,16 @@ namespace Celeste.Mod.GravityHelper.Entities
 
         public override void Render()
         {
-            if (_sprite.Visible)
+            if (sprite.Visible)
             {
                 var animation = _maskSprite.Animations["mask"];
                 var frameIndex = 0;
-                if (_sprite.CurrentAnimationID == "hit")
-                    frameIndex = _sprite.CurrentAnimationFrame >= 2 ? _sprite.CurrentAnimationFrame - 1 : 0;
-                else if (_sprite.CurrentAnimationID == "off")
+                if (sprite.CurrentAnimationID == "hit")
+                    frameIndex = sprite.CurrentAnimationFrame >= 2 ? sprite.CurrentAnimationFrame - 1 : 0;
+                else if (sprite.CurrentAnimationID == "off")
                     frameIndex = 7;
-                else if (_sprite.CurrentAnimationID == "on")
-                    frameIndex = (_sprite.CurrentAnimationFrame + 7) % 9;
+                else if (sprite.CurrentAnimationID == "on")
+                    frameIndex = (sprite.CurrentAnimationFrame + 7) % 9;
                 var frame = animation.Frames.ElementAtOrDefault(frameIndex);
 
                 if (frame != null)
@@ -137,7 +129,7 @@ namespace Celeste.Mod.GravityHelper.Entities
                     if (frameIndex == 7)
                         color *= 0.5f;
 
-                    frame.DrawCentered(Position + _sprite.Position, color);
+                    frame.DrawCentered(Position + sprite.Position, color);
                 }
             }
 
