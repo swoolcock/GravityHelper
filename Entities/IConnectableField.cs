@@ -8,5 +8,6 @@ namespace Celeste.Mod.GravityHelper.Entities
     public interface IConnectableField
     {
         public Color FieldColor { get; }
+        public bool ShouldDrawField { get; }
     }
 }
