@@ -139,9 +139,12 @@ namespace Celeste.Mod.GravityHelper.Entities
                     {
                         DidBecomeActive = index =>
                         {
-                            GravityType = index < 0 || index >= CassetteSequence.Length ? GravityType.None : CassetteSequence[index];
+                            var newGravityType = index < 0 || index >= CassetteSequence.Length ? GravityType.None : CassetteSequence[index];
+                            if (GravityType == newGravityType) return;
+                            GravityType = newGravityType;
                             // hopefully calling configure here isn't too expensive
-                            // TODO: configure(Scene);
+                            configure(Scene);
+                            UpdateArrows();
                         },
                     });
                 }
@@ -194,7 +197,7 @@ namespace Celeste.Mod.GravityHelper.Entities
             if (shouldDrawArrows && !shouldDrawField)
                 Depth = Depths.FGDecals - 1;
 
-            UpdateVisuals();
+            UpdateArrows();
 
             if (shouldDrawField && !_particles.Any())
             {
@@ -204,7 +207,7 @@ namespace Celeste.Mod.GravityHelper.Entities
             }
         }
 
-        protected void UpdateVisuals()
+        protected void UpdateArrows()
         {
             if (shouldDrawArrows)
             {
