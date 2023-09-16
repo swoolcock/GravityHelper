@@ -5,7 +5,6 @@ using System.Reflection;
 using Celeste.Mod.Entities;
 using Microsoft.Xna.Framework;
 using Monocle;
-using MonoMod.Utils;
 
 namespace Celeste.Mod.GravityHelper.Entities.Controllers
 {
@@ -110,13 +109,11 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
             // for now we'll only allow normal state
             if (player.StateMachine != Player.StNormal) return false;
 
-            var playerData = DynamicData.For(player);
-
             // never allow from dream jumps
-            if (playerData.Get<bool>("dreamJump")) return false;
+            if (player.dreamJump) return false;
 
             // on ground or within coyote frames
-            var onGround = player.OnGround() || playerData.Get<float>("jumpGraceTimer") > 0;
+            var onGround = player.OnGround() || player.jumpGraceTimer > 0;
 
             // see if an Extended Variant Jump(TM) is available
             if (ReflectionCache.ExtendedVariantsJumpCountGetJumpBufferMethodInfo != null)

@@ -5,7 +5,6 @@ using Celeste.Mod.GravityHelper.Components;
 using Celeste.Mod.GravityHelper.Extensions;
 using Microsoft.Xna.Framework;
 using Monocle;
-using MonoMod.Utils;
 
 // ReSharper disable InconsistentNaming
 
@@ -42,8 +41,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
         {
             orig(self, position, fromCutscene);
 
-            var data = DynamicData.For(self);
-            var bounceCollider = data.Get<PlayerCollider>("bounceCollider");
+            var bounceCollider = self.bounceCollider;
             var normalBounceColliderTop = bounceCollider.Collider.Top;
             var colliderOffset = self.Collider.Top - normalBounceColliderTop;
             var invertedBounceColliderBottom = self.Collider.Bottom + colliderOffset;
@@ -65,16 +63,15 @@ namespace Celeste.Mod.GravityHelper.Hooks
                 return;
             }
 
-            var data = DynamicData.For(self);
-            var state = data.Get<StateMachine>("state");
+            var state = self.state;
 
             if (state.State != StAttack || player.Top < self.Bottom - 6)
                 return;
 
             self.SetShouldInvert(true);
 
-            var prechargeSfx = data.Get<SoundSource>("prechargeSfx");
-            var chargeSfx = data.Get<SoundSource>("chargeSfx");
+            var prechargeSfx = self.prechargeSfx;
+            var chargeSfx = self.chargeSfx;
             Audio.Play("event:/game/general/thing_booped", self.Position);
             Celeste.Freeze(0.2f);
             player.Bounce(self.Bottom - 2f);
@@ -88,8 +85,6 @@ namespace Celeste.Mod.GravityHelper.Hooks
             if (!self.ShouldInvert())
                 return orig(self);
 
-            var data = DynamicData.For(self);
-
             self.X += 100f * Engine.DeltaTime;
             self.Y -= 200f * Engine.DeltaTime;
 
@@ -98,15 +93,15 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
             self.SetShouldInvert(false);
 
-            if (data.Get<bool>("leaving"))
+            if (self.leaving)
             {
                 self.RemoveSelf();
                 return StHurt;
             }
 
             self.X = self.SceneAs<Level>().Camera.Left - 48f;
-            data.Set("cameraXOffset", -48f);
-            data.Set("doRespawnAnim", true);
+            self.cameraXOffset = -48f;
+            self.doRespawnAnim = true;
             self.Visible = false;
 
             return StChase;

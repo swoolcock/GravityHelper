@@ -8,7 +8,6 @@ using Microsoft.Xna.Framework;
 using Mono.Cecil.Cil;
 using Monocle;
 using MonoMod.Cil;
-using MonoMod.Utils;
 
 namespace Celeste.Mod.GravityHelper.Hooks
 {
@@ -35,14 +34,12 @@ namespace Celeste.Mod.GravityHelper.Hooks
             orig(self, scene);
             if (self.Get<GravityComponent>() != null) return;
 
-            var data = DynamicData.For(self);
-
             self.Add(new GravityComponent
             {
                 UpdateVisuals = args =>
                 {
                     if (!args.Changed || self.Scene == null) return;
-                    var sprite = data.Get<Sprite>("sprite");
+                    var sprite = self.sprite;
                     sprite.Scale.Y = args.NewValue == GravityType.Inverted ? -1 : 1;
                 },
                 UpdateSpeed = args =>

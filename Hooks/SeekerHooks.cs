@@ -38,9 +38,8 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
         private static void Seeker_Update(On.Celeste.Seeker.orig_Update orig, Seeker self)
         {
-            var data = DynamicData.For(self);
-            var bounceHitbox = data.Get<Hitbox>("bounceHitbox");
-            var attackHitbox = data.Get<Hitbox>("attackHitbox");
+            var bounceHitbox = self.bounceHitbox;
+            var attackHitbox = self.attackHitbox;
 
             if (GravityHelperModule.ShouldInvertPlayer != bounceHitbox.Top > attackHitbox.Top)
             {

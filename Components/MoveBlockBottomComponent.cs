@@ -5,16 +5,15 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
 using Monocle;
-using MonoMod.Utils;
 
 namespace Celeste.Mod.GravityHelper.Components
 {
     public class MoveBlockBottomComponent : Component
     {
+        public new MoveBlock Entity => base.Entity as MoveBlock;
+
         public readonly List<Image> Images = new();
         public bool BottomPressed;
-
-        private DynamicData _moveBlockData;
 
         public MoveBlockBottomComponent() : base(true, false)
         {
@@ -26,15 +25,13 @@ namespace Celeste.Mod.GravityHelper.Components
 
             if (entity is not MoveBlock moveBlock) return;
 
-            _moveBlockData = DynamicData.For(moveBlock);
-
             // add button
             MTexture buttonTexture = GFX.Game["objects/moveBlock/button"];
             int numTiles = (int) (moveBlock.Width / 8);
             for (int index = 0; index < numTiles; ++index)
             {
                 int tileX = index == 0 ? 0 : (index < numTiles - 1 ? 1 : 2);
-                moveBlock.CallAddImage(
+                moveBlock.AddImage(
                     buttonTexture.GetSubtexture(tileX * 8, 0, 8, 8),
                     new Vector2(index * 8f, moveBlock.Height + 4f),
                     0f,
@@ -43,7 +40,7 @@ namespace Celeste.Mod.GravityHelper.Components
             }
 
             // replace bottom tiles with inverse top tiles
-            var bodyTiles = _moveBlockData.Get<List<Image>>("body");
+            var bodyTiles = moveBlock.body;
             var topTiles = bodyTiles.Where(i => i.Y <= 8).OrderBy(i => i.X).ToArray();
             var bottomTiles = bodyTiles.Where(i => i.Y >= moveBlock.Height - 8).OrderBy(i => i.X).ToArray();
 
@@ -75,7 +72,7 @@ namespace Celeste.Mod.GravityHelper.Components
 
         public override void Render()
         {
-            var fillColor = _moveBlockData.Get<Color>("fillColor");
+            var fillColor = Entity.fillColor;
             foreach (var image in Images)
             {
                 image.Color = fillColor;

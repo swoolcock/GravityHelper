@@ -4,7 +4,6 @@
 using System;
 using Celeste.Mod.GravityHelper.Components;
 using Microsoft.Xna.Framework;
-using MonoMod.Utils;
 
 namespace Celeste.Mod.GravityHelper.Hooks
 {
@@ -57,8 +56,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
                 return;
             }
 
-            var data = DynamicData.For(self);
-            var noSquish = data.Get<Player>("noSquish");
+            var noSquish = self.noSquish;
 
             if (noSquish != null && move > 0 && noSquish.Top >= self.Bottom)
             {

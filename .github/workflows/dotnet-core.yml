@@ -26,6 +26,7 @@ jobs:
         path: |
           everest.yaml
           bin/GravityHelper.dll
+          bin/GravityHelper.pdb
           Ahorn/**/*
           Audio/**/*
           Dialog/**/*

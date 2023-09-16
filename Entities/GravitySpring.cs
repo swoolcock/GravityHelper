@@ -10,7 +10,6 @@ using Celeste.Mod.GravityHelper.Entities.Controllers;
 using Celeste.Mod.GravityHelper.Extensions;
 using Microsoft.Xna.Framework;
 using Monocle;
-using MonoMod.Utils;
 
 namespace Celeste.Mod.GravityHelper.Entities
 {
@@ -40,10 +39,6 @@ namespace Celeste.Mod.GravityHelper.Entities
         private readonly VersionInfo _modVersion;
         private readonly VersionInfo _pluginVersion;
 
-        private readonly Sprite _sprite;
-        private readonly StaticMover _staticMover;
-
-        private readonly Wiggler _wiggler;
         private float _cooldownRemaining;
 
         private float _gravityCooldown;
@@ -53,9 +48,6 @@ namespace Celeste.Mod.GravityHelper.Entities
         private readonly bool _defaultToController;
         private IndicatorRenderer _indicatorRenderer;
         private Vector2 _indicatorShakeOffset;
-
-        // ReSharper disable once PrivateFieldCanBeConvertedToLocalVariable
-        private readonly DynamicData _springData;
 
         public static Entity LoadFloor(Level level, LevelData levelData, Vector2 offset, EntityData entityData) =>
             new GravitySpring(entityData, offset, Orientations.Floor);
@@ -72,8 +64,6 @@ namespace Celeste.Mod.GravityHelper.Entities
         public GravitySpring(EntityData data, Vector2 offset, Orientations orientation)
             : base(data.Position + offset, (Spring.Orientations)((int)orientation % 3), data.Bool("playerCanUse", true))
         {
-            _springData = DynamicData.For(this);
-
             _modVersion = data.ModVersion();
             _pluginVersion = data.PluginVersion();
 
@@ -97,23 +87,20 @@ namespace Celeste.Mod.GravityHelper.Entities
             Orientation = orientation;
 
             // get spring components
-            _sprite = _springData.Get<Sprite>("sprite");
-            _staticMover = _springData.Get<StaticMover>("staticMover");
-            _wiggler = _springData.Get<Wiggler>("wiggler");
             var playerCollider = Get<PlayerCollider>();
             var holdableCollider = Get<HoldableCollider>();
             var pufferCollider = Get<PufferCollider>();
 
             // update sprite
-            GFX.SpriteBank.CreateOn(_sprite, "gravitySpring");
-            _sprite.Play(getAnimId("idle"));
-            _sprite.Origin.X = _sprite.Width / 2f;
-            _sprite.Origin.Y = _sprite.Height;
+            GFX.SpriteBank.CreateOn(sprite, "gravitySpring");
+            sprite.Play(getAnimId("idle"));
+            sprite.Origin.X = sprite.Width / 2f;
+            sprite.Origin.Y = sprite.Height;
 
             // update callbacks
-            _staticMover.OnEnable = OnEnable;
-            _staticMover.OnDisable = OnDisable;
-            _staticMover.OnShake = OnShake;
+            staticMover.OnEnable = OnEnable;
+            staticMover.OnDisable = OnDisable;
+            staticMover.OnShake = OnShake;
             playerCollider.OnCollide = OnCollide;
             holdableCollider.OnCollide = OnHoldable;
             pufferCollider.OnCollide = OnPuffer;
@@ -122,23 +109,23 @@ namespace Celeste.Mod.GravityHelper.Entities
             switch (orientation)
             {
                 case Orientations.Floor:
-                    _sprite.Rotation = 0f;
+                    sprite.Rotation = 0f;
                     break;
 
                 case Orientations.WallLeft:
-                    _sprite.Rotation = (float)(Math.PI / 2f);
+                    sprite.Rotation = (float)(Math.PI / 2f);
                     break;
 
                 case Orientations.WallRight:
-                    _sprite.Rotation = (float)(-Math.PI / 2f);
+                    sprite.Rotation = (float)(-Math.PI / 2f);
                     break;
 
                 case Orientations.Ceiling:
-                    _sprite.Rotation = (float)Math.PI;
+                    sprite.Rotation = (float)Math.PI;
                     Collider.Top += 6f;
                     pufferCollider.Collider.Top += 6;
-                    _staticMover.SolidChecker = s => CollideCheck(s, Position - Vector2.UnitY);
-                    _staticMover.JumpThruChecker = jt => CollideCheck(jt, Position - Vector2.UnitY);
+                    staticMover.SolidChecker = s => CollideCheck(s, Position - Vector2.UnitY);
+                    staticMover.JumpThruChecker = jt => CollideCheck(jt, Position - Vector2.UnitY);
                     break;
             }
         }
@@ -166,20 +153,20 @@ namespace Celeste.Mod.GravityHelper.Entities
             _indicatorRenderer = null;
         }
 
-        private void OnEnable()
+        private new void OnEnable()
         {
             Visible = Collidable = true;
-            _sprite.Color = Color.White;
-            _sprite.Play(getAnimId("idle"));
+            sprite.Color = Color.White;
+            sprite.Play(getAnimId("idle"));
         }
 
-        private void OnDisable()
+        private new void OnDisable()
         {
             Collidable = false;
             if (VisibleWhenDisabled)
             {
-                _sprite.Play("disabled");
-                _sprite.Color = DisabledColor;
+                sprite.Play("disabled");
+                sprite.Color = DisabledColor;
             }
             else
                 Visible = false;
@@ -201,7 +188,7 @@ namespace Celeste.Mod.GravityHelper.Entities
             }
         }
 
-        private void OnCollide(Player player)
+        private new void OnCollide(Player player)
         {
             // ignore spring if dream dashing, if we're not allowed to use it, or if we're on cooldown
             if (player.StateMachine.State == Player.StDreamDash || !PlayerCanUse)
@@ -256,7 +243,7 @@ namespace Celeste.Mod.GravityHelper.Entities
             }
         }
 
-        private void OnHoldable(Holdable h)
+        private new void OnHoldable(Holdable h)
         {
             var holdableGravity = h.Entity.GetGravity();
             var relativeCeiling = holdableGravity == GravityType.Normal && Orientation == Orientations.Ceiling ||
@@ -286,10 +273,9 @@ namespace Celeste.Mod.GravityHelper.Entities
             {
                 // do nothing if moving away
                 if (theoCrystal.Speed.Y > 0) return false;
-                var data = DynamicData.For(theoCrystal);
                 theoCrystal.Speed.X *= x_multiplier;
                 theoCrystal.Speed.Y = y_value;
-                data.Set("noGravityTimer", no_gravity_timer);
+                theoCrystal.noGravityTimer = no_gravity_timer;
                 return true;
             }
 
@@ -298,11 +284,10 @@ namespace Celeste.Mod.GravityHelper.Entities
             {
                 // do nothing if moving away
                 if (glider.Speed.Y > 0) return false;
-                var data = DynamicData.For(glider);
                 glider.Speed.X *= x_multiplier;
                 glider.Speed.Y = y_value;
-                data.Set("noGravityTimer", no_gravity_timer);
-                data.Get<Wiggler>("wiggler").Start();
+                glider.noGravityTimer = no_gravity_timer;
+                glider.wiggler.Start();
                 return true;
             }
 
@@ -335,7 +320,7 @@ namespace Celeste.Mod.GravityHelper.Entities
             return false;
         }
 
-        private void OnPuffer(Puffer p)
+        private new void OnPuffer(Puffer p)
         {
             // at the moment puffers don't support gravity, so just handle ceiling springs separately
             if (Orientation == Orientations.Ceiling && !pufferHitCeilingSpring(p) ||
@@ -347,23 +332,22 @@ namespace Celeste.Mod.GravityHelper.Entities
 
         private bool pufferHitCeilingSpring(Puffer p)
         {
-            var data = DynamicData.For(p);
-            if (data.Get<Vector2>("hitSpeed").Y > 0)
+            if (p.hitSpeed.Y > 0)
                 return false;
 
-            ReflectionCache.Puffer_GotoHitSpeed.Invoke(p, new object[] { 224f * Vector2.UnitY });
+            p.GotoHitSpeed(224f * Vector2.UnitY);
             p.MoveTowardsX(CenterX, 4f);
-            data.Get<Wiggler>("bounceWiggler").Start();
-            ReflectionCache.Puffer_Alert.Invoke(p, new object[] { true, false });
+            p.bounceWiggler.Start();
+            p.Alert(true, false);
             return true;
         }
 
         private void bounceAnimate()
         {
             Audio.Play("event:/game/general/spring", BottomCenter);
-            _staticMover.TriggerPlatform();
-            _sprite.Play(getAnimId("bounce"), true);
-            _wiggler.Start();
+            staticMover.TriggerPlatform();
+            sprite.Play(getAnimId("bounce"), true);
+            wiggler.Start();
         }
 
         public new enum Orientations
@@ -383,21 +367,20 @@ namespace Celeste.Mod.GravityHelper.Entities
             }
 
             Collider collider = self.Collider;
-            self.Collider = self.GetNormalHitbox();
+            self.Collider = self.normalHitbox;
             self.MoveV(GravityHelperModule.ShouldInvertPlayer ? self.Bottom - fromY : fromY - self.Top);
             if (!self.Inventory.NoRefills)
                 self.RefillDash();
             self.RefillStamina();
 
-            var data = DynamicData.For(self);
-            data.Set("jumpGraceTimer", 0f);
-            data.Set("varJumpTimer", 0f);
-            data.Set("dashAttackTimer", 0.0f);
-            data.Set("gliderBoostTimer", 0.0f);
-            data.Set("wallSlideTimer", 1.2f);
-            data.Set("wallBoostTimer", 0.0f);
-            data.Set("varJumpSpeed", 0f);
-            data.Set("launched", false);
+            self.jumpGraceTimer = 0f;
+            self.varJumpTimer = 0f;
+            self.dashAttackTimer = 0.0f;
+            self.gliderBoostTimer = 0.0f;
+            self.wallSlideTimer = 1.2f;
+            self.wallBoostTimer = 0.0f;
+            self.varJumpSpeed = 0f;
+            self.launched =  false;
 
             self.StateMachine.State = Player.StNormal;
             self.AutoJump = false;

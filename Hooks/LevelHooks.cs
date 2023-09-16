@@ -93,7 +93,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
                     self.Session.MapData.CanTransitionTo(self, player.Center + Vector2.UnitX * -8f))
                 {
                     player.BeforeSideTransition();
-                    self.CallNextLevel(player.Center + Vector2.UnitX * -8f, -Vector2.UnitX);
+                    self.NextLevel(player.Center + Vector2.UnitX * -8f, -Vector2.UnitX);
                     return;
                 }
 
@@ -115,7 +115,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
                     self.Session.MapData.CanTransitionTo(self, player.Center + Vector2.UnitX * 8f))
                 {
                     player.BeforeSideTransition();
-                    self.CallNextLevel(player.Center + Vector2.UnitX * 8f, Vector2.UnitX);
+                    self.NextLevel(player.Center + Vector2.UnitX * 8f, Vector2.UnitX);
                     return;
                 }
 
@@ -149,7 +149,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
                     !player.CollideCheck<Solid>(player.Position + Vector2.UnitY * 4f))
                 {
                     player.BeforeDownTransition();
-                    self.CallNextLevel(player.Center + Vector2.UnitY * 12f, Vector2.UnitY);
+                    self.NextLevel(player.Center + Vector2.UnitY * 12f, Vector2.UnitY);
                 }
                 else if (player.Bottom > bounds.Bottom + 24)
                 {
@@ -164,7 +164,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             else if (player.Top < bounds.Top && self.Session.MapData.CanTransitionTo(self, player.Center - Vector2.UnitY * 12f))
             {
                 player.BeforeUpTransition();
-                self.CallNextLevel(player.Center - Vector2.UnitY * 12f, -Vector2.UnitY);
+                self.NextLevel(player.Center - Vector2.UnitY * 12f, -Vector2.UnitY);
             }
             else if (player.Bottom < bounds.Top && SaveData.Instance.Assists.Invincible)
                 tryToDie(bounds.Top);

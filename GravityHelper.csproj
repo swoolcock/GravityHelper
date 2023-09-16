@@ -5,21 +5,30 @@
         <AssemblyName>GravityHelper</AssemblyName>
         <RootNamespace>Celeste.Mod.GravityHelper</RootNamespace>
         <LangVersion>preview</LangVersion>
+        <NoWarn>CS0436;MSB3270</NoWarn>
+    </PropertyGroup>
+
+    <PropertyGroup Label="Celeste">
+        <CelestePrefix Condition="'$(CelestePrefix)' == '' And Exists('..\..\legacyRef\Celeste.exe')">..\..\legacyRef</CelestePrefix>
         <CelestePrefix Condition="'$(CelestePrefix)' == '' And Exists('..\..\Celeste.exe')">..\..</CelestePrefix>
         <CelestePrefix Condition="'$(CelestePrefix)' == ''">lib-stripped</CelestePrefix>
+        <CelesteIsCore>false</CelesteIsCore>
+        <CelesteIsCore Condition="Exists('$(CelestePrefix)\Celeste.dll')">true</CelesteIsCore>
         <CelesteType Condition="'$(CelesteType)' == '' And Exists('$(CelestePrefix)\BuildIsXNA.txt')">XNA</CelesteType>
         <CelesteType Condition="'$(CelesteType)' == ''">FNA</CelesteType>
         <XNAPath Condition="'$(XNAPath)' == ''">$(WINDIR)\Microsoft.NET\assembly\GAC_32\{0}\v4.0_4.0.0.0__842cf8be1de50553\{0}.dll</XNAPath>
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="BepInEx.AssemblyPublicizer.MSBuild" Version="0.4.1" PrivateAssets="all" />
+
         <PackageReference Include="MonoMod.RuntimeDetour" Version="22.5.1.1" PrivateAssets="all" ExcludeAssets="runtime">
           <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
     </ItemGroup>
 
     <ItemGroup>
-        <Reference Include="$(CelestePrefix)\Celeste.exe">
+        <Reference Include="$(CelestePrefix)\Celeste.exe" Publicize="True">
             <Private>false</Private>
         </Reference>
         <Reference Include="$(CelestePrefix)\MMHOOK_Celeste.dll">
@@ -61,6 +70,7 @@
 
     <Target Name="CopyFiles" AfterTargets="Build">
         <Copy SourceFiles="$(OutputPath)\GravityHelper.dll" DestinationFolder="bin" />
+        <Copy SourceFiles="$(OutputPath)\GravityHelper.pdb" DestinationFolder="bin" />
     </Target>
 
 </Project>

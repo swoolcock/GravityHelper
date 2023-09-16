@@ -92,27 +92,28 @@ namespace Celeste.Mod.GravityHelper.Hooks
             On.Celeste.Player.Update += Player_Update;
             On.Celeste.Player.WindMove += Player_WindMove;
 
-            using (new DetourContext { Before = { "MaxHelpingHand", "SpringCollab2020" }})
+            using (new DetourContext { Before = { "MaxHelpingHand", "SpringCollab2020" }}) {
                 hook_Player_orig_Update = new ILHook(ReflectionCache.Player_OrigUpdate, Player_orig_Update);
 
-            hook_Player_DashCoroutine = new ILHook(ReflectionCache.Player_DashCoroutine.GetStateMachineTarget(), Player_DashCoroutine);
-            hook_Player_IntroJumpCoroutine = new ILHook(ReflectionCache.Player_IntroJumpCoroutine.GetStateMachineTarget(), Player_IntroJumpCoroutine);
-            hook_Player_PickupCoroutine = new ILHook(ReflectionCache.Player_PickupCoroutine.GetStateMachineTarget(), Player_PickupCoroutine);
-            hook_Player_orig_UpdateSprite = new ILHook(ReflectionCache.Player_OrigUpdateSprite, Player_orig_UpdateSprite);
-            hook_Player_orig_WallJump = new ILHook(ReflectionCache.Player_OrigWallJump, Player_orig_WallJump);
-            hook_Player_get_CanUnDuck = new ILHook(ReflectionCache.Player_CanUnDuck, Player_get_CanUnDuck);
-            hook_Player_get_CameraTarget = new ILHook(ReflectionCache.Player_CameraTarget, Player_get_CameraTarget);
+                hook_Player_DashCoroutine = new ILHook(ReflectionCache.Player_DashCoroutine.GetStateMachineTarget(), Player_DashCoroutine);
+                hook_Player_IntroJumpCoroutine = new ILHook(ReflectionCache.Player_IntroJumpCoroutine.GetStateMachineTarget(), Player_IntroJumpCoroutine);
+                hook_Player_PickupCoroutine = new ILHook(ReflectionCache.Player_PickupCoroutine.GetStateMachineTarget(), Player_PickupCoroutine);
+                hook_Player_orig_UpdateSprite = new ILHook(ReflectionCache.Player_OrigUpdateSprite, Player_orig_UpdateSprite);
+                hook_Player_orig_WallJump = new ILHook(ReflectionCache.Player_OrigWallJump, Player_orig_WallJump);
+                hook_Player_get_CanUnDuck = new ILHook(ReflectionCache.Player_CanUnDuck, Player_get_CanUnDuck);
+                hook_Player_get_CameraTarget = new ILHook(ReflectionCache.Player_CameraTarget, Player_get_CameraTarget);
 
-            // we assume the first .ctor method that accepts (string) is Sprite.OnFrameChange +=
-            var spriteOnFrameChange = typeof(Player).GetRuntimeMethods().FirstOrDefault(m =>
-            {
-                if (!m.Name.Contains(".ctor")) return false;
-                var parameters = m.GetParameters();
-                return parameters.Length == 1 && parameters[0].ParameterType == typeof(string);
-            });
+                // we assume the first .ctor method that accepts (string) is Sprite.OnFrameChange +=
+                var spriteOnFrameChange = typeof(Player).GetRuntimeMethods().FirstOrDefault(m =>
+                {
+                    if (!m.Name.Contains(".ctor")) return false;
+                    var parameters = m.GetParameters();
+                    return parameters.Length == 1 && parameters[0].ParameterType == typeof(string);
+                });
 
-            if (spriteOnFrameChange != null)
-                hook_Player_ctor_OnFrameChange = new ILHook(spriteOnFrameChange, Player_ctor_OnFrameChange);
+                if (spriteOnFrameChange != null)
+                    hook_Player_ctor_OnFrameChange = new ILHook(spriteOnFrameChange, Player_ctor_OnFrameChange);
+            }
         }
 
         public static void Unload()
@@ -221,16 +222,16 @@ namespace Celeste.Mod.GravityHelper.Hooks
                 if (self.StateMachine.State != Player.StRedDash && self.StateMachine.State != Player.StReflectionFall &&
                     self.StateMachine.State != Player.StStarFly)
                 {
-                    self.SetVarJumpSpeed(self.Speed.Y = -105f);
+                    self.varJumpSpeed = self.Speed.Y = -105f;
                     self.StateMachine.State = self.StateMachine.State != Player.StSummitLaunch
                         ? Player.StNormal
                         : Player.StIntroJump;
                     self.AutoJump = true;
                     self.AutoJumpTimer = 0.0f;
-                    self.SetVarJumpTimer(0.2f);
+                    self.varJumpTimer = 0.2f;
                 }
 
-                self.SetDashCooldownTimer(0.2f);
+                self.dashCooldownTimer = 0.2f;
 
                 return true;
             });
@@ -255,7 +256,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
                     self.StateMachine.State = Player.StNormal;
                     self.Speed.Y = Math.Max(0.0f, self.Speed.Y);
                     self.AutoJump = false;
-                    self.SetVarJumpTimer(0.0f);
+                    self.varJumpTimer = 0.0f;
                 }
 
                 foreach (Entity entity in self.Scene.Tracker.GetEntities<Platform>())
@@ -444,7 +445,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
                 // check if ducking collides
                 var currentCollider = self.Collider;
-                self.Collider = self.GetDuckHitbox();
+                self.Collider = self.duckHitbox;
                 var didCollideJumpthrus = collideJumpthrus(self);
                 self.Collider = currentCollider;
 
@@ -509,8 +510,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             cursor.EmitDelegate<Func<float, Player, float>>((y, self) =>
             {
                 if (!GravityHelperModule.ShouldInvertPlayer) return y;
-                var data = DynamicData.For(self);
-                var level = data.Get<Level>("level");
+                var level = self.level;
                 return level.Bounds.Top + 24;
             });
 
@@ -549,8 +549,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             cursor.Emit(OpCodes.Ldloc, playerVar);
             cursor.EmitDelegate<Action<Player>>(self =>
             {
-                var data = DynamicData.For(self);
-                var level = data.Get<Level>("level");
+                var level = self.level;
                 var particles = level.Particles;
                 var particlesBG = level.ParticlesBG;
                 particles.Emit(Player.P_SummitLandA, 12, self.TopCenter, Vector2.UnitX * 3f, (float)Math.PI / 2f);
@@ -1260,8 +1259,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             if (handled && oldFacing == self.Facing)
             {
                 // if we were warped and kept the same facing, we shouldn't lose stamina
-                var data = DynamicData.For(self);
-                data.Invoke("WallJump", (int)self.Facing);
+                self.WallJump((int)self.Facing);
             }
             else
             {
@@ -1322,8 +1320,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
         {
             orig(self);
 
-            var data = DynamicData.For(self);
-            var dreamBlock = data.Get<DreamBlock>("dreamBlock");
+            var dreamBlock = self.dreamBlock;
             if (GravityHelperModule.PlayerComponent != null && dreamBlock is GravityDreamBlock gravityDreamBlock)
                 gravityDreamBlock.PlayerEntered();
         }
@@ -1349,15 +1346,13 @@ namespace Celeste.Mod.GravityHelper.Hooks
             if (!GravityHelperModule.ShouldInvertPlayer)
                 return orig(self);
 
-            var player = DynamicData.For(self);
-
             self.Speed.Y *= -1;
             self.DashDir.Y *= -1;
 
             var rv = orig(self);
 
             // if we've buffered a dream jump, don't flip the Y component back
-            if (!player.Get<bool>("dreamJump"))
+            if (!self.dreamJump)
                 self.Speed.Y *= -1;
 
             self.DashDir.Y *= -1;
@@ -1429,7 +1424,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
             if (GravityHelperModule.ShouldInvertPlayer)
             {
-                var bloom = self.GetStarFlyBloom();
+                var bloom = self.starFlyBloom;
                 if (bloom != null)
                     bloom.Y = Math.Abs(bloom.Y);
             }
@@ -1477,12 +1472,12 @@ namespace Celeste.Mod.GravityHelper.Hooks
             {
                 if (useAbsolute)
                 {
-                    Input.Aim.SetValue(new Vector2(Input.Aim.Value.X, -aimY));
+                    Input.Aim.Value = new Vector2(Input.Aim.Value.X, -aimY);
                     Input.MoveY.Value = -moveY;
                     Input.GliderMoveY.Value = -gliderMoveY;
                 }
                 if (useAbsoluteFeather)
-                    Input.Feather.SetValue(new Vector2(Input.Feather.Value.X, -featherY));
+                    Input.Feather.Value = new Vector2(Input.Feather.Value.X, -featherY);
             }
 
             orig(self);
@@ -1490,12 +1485,12 @@ namespace Celeste.Mod.GravityHelper.Hooks
             if (shouldInvert)
             {
                 if (useAbsoluteFeather)
-                    Input.Feather.SetValue(new Vector2(Input.Feather.Value.X, featherY));
+                    Input.Feather.Value = new Vector2(Input.Feather.Value.X, featherY);
                 if (useAbsolute)
                 {
                     Input.GliderMoveY.Value = gliderMoveY;
                     Input.MoveY.Value = moveY;
-                    Input.Aim.SetValue(new Vector2(Input.Aim.Value.X, aimY));
+                    Input.Aim.Value = new Vector2(Input.Aim.Value.X, aimY);
                 }
             }
         }
@@ -1539,7 +1534,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
                 foreach (var entity in entities)
                 {
                     if (self.CollideCheck(entity) && entity.Bottom - self.Top <= 6f &&
-                        !self.CallDashCorrectCheck(Vector2.UnitY * (entity.Bottom - self.Top)))
+                        !self.DashCorrectCheck(Vector2.UnitY * (entity.Bottom - self.Top)))
                     {
                         self.MoveVExact((int)(self.Top - entity.Bottom));
                     }

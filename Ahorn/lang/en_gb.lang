@@ -78,7 +78,8 @@ placements.entities.GravityHelper/GravityDreamBlock.tooltips.endFallOnSolidTiles
 
 # Gravity Bumper
 placements.entities.GravityHelper/GravityBumper.tooltips.gravityType=The gravity type to set when Madeline touches the bumper.
-placements.entities.GravityHelper/GravityBumper.tooltips.wobbleRate=The rate multiplier at which the bumper will wobble back and forth.  Set to 0 to disable wobbling.  Defaults to 1 (vanilla).  
+placements.entities.GravityHelper/GravityBumper.tooltips.wobbleRate=The rate multiplier at which the bumper will wobble back and forth.  Set to 0 to disable wobbling.  Defaults to 1 (vanilla).
+placements.entities.GravityHelper/GravityBumper.tooltips.ignoreCoreMode=Whether the bumper should stay in "cold" mode even if the core mode is set to "hot".  Defaults to false.
 
 # Gravity Booster
 placements.entities.GravityHelper/GravityBooster.tooltips.gravityType=The gravity type to set when Madeline leaves the booster (bubble).

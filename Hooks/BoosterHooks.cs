@@ -84,9 +84,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             cursor.EmitDelegate<Func<Booster, bool>>(self =>
             {
                 if (self is not GravityBooster gravityBooster) return false;
-                var data = DynamicData.For(gravityBooster);
-                var sprite = data.Get<Sprite>("sprite");
-                sprite.DrawOutline(gravityBooster.GravityType.Color());
+                gravityBooster.sprite.DrawOutline(gravityBooster.GravityType.Color());
                 return true;
             });
             cursor.Emit(OpCodes.Brfalse_S, cursor.Next);

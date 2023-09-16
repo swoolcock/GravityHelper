@@ -2,7 +2,6 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using Monocle;
-using MonoMod.Utils;
 
 // ReSharper disable InconsistentNaming
 
@@ -27,8 +26,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
         private static void Snowball_Update(On.Celeste.Snowball.orig_Update orig, Snowball self)
         {
-            var data = DynamicData.For(self);
-            var bounceCollider = (Hitbox)data.Get<Collider>("bounceCollider");
+            var bounceCollider = (Hitbox)self.bounceCollider;
             var collider = self.Collider;
 
             if (GravityHelperModule.ShouldInvertPlayer != bounceCollider.Top > collider.Top)

@@ -5,24 +5,22 @@ using System;
 using Celeste.Mod.GravityHelper.Extensions;
 using Microsoft.Xna.Framework;
 using Monocle;
-using MonoMod.Utils;
 
 namespace Celeste.Mod.GravityHelper.Components
 {
     public class PlayerGravityComponent : GravityComponent
     {
         public GravityType PreDreamBlockGravityType { get; set; }
-        private Player _player => Entity as Player;
-        private DynamicData _playerData;
+        public new Player Entity => base.Entity as Player;
 
         public PlayerGravityComponent()
         {
             CheckInvert = () =>
-                _player.StateMachine.State switch
+                Entity.StateMachine.State switch
                 {
                     Player.StDreamDash => false,
                     Player.StAttract => false,
-                    Player.StDummy when !_player.DummyGravity => false,
+                    Player.StDummy when !Entity.DummyGravity => false,
                     Player.StBoost => false,
                     Player.StIntroWalk => false,
                     Player.StIntroRespawn => false,
@@ -33,69 +31,69 @@ namespace Celeste.Mod.GravityHelper.Components
 
             UpdateVisuals = args =>
             {
-                if (!args.Changed || _player.Scene == null) return;
+                if (!args.Changed || Entity.Scene == null) return;
 
                 Vector2 normalLightOffset = new Vector2(0.0f, args.NewValue == GravityType.Normal ? -8f : 8f);
                 Vector2 duckingLightOffset = new Vector2(0.0f, args.NewValue == GravityType.Normal ? -3f : 3f);
 
-                _playerData.Set("normalLightOffset", normalLightOffset);
-                _playerData.Set("duckingLightOffset", duckingLightOffset);
-                _player.Light.Position = _player.Ducking ? duckingLightOffset : normalLightOffset;
+                Entity.normalLightOffset = normalLightOffset;
+                Entity.duckingLightOffset = duckingLightOffset;
+                Entity.Light.Position = Entity.Ducking ? duckingLightOffset : normalLightOffset;
 
-                var starFlyBloom = _playerData.Get<BloomPoint>("starFlyBloom");
+                var starFlyBloom = Entity.starFlyBloom;
                 if (starFlyBloom != null)
                     starFlyBloom.Y = Math.Abs(starFlyBloom.Y) * (args.NewValue == GravityType.Inverted ? 1 : -1);
             };
 
             UpdatePosition = args =>
             {
-                if (!args.Changed || _player.Scene == null) return;
+                if (!args.Changed || Entity.Scene == null) return;
 
-                var collider = _player.Collider ?? _playerData.Get<Hitbox>("normalHitbox");
-                _player.Position.Y = args.NewValue == GravityType.Inverted
+                var collider = Entity.Collider ?? Entity.normalHitbox;
+                Entity.Position.Y = args.NewValue == GravityType.Inverted
                     ? collider.AbsoluteTop
                     : collider.AbsoluteBottom;
             };
 
             UpdateColliders = args =>
             {
-                if (!args.Changed || _player.Scene == null) return;
+                if (!args.Changed || Entity.Scene == null) return;
 
-                invertHitbox(_playerData.Get<Hitbox>("normalHitbox"));
-                invertHitbox(_playerData.Get<Hitbox>("normalHurtbox"));
-                invertHitbox(_playerData.Get<Hitbox>("duckHitbox"));
-                invertHitbox(_playerData.Get<Hitbox>("duckHurtbox"));
-                invertHitbox(_playerData.Get<Hitbox>("starFlyHitbox"));
-                invertHitbox(_playerData.Get<Hitbox>("starFlyHurtbox"));
+                invertHitbox(Entity.normalHitbox);
+                invertHitbox(Entity.normalHurtbox);
+                invertHitbox(Entity.duckHitbox);
+                invertHitbox(Entity.duckHurtbox);
+                invertHitbox(Entity.starFlyHitbox);
+                invertHitbox(Entity.starFlyHurtbox);
             };
 
             UpdateSpeed = args =>
             {
-                if (!args.Changed || _player.Scene == null) return;
+                if (!args.Changed || Entity.Scene == null) return;
 
                 if (args.Instant)
-                    _player.EnsureFallingSpeed();
+                    Entity.EnsureFallingSpeed();
                 else
-                    _player.Speed.Y *= -args.MomentumMultiplier;
+                    Entity.Speed.Y *= -args.MomentumMultiplier;
 
-                _player.DashDir.Y *= -1;
-                _playerData.Set("varJumpTimer", 0f);
+                Entity.DashDir.Y *= -1;
+                Entity.varJumpTimer = 0f;
 
                 // update player on ground status
-                checkGround(_player, args.NewValue, out var onGround, out var onSafeGround);
+                checkGround(Entity, args.NewValue, out var onGround, out var onSafeGround);
 
-                var oldOnGround = _playerData.Get<bool>("onGround");
+                var oldOnGround = Entity.onGround;
                 if (oldOnGround && !onGround)
-                    _playerData.Set("jumpGraceTimer", 0f);
+                    Entity.jumpGraceTimer = 0f;
                 else if (!oldOnGround && onGround)
-                    _player.StartJumpGraceTime();
+                    Entity.StartJumpGraceTime();
 
-                _playerData.Set("onGround", onGround);
-                _player.SetOnSafeGround(onSafeGround);
+                Entity.onGround = onGround;
+                Entity.OnSafeGround = onSafeGround;
             };
 
-            GetSpeed = () => _player.Speed;
-            SetSpeed = value => _player.Speed = value;
+            GetSpeed = () => Entity.Speed;
+            SetSpeed = value => Entity.Speed = value;
 
             Flag = "GravityHelper_PlayerInverted";
         }
@@ -144,7 +142,6 @@ namespace Celeste.Mod.GravityHelper.Components
         public override void Added(Entity entity)
         {
             base.Added(entity);
-            _playerData = DynamicData.For(entity);
 
             // cache when the component is added so that it's available before the player is added to the scene
             GravityHelperModule.PlayerComponent = this;
@@ -153,7 +150,6 @@ namespace Celeste.Mod.GravityHelper.Components
         public override void Removed(Entity entity)
         {
             base.Removed(entity);
-            _playerData = null;
 
             // only clear the cache if it's ourselves (note that this may never be called)
             if (GravityHelperModule.PlayerComponent == this)
