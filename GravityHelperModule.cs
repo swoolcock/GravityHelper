@@ -33,10 +33,10 @@ namespace Celeste.Mod.GravityHelper
         public static bool RequiresHooksForSession(Session session, out bool forceLoad)
         {
             forceLoad = false;
-            bool isGravityHelper(EntityData data) => data.Name.StartsWith("GravityHelper");
-            var entityData = session.MapData.Levels.SelectMany(l => l.Entities).FirstOrDefault(isGravityHelper);
+            bool requiresHooks(EntityData data) => data.Name.StartsWith("GravityHelper") || data.Has("_gravityHelper");
+            var entityData = session.MapData.Levels.SelectMany(l => l.Entities).FirstOrDefault(requiresHooks);
             forceLoad = entityData?.Name == "GravityHelper/ForceLoadGravityController";
-            return entityData != null || session.MapData.Levels.SelectMany(l => l.Triggers).Any(isGravityHelper);
+            return entityData != null || session.MapData.Levels.SelectMany(l => l.Triggers).Any(requiresHooks);
         }
 
         internal static void ClearStatics()
