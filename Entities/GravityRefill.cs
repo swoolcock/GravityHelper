@@ -25,13 +25,13 @@ namespace Celeste.Mod.GravityHelper.Entities
         private readonly VersionInfo _pluginVersion;
 
         // components
-        private readonly Sprite _sprite;
-        private readonly Sprite _arrows;
-        private readonly Image _outline;
-        private readonly Wiggler _wiggler;
-        private readonly BloomPoint _bloom;
-        private readonly VertexLight _light;
-        private readonly SineWave _sine;
+        private Sprite _sprite;
+        private Sprite _arrows;
+        private Image _outline;
+        private Wiggler _wiggler;
+        private BloomPoint _bloom;
+        private VertexLight _light;
+        private SineWave _sine;
 
         // particles
         public static readonly ParticleType P_Shatter = new ParticleType(Refill.P_Shatter)
@@ -71,6 +71,18 @@ namespace Celeste.Mod.GravityHelper.Entities
             set => (Engine.Scene as Level)?.Session.SetCounter(gravity_toggle_charges, value);
         }
 
+        internal GravityRefill(Vector2 position, bool twoDashes, bool oneUse) : base(position)
+        {
+            Charges = twoDashes ? 2 : 1;
+            Dashes = twoDashes ? 2 : 1;
+            OneUse = oneUse;
+            RefillsDash = true;
+            RefillsStamina = true;
+            RespawnTime = 2.5f;
+
+            init((int)(position.X + position.Y));
+        }
+
         public GravityRefill(EntityData data, Vector2 offset)
             : base(data.Position + offset)
         {
@@ -84,6 +96,11 @@ namespace Celeste.Mod.GravityHelper.Entities
             RefillsStamina = data.Bool("refillsStamina", true);
             RespawnTime = data.Float("respawnTime", 2.5f);
 
+            init(data.ID);
+        }
+
+        private void init(int randomSeed)
+        {
             Collider = new Hitbox(16f, 16f, -8f, -8f);
             Depth = Depths.Pickups;
 
@@ -107,7 +124,7 @@ namespace Celeste.Mod.GravityHelper.Entities
             // this uses a random sample but so as to not break existing maps i'm leaving it above the PushRandomDisposable
             _sprite.Play(animationName, true, true);
 
-            using var _ = new PushRandomDisposable(data.ID);
+            using var _ = new PushRandomDisposable(randomSeed);
             _sine.Randomize();
             _arrows.OnFinish = _ => _arrows.Visible = false;
             _arrowIntervalOffset = Calc.Random.NextFloat(2f);

@@ -26,6 +26,7 @@ namespace Celeste.Mod.GravityHelper
         public VvvvvvSetting VvvvvvAllowDashing { get; set; }
 
         public bool MHHUDJTCornerCorrection { get; set; } = true;
+        public bool ReplaceRefills { get; set; }
 
         public ButtonBinding ToggleInvertGravity { get; set; }
 
@@ -45,6 +46,15 @@ namespace Celeste.Mod.GravityHelper
                 Disabled = inGame,
                 OnValueChange = value => MHHUDJTCornerCorrection = value,
             }, Dialog.Clean("GRAVITYHELPER_MENU_MHH_UDJT_CORNER_CORRECTION_SUBTEXT"));
+        }
+
+        public void CreateReplaceRefillsEntry(TextMenu menu, bool inGame)
+        {
+            menu.AddWithDescription(new TextMenu.OnOff(Dialog.Clean("GRAVITYHELPER_MENU_REPLACE_REFILLS"), ReplaceRefills)
+            {
+                Disabled = inGame,
+                OnValueChange = value => ReplaceRefills = value,
+            }, Dialog.Clean("GRAVITYHELPER_MENU_REPLACE_REFILLS_SUBTEXT"));
         }
 
         public void CreateVvvvvvModeEntry(TextMenu menu, bool inGame)

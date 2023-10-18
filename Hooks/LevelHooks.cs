@@ -2,6 +2,7 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System.Linq;
+using Celeste.Mod.GravityHelper.Entities;
 using Celeste.Mod.GravityHelper.Entities.Controllers;
 using Celeste.Mod.GravityHelper.Extensions;
 using Microsoft.Xna.Framework;
@@ -193,6 +194,7 @@ namespace Celeste.Mod.GravityHelper.Hooks
             if (!isfromloader)
             {
                 orig(self, playerintro, false);
+                replaceRefills(self);
                 return;
             }
 
@@ -225,6 +227,8 @@ namespace Celeste.Mod.GravityHelper.Hooks
 
             orig(self, playerintro, true);
 
+            replaceRefills(self);
+
             var triggers = self.Session.MapData?.Levels?.SelectMany(l => l.Triggers) ?? Enumerable.Empty<EntityData>();
             var hasVvvvvvTriggers = triggers.Any(e => e.Name == "GravityHelper/VvvvvvTrigger");
             var hasCassetteControllers = controllers.Any(e => e.Name == "GravityHelper/CassetteGravityController");
@@ -240,6 +244,21 @@ namespace Celeste.Mod.GravityHelper.Hooks
             if (vvvvvv != null && vvvvvv.Ephemeral && hasVvvvvvTriggers)
                 vvvvvv.Mode = VvvvvvMode.TriggerBased;
             vvvvvv?.Transitioned();
+        }
+
+        private static void replaceRefills(Level self)
+        {
+            // replace refills
+            if (GravityHelperModule.Settings.ReplaceRefills)
+            {
+                var refills = self.Entities.Where(e => e.GetType() == typeof(Refill)).ToList();
+                foreach (Refill refill in refills)
+                {
+                    var gravRefill = new GravityRefill(refill.Position, refill.twoDashes, refill.oneUse);
+                    self.Remove(refill);
+                    self.Add(gravRefill);
+                }
+            }
         }
 
         private static void Level_End(On.Celeste.Level.orig_End orig, Level self)
