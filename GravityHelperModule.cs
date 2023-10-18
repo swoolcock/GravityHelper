@@ -9,6 +9,7 @@ using Celeste.Mod.GravityHelper.Entities.Controllers;
 using Celeste.Mod.GravityHelper.Hooks;
 using Celeste.Mod.GravityHelper.ThirdParty;
 using Celeste.Mod.GravityHelper.ThirdParty.CelesteNet;
+using FMOD.Studio;
 using Monocle;
 using MonoMod.ModInterop;
 using Microsoft.Xna.Framework;
@@ -58,6 +59,13 @@ namespace Celeste.Mod.GravityHelper
         }
 
         public GravityType? GravityBeforeReload;
+
+        public override void CreateModMenuSection(TextMenu menu, bool inGame, EventInstance snapshot)
+        {
+            CreateModMenuSectionHeader(menu, inGame, snapshot);
+            Settings.CreateModMenuSection(menu, inGame, snapshot);
+            CreateModMenuSectionKeyBindings(menu, inGame, snapshot);
+        }
 
         #region Hook Activation
 
