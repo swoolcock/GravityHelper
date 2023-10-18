@@ -8,6 +8,7 @@ using Celeste.Mod.GravityHelper.Components;
 using Celeste.Mod.GravityHelper.Entities.Controllers;
 using Celeste.Mod.GravityHelper.Hooks;
 using Celeste.Mod.GravityHelper.ThirdParty;
+using Celeste.Mod.GravityHelper.ThirdParty.CelesteNet;
 using Monocle;
 using MonoMod.ModInterop;
 using Microsoft.Xna.Framework;
@@ -67,6 +68,9 @@ namespace Celeste.Mod.GravityHelper
             Logger.Log(LogLevel.Info, nameof(GravityHelperModule), "Loading bootstrap hooks...");
             On.Celeste.LevelLoader.ctor += LevelLoader_ctor;
             On.Celeste.OverworldLoader.ctor += OverworldLoader_ctor;
+
+            // always try CelesteNet
+            ThirdPartyHooks.ForceLoadType(typeof(CelesteNetModSupport));
         }
 
         public override void Unload()
@@ -75,6 +79,9 @@ namespace Celeste.Mod.GravityHelper
             On.Celeste.LevelLoader.ctor -= LevelLoader_ctor;
             On.Celeste.OverworldLoader.ctor -= OverworldLoader_ctor;
             updateHooks(HookLevel.None);
+
+            // always try CelesteNet
+            ThirdPartyHooks.ForceUnloadType(typeof(CelesteNetModSupport));
         }
 
         internal static HookLevel CurrentHookLevel = HookLevel.None;
