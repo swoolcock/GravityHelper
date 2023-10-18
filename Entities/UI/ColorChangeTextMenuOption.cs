@@ -1,7 +1,6 @@
 // Copyright (c) Shane Woolcock. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
-using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 
@@ -11,23 +10,23 @@ public class ColorChangeTextMenuOption<T> : TextMenu.Option<T> where T : struct
 {
     public T DefaultValue;
     public Color ChangedUnselectedColor = Color.Goldenrod;
-    public new Action<T> OnValueChange;
+
+    private int _lastFrameIndex;
 
     public ColorChangeTextMenuOption(string label, T defaultValue = default) : base(label)
     {
         DefaultValue = defaultValue;
-
-        base.OnValueChange = value =>
-        {
-            OnValueChange?.Invoke(value);
-            UpdateUnselectedColor();
-        };
     }
 
-    public override void Added()
+    public override void Render(Vector2 position, bool highlighted)
     {
-        base.Added();
-        UpdateUnselectedColor();
+        if (_lastFrameIndex != Index)
+        {
+            _lastFrameIndex = Index;
+            UpdateUnselectedColor();
+        }
+
+        base.Render(position, highlighted);
     }
 
     protected virtual void UpdateUnselectedColor() => UnselectedColor = IsDefaultValue() ? Color.White : ChangedUnselectedColor;
