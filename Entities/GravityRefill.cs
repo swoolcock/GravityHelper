@@ -74,7 +74,7 @@ namespace Celeste.Mod.GravityHelper.Entities
         internal GravityRefill(Vector2 position, bool twoDashes, bool oneUse) : base(position)
         {
             Charges = twoDashes ? 2 : 1;
-            Dashes = twoDashes ? 2 : 1;
+            Dashes = twoDashes ? 2 : -1;
             OneUse = oneUse;
             RefillsDash = true;
             RefillsStamina = true;
