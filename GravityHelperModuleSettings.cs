@@ -140,7 +140,7 @@ namespace Celeste.Mod.GravityHelper
                 {
                     ControlScheme = value;
                     FeatherControlScheme = ControlScheme;
-                    foreach (var item in menu.Items.OfType<TextMenu.Option<ControlSchemeSetting>>().Where(i => i.Index != (int)value))
+                    foreach (var item in menu.Items.OfType<ColorChangeTextMenuOption<ControlSchemeSetting>>().Where(i => i.Index != (int)value))
                     {
                         item.Index = (int)value;
                     }
