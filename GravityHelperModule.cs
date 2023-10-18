@@ -8,6 +8,8 @@ using Celeste.Mod.GravityHelper.Components;
 using Celeste.Mod.GravityHelper.Entities.Controllers;
 using Celeste.Mod.GravityHelper.Hooks;
 using Celeste.Mod.GravityHelper.ThirdParty;
+using Celeste.Mod.GravityHelper.ThirdParty.CelesteNet;
+using FMOD.Studio;
 using Monocle;
 using MonoMod.ModInterop;
 using Microsoft.Xna.Framework;
@@ -33,10 +35,10 @@ namespace Celeste.Mod.GravityHelper
         public static bool RequiresHooksForSession(Session session, out bool forceLoad)
         {
             forceLoad = false;
-            bool isGravityHelper(EntityData data) => data.Name.StartsWith("GravityHelper");
-            var entityData = session.MapData.Levels.SelectMany(l => l.Entities).FirstOrDefault(isGravityHelper);
+            bool requiresHooks(EntityData data) => data.Name.StartsWith("GravityHelper") || data.Has("_gravityHelper");
+            var entityData = session.MapData.Levels.SelectMany(l => l.Entities).FirstOrDefault(requiresHooks);
             forceLoad = entityData?.Name == "GravityHelper/ForceLoadGravityController";
-            return entityData != null || session.MapData.Levels.SelectMany(l => l.Triggers).Any(isGravityHelper);
+            return entityData != null || session.MapData.Levels.SelectMany(l => l.Triggers).Any(requiresHooks);
         }
 
         internal static void ClearStatics()
@@ -58,6 +60,13 @@ namespace Celeste.Mod.GravityHelper
 
         public GravityType? GravityBeforeReload;
 
+        public override void CreateModMenuSection(TextMenu menu, bool inGame, EventInstance snapshot)
+        {
+            CreateModMenuSectionHeader(menu, inGame, snapshot);
+            Settings.CreateModMenuSection(menu, inGame, snapshot);
+            CreateModMenuSectionKeyBindings(menu, inGame, snapshot);
+        }
+
         #region Hook Activation
 
         public override void Load()
@@ -67,6 +76,9 @@ namespace Celeste.Mod.GravityHelper
             Logger.Log(LogLevel.Info, nameof(GravityHelperModule), "Loading bootstrap hooks...");
             On.Celeste.LevelLoader.ctor += LevelLoader_ctor;
             On.Celeste.OverworldLoader.ctor += OverworldLoader_ctor;
+
+            // always try CelesteNet
+            ThirdPartyHooks.ForceLoadType(typeof(CelesteNetModSupport));
         }
 
         public override void Unload()
@@ -75,6 +87,9 @@ namespace Celeste.Mod.GravityHelper
             On.Celeste.LevelLoader.ctor -= LevelLoader_ctor;
             On.Celeste.OverworldLoader.ctor -= OverworldLoader_ctor;
             updateHooks(HookLevel.None);
+
+            // always try CelesteNet
+            ThirdPartyHooks.ForceUnloadType(typeof(CelesteNetModSupport));
         }
 
         internal static HookLevel CurrentHookLevel = HookLevel.None;

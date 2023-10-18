@@ -1,5 +1,8 @@
+GRAVITYHELPER_MENU_SUBHEADER_CONTROLS= Controls
+GRAVITYHELPER_MENU_SUBHEADER_FUN_OPTIONS= Fun Options
+GRAVITYHELPER_MENU_SUBHEADER_ADVANCED= Advanced
 GRAVITYHELPER_MENU_ALLOW_IN_ALL_MAPS= Allow In All Maps
-GRAVITYHELPER_MENU_ALLOW_IN_ALL_MAPS_SUBTEXT= Allows the use of the debug flip key or VVVVVV modes in any map.{n}This can only be changed from the overworld.
+GRAVITYHELPER_MENU_ALLOW_IN_ALL_MAPS_SUBTEXT= Allows the use of the debug flip key or fun options in any map.{n}This can only be changed from the overworld.
 GRAVITYHELPER_MENU_VVVVVV_MODE= V6 Mode
 GRAVITYHELPER_MENU_VVVVVV_MODE_SUBTEXT= Enables or disables VVVVVV mode.{n}Default uses the settings for the current map.
 GRAVITYHELPER_MENU_VVVVVV_FLIP_SOUND= V6 Flip Sound
@@ -14,4 +17,6 @@ GRAVITYHELPER_MENU_FEATHER_CONTROL_SCHEME= Control Scheme (Feathers)
 GRAVITYHELPER_MENU_FEATHER_CONTROL_SCHEME_SUBTEXT= As with Control Scheme, but for feathers.
 GRAVITYHELPER_MENU_MHH_UDJT_CORNER_CORRECTION= MHH Jumpthru Corner Correction
 GRAVITYHELPER_MENU_MHH_UDJT_CORNER_CORRECTION_SUBTEXT= For backward compatibility reasons, GravityHelper applies{n}corner correction to MaddieHelpingHand upside down jumpthrus.{n}If this is undesirable, switch this off.{n}Note that GravityHelper jumpthrus will ALWAYS corner correct.
+GRAVITYHELPER_MENU_REPLACE_REFILLS= Replace Refills
+GRAVITYHELPER_MENU_REPLACE_REFILLS_SUBTEXT= Replaces all standard vanilla refills with gravity refills.
 GRAVITYHELPER_POSTCARD_VVVVVV= This map contains VVVVVV mechanics.{n}Your custom settings have been restored to default.

@@ -23,5 +23,8 @@ namespace Celeste.Mod.GravityHelper.Extensions
             item.AddDescription(self, description);
             return item;
         }
+
+        public static void AddSubHeader(this TextMenu self, string subHeader)
+            => self.Add(new TextMenu.SubHeader(subHeader.DialogCleanOrNull() ?? subHeader, false));
     }
 }

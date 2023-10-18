@@ -1,5 +1,5 @@
 - Name: GravityHelper
-  Version: 1.1.46
+  Version: 1.1.47
   DLL: bin/GravityHelper.dll
   Dependencies:
     - Name: Everest
@@ -26,6 +26,6 @@
     - Name: StaminaMeter
       Version: 1.3.0
     - Name: CelesteNet.Client
-      Version: 2.2.1
+      Version: 2.2.2
     - Name: BounceHelper
       Version: 1.4.1

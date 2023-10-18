@@ -17,6 +17,7 @@ namespace Celeste.Mod.GravityHelper.ThirdParty
                 t.GetCustomAttribute<ThirdPartyModAttribute>() != null);
 
         public static readonly Dictionary<string, ThirdPartyModSupport> LoadedMods = new();
+        public static readonly Dictionary<string, ThirdPartyModSupport> ForceLoadedMods = new();
 
         public static void Load()
         {
@@ -25,10 +26,29 @@ namespace Celeste.Mod.GravityHelper.ThirdParty
 
             foreach (var type in ThirdPartyModTypes)
             {
+                // don't try to load if there's one force loaded
+                if (ForceLoadedMods.Values.Any(type.IsInstanceOfType)) continue;
+
                 if (Activator.CreateInstance(type) is ThirdPartyModSupport modSupport && modSupport.TryLoad())
                 {
                     LoadedMods[modSupport.Attribute.Name] = modSupport;
                 }
+            }
+        }
+
+        public static void ForceLoadType(Type type)
+        {
+            if (Activator.CreateInstance(type) is ThirdPartyModSupport modSupport && modSupport.TryLoad())
+            {
+                ForceLoadedMods[modSupport.Attribute.Name] = modSupport;
+            }
+        }
+
+        public static void ForceUnloadType(Type type)
+        {
+            if (ForceLoadedMods.Values.FirstOrDefault(type.IsInstanceOfType) is { } modSupport && modSupport.TryUnload())
+            {
+                ForceLoadedMods.Remove(modSupport.Attribute.Name);
             }
         }
 
