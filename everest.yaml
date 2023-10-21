@@ -29,3 +29,5 @@
       Version: 2.2.2
     - Name: BounceHelper
       Version: 1.4.1
+    - Name: CrystallineHelper
+      Version: 1.15.0
