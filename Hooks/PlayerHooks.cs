@@ -892,14 +892,13 @@ namespace Celeste.Mod.GravityHelper.Hooks
                 throw new HookException("Couldn't find base.Update()");
 
             // find collidecheck
-            if (!cursor.TryGotoNext(instr => instr.MatchCallGeneric<Entity, JumpThru>(nameof(Entity.CollideCheck), out _)))
+            if (!cursor.TryGotoNext(MoveType.After, instr => instr.MatchCallGeneric<Entity, JumpThru>(nameof(Entity.CollideCheck), out _)))
                 throw new HookException("Couldn't find CollideCheck<JumpThru>");
 
-            // emit UDJT check
-            cursor.EmitLoadShouldInvert();
-            cursor.Emit(OpCodes.Brfalse_S, cursor.Next);
-            cursor.EmitDelegate<Func<Entity, bool>>(e => e.CollideCheckUpsideDownJumpThru());
-            cursor.Emit(OpCodes.Br_S, cursor.Next.Next);
+            // replace collidecheck with our own that takes into account upside-down-ness relative to the player
+            cursor.Emit(OpCodes.Ldarg_0);
+            cursor.EmitDelegate<Func<bool, Player, bool>>((didCollide, self) =>
+                GravityHelperModule.ShouldInvertPlayer ? self.CollideCheckUpsideDownJumpThru() : self.CollideCheckNotUpsideDownJumpThru());
 
             // find 3
             if (!cursor.TryGotoNext(MoveType.After, instr => instr.MatchLdcR4(3)))
@@ -1503,48 +1502,41 @@ namespace Celeste.Mod.GravityHelper.Hooks
         private static void emitDashUpdateFixes(ILContext il)
         {
             var cursor = new ILCursor(il);
+            var variable = il.Body.Variables.FirstOrDefault(v => v.VariableType.FullName == "Celeste.JumpThru");
+            if (variable == null)
+                throw new HookException("Couldn't find variable");
 
             // find DashDir.Y < 0.1 check
-            cursor.GotoNext(instr => instr.MatchLdflda<Player>(nameof(Player.DashDir)),
-                instr => instr.MatchLdfld<Vector2>(nameof(Vector2.Y)));
+            if (!cursor.TryGotoNext(instr => instr.MatchLdflda<Player>(nameof(Player.DashDir)),
+                instr => instr.MatchLdfld<Vector2>(nameof(Vector2.Y))))
+                throw new HookException("Couldn't find DashDir.Y < 0.1");
 
-            // find this.CanUnDuck check
-            cursor.GotoNext(instr => instr.MatchLdarg(0),
-                instr => instr.MatchCallvirt<Player>("get_CanUnDuck"));
+            // find CollideCheck
+            if (!cursor.TryGotoNext(MoveType.After, instr => instr.MatchCall<Entity>(nameof(Entity.CollideCheck))))
+                throw new HookException("Couldn't find Entity.CollideCheck");
 
-            // mark it
-            var target = cursor.Next;
-
-            // jump back to before foreach
-            cursor.GotoPrev(instr => instr.MatchLdarg(0),
-                instr => instr.MatchCall<Entity>("get_Scene"),
-                instr => instr.MatchCallvirt<Scene>("get_Tracker"));
-
-            // emit a delegate to check UDJT
-            cursor.Emit(OpCodes.Ldarg_0); // this
-            cursor.EmitDelegate<Func<Player, bool>>(self =>
+            // verify that it's the correct kind of jumpthru for current gravity
+            cursor.Emit(OpCodes.Ldarg_0);
+            cursor.Emit(OpCodes.Ldloc, variable);
+            cursor.EmitDelegate<Func<bool, Player, JumpThru, bool>>((didCollide, self, jt) =>
             {
-                if (!GravityHelperModule.ShouldInvertPlayer)
-                    return false;
+                // bail if the collide failed
+                if (!didCollide) return false;
 
-                var ghUdjt = self.Scene.Tracker.GetEntitiesOrEmpty<UpsideDownJumpThru>();
-                var mhhUdjt = self.Scene.Tracker.GetEntitiesOrEmpty(ReflectionCache.MaddieHelpingHandUpsideDownJumpThruType);
-                var entities = ghUdjt.Concat(mhhUdjt);
+                // if we're right side up, only continue for regular jumpthrus
+                if (!GravityHelperModule.ShouldInvertPlayer) return !jt.IsUpsideDownJumpThru();
 
-                foreach (var entity in entities)
+                // if we're upside down and it's an upside down jumpthru, handle it
+                if (jt.IsUpsideDownJumpThru() &&
+                    jt.Bottom - self.Top <= 6f &&
+                    !self.DashCorrectCheck(Vector2.UnitY * (jt.Bottom - self.Top)))
                 {
-                    if (self.CollideCheck(entity) && entity.Bottom - self.Top <= 6f &&
-                        !self.DashCorrectCheck(Vector2.UnitY * (entity.Bottom - self.Top)))
-                    {
-                        self.MoveVExact((int)(self.Top - entity.Bottom));
-                    }
+                    self.MoveVExact((int)(self.Top - jt.Bottom));
                 }
 
-                return true;
+                // we've handled it ourselves
+                return false;
             });
-
-            // if gravity is inverted we should skip regular jumpthrus
-            cursor.Emit(OpCodes.Brtrue_S, target);
         }
 
         private static void replaceGetLiftBoost(this ILCursor cursor, int count = 1) =>
