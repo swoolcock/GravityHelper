@@ -12,7 +12,7 @@ using MonoMod.Utils;
 
 namespace Celeste.Mod.GravityHelper.ThirdParty;
 
-[ThirdPartyMod("CrystallineHelper")]
+// [ThirdPartyMod("CrystallineHelper")]
 public class CrystallineHelperModSupport : ThirdPartyModSupport
 {
     // ReSharper disable InconsistentNaming
