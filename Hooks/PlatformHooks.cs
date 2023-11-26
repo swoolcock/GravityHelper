@@ -30,12 +30,18 @@ public static class PlatformHooks
     private static void Platform_MoveVExactCollideSolids(ILContext il) => HookUtils.SafeHook(() =>
     {
         var cursor = new ILCursor(il);
-        if (!cursor.TryGotoNext(instr => instr.MatchCallGeneric<Entity, JumpThru>(nameof(Entity.CollideFirstOutside), out _)))
+        if (!cursor.TryGotoNext(MoveType.After, instr => instr.MatchCallGeneric<Entity, JumpThru>(nameof(Entity.CollideFirstOutside), out _)))
             throw new HookException("Couldn't find CollideFirstOutside<JumpThru>()");
 
-        // replace CollideFirstOutside<JumpThru> with a manual implementation that ignores upside down jumpthrus
-        cursor.EmitDelegate<Func<Platform, Vector2, Platform>>((self, at) =>
+        if (!cursor.TryGotoNext(MoveType.After, instr => instr.MatchStloc(3)))
+            throw new HookException("Couldn't find stloc.3");
+
+        // overwrite CollideFirstOutside<JumpThru> return value with a manual implementation that ignores upside down jumpthrus
+        cursor.Emit(OpCodes.Ldarg_0);
+        cursor.Emit(OpCodes.Ldloc_1);
+        cursor.EmitDelegate<Func<Platform, int, Platform>>((self, num) =>
         {
+            var at = self.Position + Vector2.UnitY * num;
             foreach (Entity b in self.Scene.Tracker.Entities[typeof(JumpThru)])
             {
                 // skip upside down jumpthrus
@@ -46,8 +52,6 @@ public static class PlatformHooks
             }
             return null;
         });
-
-        // skip over the existing one
-        cursor.Emit(OpCodes.Br_S, cursor.Next.Next);
+        cursor.Emit(OpCodes.Stloc_3);
     });
 }
