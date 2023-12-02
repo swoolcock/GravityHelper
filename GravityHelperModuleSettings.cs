@@ -25,8 +25,12 @@ namespace Celeste.Mod.GravityHelper
         public VvvvvvSetting VvvvvvAllowGrabbing { get; set; }
         public VvvvvvSetting VvvvvvAllowDashing { get; set; }
         public bool ReplaceRefills { get; set; }
-        public bool MHHUDJTCornerCorrection { get; set; } = true;
+        public bool MHHUDJTCornerCorrection { get; set; }
         public ButtonBinding ToggleInvertGravity { get; set; }
+
+        // default to zero to indicate this is the first execution since versioning was introduced
+        public int SettingsVersion { get; set; }
+        public const int LatestSettingsVersion = 1;
 
         private static IEnumerable<Tuple<string, TEnum>> getEnumOptions<TEnum>() where TEnum : Enum =>
             Enum.GetValues(typeof(TEnum))
@@ -154,6 +158,20 @@ namespace Celeste.Mod.GravityHelper
                 Index = (int)FeatherControlScheme,
                 OnValueChange = value => FeatherControlScheme = value,
             }, Dialog.Clean("GRAVITYHELPER_MENU_FEATHER_CONTROL_SCHEME_SUBTEXT"));
+        }
+
+        public void MigrateIfRequired()
+        {
+            // bail if no migration required
+            if (SettingsVersion >= LatestSettingsVersion) return;
+
+            if (SettingsVersion == 0)
+            {
+                // version 0 requires us to reset MHH corner correction to the new default of false
+                MHHUDJTCornerCorrection = false;
+            }
+
+            SettingsVersion = LatestSettingsVersion;
         }
     }
 }

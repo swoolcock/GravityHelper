@@ -71,6 +71,8 @@ namespace Celeste.Mod.GravityHelper
 
         public override void Load()
         {
+            Settings.MigrateIfRequired();
+
             typeof(GravityHelperExports).ModInterop();
 
             Logger.Log(LogLevel.Info, nameof(GravityHelperModule), "Loading bootstrap hooks...");
