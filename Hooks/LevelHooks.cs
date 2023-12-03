@@ -15,7 +15,7 @@ using MonoMod.Utils;
 
 namespace Celeste.Mod.GravityHelper.Hooks
 {
-    public static class LevelHooks
+    internal static class LevelHooks
     {
         private static IDetour hook_Level_orig_TransitionRoutine;
 

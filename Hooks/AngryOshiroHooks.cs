@@ -10,7 +10,7 @@ using Monocle;
 
 namespace Celeste.Mod.GravityHelper.Hooks
 {
-    public static class AngryOshiroHooks
+    internal static class AngryOshiroHooks
     {
         private const int StChase = 0;
         private const int StChargeUp = 1;

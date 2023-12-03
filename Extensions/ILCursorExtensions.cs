@@ -11,7 +11,7 @@ using MonoMod.Utils;
 
 namespace Celeste.Mod.GravityHelper.Extensions
 {
-    public static class ILCursorExtensions
+    internal static class ILCursorExtensions
     {
         public static bool AdditionPredicate(Instruction instr) => instr.MatchCall<Vector2>("op_Addition");
         public static bool SubtractionPredicate(Instruction instr) => instr.MatchCall<Vector2>("op_Subtraction");

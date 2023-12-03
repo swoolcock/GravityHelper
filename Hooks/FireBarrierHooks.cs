@@ -6,7 +6,7 @@ using Monocle;
 
 namespace Celeste.Mod.GravityHelper.Hooks
 {
-    public static class FireBarrierHooks
+    internal static class FireBarrierHooks
     {
         public static void Load()
         {

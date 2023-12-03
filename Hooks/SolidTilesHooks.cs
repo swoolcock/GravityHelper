@@ -8,7 +8,7 @@ using Monocle;
 
 namespace Celeste.Mod.GravityHelper.Hooks
 {
-    public static class SolidTilesHooks
+    internal static class SolidTilesHooks
     {
         public static void Load()
         {

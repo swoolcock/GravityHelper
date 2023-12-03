@@ -7,7 +7,7 @@ using MonoMod.Cil;
 
 namespace Celeste.Mod.GravityHelper.Hooks
 {
-    public static class BounceBlockHooks
+    internal static class BounceBlockHooks
     {
         public static void Load()
         {

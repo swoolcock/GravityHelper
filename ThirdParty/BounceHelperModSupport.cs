@@ -13,7 +13,7 @@ using MonoMod.RuntimeDetour;
 namespace Celeste.Mod.GravityHelper.ThirdParty
 {
     [ThirdPartyMod("BounceHelper")]
-    public class BounceHelperModSupport : ThirdPartyModSupport
+    internal class BounceHelperModSupport : ThirdPartyModSupport
     {
         // ReSharper disable InconsistentNaming
         private IDetour hook_BounceHelperModule_modDashUpdate;

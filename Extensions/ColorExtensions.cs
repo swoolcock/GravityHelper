@@ -6,7 +6,7 @@ using Monocle;
 
 namespace Celeste.Mod.GravityHelper.Extensions
 {
-    public static class ColorExtensions
+    internal static class ColorExtensions
     {
         public static Color Lighter(this Color color, float amount = 0.1f) => new Color(
             Calc.Clamp(color.R + amount, 0f, 1f),

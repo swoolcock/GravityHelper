@@ -6,7 +6,7 @@ using Monocle;
 
 namespace Celeste.Mod.GravityHelper.Hooks
 {
-    public static class SandwichLavaHooks
+    internal static class SandwichLavaHooks
     {
         public static void Load()
         {

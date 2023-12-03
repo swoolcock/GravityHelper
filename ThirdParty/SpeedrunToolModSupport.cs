@@ -10,7 +10,7 @@ using System.Reflection;
 namespace Celeste.Mod.GravityHelper.ThirdParty
 {
     [ThirdPartyMod("SpeedrunTool", "3.7.2")]
-    public class SpeedrunToolModSupport : ThirdPartyModSupport
+    internal class SpeedrunToolModSupport : ThirdPartyModSupport
     {
         private static object _speedrunToolSaveLoadAction;
 

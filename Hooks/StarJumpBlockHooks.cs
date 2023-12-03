@@ -8,7 +8,7 @@ using MonoMod.Cil;
 
 namespace Celeste.Mod.GravityHelper.Hooks
 {
-    public static class StarJumpBlockHooks
+    internal static class StarJumpBlockHooks
     {
         public static void Load()
         {

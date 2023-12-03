@@ -13,7 +13,7 @@ using MonoMod.RuntimeDetour;
 namespace Celeste.Mod.GravityHelper.ThirdParty
 {
     [ThirdPartyMod("StaminaMeter")]
-    public class StaminaMeterModSupport : ThirdPartyModSupport
+    internal class StaminaMeterModSupport : ThirdPartyModSupport
     {
         // ReSharper disable once InconsistentNaming
         private IDetour hook_SmallStaminaMeterDisplay_Render;

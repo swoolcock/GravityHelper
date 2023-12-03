@@ -8,7 +8,7 @@ using MonoMod.Cil;
 
 namespace Celeste.Mod.GravityHelper.Hooks
 {
-    public static class JumpThruHooks
+    internal static class JumpThruHooks
     {
         public static void Load()
         {

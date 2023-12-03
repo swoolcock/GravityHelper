@@ -13,7 +13,7 @@ using MonoMod.Utils;
 
 namespace Celeste.Mod.GravityHelper.Hooks
 {
-    public static class PlayerDeadBodyHooks
+    internal static class PlayerDeadBodyHooks
     {
         private static IDetour hook_PlayerDeadBody_DeathRoutine;
 

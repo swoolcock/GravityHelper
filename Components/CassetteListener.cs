@@ -7,7 +7,7 @@ using Monocle;
 namespace Celeste.Mod.GravityHelper.Components
 {
     [Tracked]
-    public class CassetteListener : Component
+    internal class CassetteListener : Component
     {
         public bool Enabled { get; set; } = true;
 

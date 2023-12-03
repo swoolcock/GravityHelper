@@ -11,7 +11,7 @@ using MonoMod.Cil;
 
 namespace Celeste.Mod.GravityHelper.Hooks
 {
-    public static class PlayerHairHooks
+    internal static class PlayerHairHooks
     {
         public static void Load()
         {

@@ -7,7 +7,7 @@ using Celeste.Mod.GravityHelper.Entities;
 
 namespace Celeste.Mod.GravityHelper.Hooks
 {
-    public static class SpringHooks
+    internal static class SpringHooks
     {
         public static void Load()
         {

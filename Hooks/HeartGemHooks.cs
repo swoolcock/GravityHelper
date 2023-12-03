@@ -12,7 +12,7 @@ using MonoMod.Utils;
 
 namespace Celeste.Mod.GravityHelper.Hooks
 {
-    public static class HeartGemHooks
+    internal static class HeartGemHooks
     {
         private static IDetour hook_HeartGem_orig_CollectRoutine;
 

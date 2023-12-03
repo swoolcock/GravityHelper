@@ -6,7 +6,7 @@ using Monocle;
 
 namespace Celeste.Mod.GravityHelper.Hooks
 {
-    public static class RisingLavaHooks
+    internal static class RisingLavaHooks
     {
         public static void Load()
         {

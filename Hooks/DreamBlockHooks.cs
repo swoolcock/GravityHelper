@@ -10,7 +10,7 @@ using MonoMod.Cil;
 
 namespace Celeste.Mod.GravityHelper.Hooks
 {
-    public static class DreamBlockHooks
+    internal static class DreamBlockHooks
     {
         public static void Load()
         {

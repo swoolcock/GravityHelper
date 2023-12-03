@@ -7,7 +7,7 @@ using Celeste.Mod.GravityHelper.Components;
 
 namespace Celeste.Mod.GravityHelper.Hooks
 {
-    public static class CassetteBlockManagerHooks
+    internal static class CassetteBlockManagerHooks
     {
         public static void Load()
         {

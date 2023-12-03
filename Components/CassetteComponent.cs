@@ -8,7 +8,7 @@ using Monocle;
 namespace Celeste.Mod.GravityHelper.Components
 {
     [Tracked]
-    public class CassetteComponent : Component
+    internal class CassetteComponent : Component
     {
         public bool Enabled { get; set; } = true;
         public int CassetteIndex { get; }

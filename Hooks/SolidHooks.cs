@@ -8,7 +8,7 @@ using MonoMod.Cil;
 
 namespace Celeste.Mod.GravityHelper.Hooks
 {
-    public static class SolidHooks
+    internal static class SolidHooks
     {
         public static void Load()
         {

@@ -13,7 +13,7 @@ using MonoMod.Utils;
 
 namespace Celeste.Mod.GravityHelper.Hooks
 {
-    public static class BoosterHooks
+    internal static class BoosterHooks
     {
         // ReSharper disable once InconsistentNaming
         private static IDetour hook_Booster_BoostRoutine;

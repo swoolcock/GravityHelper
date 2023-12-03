@@ -6,7 +6,7 @@ using MonoMod.Cil;
 
 namespace Celeste.Mod.GravityHelper.Hooks
 {
-    public static class CrushBlockHooks
+    internal static class CrushBlockHooks
     {
         public static void Load()
         {

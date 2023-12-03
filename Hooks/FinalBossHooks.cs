@@ -8,7 +8,7 @@ using MonoMod.Utils;
 
 namespace Celeste.Mod.GravityHelper.Hooks
 {
-    public static class FinalBossHooks
+    internal static class FinalBossHooks
     {
         private static ILHook hook_FinalBoss_MoveSequence;
 

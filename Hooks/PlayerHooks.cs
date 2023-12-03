@@ -19,7 +19,7 @@ using MonoMod.Utils;
 
 namespace Celeste.Mod.GravityHelper.Hooks
 {
-    public static class PlayerHooks
+    internal static class PlayerHooks
     {
         // ReSharper disable InconsistentNaming
         private static IDetour hook_Player_DashCoroutine;

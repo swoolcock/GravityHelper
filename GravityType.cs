@@ -13,7 +13,7 @@ namespace Celeste.Mod.GravityHelper
         Toggle,
     }
 
-    public static class GravityTypeExtensions
+    internal static class GravityTypeExtensions
     {
         public static GravityType Opposite(this GravityType type) => type switch
         {

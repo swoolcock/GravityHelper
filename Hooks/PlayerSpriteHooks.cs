@@ -5,7 +5,7 @@ using Celeste.Mod.GravityHelper.Extensions;
 
 namespace Celeste.Mod.GravityHelper.Hooks
 {
-    public static class PlayerSpriteHooks
+    internal static class PlayerSpriteHooks
     {
         public static void Load()
         {

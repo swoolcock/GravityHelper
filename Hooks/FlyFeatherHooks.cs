@@ -8,7 +8,7 @@ using MonoMod.Utils;
 
 namespace Celeste.Mod.GravityHelper.Hooks
 {
-    public static class FlyFeatherHooks
+    internal static class FlyFeatherHooks
     {
         // ReSharper disable once InconsistentNaming
         private static IDetour hook_FlyFeather_CollectRoutine;

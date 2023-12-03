@@ -8,7 +8,7 @@ using Monocle;
 
 namespace Celeste.Mod.GravityHelper.Components
 {
-    public class FallingComponent : Component
+    internal class FallingComponent : Component
     {
         // actions
         public Func<bool> PlayerFallCheck;

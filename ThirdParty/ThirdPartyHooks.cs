@@ -10,7 +10,7 @@ using System.Reflection;
 
 namespace Celeste.Mod.GravityHelper.ThirdParty
 {
-    public static class ThirdPartyHooks
+    internal static class ThirdPartyHooks
     {
         public static IEnumerable<Type> ThirdPartyModTypes =>
             ReflectionCache.LoadableTypes.Where(t =>

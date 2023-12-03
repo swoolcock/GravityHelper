@@ -7,7 +7,7 @@ using Monocle;
 
 namespace Celeste.Mod.GravityHelper.Hooks
 {
-    public static class SnowballHooks
+    internal static class SnowballHooks
     {
         public static void Load()
         {

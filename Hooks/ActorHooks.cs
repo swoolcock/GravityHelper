@@ -14,7 +14,7 @@ using MonoMod.RuntimeDetour;
 
 namespace Celeste.Mod.GravityHelper.Hooks
 {
-    public static class ActorHooks
+    internal static class ActorHooks
     {
         public static void Load()
         {

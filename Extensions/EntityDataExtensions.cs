@@ -5,7 +5,7 @@ using Microsoft.Xna.Framework;
 
 namespace Celeste.Mod.GravityHelper.Extensions
 {
-    public static class EntityDataExtensions
+    internal static class EntityDataExtensions
     {
         private const string mod_version_key = "modVersion";
         private const string plugin_version_key = "pluginVersion";

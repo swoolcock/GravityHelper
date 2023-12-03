@@ -6,7 +6,7 @@ using Microsoft.Xna.Framework;
 
 namespace Celeste.Mod.GravityHelper.Entities.UI;
 
-public class ColorChangeTextMenuOption<T> : TextMenu.Option<T> where T : struct
+internal class ColorChangeTextMenuOption<T> : TextMenu.Option<T> where T : struct
 {
     public T DefaultValue;
     public Color ChangedUnselectedColor = Color.Goldenrod;
@@ -34,7 +34,7 @@ public class ColorChangeTextMenuOption<T> : TextMenu.Option<T> where T : struct
     protected virtual bool IsDefaultValue() => EqualityComparer<T>.Default.Equals(Values[Index].Item2, DefaultValue);
 }
 
-public class ColorChangeOnOff : ColorChangeTextMenuOption<bool>
+internal class ColorChangeOnOff : ColorChangeTextMenuOption<bool>
 {
     public ColorChangeOnOff(string label, bool on, bool defaultValue = false) : base(label, defaultValue)
     {

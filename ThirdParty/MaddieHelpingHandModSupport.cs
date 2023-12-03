@@ -17,7 +17,7 @@ using MonoMod.Utils;
 namespace Celeste.Mod.GravityHelper.ThirdParty
 {
     [ThirdPartyMod("MaxHelpingHand")]
-    public class MaddieHelpingHandModSupport : ThirdPartyModSupport
+    internal class MaddieHelpingHandModSupport : ThirdPartyModSupport
     {
         // ReSharper disable InconsistentNaming
         private static IDetour hook_MaddieHelpingHand_UpsideDownJumpThru_playerMovingUp;

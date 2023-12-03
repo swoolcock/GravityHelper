@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework;
 
 namespace Celeste.Mod.GravityHelper.Hooks
 {
-    public static class MoveBlockHooks
+    internal static class MoveBlockHooks
     {
         public static void Load()
         {

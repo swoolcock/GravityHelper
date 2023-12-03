@@ -10,7 +10,7 @@ using MonoMod.RuntimeDetour;
 namespace Celeste.Mod.GravityHelper.ThirdParty
 {
     [ThirdPartyMod("FancyTileEntities")]
-    public class FancyTileEntitiesModSupport : ThirdPartyModSupport
+    internal class FancyTileEntitiesModSupport : ThirdPartyModSupport
     {
         // ReSharper disable InconsistentNaming
         private static IDetour hook_FancyFallingBlock_MoveVExact;

@@ -5,7 +5,7 @@ using Celeste.Mod.GravityHelper.Extensions;
 
 namespace Celeste.Mod.GravityHelper.Hooks
 {
-    public static class BadelineDummyHooks
+    internal static class BadelineDummyHooks
     {
         public static void Load()
         {

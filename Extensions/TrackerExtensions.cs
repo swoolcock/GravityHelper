@@ -9,7 +9,7 @@ using Monocle;
 
 namespace Celeste.Mod.GravityHelper.Extensions
 {
-    public static class TrackerExtensions
+    internal static class TrackerExtensions
     {
         public static TController GetActiveController<TController>(this Scene scene, bool allowEphemeral = false)
             where TController : BaseGravityController =>

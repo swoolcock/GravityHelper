@@ -9,7 +9,7 @@ using MonoMod.RuntimeDetour;
 
 namespace Celeste.Mod.GravityHelper.Hooks
 {
-    public static class SpikesHooks
+    internal static class SpikesHooks
     {
         public static void Load()
         {

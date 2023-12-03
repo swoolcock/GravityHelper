@@ -9,7 +9,7 @@ using MonoMod.RuntimeDetour;
 namespace Celeste.Mod.GravityHelper.ThirdParty
 {
     [ThirdPartyMod("OutbackHelper")]
-    public class OutbackHelperModSupport : ThirdPartyModSupport
+    internal class OutbackHelperModSupport : ThirdPartyModSupport
     {
         // ReSharper disable once InconsistentNaming
         private static IDetour hook_OutbackHelper_Portal_OnPlayer;

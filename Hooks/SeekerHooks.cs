@@ -13,7 +13,7 @@ using MonoMod.Utils;
 
 namespace Celeste.Mod.GravityHelper.Hooks
 {
-    public static class SeekerHooks
+    internal static class SeekerHooks
     {
         private static IDetour hook_Seeker_RegenerateCoroutine;
 

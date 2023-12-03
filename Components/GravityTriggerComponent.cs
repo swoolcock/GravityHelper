@@ -7,7 +7,7 @@ namespace Celeste.Mod.GravityHelper.Components
     /// Implementation of <see cref="TriggerComponent{TComponent}"/> specifically
     /// for <see cref="GravityComponent"/>s that handles changing gravity.
     /// </summary>
-    public class GravityTriggerComponent : TriggerComponent<GravityComponent>
+    internal class GravityTriggerComponent : TriggerComponent<GravityComponent>
     {
         public GravityType GravityType { get; set; }
         public float MomentumMultiplier { get; set; } = 1f;

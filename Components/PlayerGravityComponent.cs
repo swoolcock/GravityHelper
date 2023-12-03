@@ -8,7 +8,7 @@ using Monocle;
 
 namespace Celeste.Mod.GravityHelper.Components
 {
-    public class PlayerGravityComponent : GravityComponent
+    internal class PlayerGravityComponent : GravityComponent
     {
         public GravityType PreDreamBlockGravityType { get; set; }
         public new Player Entity => base.Entity as Player;

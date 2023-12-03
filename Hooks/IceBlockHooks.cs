@@ -6,7 +6,7 @@ using Monocle;
 
 namespace Celeste.Mod.GravityHelper.Hooks
 {
-    public static class IceBlockHooks
+    internal static class IceBlockHooks
     {
         public static void Load()
         {

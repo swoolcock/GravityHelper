@@ -58,7 +58,7 @@ namespace Celeste.Mod.GravityHelper
 #endif
         }
 
-        public GravityType? GravityBeforeReload;
+        internal GravityType? GravityBeforeReload;
 
         public override void CreateModMenuSection(TextMenu menu, bool inGame, EventInstance snapshot)
         {
@@ -225,7 +225,7 @@ namespace Celeste.Mod.GravityHelper
             orig();
         }
 
-        private void OverworldLoader_ctor(On.Celeste.OverworldLoader.orig_ctor orig, OverworldLoader self, Overworld.StartMode startmode, HiresSnow snow)
+        private static void OverworldLoader_ctor(On.Celeste.OverworldLoader.orig_ctor orig, OverworldLoader self, Overworld.StartMode startmode, HiresSnow snow)
         {
             orig(self, startmode, snow);
 
@@ -233,7 +233,7 @@ namespace Celeste.Mod.GravityHelper
                 updateHooks(HookLevel.None);
         }
 
-        private void LevelLoader_ctor(On.Celeste.LevelLoader.orig_ctor orig, LevelLoader self, Session session, Vector2? startposition)
+        private static void LevelLoader_ctor(On.Celeste.LevelLoader.orig_ctor orig, LevelLoader self, Session session, Vector2? startposition)
         {
             ClearStatics();
 
@@ -249,22 +249,14 @@ namespace Celeste.Mod.GravityHelper
 
         #endregion
 
-        public static void SaveState(Dictionary<string, object> state, Level level)
+        internal static void SaveState(Dictionary<string, object> state, Level level)
         {
         }
 
-        public static void LoadState(Dictionary<string, object> state, Level level)
+        internal static void LoadState(Dictionary<string, object> state, Level level)
         {
             // fix player component
             PlayerComponent = level.Tracker.GetEntity<Player>()?.Get<PlayerGravityComponent>();
-        }
-
-        public static void InvalidateRun()
-        {
-            // NOTE: getting rid of this for now, if people submit invalid runs that's on them
-
-            // if (Engine.Scene is Level level)
-            //     level.Session.StartedFromBeginning = false;
         }
 
         [Command("gravity", "Changes the current gravity (0 = normal, 1 = inverted, 2 = toggle)")]
@@ -279,7 +271,6 @@ namespace Celeste.Mod.GravityHelper
             if (gravityType < 0 || gravityType > 2) return;
 
             PlayerComponent?.SetGravity((GravityType) gravityType);
-            InvalidateRun();
 
             Engine.Commands.Log($"Current gravity is now: {PlayerComponent?.CurrentGravity ?? GravityType.Normal}");
         }
@@ -296,7 +287,6 @@ namespace Celeste.Mod.GravityHelper
             if (gravityType < 0 || gravityType > 1) return;
 
             Session.InitialGravity = (GravityType) gravityType;
-            InvalidateRun();
 
             Engine.Commands.Log($"Initial gravity is now: {Session.InitialGravity}");
         }

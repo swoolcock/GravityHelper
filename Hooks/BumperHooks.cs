@@ -13,7 +13,7 @@ using MonoMod.Cil;
 
 namespace Celeste.Mod.GravityHelper.Hooks
 {
-    public static class BumperHooks
+    internal static class BumperHooks
     {
         public static void Load()
         {

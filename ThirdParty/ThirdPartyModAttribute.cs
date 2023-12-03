@@ -6,7 +6,7 @@ using System;
 namespace Celeste.Mod.GravityHelper.ThirdParty
 {
     [AttributeUsage(AttributeTargets.Class)]
-    public class ThirdPartyModAttribute : Attribute
+    internal class ThirdPartyModAttribute : Attribute
     {
         public string Name { get; }
         public string MinimumVersion { get; }

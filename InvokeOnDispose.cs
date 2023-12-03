@@ -5,7 +5,7 @@ using System;
 
 namespace Celeste.Mod.GravityHelper
 {
-    public struct InvokeOnDispose : IDisposable
+    internal struct InvokeOnDispose : IDisposable
     {
         private readonly Action _action;
 

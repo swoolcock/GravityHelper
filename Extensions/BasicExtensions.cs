@@ -6,7 +6,7 @@ using Monocle;
 
 namespace Celeste.Mod.GravityHelper.Extensions
 {
-    public static class BasicExtensions
+    internal static class BasicExtensions
     {
         public static int ClampLower(this int self, int min) => Math.Max(self, min);
         public static int ClampUpper(this int self, int max) => Math.Min(self, max);

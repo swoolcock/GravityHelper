@@ -11,7 +11,7 @@ using MonoMod.RuntimeDetour;
 namespace Celeste.Mod.GravityHelper.ThirdParty
 {
     [ThirdPartyMod("Bunneline")]
-    public class BunnelineModSupport : ThirdPartyModSupport
+    internal class BunnelineModSupport : ThirdPartyModSupport
     {
         // ReSharper disable InconsistentNaming
         private IDetour hook_BunnelineModule_Hair_Render;

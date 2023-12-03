@@ -13,7 +13,7 @@ using MonoMod.RuntimeDetour;
 namespace Celeste.Mod.GravityHelper.ThirdParty
 {
     [ThirdPartyMod("MaddyCrown")]
-    public class MaddyCrownModSupport : ThirdPartyModSupport
+    internal class MaddyCrownModSupport : ThirdPartyModSupport
     {
         // ReSharper disable once InconsistentNaming
         private static IDetour hook_MaddyCrownModule_Player_Update;

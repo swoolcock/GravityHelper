@@ -11,7 +11,7 @@ using MonoMod.Cil;
 
 namespace Celeste.Mod.GravityHelper.Hooks
 {
-    public static class TheoCrystalHooks
+    internal static class TheoCrystalHooks
     {
         public static void Load()
         {

@@ -10,7 +10,7 @@ using MonoMod.RuntimeDetour;
 
 namespace Celeste.Mod.GravityHelper.Hooks
 {
-    public static class InputHooks
+    internal static class InputHooks
     {
         // ReSharper disable once InconsistentNaming
         private static Hook hook_Input_GrabCheck;

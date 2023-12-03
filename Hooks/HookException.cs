@@ -5,7 +5,7 @@ using System;
 
 namespace Celeste.Mod.GravityHelper.Hooks
 {
-    public class HookException : Exception
+    internal class HookException : Exception
     {
         public HookException(string message) : base(message)
         {

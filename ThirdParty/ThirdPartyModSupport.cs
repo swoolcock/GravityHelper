@@ -8,7 +8,7 @@ using System.Reflection;
 
 namespace Celeste.Mod.GravityHelper.ThirdParty
 {
-    public abstract class ThirdPartyModSupport : IDisposable
+    internal abstract class ThirdPartyModSupport : IDisposable
     {
         // ReSharper disable once InconsistentNaming
         public static readonly List<string> BlacklistedMods = new();

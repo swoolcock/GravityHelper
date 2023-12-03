@@ -11,7 +11,7 @@ using MonoMod.RuntimeDetour;
 namespace Celeste.Mod.GravityHelper.ThirdParty
 {
     [ThirdPartyMod("ExtendedVariantMode")]
-    public class ExtendedVariantsModSupport : ThirdPartyModSupport
+    internal class ExtendedVariantsModSupport : ThirdPartyModSupport
     {
         // ReSharper disable InconsistentNaming
         private static IDetour hook_DashTrailAllTheTime_createTrail;

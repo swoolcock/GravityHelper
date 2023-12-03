@@ -11,7 +11,7 @@ using MonoMod.Utils;
 
 namespace Celeste.Mod.GravityHelper.Hooks
 {
-    public static class BadelineBoostHooks
+    internal static class BadelineBoostHooks
     {
         // ReSharper disable InconsistentNaming
         private static IDetour hook_BadelineBoost_BoostRoutine;

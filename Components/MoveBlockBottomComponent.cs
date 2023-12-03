@@ -8,7 +8,7 @@ using Monocle;
 
 namespace Celeste.Mod.GravityHelper.Components
 {
-    public class MoveBlockBottomComponent : Component
+    internal class MoveBlockBottomComponent : Component
     {
         public new MoveBlock Entity => base.Entity as MoveBlock;
 

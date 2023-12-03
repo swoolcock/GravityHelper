@@ -11,7 +11,7 @@ using MonoMod.Cil;
 
 namespace Celeste.Mod.GravityHelper.Hooks
 {
-    public static class GliderHooks
+    internal static class GliderHooks
     {
         public static void Load()
         {

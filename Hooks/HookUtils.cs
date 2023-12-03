@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 
 namespace Celeste.Mod.GravityHelper.Hooks
 {
-    public static class HookUtils
+    internal static class HookUtils
     {
         public static void LogCurrentMethod(string message, [CallerMemberName] string caller = null) =>
             Logger.Log(nameof(GravityHelperModule), $"{caller}: {message}");

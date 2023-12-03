@@ -12,7 +12,7 @@ namespace Celeste.Mod.GravityHelper.Components
     /// component rather than just the Player. Implemented as a component so that it can be used by
     /// any entity rather than requiring its own.
     /// </summary>
-    public class TriggerComponent<TComponent> : Component
+    internal class TriggerComponent<TComponent> : Component
         where TComponent : Component
     {
         private readonly List<TComponent> _trackedComponents = new();

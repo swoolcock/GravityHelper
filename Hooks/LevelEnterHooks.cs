@@ -5,7 +5,7 @@ using System.Collections;
 
 namespace Celeste.Mod.GravityHelper.Hooks
 {
-    public static class LevelEnterHooks
+    internal static class LevelEnterHooks
     {
         private static bool _hasVvvvvv;
         private static Postcard _vvvvvvPostcard;

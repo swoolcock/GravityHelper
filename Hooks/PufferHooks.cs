@@ -9,7 +9,7 @@ using MonoMod.Cil;
 
 namespace Celeste.Mod.GravityHelper.Hooks
 {
-    public static class PufferHooks
+    internal static class PufferHooks
     {
         public static void Load()
         {

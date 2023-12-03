@@ -11,7 +11,7 @@ using Monocle;
 
 namespace Celeste.Mod.GravityHelper.Hooks
 {
-    public static class BadelineOldsiteHooks
+    internal static class BadelineOldsiteHooks
     {
         // Used for determining when the BadelineChaser. Is set in Player.ctor so this shouldn't be a problem ever.
         public static readonly Dictionary<int, GravityType> ChaserStateGravity = new();

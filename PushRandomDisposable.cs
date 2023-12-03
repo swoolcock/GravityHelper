@@ -6,7 +6,7 @@ using Monocle;
 
 namespace Celeste.Mod.GravityHelper
 {
-    public struct PushRandomDisposable : IDisposable
+    internal struct PushRandomDisposable : IDisposable
     {
         public PushRandomDisposable(int seed)
         {
