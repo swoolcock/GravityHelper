@@ -3,7 +3,6 @@
 
 using System;
 using Celeste.Mod.GravityHelper.Components;
-using Celeste.Mod.GravityHelper.Entities;
 using Celeste.Mod.GravityHelper.Extensions;
 using Celeste.Mod.GravityHelper.ThirdParty;
 using Microsoft.Xna.Framework;
@@ -38,8 +37,6 @@ namespace Celeste.Mod.GravityHelper
         public static bool IsPlayerInverted() => GravityHelperModule.ShouldInvertPlayer;
 
         public static bool IsActorInverted(Actor actor) => actor?.ShouldInvert() ?? false;
-
-        public static bool IsUpsideDownJumpThru(JumpThru jumpThru) => jumpThru?.IsUpsideDownJumpThru() ?? false;
 
         public static Vector2 GetAboveVector(Actor actor) =>
             actor?.ShouldInvert() == true ? Vector2.UnitY : -Vector2.UnitY;
