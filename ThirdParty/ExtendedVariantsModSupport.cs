@@ -19,7 +19,7 @@ namespace Celeste.Mod.GravityHelper.ThirdParty
         private static IDetour hook_DashCountIndicator_Render;
         // ReSharper restore InconsistentNaming
 
-        protected override void Load()
+        protected override void Load(GravityHelperModule.HookLevel hookLevel)
         {
             var dtattt = ReflectionCache.ExtendedVariantsDashTrailAllTheTimeType;
             var createTrailMethod = dtattt?.GetMethod("createTrail", BindingFlags.Static | BindingFlags.NonPublic);

@@ -27,12 +27,12 @@ namespace Celeste.Mod.GravityHelper
 
         public static GravityHelperModule Instance { get; private set; }
 
-        public static PlayerGravityComponent PlayerComponent { get; internal set; }
-        public static bool ShouldInvertPlayer => PlayerComponent?.ShouldInvert ?? false;
-        public static bool ShouldInvertPlayerChecked => PlayerComponent?.ShouldInvertChecked ?? false;
+        internal static PlayerGravityComponent PlayerComponent { get; set; }
+        internal static bool ShouldInvertPlayer => PlayerComponent?.ShouldInvert ?? false;
+        internal static bool ShouldInvertPlayerChecked => PlayerComponent?.ShouldInvertChecked ?? false;
         internal static int OverrideSemaphore = 0;
 
-        public static bool RequiresHooksForSession(Session session, out bool forceLoad)
+        internal static bool RequiresHooksForSession(Session session, out bool forceLoad)
         {
             forceLoad = false;
             bool requiresHooks(EntityData data) => data.Name.StartsWith("GravityHelper") || data.Has("_gravityHelper");
@@ -80,7 +80,7 @@ namespace Celeste.Mod.GravityHelper
             On.Celeste.OverworldLoader.ctor += OverworldLoader_ctor;
 
             // always try CelesteNet
-            ThirdPartyHooks.ForceLoadType(typeof(CelesteNetModSupport));
+            ThirdPartyHooks.ForceLoadType(typeof(CelesteNetModSupport), HookLevel.Forced);
         }
 
         public override void Unload()
@@ -170,10 +170,10 @@ namespace Celeste.Mod.GravityHelper
                 ForceLoadGravityController.Load();
             }
             // or load everything
-            else if (requiredHookLevel == HookLevel.Everything)
+            else if (requiredHookLevel == HookLevel.Everything || requiredHookLevel == HookLevel.Forced)
             {
                 Logger.Log(LogLevel.Info, nameof(GravityHelperModule), "Loading all hooks...");
-                ThirdPartyHooks.Load();
+                ThirdPartyHooks.Load(requiredHookLevel);
 
                 On.Celeste.Mod.AssetReloadHelper.ReloadLevel += AssetReloadHelper_ReloadLevel;
 
@@ -239,11 +239,22 @@ namespace Celeste.Mod.GravityHelper
 
             orig(self, session, startposition);
 
+            // find out whether the map actually needs hooks
+            var requiresHooks = RequiresHooksForSession(session, out var renderOnly);
+
+            // if the player is forcing hooks on
             if (Settings.AllowInAllMaps)
-                updateHooks(HookLevel.Everything);
-            else if (RequiresHooksForSession(session, out var renderOnly))
+                // enable hooks, but set the hook level based on whether the map actually needed it
+                updateHooks(requiresHooks ? HookLevel.Everything : HookLevel.Forced);
+
+            // if the player isn't forcing hooks but the map needs it
+            else if (requiresHooks)
+                // enable hooks, honouring the "render only" request
                 updateHooks(renderOnly ? HookLevel.Render : HookLevel.Everything);
+
+            // we don't want hooks
             else
+                // turn them off if they're on
                 updateHooks(HookLevel.None);
         }
 
@@ -296,6 +307,7 @@ namespace Celeste.Mod.GravityHelper
             None,
             Render,
             Everything,
+            Forced,
         }
     }
 }

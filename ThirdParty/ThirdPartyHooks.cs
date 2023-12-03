@@ -19,7 +19,7 @@ namespace Celeste.Mod.GravityHelper.ThirdParty
         public static readonly Dictionary<string, ThirdPartyModSupport> LoadedMods = new();
         public static readonly Dictionary<string, ThirdPartyModSupport> ForceLoadedMods = new();
 
-        public static void Load()
+        public static void Load(GravityHelperModule.HookLevel hookLevel)
         {
             Logger.Log(nameof(GravityHelperModule), "Loading third party hooks...");
             ReflectionCache.LoadThirdPartyTypes();
@@ -29,16 +29,16 @@ namespace Celeste.Mod.GravityHelper.ThirdParty
                 // don't try to load if there's one force loaded
                 if (ForceLoadedMods.Values.Any(type.IsInstanceOfType)) continue;
 
-                if (Activator.CreateInstance(type) is ThirdPartyModSupport modSupport && modSupport.TryLoad())
+                if (Activator.CreateInstance(type) is ThirdPartyModSupport modSupport && modSupport.TryLoad(hookLevel))
                 {
                     LoadedMods[modSupport.Attribute.Name] = modSupport;
                 }
             }
         }
 
-        public static void ForceLoadType(Type type)
+        public static void ForceLoadType(Type type, GravityHelperModule.HookLevel hookLevel)
         {
-            if (Activator.CreateInstance(type) is ThirdPartyModSupport modSupport && modSupport.TryLoad())
+            if (Activator.CreateInstance(type) is ThirdPartyModSupport modSupport && modSupport.TryLoad(hookLevel))
             {
                 ForceLoadedMods[modSupport.Attribute.Name] = modSupport;
             }

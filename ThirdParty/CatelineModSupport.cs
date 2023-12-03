@@ -25,7 +25,7 @@ namespace Celeste.Mod.GravityHelper.ThirdParty
 
         private static List<Vector2> _tailNodes;
 
-        protected override void Load()
+        protected override void Load(GravityHelperModule.HookLevel hookLevel)
         {
             var cmt = ReflectionCache.CatelineModuleType;
             var cmHairRenderMethod = cmt?.GetMethod("Hair_Render", BindingFlags.Instance | BindingFlags.NonPublic);

@@ -18,7 +18,7 @@ namespace Celeste.Mod.GravityHelper.ThirdParty
         // ReSharper disable once InconsistentNaming
         private IDetour hook_SmallStaminaMeterDisplay_Render;
 
-        protected override void Load()
+        protected override void Load(GravityHelperModule.HookLevel hookLevel)
         {
             var ssmdt = ReflectionCache.StaminaMeterSmallStaminaMeterDisplayType;
             var renderMethod = ssmdt?.GetMethod("Render", BindingFlags.Public | BindingFlags.Instance);

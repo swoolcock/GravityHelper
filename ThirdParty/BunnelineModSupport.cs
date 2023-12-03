@@ -17,7 +17,7 @@ namespace Celeste.Mod.GravityHelper.ThirdParty
         private IDetour hook_BunnelineModule_Hair_Render;
         // ReSharper restore InconsistentNaming
 
-        protected override void Load()
+        protected override void Load(GravityHelperModule.HookLevel hookLevel)
         {
             var bmt = ReflectionCache.BunnelineModuleType;
             var bmHairRenderMethod = bmt?.GetMethod("Hair_Render", BindingFlags.Instance | BindingFlags.NonPublic);

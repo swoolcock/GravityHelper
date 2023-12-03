@@ -18,7 +18,7 @@ namespace Celeste.Mod.GravityHelper.ThirdParty
         // ReSharper disable once InconsistentNaming
         private static IDetour hook_MaddyCrownModule_Player_Update;
 
-        protected override void Load()
+        protected override void Load(GravityHelperModule.HookLevel hookLevel)
         {
             var mcmt = ReflectionCache.MaddyCrownModuleType;
             var playerUpdateMethod = mcmt?.GetMethod("Player_Update", BindingFlags.Instance | BindingFlags.NonPublic);

@@ -14,7 +14,7 @@ namespace Celeste.Mod.GravityHelper.ThirdParty
         // ReSharper disable once InconsistentNaming
         private static IDetour hook_OutbackHelper_Portal_OnPlayer;
 
-        protected override void Load()
+        protected override void Load(GravityHelperModule.HookLevel hookLevel)
         {
             var ohpt = ReflectionCache.OutbackHelperPortalType;
             var onPlayerMethod = ohpt?.GetMethod("OnPlayer", BindingFlags.Instance | BindingFlags.NonPublic);

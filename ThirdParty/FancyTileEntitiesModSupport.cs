@@ -18,7 +18,7 @@ namespace Celeste.Mod.GravityHelper.ThirdParty
         private static IDetour hook_FancyFallingBlock_GetStepSoundIndex;
         // ReSharper restore InconsistentNaming
 
-        protected override void Load()
+        protected override void Load(GravityHelperModule.HookLevel hookLevel)
         {
             var ffbt = ReflectionCache.FancyFallingBlockType;
             var ffbtMoveVExactMethod = ffbt?.GetMethod("MoveVExact", BindingFlags.Instance | BindingFlags.Public);

@@ -14,7 +14,7 @@ namespace Celeste.Mod.GravityHelper.ThirdParty
     {
         private static object _speedrunToolSaveLoadAction;
 
-        protected override void Load()
+        protected override void Load(GravityHelperModule.HookLevel hookLevel)
         {
             var slat = ReflectionCache.GetModdedTypeByName("SpeedrunTool", "Celeste.Mod.SpeedrunTool.SaveLoad.SaveLoadAction");
             var allFieldInfo = slat?.GetField("All", BindingFlags.Static | BindingFlags.NonPublic);

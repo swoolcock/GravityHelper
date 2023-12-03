@@ -28,7 +28,7 @@ namespace Celeste.Mod.GravityHelper.ThirdParty
         private static IDetour hook_MaddieHelpingHand_GroupedTriggerSpikes_ctor;
         // ReSharper restore InconsistentNaming
 
-        protected override void Load()
+        protected override void Load(GravityHelperModule.HookLevel hookLevel)
         {
             var mhhudjt = ReflectionCache.MaddieHelpingHandUpsideDownJumpThruType;
 
@@ -52,7 +52,11 @@ namespace Celeste.Mod.GravityHelper.ThirdParty
                 hook_MaddieHelpingHand_UpsideDownJumpThru_onJumpthruHasPlayerRider = new ILHook(onJumpthruHasPlayerRiderMethod, MaddieHelpingHand_onJumpthruHasPlayerRider);
             }
 
-            if (GravityHelperModule.Settings.MHHUDJTCornerCorrection)
+            // if the map is actually a gravity helper map, then we ignore the setting entirely
+            // mappers should be using the gravity helper UDJT in their gravity helper maps
+            // if they're using Maddie's then bad luck, accept the corner correction
+            // this setting is really for people who play maps that rely on a bug for actual gameplay (no names, you know who you are)
+            if (GravityHelperModule.Settings.MHHUDJTCornerCorrection || hookLevel != GravityHelperModule.HookLevel.Forced)
             {
                 var onPlayerOnCollideVMethod = mhhudjt?.GetMethod("onPlayerOnCollideV", BindingFlags.Static | BindingFlags.NonPublic);
                 if (onPlayerOnCollideVMethod != null)

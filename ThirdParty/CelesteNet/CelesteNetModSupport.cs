@@ -13,7 +13,7 @@ using MonoMod.RuntimeDetour;
 namespace Celeste.Mod.GravityHelper.ThirdParty.CelesteNet
 {
     [ThirdPartyMod("CelesteNet.Client")]
-    public class CelesteNetModSupport : ThirdPartyModSupport
+    internal class CelesteNetModSupport : ThirdPartyModSupport
     {
         public const int PROTOCOL_VERSION = 1;
 
@@ -27,7 +27,7 @@ namespace Celeste.Mod.GravityHelper.ThirdParty.CelesteNet
         private IDetour hook_GhostEmote_Update;
         // ReSharper restore InconsistentNaming
 
-        protected override void Load()
+        protected override void Load(GravityHelperModule.HookLevel hookLevel)
         {
             Celeste.Instance.Components.Add(_gravityComponent = new CelesteNetGravityComponent(Celeste.Instance));
             On.Celeste.Player.Update += Player_Update;

@@ -22,7 +22,7 @@ namespace Celeste.Mod.GravityHelper.ThirdParty
         private IDetour hook_BounceHelperModule_bounce_il;
         // ReSharper restore InconsistentNaming
 
-        protected override void Load()
+        protected override void Load(GravityHelperModule.HookLevel hookLevel)
         {
             var bhmt = ReflectionCache.BounceHelperModuleType;
 

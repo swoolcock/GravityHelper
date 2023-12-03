@@ -21,7 +21,7 @@ namespace Celeste.Mod.GravityHelper.ThirdParty
         public EverestModule Module =>
             Everest.Modules.FirstOrDefault(m => m.Metadata.Name == Attribute.Name);
 
-        public bool TryLoad()
+        public bool TryLoad(GravityHelperModule.HookLevel hookLevel)
         {
             var attr = Attribute;
 
@@ -60,7 +60,7 @@ namespace Celeste.Mod.GravityHelper.ThirdParty
             try
             {
                 Logger.Log(LogLevel.Info, nameof(GravityHelperModule), $"Loading mod support for {module.Metadata.Name} ({module.Metadata.Version})...");
-                Load();
+                Load(hookLevel);
             }
             catch (Exception)
             {
@@ -101,7 +101,7 @@ namespace Celeste.Mod.GravityHelper.ThirdParty
             return true;
         }
 
-        protected abstract void Load();
+        protected abstract void Load(GravityHelperModule.HookLevel hookLevel);
         protected abstract void Unload();
 
         protected virtual void Dispose(bool disposing)
