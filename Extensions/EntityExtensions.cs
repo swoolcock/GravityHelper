@@ -66,19 +66,14 @@ namespace Celeste.Mod.GravityHelper.Extensions
 
         #region UpsideDownJumpThru Collision Helpers
 
+        private static readonly List<Entity> _entityList = new List<Entity>();
+
         public static bool CollideCheckUpsideDownJumpThru(this Entity entity)
         {
-            if (!entity.Scene.Tracker.Entities.TryGetValue(typeof(JumpThru), out var entities))
-                return false;
-
-            foreach (JumpThru jumpThru in entities)
-            {
-                if (jumpThru is not UpsideDownJumpThru && jumpThru.GetType() != ReflectionCache.MaddieHelpingHandUpsideDownJumpThruType)
-                    continue;
-                if (entity.CollideCheck(jumpThru))
-                    return true;
-            }
-
+            if (entity.CollideCheck<UpsideDownJumpThru>())
+                return true;
+            if (ReflectionCache.MaddieHelpingHandUpsideDownJumpThruType != null && entity.CollideCheck(ReflectionCache.MaddieHelpingHandUpsideDownJumpThruType))
+                return true;
             return false;
         }
 
@@ -87,30 +82,20 @@ namespace Celeste.Mod.GravityHelper.Extensions
             if (!entity.Scene.Tracker.Entities.TryGetValue(typeof(JumpThru), out var entities))
                 return false;
 
-            foreach (JumpThru jumpThru in entities)
-            {
-                if (jumpThru is UpsideDownJumpThru || jumpThru.GetType() == ReflectionCache.MaddieHelpingHandUpsideDownJumpThruType)
-                    continue;
-                if (entity.CollideCheck(jumpThru))
-                    return true;
-            }
-
-            return false;
+            _entityList.Clear();
+            Collide.All(entity, entities, _entityList);
+            var coll = _entityList.Any(e =>
+                e.GetType() != ReflectionCache.MaddieHelpingHandUpsideDownJumpThruType);
+            _entityList.Clear();
+            return coll;
         }
 
         public static bool CollideCheckUpsideDownJumpThru(this Entity entity, Vector2 at)
         {
-            if (!entity.Scene.Tracker.Entities.TryGetValue(typeof(JumpThru), out var entities))
-                return false;
-
-            foreach (JumpThru jumpThru in entities)
-            {
-                if (jumpThru is not UpsideDownJumpThru && jumpThru.GetType() != ReflectionCache.MaddieHelpingHandUpsideDownJumpThruType)
-                    continue;
-                if (entity.CollideCheck(jumpThru, at))
-                    return true;
-            }
-
+            if (entity.CollideCheck<UpsideDownJumpThru>(at))
+                return true;
+            if (ReflectionCache.MaddieHelpingHandUpsideDownJumpThruType != null && entity.CollideCheck(ReflectionCache.MaddieHelpingHandUpsideDownJumpThruType, at))
+                return true;
             return false;
         }
 
@@ -119,43 +104,30 @@ namespace Celeste.Mod.GravityHelper.Extensions
             if (!entity.Scene.Tracker.Entities.TryGetValue(typeof(JumpThru), out var entities))
                 return false;
 
-            foreach (JumpThru jumpThru in entities)
-            {
-                if (jumpThru is UpsideDownJumpThru || jumpThru.GetType() == ReflectionCache.MaddieHelpingHandUpsideDownJumpThruType)
-                    continue;
-                if (entity.CollideCheck(jumpThru, at))
-                    return true;
-            }
-
-            return false;
+            _entityList.Clear();
+            Collide.All(entity, entities, _entityList, at);
+            var coll = _entityList.Any(e =>
+                e.GetType() != ReflectionCache.MaddieHelpingHandUpsideDownJumpThruType);
+            _entityList.Clear();
+            return coll;
         }
 
         public static bool CollideCheckOutsideUpsideDownJumpThru(this Entity entity, Vector2 at)
         {
-            if (!entity.Scene.Tracker.Entities.TryGetValue(typeof(JumpThru), out var entities))
-                return false;
-
-            foreach (JumpThru jumpThru in entities)
-            {
-                if (jumpThru is not UpsideDownJumpThru && jumpThru.GetType() != ReflectionCache.MaddieHelpingHandUpsideDownJumpThruType)
-                    continue;
-                if (!Collide.Check(entity, jumpThru) && Collide.Check(entity, jumpThru, at))
-                    return true;
-            }
-
+            if (entity.CollideCheckOutside<UpsideDownJumpThru>(at))
+                return true;
+            if (ReflectionCache.MaddieHelpingHandUpsideDownJumpThruType != null && entity.CollideCheckOutside(ReflectionCache.MaddieHelpingHandUpsideDownJumpThruType, at))
+                return true;
             return false;
         }
 
         public static bool CollideCheckOutsideNotUpsideDownJumpThru(this Entity entity, Vector2 at)
         {
-            if (!entity.Scene.Tracker.Entities.TryGetValue(typeof(JumpThru), out var entities))
-                return false;
-
-            foreach (JumpThru jumpThru in entities)
+            foreach (Entity b in entity.Scene.Tracker.Entities[typeof(JumpThru)])
             {
-                if (jumpThru is UpsideDownJumpThru || jumpThru.GetType() == ReflectionCache.MaddieHelpingHandUpsideDownJumpThruType)
+                if (b is UpsideDownJumpThru || b.GetType() == ReflectionCache.MaddieHelpingHandUpsideDownJumpThruType)
                     continue;
-                if (!Collide.Check(entity, jumpThru) && Collide.Check(entity, jumpThru, at))
+                if (!Collide.Check(entity, b) && Collide.Check(entity, b, at))
                     return true;
             }
 
@@ -164,31 +136,22 @@ namespace Celeste.Mod.GravityHelper.Extensions
 
         public static JumpThru CollideFirstOutsideUpsideDownJumpThru(this Entity entity, Vector2 at)
         {
-            if (!entity.Scene.Tracker.Entities.TryGetValue(typeof(JumpThru), out var entities))
-                return null;
+            JumpThru collide = entity.CollideFirstOutside<UpsideDownJumpThru>(at);
 
-            foreach (JumpThru jumpThru in entities)
-            {
-                if (jumpThru is not UpsideDownJumpThru && jumpThru.GetType() != ReflectionCache.MaddieHelpingHandUpsideDownJumpThruType)
-                    continue;
-                if (!Collide.Check(entity, jumpThru) && Collide.Check(entity, jumpThru, at))
-                    return jumpThru;
-            }
+            if (collide == null && ReflectionCache.MaddieHelpingHandUpsideDownJumpThruType != null)
+                collide = (JumpThru) entity.CollideFirstOutside(ReflectionCache.MaddieHelpingHandUpsideDownJumpThruType, at);
 
-            return null;
+            return collide;
         }
 
         public static JumpThru CollideFirstOutsideNotUpsideDownJumpThru(this Entity entity, Vector2 at)
         {
-            if (!entity.Scene.Tracker.Entities.TryGetValue(typeof(JumpThru), out var entities))
-                return null;
-
-            foreach (JumpThru jumpThru in entities)
+            foreach (Entity b in entity.Scene.Tracker.Entities[typeof(JumpThru)])
             {
-                if (jumpThru is UpsideDownJumpThru || jumpThru.GetType() == ReflectionCache.MaddieHelpingHandUpsideDownJumpThruType)
+                if (b is UpsideDownJumpThru || b.GetType() == ReflectionCache.MaddieHelpingHandUpsideDownJumpThruType)
                     continue;
-                if (!Collide.Check(entity, jumpThru) && Collide.Check(entity, jumpThru, at))
-                    return jumpThru;
+                if (!Collide.Check(entity, b) && Collide.Check(entity, b, at))
+                    return b as JumpThru;
             }
 
             return null;
