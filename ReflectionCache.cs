@@ -63,8 +63,6 @@ namespace Celeste.Mod.GravityHelper
         public static FieldInfo CatelineModuleTailNodesFieldInfo { get; private set; }
         public static Type CommunalHelperConnectedSolidType { get; private set; }
         public static Type CommunalHelperTimedTriggerSpikesType { get; private set; }
-        public static Type CrystallineHelperForceDashCrystalType { get; private set; }
-        public static Type CrystallineHelperTeleCrystalType { get; private set; }
         public static Type ExtendedVariantsDashTrailAllTheTimeType { get; private set; }
         public static Type ExtendedVariantsJumpIndicatorType { get; private set; }
         public static Type ExtendedVariantsDashCountIndicatorType { get; private set; }
@@ -92,8 +90,6 @@ namespace Celeste.Mod.GravityHelper
             CatelineModuleTailNodesFieldInfo = CatelineModuleType?.GetField("tailNodes", BindingFlags.Instance | BindingFlags.NonPublic);
             CommunalHelperConnectedSolidType = GetModdedTypeByName("CommunalHelper", "Celeste.Mod.CommunalHelper.ConnectedSolid");
             CommunalHelperTimedTriggerSpikesType = GetModdedTypeByName("CommunalHelper", "Celeste.Mod.CommunalHelper.Entities.TimedTriggerSpikes");
-            CrystallineHelperForceDashCrystalType = GetModdedTypeByName("CrystallineHelper", "vitmod.ForceDashCrystal");
-            CrystallineHelperTeleCrystalType = GetModdedTypeByName("CrystallineHelper", "vitmod.TeleCrystal");
             ExtendedVariantsDashTrailAllTheTimeType = GetModdedTypeByName("ExtendedVariantMode", "ExtendedVariants.Variants.DashTrailAllTheTime");
             ExtendedVariantsJumpIndicatorType = GetModdedTypeByName("ExtendedVariantMode", "ExtendedVariants.Entities.JumpIndicator");
             ExtendedVariantsJumpIndicatorType = GetModdedTypeByName("ExtendedVariantMode", "ExtendedVariants.Entities.DashCountIndicator");
