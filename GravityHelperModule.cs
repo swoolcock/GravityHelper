@@ -304,9 +304,30 @@ namespace Celeste.Mod.GravityHelper
 
         internal enum HookLevel
         {
+            /// <summary>
+            /// We don't want any hooks other than bootstrap.
+            /// This is the case when no gravity helper entities are present, and AllowAllMaps is false.
+            /// </summary>
             None,
+
+            /// <summary>
+            /// Just the bare minimum required for upside down rendering.
+            /// This is the case when a <see cref="ForceLoadGravityController"/> is present,
+            /// no other gravity helper entities are present, and AllowAllMaps is false.
+            /// </summary>
             Render,
+
+            /// <summary>
+            /// Load everything.
+            /// This is the case when gravity helper entities other than <see cref="ForceLoadGravityController"/>
+            /// are present.  AllowAllMaps is irrelevant since this is a gravity helper map.
+            /// </summary>
             Everything,
+
+            /// <summary>
+            /// Load everything, with some exceptions so as to not break maps in specific situations.
+            /// This is the case when no gravity helper entities are present, but AllowAllMaps is true.
+            /// </summary>
             Forced,
         }
     }
