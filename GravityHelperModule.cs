@@ -32,6 +32,8 @@ namespace Celeste.Mod.GravityHelper
         internal static bool ShouldInvertPlayerChecked => PlayerComponent?.ShouldInvertChecked ?? false;
         internal static int OverrideSemaphore = 0;
 
+        private static object _speedrunToolSaveLoadAction;
+
         internal static bool RequiresHooksForSession(Session session, out bool forceLoad)
         {
             forceLoad = false;
@@ -74,6 +76,9 @@ namespace Celeste.Mod.GravityHelper
             Settings.MigrateIfRequired();
 
             typeof(GravityHelperExports).ModInterop();
+            typeof(SpeedrunToolImports).ModInterop();
+
+            registerSpeedrunTool();
 
             Logger.Log(LogLevel.Info, nameof(GravityHelperModule), "Loading bootstrap hooks...");
             On.Celeste.LevelLoader.ctor += LevelLoader_ctor;
@@ -92,6 +97,8 @@ namespace Celeste.Mod.GravityHelper
 
             // always try CelesteNet
             ThirdPartyHooks.ForceUnloadType(typeof(CelesteNetModSupport));
+
+            unregisterSpeedrunTool();
         }
 
         internal static HookLevel CurrentHookLevel = HookLevel.None;
@@ -260,14 +267,43 @@ namespace Celeste.Mod.GravityHelper
 
         #endregion
 
-        internal static void SaveState(Dictionary<string, object> state, Level level)
+        private static void registerSpeedrunTool()
+        {
+            if (SpeedrunToolImports.RegisterSaveLoadAction == null) return;
+
+            Logger.Log(LogLevel.Info, nameof(GravityHelperModule), "Registering Speedrun Tool actions");
+
+            _speedrunToolSaveLoadAction = SpeedrunToolImports.RegisterSaveLoadAction?.Invoke(
+                SaveState,
+                LoadState,
+                ClearState,
+                null,
+                null,
+                null
+            );
+        }
+
+        private static void unregisterSpeedrunTool()
+        {
+            if (_speedrunToolSaveLoadAction == null) return;
+
+            Logger.Log(LogLevel.Info, nameof(GravityHelperModule), "Unregistering Speedrun Tool actions");
+
+            SpeedrunToolImports.Unregister?.Invoke(_speedrunToolSaveLoadAction);
+        }
+
+        internal static void SaveState(Dictionary<Type, Dictionary<string, object>> dictionary, Level level)
         {
         }
 
-        internal static void LoadState(Dictionary<string, object> state, Level level)
+        internal static void LoadState(Dictionary<Type, Dictionary<string, object>> dictionary, Level level)
         {
             // fix player component
             PlayerComponent = level.Tracker.GetEntity<Player>()?.Get<PlayerGravityComponent>();
+        }
+
+        internal static void ClearState()
+        {
         }
 
         [Command("gravity", "Changes the current gravity (0 = normal, 1 = inverted, 2 = toggle)")]
