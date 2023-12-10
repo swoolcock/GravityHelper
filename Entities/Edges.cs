@@ -3,21 +3,20 @@
 
 using System;
 
-namespace Celeste.Mod.GravityHelper.Entities
+namespace Celeste.Mod.GravityHelper.Entities;
+
+[Flags]
+public enum Edges
 {
-    [Flags]
-    public enum Edges
-    {
-        None = 0,
+    None = 0,
 
-        Top = 1 << 0,
-        Bottom = 1 << 1,
-        Left = 1 << 2,
-        Right = 1 << 3,
+    Top = 1 << 0,
+    Bottom = 1 << 1,
+    Left = 1 << 2,
+    Right = 1 << 3,
 
-        Vertical = Top | Bottom,
-        Horizontal = Left | Right,
+    Vertical = Top | Bottom,
+    Horizontal = Left | Right,
 
-        All = Vertical | Horizontal,
-    }
+    All = Vertical | Horizontal,
 }

@@ -6,50 +6,49 @@ using Celeste.Mod.GravityHelper.Extensions;
 using Microsoft.Xna.Framework;
 using Monocle;
 
-namespace Celeste.Mod.GravityHelper.Entities
+namespace Celeste.Mod.GravityHelper.Entities;
+
+[CustomEntity("GravityHelper/GravityBooster")]
+public class GravityBooster : Booster
 {
-    [CustomEntity("GravityHelper/GravityBooster")]
-    public class GravityBooster : Booster
+    // ReSharper disable NotAccessedField.Local
+    private readonly VersionInfo _modVersion;
+    private readonly VersionInfo _pluginVersion;
+    // ReSharper restore NotAccessedField.Local
+
+    public GravityType GravityType { get; }
+
+    private readonly Sprite _animationSprite;
+
+    public GravityBooster(EntityData data, Vector2 offset)
+        : base(data.Position + offset, data.Bool("red"))
     {
-        // ReSharper disable NotAccessedField.Local
-        private readonly VersionInfo _modVersion;
-        private readonly VersionInfo _pluginVersion;
-        // ReSharper restore NotAccessedField.Local
+        _modVersion = data.ModVersion();
+        _pluginVersion = data.PluginVersion();
 
-        public GravityType GravityType { get; }
+        GravityType = (GravityType)data.Int("gravityType");
 
-        private readonly Sprite _animationSprite;
+        Add(_animationSprite = GFX.SpriteBank.Create("gravityRipple"));
+        _animationSprite.Color = GravityType.Color();
+        _animationSprite.Play("loop");
+    }
 
-        public GravityBooster(EntityData data, Vector2 offset)
-            : base(data.Position + offset, data.Bool("red"))
+    public override void Update()
+    {
+        base.Update();
+
+        const float ripple_offset = 5f;
+        var currentGravity = GravityHelperModule.PlayerComponent?.CurrentGravity ?? GravityType.Normal;
+
+        if (GravityType == GravityType.Inverted || GravityType == GravityType.Toggle && currentGravity == GravityType.Normal)
         {
-            _modVersion = data.ModVersion();
-            _pluginVersion = data.PluginVersion();
-
-            GravityType = (GravityType)data.Int("gravityType");
-
-            Add(_animationSprite = GFX.SpriteBank.Create("gravityRipple"));
-            _animationSprite.Color = GravityType.Color();
-            _animationSprite.Play("loop");
+            _animationSprite.Y = -ripple_offset;
+            _animationSprite.Scale.Y = 1f;
         }
-
-        public override void Update()
+        else if (GravityType == GravityType.Normal || GravityType == GravityType.Toggle && currentGravity == GravityType.Inverted)
         {
-            base.Update();
-
-            const float ripple_offset = 5f;
-            var currentGravity = GravityHelperModule.PlayerComponent?.CurrentGravity ?? GravityType.Normal;
-
-            if (GravityType == GravityType.Inverted || GravityType == GravityType.Toggle && currentGravity == GravityType.Normal)
-            {
-                _animationSprite.Y = -ripple_offset;
-                _animationSprite.Scale.Y = 1f;
-            }
-            else if (GravityType == GravityType.Normal || GravityType == GravityType.Toggle && currentGravity == GravityType.Inverted)
-            {
-                _animationSprite.Y = ripple_offset;
-                _animationSprite.Scale.Y = -1f;
-            }
+            _animationSprite.Y = ripple_offset;
+            _animationSprite.Scale.Y = -1f;
         }
     }
 }

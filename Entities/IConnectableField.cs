@@ -3,11 +3,10 @@
 
 using Microsoft.Xna.Framework;
 
-namespace Celeste.Mod.GravityHelper.Entities
+namespace Celeste.Mod.GravityHelper.Entities;
+
+public interface IConnectableField
 {
-    public interface IConnectableField
-    {
-        public Color FieldColor { get; }
-        public bool ShouldDrawField { get; }
-    }
+    public Color FieldColor { get; }
+    public bool ShouldDrawField { get; }
 }

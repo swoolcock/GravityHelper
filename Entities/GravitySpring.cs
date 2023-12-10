@@ -11,438 +11,437 @@ using Celeste.Mod.GravityHelper.Extensions;
 using Microsoft.Xna.Framework;
 using Monocle;
 
-namespace Celeste.Mod.GravityHelper.Entities
+namespace Celeste.Mod.GravityHelper.Entities;
+
+[CustomEntity(
+    "GravityHelper/GravitySpringFloor = LoadFloor",
+    "GravityHelper/GravitySpringCeiling = LoadCeiling",
+    "GravityHelper/GravitySpringWallLeft = LoadWallLeft",
+    "GravityHelper/GravitySpringWallRight = LoadWallRight")]
+public class GravitySpring : Spring
 {
-    [CustomEntity(
-        "GravityHelper/GravitySpringFloor = LoadFloor",
-        "GravityHelper/GravitySpringCeiling = LoadCeiling",
-        "GravityHelper/GravitySpringWallLeft = LoadWallLeft",
-        "GravityHelper/GravitySpringWallRight = LoadWallRight")]
-    public class GravitySpring : Spring
+    // ReSharper disable once UnusedMember.Global
+    public static bool RequiresHooks(EntityData data) => data.Enum<GravityType>("gravityType").RequiresHooks();
+
+    public bool PlayerCanUse { get; }
+    public new Orientations Orientation { get; }
+    public GravityType GravityType { get; }
+
+    private string getAnimId(string id) => GravityType switch
     {
-        // ReSharper disable once UnusedMember.Global
-        public static bool RequiresHooks(EntityData data) => data.Enum<GravityType>("gravityType").RequiresHooks();
+        GravityType.None => $"none_{id}",
+        GravityType.Normal => $"normal_{id}",
+        GravityType.Inverted => $"invert_{id}",
+        GravityType.Toggle => $"toggle_{id}",
+        _ => id,
+    };
 
-        public bool PlayerCanUse { get; }
-        public new Orientations Orientation { get; }
-        public GravityType GravityType { get; }
+    // ReSharper disable NotAccessedField.Local
+    private readonly VersionInfo _modVersion;
+    private readonly VersionInfo _pluginVersion;
+    // ReSharper restore NotAccessedField.Local
 
-        private string getAnimId(string id) => GravityType switch
+    private float _cooldownRemaining;
+
+    private float _gravityCooldown;
+    private readonly bool _showIndicator;
+    private readonly bool _largeIndicator;
+    private readonly int _indicatorOffset;
+    private readonly bool _defaultToController;
+    private IndicatorRenderer _indicatorRenderer;
+    private Vector2 _indicatorShakeOffset;
+
+    public static Entity LoadFloor(Level level, LevelData levelData, Vector2 offset, EntityData entityData) =>
+        new GravitySpring(entityData, offset, Orientations.Floor);
+
+    public static Entity LoadCeiling(Level level, LevelData levelData, Vector2 offset, EntityData entityData) =>
+        new GravitySpring(entityData, offset, Orientations.Ceiling);
+
+    public static Entity LoadWallLeft(Level level, LevelData levelData, Vector2 offset, EntityData entityData) =>
+        new GravitySpring(entityData, offset, Orientations.WallLeft);
+
+    public static Entity LoadWallRight(Level level, LevelData levelData, Vector2 offset, EntityData entityData) =>
+        new GravitySpring(entityData, offset, Orientations.WallRight);
+
+    public GravitySpring(EntityData data, Vector2 offset, Orientations orientation)
+        : base(data.Position + offset, (Spring.Orientations)((int)orientation % 3), data.Bool("playerCanUse", true))
+    {
+        _modVersion = data.ModVersion();
+        _pluginVersion = data.PluginVersion();
+
+        var defaultCooldown = _pluginVersion.Major >= 2
+            ? BehaviorGravityController.DEFAULT_SPRING_COOLDOWN_V2
+            : BehaviorGravityController.DEFAULT_SPRING_COOLDOWN_V1;
+
+        PlayerCanUse = data.Bool("playerCanUse", true);
+        GravityType = data.Enum<GravityType>("gravityType");
+
+        _defaultToController = data.Bool("defaultToController");
+        _gravityCooldown = data.Float("gravityCooldown", defaultCooldown);
+        _showIndicator = data.Bool("showIndicator");
+        _largeIndicator = data.Bool("largeIndicator");
+        _indicatorOffset = data.Int("indicatorOffset", 8);
+
+        // handle legacy spring settings
+        if (data.TryFloat("cooldown", out var cooldown))
+            _gravityCooldown = cooldown;
+
+        Orientation = orientation;
+
+        // get spring components
+        var playerCollider = Get<PlayerCollider>();
+        var holdableCollider = Get<HoldableCollider>();
+        var pufferCollider = Get<PufferCollider>();
+
+        // update sprite
+        GFX.SpriteBank.CreateOn(sprite, "gravitySpring");
+        sprite.Play(getAnimId("idle"));
+        sprite.Origin.X = sprite.Width / 2f;
+        sprite.Origin.Y = sprite.Height;
+
+        // update callbacks
+        staticMover.OnEnable = OnEnable;
+        staticMover.OnDisable = OnDisable;
+        staticMover.OnShake = OnShake;
+        playerCollider.OnCollide = OnCollide;
+        holdableCollider.OnCollide = OnHoldable;
+        pufferCollider.OnCollide = OnPuffer;
+
+        // update things by orientation
+        switch (orientation)
         {
-            GravityType.None => $"none_{id}",
-            GravityType.Normal => $"normal_{id}",
-            GravityType.Inverted => $"invert_{id}",
-            GravityType.Toggle => $"toggle_{id}",
-            _ => id,
-        };
+            case Orientations.Floor:
+                sprite.Rotation = 0f;
+                break;
 
-        // ReSharper disable NotAccessedField.Local
-        private readonly VersionInfo _modVersion;
-        private readonly VersionInfo _pluginVersion;
-        // ReSharper restore NotAccessedField.Local
+            case Orientations.WallLeft:
+                sprite.Rotation = (float)(Math.PI / 2f);
+                break;
 
-        private float _cooldownRemaining;
+            case Orientations.WallRight:
+                sprite.Rotation = (float)(-Math.PI / 2f);
+                break;
 
-        private float _gravityCooldown;
-        private readonly bool _showIndicator;
-        private readonly bool _largeIndicator;
-        private readonly int _indicatorOffset;
-        private readonly bool _defaultToController;
-        private IndicatorRenderer _indicatorRenderer;
-        private Vector2 _indicatorShakeOffset;
+            case Orientations.Ceiling:
+                sprite.Rotation = (float)Math.PI;
+                Collider.Top += 6f;
+                pufferCollider.Collider.Top += 6;
+                staticMover.SolidChecker = s => CollideCheck(s, Position - Vector2.UnitY);
+                staticMover.JumpThruChecker = jt => CollideCheck(jt, Position - Vector2.UnitY);
+                break;
+        }
+    }
 
-        public static Entity LoadFloor(Level level, LevelData levelData, Vector2 offset, EntityData entityData) =>
-            new GravitySpring(entityData, offset, Orientations.Floor);
+    public override void Added(Scene scene)
+    {
+        base.Added(scene);
 
-        public static Entity LoadCeiling(Level level, LevelData levelData, Vector2 offset, EntityData entityData) =>
-            new GravitySpring(entityData, offset, Orientations.Ceiling);
-
-        public static Entity LoadWallLeft(Level level, LevelData levelData, Vector2 offset, EntityData entityData) =>
-            new GravitySpring(entityData, offset, Orientations.WallLeft);
-
-        public static Entity LoadWallRight(Level level, LevelData levelData, Vector2 offset, EntityData entityData) =>
-            new GravitySpring(entityData, offset, Orientations.WallRight);
-
-        public GravitySpring(EntityData data, Vector2 offset, Orientations orientation)
-            : base(data.Position + offset, (Spring.Orientations)((int)orientation % 3), data.Bool("playerCanUse", true))
+        if (_defaultToController && Scene.GetActiveController<BehaviorGravityController>() is { } behaviorController)
         {
-            _modVersion = data.ModVersion();
-            _pluginVersion = data.PluginVersion();
-
-            var defaultCooldown = _pluginVersion.Major >= 2
-                ? BehaviorGravityController.DEFAULT_SPRING_COOLDOWN_V2
-                : BehaviorGravityController.DEFAULT_SPRING_COOLDOWN_V1;
-
-            PlayerCanUse = data.Bool("playerCanUse", true);
-            GravityType = data.Enum<GravityType>("gravityType");
-
-            _defaultToController = data.Bool("defaultToController");
-            _gravityCooldown = data.Float("gravityCooldown", defaultCooldown);
-            _showIndicator = data.Bool("showIndicator");
-            _largeIndicator = data.Bool("largeIndicator");
-            _indicatorOffset = data.Int("indicatorOffset", 8);
-
-            // handle legacy spring settings
-            if (data.TryFloat("cooldown", out var cooldown))
-                _gravityCooldown = cooldown;
-
-            Orientation = orientation;
-
-            // get spring components
-            var playerCollider = Get<PlayerCollider>();
-            var holdableCollider = Get<HoldableCollider>();
-            var pufferCollider = Get<PufferCollider>();
-
-            // update sprite
-            GFX.SpriteBank.CreateOn(sprite, "gravitySpring");
-            sprite.Play(getAnimId("idle"));
-            sprite.Origin.X = sprite.Width / 2f;
-            sprite.Origin.Y = sprite.Height;
-
-            // update callbacks
-            staticMover.OnEnable = OnEnable;
-            staticMover.OnDisable = OnDisable;
-            staticMover.OnShake = OnShake;
-            playerCollider.OnCollide = OnCollide;
-            holdableCollider.OnCollide = OnHoldable;
-            pufferCollider.OnCollide = OnPuffer;
-
-            // update things by orientation
-            switch (orientation)
-            {
-                case Orientations.Floor:
-                    sprite.Rotation = 0f;
-                    break;
-
-                case Orientations.WallLeft:
-                    sprite.Rotation = (float)(Math.PI / 2f);
-                    break;
-
-                case Orientations.WallRight:
-                    sprite.Rotation = (float)(-Math.PI / 2f);
-                    break;
-
-                case Orientations.Ceiling:
-                    sprite.Rotation = (float)Math.PI;
-                    Collider.Top += 6f;
-                    pufferCollider.Collider.Top += 6;
-                    staticMover.SolidChecker = s => CollideCheck(s, Position - Vector2.UnitY);
-                    staticMover.JumpThruChecker = jt => CollideCheck(jt, Position - Vector2.UnitY);
-                    break;
-            }
+            _gravityCooldown = behaviorController.SpringCooldown;
         }
 
-        public override void Added(Scene scene)
+        if (_showIndicator && GravityType is GravityType.Normal or GravityType.Inverted or GravityType.Toggle)
         {
-            base.Added(scene);
-
-            if (_defaultToController && Scene.GetActiveController<BehaviorGravityController>() is { } behaviorController)
-            {
-                _gravityCooldown = behaviorController.SpringCooldown;
-            }
-
-            if (_showIndicator && GravityType is GravityType.Normal or GravityType.Inverted or GravityType.Toggle)
-            {
-                scene.Add(_indicatorRenderer = new IndicatorRenderer(this));
-            }
+            scene.Add(_indicatorRenderer = new IndicatorRenderer(this));
         }
+    }
 
-        public override void Removed(Scene scene)
+    public override void Removed(Scene scene)
+    {
+        base.Removed(scene);
+
+        _indicatorRenderer?.RemoveSelf();
+        _indicatorRenderer = null;
+    }
+
+    private new void OnEnable()
+    {
+        Visible = Collidable = true;
+        sprite.Color = Color.White;
+        sprite.Play(getAnimId("idle"));
+    }
+
+    private new void OnDisable()
+    {
+        Collidable = false;
+        if (VisibleWhenDisabled)
         {
-            base.Removed(scene);
-
-            _indicatorRenderer?.RemoveSelf();
-            _indicatorRenderer = null;
+            sprite.Play("disabled");
+            sprite.Color = DisabledColor;
         }
+        else
+            Visible = false;
+    }
 
-        private new void OnEnable()
+    private void OnShake(Vector2 amount) => _indicatorShakeOffset += amount;
+
+    public override void Update()
+    {
+        base.Update();
+
+        if (_indicatorRenderer != null)
+            _indicatorRenderer.Visible = Visible;
+
+        if (_cooldownRemaining > 0)
         {
-            Visible = Collidable = true;
-            sprite.Color = Color.White;
-            sprite.Play(getAnimId("idle"));
+            _cooldownRemaining = Math.Max(0, _cooldownRemaining - Engine.DeltaTime);
+            // TODO: update sprite to show cooldown
         }
+    }
 
-        private new void OnDisable()
+    private new void OnCollide(Player player)
+    {
+        // ignore spring if dream dashing, if we're not allowed to use it, or if we're on cooldown
+        if (player.StateMachine.State == Player.StDreamDash || !PlayerCanUse)
+            return;
+
+        // ignore spring if moving away
+        var realY = GravityHelperModule.ShouldInvertPlayer ? -player.Speed.Y : player.Speed.Y;
+        switch (Orientation)
         {
-            Collidable = false;
-            if (VisibleWhenDisabled)
-            {
-                sprite.Play("disabled");
-                sprite.Color = DisabledColor;
-            }
-            else
-                Visible = false;
-        }
-
-        private void OnShake(Vector2 amount) => _indicatorShakeOffset += amount;
-
-        public override void Update()
-        {
-            base.Update();
-
-            if (_indicatorRenderer != null)
-                _indicatorRenderer.Visible = Visible;
-
-            if (_cooldownRemaining > 0)
-            {
-                _cooldownRemaining = Math.Max(0, _cooldownRemaining - Engine.DeltaTime);
-                // TODO: update sprite to show cooldown
-            }
-        }
-
-        private new void OnCollide(Player player)
-        {
-            // ignore spring if dream dashing, if we're not allowed to use it, or if we're on cooldown
-            if (player.StateMachine.State == Player.StDreamDash || !PlayerCanUse)
+            case Orientations.Floor when realY < 0:
+            case Orientations.Ceiling when realY > 0:
+            case Orientations.WallLeft when player.Speed.X > 240:
+            case Orientations.WallRight when player.Speed.X < -240:
                 return;
-
-            // ignore spring if moving away
-            var realY = GravityHelperModule.ShouldInvertPlayer ? -player.Speed.Y : player.Speed.Y;
-            switch (Orientation)
-            {
-                case Orientations.Floor when realY < 0:
-                case Orientations.Ceiling when realY > 0:
-                case Orientations.WallLeft when player.Speed.X > 240:
-                case Orientations.WallRight when player.Speed.X < -240:
-                    return;
-            }
-
-            // set gravity and cooldown if not on cooldown
-            if (GravityType != GravityType.None && (_cooldownRemaining <= 0f || _gravityCooldown <= 0f))
-            {
-                GravityHelperModule.PlayerComponent?.SetGravity(GravityType);
-                _cooldownRemaining = _gravityCooldown;
-                // TODO: update sprite to show cooldown
-            }
-
-            // boing!
-            bounceAnimate();
-
-            // bounce player away
-            switch (Orientation)
-            {
-                case Orientations.Floor:
-                    if (GravityHelperModule.ShouldInvertPlayer)
-                        InvertedSuperBounce(player, Top);
-                    else
-                        player.SuperBounce(Top);
-                    break;
-
-                case Orientations.Ceiling:
-                    if (!GravityHelperModule.ShouldInvertPlayer)
-                        InvertedSuperBounce(player, Bottom);
-                    else
-                        player.SuperBounce(Bottom);
-                    break;
-
-                case Orientations.WallLeft:
-                    player.SideBounce(1, CenterRight.X, CenterRight.Y);
-                    break;
-
-                case Orientations.WallRight:
-                    player.SideBounce(-1, CenterLeft.X, CenterLeft.Y);
-                    break;
-            }
         }
 
-        private new void OnHoldable(Holdable h)
+        // set gravity and cooldown if not on cooldown
+        if (GravityType != GravityType.None && (_cooldownRemaining <= 0f || _gravityCooldown <= 0f))
         {
-            var holdableGravity = h.Entity.GetGravity();
-            var relativeCeiling = holdableGravity == GravityType.Normal && Orientation == Orientations.Ceiling ||
-                holdableGravity == GravityType.Inverted && Orientation == Orientations.Floor;
-
-            if (relativeCeiling && !holdableHitCeilingSpring(h) ||
-                !relativeCeiling && !h.HitSpring(this))
-                return;
-
-            bounceAnimate();
-
-            // try to flip gravity i guess?
-            if (h.Entity.Get<GravityComponent>() is { } gravityComponent)
-                gravityComponent.SetGravity(GravityType);
+            GravityHelperModule.PlayerComponent?.SetGravity(GravityType);
+            _cooldownRemaining = _gravityCooldown;
+            // TODO: update sprite to show cooldown
         }
 
-        private bool holdableHitCeilingSpring(Holdable h)
+        // boing!
+        bounceAnimate();
+
+        // bounce player away
+        switch (Orientation)
         {
-            if (h.IsHeld) return false;
+            case Orientations.Floor:
+                if (GravityHelperModule.ShouldInvertPlayer)
+                    InvertedSuperBounce(player, Top);
+                else
+                    player.SuperBounce(Top);
+                break;
 
-            const float x_multiplier = 0.5f;
-            const float y_value = 160f;
-            const float no_gravity_timer = 0.15f;
+            case Orientations.Ceiling:
+                if (!GravityHelperModule.ShouldInvertPlayer)
+                    InvertedSuperBounce(player, Bottom);
+                else
+                    player.SuperBounce(Bottom);
+                break;
 
-            // handle Theo
-            if (h.Entity is TheoCrystal theoCrystal)
-            {
-                // do nothing if moving away
-                if (theoCrystal.Speed.Y > 0) return false;
-                theoCrystal.Speed.X *= x_multiplier;
-                theoCrystal.Speed.Y = y_value;
-                theoCrystal.noGravityTimer = no_gravity_timer;
-                return true;
-            }
+            case Orientations.WallLeft:
+                player.SideBounce(1, CenterRight.X, CenterRight.Y);
+                break;
 
-            // handle jellies
-            if (h.Entity is Glider glider)
-            {
-                // do nothing if moving away
-                if (glider.Speed.Y > 0) return false;
-                glider.Speed.X *= x_multiplier;
-                glider.Speed.Y = y_value;
-                glider.noGravityTimer = no_gravity_timer;
-                glider.wiggler.Start();
-                return true;
-            }
-
-            // if the entity has a GravityComponent then try to use the speed delegates from that
-            if (h.Entity.Get<GravityComponent>() is { } gravityComponent)
-            {
-                var speed = gravityComponent.EntitySpeed;
-                // do nothing if moving away
-                if (speed.Y > 0) return false;
-                speed.X *= x_multiplier;
-                speed.Y = y_value;
-                gravityComponent.EntitySpeed = speed;
-                return true;
-            }
-
-            // just take a guess that there's a Speed field if it's an unknown entity
-            var entityType = h.Entity.GetType();
-            var speedField = entityType.GetRuntimeFields().FirstOrDefault(f => f.Name == "Speed" && f.FieldType == typeof(Vector2));
-            if (speedField != null)
-            {
-                var speed = (Vector2)speedField.GetValue(h.Entity);
-                // do nothing if moving away
-                if (speed.Y > 0) return false;
-                speed.X *= x_multiplier;
-                speed.Y = y_value;
-                speedField.SetValue(h.Entity, speed);
-                return true;
-            }
-
-            return false;
+            case Orientations.WallRight:
+                player.SideBounce(-1, CenterLeft.X, CenterLeft.Y);
+                break;
         }
+    }
 
-        private new void OnPuffer(Puffer p)
+    private new void OnHoldable(Holdable h)
+    {
+        var holdableGravity = h.Entity.GetGravity();
+        var relativeCeiling = holdableGravity == GravityType.Normal && Orientation == Orientations.Ceiling ||
+            holdableGravity == GravityType.Inverted && Orientation == Orientations.Floor;
+
+        if (relativeCeiling && !holdableHitCeilingSpring(h) ||
+            !relativeCeiling && !h.HitSpring(this))
+            return;
+
+        bounceAnimate();
+
+        // try to flip gravity i guess?
+        if (h.Entity.Get<GravityComponent>() is { } gravityComponent)
+            gravityComponent.SetGravity(GravityType);
+    }
+
+    private bool holdableHitCeilingSpring(Holdable h)
+    {
+        if (h.IsHeld) return false;
+
+        const float x_multiplier = 0.5f;
+        const float y_value = 160f;
+        const float no_gravity_timer = 0.15f;
+
+        // handle Theo
+        if (h.Entity is TheoCrystal theoCrystal)
         {
-            // at the moment puffers don't support gravity, so just handle ceiling springs separately
-            if (Orientation == Orientations.Ceiling && !pufferHitCeilingSpring(p) ||
-                Orientation != Orientations.Ceiling && !p.HitSpring(this))
-                return;
-
-            bounceAnimate();
-        }
-
-        private bool pufferHitCeilingSpring(Puffer p)
-        {
-            if (p.hitSpeed.Y > 0)
-                return false;
-
-            p.GotoHitSpeed(224f * Vector2.UnitY);
-            p.MoveTowardsX(CenterX, 4f);
-            p.bounceWiggler.Start();
-            p.Alert(true, false);
+            // do nothing if moving away
+            if (theoCrystal.Speed.Y > 0) return false;
+            theoCrystal.Speed.X *= x_multiplier;
+            theoCrystal.Speed.Y = y_value;
+            theoCrystal.noGravityTimer = no_gravity_timer;
             return true;
         }
 
-        private void bounceAnimate()
+        // handle jellies
+        if (h.Entity is Glider glider)
         {
-            Audio.Play("event:/game/general/spring", BottomCenter);
-            staticMover.TriggerPlatform();
-            sprite.Play(getAnimId("bounce"), true);
-            wiggler.Start();
+            // do nothing if moving away
+            if (glider.Speed.Y > 0) return false;
+            glider.Speed.X *= x_multiplier;
+            glider.Speed.Y = y_value;
+            glider.noGravityTimer = no_gravity_timer;
+            glider.wiggler.Start();
+            return true;
         }
 
-        public new enum Orientations
+        // if the entity has a GravityComponent then try to use the speed delegates from that
+        if (h.Entity.Get<GravityComponent>() is { } gravityComponent)
         {
-            Floor,
-            WallLeft,
-            WallRight,
-            Ceiling,
+            var speed = gravityComponent.EntitySpeed;
+            // do nothing if moving away
+            if (speed.Y > 0) return false;
+            speed.X *= x_multiplier;
+            speed.Y = y_value;
+            gravityComponent.EntitySpeed = speed;
+            return true;
         }
 
-        public static void InvertedSuperBounce(Player self, float fromY)
+        // just take a guess that there's a Speed field if it's an unknown entity
+        var entityType = h.Entity.GetType();
+        var speedField = entityType.GetRuntimeFields().FirstOrDefault(f => f.Name == "Speed" && f.FieldType == typeof(Vector2));
+        if (speedField != null)
         {
-            if (self.StateMachine.State == Player.StBoost && self.CurrentBooster != null)
-            {
-                self.CurrentBooster.PlayerReleased();
-                self.CurrentBooster = null;
-            }
-
-            Collider collider = self.Collider;
-            self.Collider = self.normalHitbox;
-            self.MoveV(GravityHelperModule.ShouldInvertPlayer ? self.Bottom - fromY : fromY - self.Top);
-            if (!self.Inventory.NoRefills)
-                self.RefillDash();
-            self.RefillStamina();
-
-            self.jumpGraceTimer = 0f;
-            self.varJumpTimer = 0f;
-            self.dashAttackTimer = 0.0f;
-            self.gliderBoostTimer = 0.0f;
-            self.wallSlideTimer = 1.2f;
-            self.wallBoostTimer = 0.0f;
-            self.varJumpSpeed = 0f;
-            self.launched =  false;
-
-            self.StateMachine.State = Player.StNormal;
-            self.AutoJump = false;
-            self.AutoJumpTimer = 0.0f;
-            self.Speed.X = 0.0f;
-            self.Speed.Y = 185f;
-
-            var level = self.SceneAs<Level>();
-            level?.DirectionalShake(GravityHelperModule.ShouldInvertPlayer ? -Vector2.UnitY : Vector2.UnitY, 0.1f);
-            Input.Rumble(RumbleStrength.Medium, RumbleLength.Medium);
-            self.Sprite.Scale = new Vector2(0.5f, 1.5f);
-            self.Collider = collider;
+            var speed = (Vector2)speedField.GetValue(h.Entity);
+            // do nothing if moving away
+            if (speed.Y > 0) return false;
+            speed.X *= x_multiplier;
+            speed.Y = y_value;
+            speedField.SetValue(h.Entity, speed);
+            return true;
         }
 
-        public class IndicatorRenderer : Entity
+        return false;
+    }
+
+    private new void OnPuffer(Puffer p)
+    {
+        // at the moment puffers don't support gravity, so just handle ceiling springs separately
+        if (Orientation == Orientations.Ceiling && !pufferHitCeilingSpring(p) ||
+            Orientation != Orientations.Ceiling && !p.HitSpring(this))
+            return;
+
+        bounceAnimate();
+    }
+
+    private bool pufferHitCeilingSpring(Puffer p)
+    {
+        if (p.hitSpeed.Y > 0)
+            return false;
+
+        p.GotoHitSpeed(224f * Vector2.UnitY);
+        p.MoveTowardsX(CenterX, 4f);
+        p.bounceWiggler.Start();
+        p.Alert(true, false);
+        return true;
+    }
+
+    private void bounceAnimate()
+    {
+        Audio.Play("event:/game/general/spring", BottomCenter);
+        staticMover.TriggerPlatform();
+        sprite.Play(getAnimId("bounce"), true);
+        wiggler.Start();
+    }
+
+    public new enum Orientations
+    {
+        Floor,
+        WallLeft,
+        WallRight,
+        Ceiling,
+    }
+
+    public static void InvertedSuperBounce(Player self, float fromY)
+    {
+        if (self.StateMachine.State == Player.StBoost && self.CurrentBooster != null)
         {
-            private readonly GravitySpring _spring;
-            private readonly MTexture _arrowTexture;
-            private readonly Vector2 _arrowOrigin;
+            self.CurrentBooster.PlayerReleased();
+            self.CurrentBooster = null;
+        }
 
-            public IndicatorRenderer(GravitySpring spring)
+        Collider collider = self.Collider;
+        self.Collider = self.normalHitbox;
+        self.MoveV(GravityHelperModule.ShouldInvertPlayer ? self.Bottom - fromY : fromY - self.Top);
+        if (!self.Inventory.NoRefills)
+            self.RefillDash();
+        self.RefillStamina();
+
+        self.jumpGraceTimer = 0f;
+        self.varJumpTimer = 0f;
+        self.dashAttackTimer = 0.0f;
+        self.gliderBoostTimer = 0.0f;
+        self.wallSlideTimer = 1.2f;
+        self.wallBoostTimer = 0.0f;
+        self.varJumpSpeed = 0f;
+        self.launched =  false;
+
+        self.StateMachine.State = Player.StNormal;
+        self.AutoJump = false;
+        self.AutoJumpTimer = 0.0f;
+        self.Speed.X = 0.0f;
+        self.Speed.Y = 185f;
+
+        var level = self.SceneAs<Level>();
+        level?.DirectionalShake(GravityHelperModule.ShouldInvertPlayer ? -Vector2.UnitY : Vector2.UnitY, 0.1f);
+        Input.Rumble(RumbleStrength.Medium, RumbleLength.Medium);
+        self.Sprite.Scale = new Vector2(0.5f, 1.5f);
+        self.Collider = collider;
+    }
+
+    public class IndicatorRenderer : Entity
+    {
+        private readonly GravitySpring _spring;
+        private readonly MTexture _arrowTexture;
+        private readonly Vector2 _arrowOrigin;
+
+        public IndicatorRenderer(GravitySpring spring)
+        {
+            _spring = spring;
+
+            var prefix = _spring.GravityType switch
             {
-                _spring = spring;
+                GravityType.Normal => "down",
+                GravityType.Inverted => "up",
+                _ => "double",
+            };
 
-                var prefix = _spring.GravityType switch
-                {
-                    GravityType.Normal => "down",
-                    GravityType.Inverted => "up",
-                    _ => "double",
-                };
+            var size = _spring._largeIndicator ? string.Empty : "Small";
 
-                var size = _spring._largeIndicator ? string.Empty : "Small";
+            _arrowTexture = GFX.Game[$"objects/GravityHelper/gravityField/{prefix}Arrow{size}"];
+            _arrowOrigin = new Vector2(_arrowTexture.Width / 2f, _arrowTexture.Height / 2f);
 
-                _arrowTexture = GFX.Game[$"objects/GravityHelper/gravityField/{prefix}Arrow{size}"];
-                _arrowOrigin = new Vector2(_arrowTexture.Width / 2f, _arrowTexture.Height / 2f);
+            Depth = Depths.FGDecals - 1;
 
-                Depth = Depths.FGDecals - 1;
+            Active = false;
+            Collidable = false;
+        }
 
-                Active = false;
-                Collidable = false;
-            }
+        public override void Render()
+        {
+            var offset = _spring._indicatorOffset;
 
-            public override void Render()
+            var position = _spring.Position + _spring.Orientation switch
             {
-                var offset = _spring._indicatorOffset;
+                Orientations.WallLeft => Vector2.UnitX * -offset,
+                Orientations.WallRight => Vector2.UnitX * offset,
+                Orientations.Ceiling => Vector2.UnitY * -offset,
+                Orientations.Floor => Vector2.UnitY * offset,
+                _ => Vector2.Zero,
+            };
 
-                var position = _spring.Position + _spring.Orientation switch
-                {
-                    Orientations.WallLeft => Vector2.UnitX * -offset,
-                    Orientations.WallRight => Vector2.UnitX * offset,
-                    Orientations.Ceiling => Vector2.UnitY * -offset,
-                    Orientations.Floor => Vector2.UnitY * offset,
-                    _ => Vector2.Zero,
-                };
+            position += _spring._indicatorShakeOffset;
 
-                position += _spring._indicatorShakeOffset;
-
-                _arrowTexture.DrawOutline(position, _arrowOrigin);
-                _arrowTexture.Draw(position, _arrowOrigin);
-            }
+            _arrowTexture.DrawOutline(position, _arrowOrigin);
+            _arrowTexture.Draw(position, _arrowOrigin);
         }
     }
 }

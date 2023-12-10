@@ -3,18 +3,17 @@
 
 using Celeste.Mod.GravityHelper.Entities.Controllers;
 
-namespace Celeste.Mod.GravityHelper
+namespace Celeste.Mod.GravityHelper;
+
+public class GravityHelperModuleSession : EverestModuleSession
 {
-    public class GravityHelperModuleSession : EverestModuleSession
-    {
-        public GravityType InitialGravity { get; set; } = GravityType.Normal;
+    public GravityType InitialGravity { get; set; } = GravityType.Normal;
 
-        #region VVVVVV Controller
+    #region VVVVVV Controller
 
-        public bool VvvvvvTrigger { get; set; }
-        public bool DisableGrab { get; set; }
-        public VvvvvvMode VvvvvvMode { get; set; }
+    public bool VvvvvvTrigger { get; set; }
+    public bool DisableGrab { get; set; }
+    public VvvvvvMode VvvvvvMode { get; set; }
 
-        #endregion
-    }
+    #endregion
 }

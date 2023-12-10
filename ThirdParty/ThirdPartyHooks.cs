@@ -8,61 +8,60 @@ using System.Reflection;
 
 // ReSharper disable InconsistentNaming
 
-namespace Celeste.Mod.GravityHelper.ThirdParty
+namespace Celeste.Mod.GravityHelper.ThirdParty;
+
+internal static class ThirdPartyHooks
 {
-    internal static class ThirdPartyHooks
+    public static IEnumerable<Type> ThirdPartyModTypes =>
+        ReflectionCache.LoadableTypes.Where(t =>
+            t.GetCustomAttribute<ThirdPartyModAttribute>() != null);
+
+    public static readonly Dictionary<string, ThirdPartyModSupport> LoadedMods = new();
+    public static readonly Dictionary<string, ThirdPartyModSupport> ForceLoadedMods = new();
+
+    public static void Load(GravityHelperModule.HookLevel hookLevel)
     {
-        public static IEnumerable<Type> ThirdPartyModTypes =>
-            ReflectionCache.LoadableTypes.Where(t =>
-                t.GetCustomAttribute<ThirdPartyModAttribute>() != null);
+        Logger.Log(nameof(GravityHelperModule), "Loading third party hooks...");
+        ReflectionCache.LoadThirdPartyTypes();
 
-        public static readonly Dictionary<string, ThirdPartyModSupport> LoadedMods = new();
-        public static readonly Dictionary<string, ThirdPartyModSupport> ForceLoadedMods = new();
-
-        public static void Load(GravityHelperModule.HookLevel hookLevel)
+        foreach (var type in ThirdPartyModTypes)
         {
-            Logger.Log(nameof(GravityHelperModule), "Loading third party hooks...");
-            ReflectionCache.LoadThirdPartyTypes();
+            // don't try to load if there's one force loaded
+            if (ForceLoadedMods.Values.Any(type.IsInstanceOfType)) continue;
 
-            foreach (var type in ThirdPartyModTypes)
-            {
-                // don't try to load if there's one force loaded
-                if (ForceLoadedMods.Values.Any(type.IsInstanceOfType)) continue;
-
-                if (Activator.CreateInstance(type) is ThirdPartyModSupport modSupport && modSupport.TryLoad(hookLevel))
-                {
-                    LoadedMods[modSupport.Attribute.Name] = modSupport;
-                }
-            }
-        }
-
-        public static void ForceLoadType(Type type, GravityHelperModule.HookLevel hookLevel)
-        {
             if (Activator.CreateInstance(type) is ThirdPartyModSupport modSupport && modSupport.TryLoad(hookLevel))
             {
-                ForceLoadedMods[modSupport.Attribute.Name] = modSupport;
+                LoadedMods[modSupport.Attribute.Name] = modSupport;
             }
         }
+    }
 
-        public static void ForceUnloadType(Type type)
+    public static void ForceLoadType(Type type, GravityHelperModule.HookLevel hookLevel)
+    {
+        if (Activator.CreateInstance(type) is ThirdPartyModSupport modSupport && modSupport.TryLoad(hookLevel))
         {
-            if (ForceLoadedMods.Values.FirstOrDefault(type.IsInstanceOfType) is { } modSupport && modSupport.TryUnload())
-            {
-                ForceLoadedMods.Remove(modSupport.Attribute.Name);
-            }
+            ForceLoadedMods[modSupport.Attribute.Name] = modSupport;
         }
+    }
 
-        // ReSharper disable once UnusedMember.Global
-        public static void Unload()
+    public static void ForceUnloadType(Type type)
+    {
+        if (ForceLoadedMods.Values.FirstOrDefault(type.IsInstanceOfType) is { } modSupport && modSupport.TryUnload())
         {
-            Logger.Log(nameof(GravityHelperModule), "Unloading third party hooks...");
-            var mods = LoadedMods.Values.ToArray();
-            foreach (var mod in mods)
+            ForceLoadedMods.Remove(modSupport.Attribute.Name);
+        }
+    }
+
+    // ReSharper disable once UnusedMember.Global
+    public static void Unload()
+    {
+        Logger.Log(nameof(GravityHelperModule), "Unloading third party hooks...");
+        var mods = LoadedMods.Values.ToArray();
+        foreach (var mod in mods)
+        {
+            if (mod.TryUnload())
             {
-                if (mod.TryUnload())
-                {
-                    LoadedMods.Remove(mod.Attribute.Name);
-                }
+                LoadedMods.Remove(mod.Attribute.Name);
             }
         }
     }

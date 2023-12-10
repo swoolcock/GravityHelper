@@ -5,37 +5,36 @@ using Monocle;
 
 // ReSharper disable InconsistentNaming
 
-namespace Celeste.Mod.GravityHelper.Hooks
+namespace Celeste.Mod.GravityHelper.Hooks;
+
+internal static class SnowballHooks
 {
-    internal static class SnowballHooks
+    public static void Load()
     {
-        public static void Load()
-        {
-            Logger.Log(nameof(GravityHelperModule), $"Loading {nameof(Snowball)} hooks...");
+        Logger.Log(nameof(GravityHelperModule), $"Loading {nameof(Snowball)} hooks...");
 
-            On.Celeste.Snowball.Update += Snowball_Update;
+        On.Celeste.Snowball.Update += Snowball_Update;
+    }
+
+
+    public static void Unload()
+    {
+        Logger.Log(nameof(GravityHelperModule), $"Unloading {nameof(Snowball)} hooks...");
+
+        On.Celeste.Snowball.Update -= Snowball_Update;
+    }
+
+    private static void Snowball_Update(On.Celeste.Snowball.orig_Update orig, Snowball self)
+    {
+        var bounceCollider = (Hitbox)self.bounceCollider;
+        var collider = self.Collider;
+
+        if (GravityHelperModule.ShouldInvertPlayer != bounceCollider.Top > collider.Top)
+        {
+            bounceCollider.Top = -bounceCollider.Bottom;
+            collider.Top = -collider.Bottom;
         }
 
-
-        public static void Unload()
-        {
-            Logger.Log(nameof(GravityHelperModule), $"Unloading {nameof(Snowball)} hooks...");
-
-            On.Celeste.Snowball.Update -= Snowball_Update;
-        }
-
-        private static void Snowball_Update(On.Celeste.Snowball.orig_Update orig, Snowball self)
-        {
-            var bounceCollider = (Hitbox)self.bounceCollider;
-            var collider = self.Collider;
-
-            if (GravityHelperModule.ShouldInvertPlayer != bounceCollider.Top > collider.Top)
-            {
-                bounceCollider.Top = -bounceCollider.Bottom;
-                collider.Top = -collider.Bottom;
-            }
-
-            orig(self);
-        }
+        orig(self);
     }
 }

@@ -3,34 +3,33 @@
 
 using Microsoft.Xna.Framework;
 
-namespace Celeste.Mod.GravityHelper
+namespace Celeste.Mod.GravityHelper;
+
+public enum GravityType
 {
-    public enum GravityType
+    None = -1,
+    Normal = 0,
+    Inverted,
+    Toggle,
+}
+
+internal static class GravityTypeExtensions
+{
+    public static GravityType Opposite(this GravityType type) => type switch
     {
-        None = -1,
-        Normal = 0,
-        Inverted,
-        Toggle,
-    }
+        GravityType.Normal => GravityType.Inverted,
+        GravityType.Inverted => GravityType.Normal,
+        _ => type,
+    };
 
-    internal static class GravityTypeExtensions
+    public static bool RequiresHooks(this GravityType type) =>
+        type == GravityType.Inverted || type == GravityType.Toggle;
+
+    public static Color Color(this GravityType type) => type switch
     {
-        public static GravityType Opposite(this GravityType type) => type switch
-        {
-            GravityType.Normal => GravityType.Inverted,
-            GravityType.Inverted => GravityType.Normal,
-            _ => type,
-        };
-
-        public static bool RequiresHooks(this GravityType type) =>
-            type == GravityType.Inverted || type == GravityType.Toggle;
-
-        public static Color Color(this GravityType type) => type switch
-        {
-            GravityType.Normal => Microsoft.Xna.Framework.Color.Blue,
-            GravityType.Inverted => Microsoft.Xna.Framework.Color.Red,
-            GravityType.Toggle => Microsoft.Xna.Framework.Color.Purple,
-            _ => Microsoft.Xna.Framework.Color.White,
-        };
-    }
+        GravityType.Normal => Microsoft.Xna.Framework.Color.Blue,
+        GravityType.Inverted => Microsoft.Xna.Framework.Color.Red,
+        GravityType.Toggle => Microsoft.Xna.Framework.Color.Purple,
+        _ => Microsoft.Xna.Framework.Color.White,
+    };
 }

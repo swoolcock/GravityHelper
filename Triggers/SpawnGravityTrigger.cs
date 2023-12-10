@@ -6,30 +6,29 @@ using Celeste.Mod.GravityHelper.Extensions;
 using Microsoft.Xna.Framework;
 using Monocle;
 
-namespace Celeste.Mod.GravityHelper.Triggers
+namespace Celeste.Mod.GravityHelper.Triggers;
+
+[CustomEntity("GravityHelper/SpawnGravityTrigger")]
+[Tracked]
+public class SpawnGravityTrigger : Entity
 {
-    [CustomEntity("GravityHelper/SpawnGravityTrigger")]
-    [Tracked]
-    public class SpawnGravityTrigger : Entity
+    public GravityType GravityType { get; }
+    public bool FireOnBubbleReturn { get; }
+
+    // ReSharper disable NotAccessedField.Local
+    private readonly VersionInfo _modVersion;
+    private readonly VersionInfo _pluginVersion;
+    // ReSharper restore NotAccessedField.Local
+
+    public SpawnGravityTrigger(EntityData data, Vector2 offset)
+        : base(data.Position + offset)
     {
-        public GravityType GravityType { get; }
-        public bool FireOnBubbleReturn { get; }
+        _modVersion = data.ModVersion();
+        _pluginVersion = data.PluginVersion();
 
-        // ReSharper disable NotAccessedField.Local
-        private readonly VersionInfo _modVersion;
-        private readonly VersionInfo _pluginVersion;
-        // ReSharper restore NotAccessedField.Local
-
-        public SpawnGravityTrigger(EntityData data, Vector2 offset)
-            : base(data.Position + offset)
-        {
-            _modVersion = data.ModVersion();
-            _pluginVersion = data.PluginVersion();
-
-            GravityType = (GravityType)data.Int("gravityType");
-            FireOnBubbleReturn = data.Bool("fireOnBubbleReturn", true);
-            Collider = new Hitbox(data.Width, data.Height);
-            Visible = Active = false;
-        }
+        GravityType = (GravityType)data.Int("gravityType");
+        FireOnBubbleReturn = data.Bool("fireOnBubbleReturn", true);
+        Collider = new Hitbox(data.Width, data.Height);
+        Visible = Active = false;
     }
 }

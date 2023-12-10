@@ -4,18 +4,17 @@
 using System;
 using Monocle;
 
-namespace Celeste.Mod.GravityHelper.Components
+namespace Celeste.Mod.GravityHelper.Components;
+
+[Tracked]
+internal class CassetteListener : Component
 {
-    [Tracked]
-    internal class CassetteListener : Component
-    {
-        public bool Enabled { get; set; } = true;
+    public bool Enabled { get; set; } = true;
 
-        public Action<int, bool> WillToggle { get; set; }
-        public Action<int> DidBecomeActive { get; set; }
-        public Action DidStop { get; set; }
+    public Action<int, bool> WillToggle { get; set; }
+    public Action<int> DidBecomeActive { get; set; }
+    public Action DidStop { get; set; }
 
-        public CassetteListener() : base(false, false) {
-        }
+    public CassetteListener() : base(false, false) {
     }
 }

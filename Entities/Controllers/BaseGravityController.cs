@@ -5,77 +5,76 @@ using Celeste.Mod.GravityHelper.Extensions;
 using Microsoft.Xna.Framework;
 using Monocle;
 
-namespace Celeste.Mod.GravityHelper.Entities.Controllers
+namespace Celeste.Mod.GravityHelper.Entities.Controllers;
+
+public abstract class BaseGravityController<TController> : BaseGravityController
+    where TController : BaseGravityController
 {
-    public abstract class BaseGravityController<TController> : BaseGravityController
-        where TController : BaseGravityController
+    protected BaseGravityController()
     {
-        protected BaseGravityController()
-        {
-        }
-
-        protected BaseGravityController(EntityData data, Vector2 offset)
-            : base(data, offset) {
-        }
-
-        public TController ActiveController => (Scene as Level)?.GetActiveController<TController>() ?? this as TController;
     }
 
-    public abstract class BaseGravityController : Entity
+    protected BaseGravityController(EntityData data, Vector2 offset)
+        : base(data, offset) {
+    }
+
+    public TController ActiveController => (Scene as Level)?.GetActiveController<TController>() ?? this as TController;
+}
+
+public abstract class BaseGravityController : Entity
+{
+    protected readonly VersionInfo ModVersion;
+    protected readonly VersionInfo PluginVersion;
+
+    /// <summary>
+    /// Whether or not this is the master controller that should handle everything for this type.
+    /// Get the persistent controller with Scene.GetPersistentController if you want to call a method.
+    /// Get the active controller with Scene.GetActiveController if you want to read a property.
+    /// </summary>
+    public bool Persistent { get; }
+
+    public bool Ephemeral { get; }
+
+    protected BaseGravityController()
     {
-        protected readonly VersionInfo ModVersion;
-        protected readonly VersionInfo PluginVersion;
+        ModVersion = new VersionInfo(0, 1);
+        PluginVersion = new VersionInfo(0, 1);
 
-        /// <summary>
-        /// Whether or not this is the master controller that should handle everything for this type.
-        /// Get the persistent controller with Scene.GetPersistentController if you want to call a method.
-        /// Get the active controller with Scene.GetActiveController if you want to read a property.
-        /// </summary>
-        public bool Persistent { get; }
+        Visible = Collidable = false;
+        Ephemeral = Active = Persistent = true;
 
-        public bool Ephemeral { get; }
+        AddTag(Tags.Global);
 
-        protected BaseGravityController()
+        Add(new TransitionListener
         {
-            ModVersion = new VersionInfo(0, 1);
-            PluginVersion = new VersionInfo(0, 1);
+            OnOutBegin = Transitioned,
+        });
+    }
 
-            Visible = Collidable = false;
-            Ephemeral = Active = Persistent = true;
+    protected BaseGravityController(EntityData data, Vector2 offset)
+        : base(data.Position + offset)
+    {
+        ModVersion = data.ModVersion();
+        PluginVersion = data.PluginVersion();
+        Position = data.Level.Position + new Vector2(16, 16);
 
-            AddTag(Tags.Global);
+        Visible = Collidable = false;
+        Active = Persistent = data.Bool("persistent", true);
 
+        AddTag(Tags.Global);
+
+        if (Persistent)
+        {
+            // note that we must use OnOutBegin since OnInBegin will only be called on
+            // entities that are part of the newly loaded room
             Add(new TransitionListener
             {
                 OnOutBegin = Transitioned,
             });
         }
+    }
 
-        protected BaseGravityController(EntityData data, Vector2 offset)
-            : base(data.Position + offset)
-        {
-            ModVersion = data.ModVersion();
-            PluginVersion = data.PluginVersion();
-            Position = data.Level.Position + new Vector2(16, 16);
-
-            Visible = Collidable = false;
-            Active = Persistent = data.Bool("persistent", true);
-
-            AddTag(Tags.Global);
-
-            if (Persistent)
-            {
-                // note that we must use OnOutBegin since OnInBegin will only be called on
-                // entities that are part of the newly loaded room
-                Add(new TransitionListener
-                {
-                    OnOutBegin = Transitioned,
-                });
-            }
-        }
-
-        public virtual void Transitioned()
-        {
-        }
+    public virtual void Transitioned()
+    {
     }
 }

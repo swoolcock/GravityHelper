@@ -10,42 +10,41 @@ using Monocle;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
 
-namespace Celeste.Mod.GravityHelper.ThirdParty
+namespace Celeste.Mod.GravityHelper.ThirdParty;
+
+[ThirdPartyMod("StaminaMeter")]
+internal class StaminaMeterModSupport : ThirdPartyModSupport
 {
-    [ThirdPartyMod("StaminaMeter")]
-    internal class StaminaMeterModSupport : ThirdPartyModSupport
+    // ReSharper disable once InconsistentNaming
+    private IDetour hook_SmallStaminaMeterDisplay_Render;
+
+    protected override void Load(GravityHelperModule.HookLevel hookLevel)
     {
-        // ReSharper disable once InconsistentNaming
-        private IDetour hook_SmallStaminaMeterDisplay_Render;
-
-        protected override void Load(GravityHelperModule.HookLevel hookLevel)
+        var ssmdt = ReflectionCache.StaminaMeterSmallStaminaMeterDisplayType;
+        var renderMethod = ssmdt?.GetMethod("Render", BindingFlags.Public | BindingFlags.Instance);
+        if (renderMethod != null)
         {
-            var ssmdt = ReflectionCache.StaminaMeterSmallStaminaMeterDisplayType;
-            var renderMethod = ssmdt?.GetMethod("Render", BindingFlags.Public | BindingFlags.Instance);
-            if (renderMethod != null)
-            {
-                hook_SmallStaminaMeterDisplay_Render = new ILHook(renderMethod, SmallStaminaMeterDisplay_Render);
-            }
+            hook_SmallStaminaMeterDisplay_Render = new ILHook(renderMethod, SmallStaminaMeterDisplay_Render);
         }
-
-        protected override void Unload()
-        {
-            hook_SmallStaminaMeterDisplay_Render?.Dispose();
-            hook_SmallStaminaMeterDisplay_Render = null;
-        }
-
-        private void SmallStaminaMeterDisplay_Render(ILContext il) => HookUtils.SafeHook(() =>
-        {
-            var cursor = new ILCursor(il);
-            if (!cursor.TryGotoNext(instr => instr.MatchLdfld<Entity>(nameof(Entity.Position))))
-                throw new HookException("Couldn't find player.Position");
-
-            cursor.EmitDelegate<Func<Entity, Vector2>>(player =>
-            {
-                if (!GravityHelperModule.ShouldInvertPlayer) return player.Position;
-                return player.BottomCenter + new Vector2(0f, 5f);
-            });
-            cursor.Emit(OpCodes.Br_S, cursor.Next.Next);
-        });
     }
+
+    protected override void Unload()
+    {
+        hook_SmallStaminaMeterDisplay_Render?.Dispose();
+        hook_SmallStaminaMeterDisplay_Render = null;
+    }
+
+    private void SmallStaminaMeterDisplay_Render(ILContext il) => HookUtils.SafeHook(() =>
+    {
+        var cursor = new ILCursor(il);
+        if (!cursor.TryGotoNext(instr => instr.MatchLdfld<Entity>(nameof(Entity.Position))))
+            throw new HookException("Couldn't find player.Position");
+
+        cursor.EmitDelegate<Func<Entity, Vector2>>(player =>
+        {
+            if (!GravityHelperModule.ShouldInvertPlayer) return player.Position;
+            return player.BottomCenter + new Vector2(0f, 5f);
+        });
+        cursor.Emit(OpCodes.Br_S, cursor.Next.Next);
+    });
 }

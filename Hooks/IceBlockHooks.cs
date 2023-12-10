@@ -4,31 +4,30 @@
 using Celeste.Mod.GravityHelper.Components;
 using Monocle;
 
-namespace Celeste.Mod.GravityHelper.Hooks
+namespace Celeste.Mod.GravityHelper.Hooks;
+
+internal static class IceBlockHooks
 {
-    internal static class IceBlockHooks
+    public static void Load()
     {
-        public static void Load()
-        {
-            Logger.Log(nameof(GravityHelperModule), $"Loading {nameof(IceBlock)} hooks...");
-            On.Celeste.IceBlock.Added += IceBlock_Added;
-        }
+        Logger.Log(nameof(GravityHelperModule), $"Loading {nameof(IceBlock)} hooks...");
+        On.Celeste.IceBlock.Added += IceBlock_Added;
+    }
 
-        public static void Unload()
-        {
-            Logger.Log(nameof(GravityHelperModule), $"Unloading {nameof(IceBlock)} hooks...");
-            On.Celeste.IceBlock.Added -= IceBlock_Added;
-        }
+    public static void Unload()
+    {
+        Logger.Log(nameof(GravityHelperModule), $"Unloading {nameof(IceBlock)} hooks...");
+        On.Celeste.IceBlock.Added -= IceBlock_Added;
+    }
 
-        private static void IceBlock_Added(On.Celeste.IceBlock.orig_Added orig, IceBlock self, Scene scene)
-        {
-            orig(self, scene);
+    private static void IceBlock_Added(On.Celeste.IceBlock.orig_Added orig, IceBlock self, Scene scene)
+    {
+        orig(self, scene);
 
-            var solid = self.solid;
-            var initialY = solid.Y;
+        var solid = self.solid;
+        var initialY = solid.Y;
 
-            self.Add(new PlayerGravityListener((player, args) =>
-                solid.Y = args.NewValue == GravityType.Inverted ? initialY - 1 : initialY));
-        }
+        self.Add(new PlayerGravityListener((player, args) =>
+            solid.Y = args.NewValue == GravityType.Inverted ? initialY - 1 : initialY));
     }
 }

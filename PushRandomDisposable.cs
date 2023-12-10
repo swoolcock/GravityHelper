@@ -4,23 +4,22 @@
 using System;
 using Monocle;
 
-namespace Celeste.Mod.GravityHelper
+namespace Celeste.Mod.GravityHelper;
+
+internal struct PushRandomDisposable : IDisposable
 {
-    internal struct PushRandomDisposable : IDisposable
+    public PushRandomDisposable(int seed)
     {
-        public PushRandomDisposable(int seed)
-        {
-            Calc.PushRandom(seed);
-        }
+        Calc.PushRandom(seed);
+    }
 
-        public PushRandomDisposable(Scene scene)
-        {
-            Calc.PushRandom(AreaData.Get(scene ?? Engine.Scene)?.ID ?? 0);
-        }
+    public PushRandomDisposable(Scene scene)
+    {
+        Calc.PushRandom(AreaData.Get(scene ?? Engine.Scene)?.ID ?? 0);
+    }
 
-        public void Dispose()
-        {
-            Calc.PopRandom();
-        }
+    public void Dispose()
+    {
+        Calc.PopRandom();
     }
 }

@@ -7,32 +7,31 @@ using Celeste.Mod.GravityHelper.Extensions;
 using Microsoft.Xna.Framework;
 using Monocle;
 
-namespace Celeste.Mod.GravityHelper.Triggers
+namespace Celeste.Mod.GravityHelper.Triggers;
+
+[Tracked]
+[CustomEntity("GravityHelper/VvvvvvTrigger")]
+public class VvvvvvTrigger : Trigger
 {
-    [Tracked]
-    [CustomEntity("GravityHelper/VvvvvvTrigger")]
-    public class VvvvvvTrigger : Trigger
+    public bool Enable { get; }
+    public bool OnlyOnSpawn { get; }
+
+    public VvvvvvTrigger(EntityData data, Vector2 offset)
+        : base(data, offset)
     {
-        public bool Enable { get; }
-        public bool OnlyOnSpawn { get; }
+        Enable = data.Bool("enable", true);
+        OnlyOnSpawn = data.Bool("onlyOnSpawn");
+    }
 
-        public VvvvvvTrigger(EntityData data, Vector2 offset)
-            : base(data, offset)
-        {
-            Enable = data.Bool("enable", true);
-            OnlyOnSpawn = data.Bool("onlyOnSpawn");
-        }
+    public override void OnEnter(Player player)
+    {
+        base.OnEnter(player);
 
-        public override void OnEnter(Player player)
-        {
-            base.OnEnter(player);
+        if (OnlyOnSpawn) return;
 
-            if (OnlyOnSpawn) return;
+        GravityHelperModule.Session.VvvvvvTrigger = Enable;
 
-            GravityHelperModule.Session.VvvvvvTrigger = Enable;
-
-            if (Scene.GetPersistentController<VvvvvvGravityController>() is { } vvvvvvGravityController)
-                vvvvvvGravityController.Transitioned();
-        }
+        if (Scene.GetPersistentController<VvvvvvGravityController>() is { } vvvvvvGravityController)
+            vvvvvvGravityController.Transitioned();
     }
 }

@@ -3,17 +3,16 @@
 
 using System;
 
-namespace Celeste.Mod.GravityHelper
+namespace Celeste.Mod.GravityHelper;
+
+internal struct InvokeOnDispose : IDisposable
 {
-    internal struct InvokeOnDispose : IDisposable
+    private readonly Action _action;
+
+    public InvokeOnDispose(Action action)
     {
-        private readonly Action _action;
-
-        public InvokeOnDispose(Action action)
-        {
-            _action = action;
-        }
-
-        public void Dispose() => _action?.Invoke();
+        _action = action;
     }
+
+    public void Dispose() => _action?.Invoke();
 }

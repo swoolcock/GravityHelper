@@ -4,21 +4,20 @@
 using System;
 using JetBrains.Annotations;
 
-namespace Celeste.Mod.GravityHelper.ThirdParty
-{
-    [MeansImplicitUse]
-    [AttributeUsage(AttributeTargets.Class)]
-    internal class ThirdPartyModAttribute : Attribute
-    {
-        public string Name { get; }
-        public string MinimumVersion { get; }
-        public string MaximumVersion { get; }
+namespace Celeste.Mod.GravityHelper.ThirdParty;
 
-        public ThirdPartyModAttribute(string name, string minimumVersion = null, string maximumVersion = null)
-        {
-            Name = name;
-            MinimumVersion = minimumVersion;
-            MaximumVersion = maximumVersion;
-        }
+[MeansImplicitUse]
+[AttributeUsage(AttributeTargets.Class)]
+internal class ThirdPartyModAttribute : Attribute
+{
+    public string Name { get; }
+    public string MinimumVersion { get; }
+    public string MaximumVersion { get; }
+
+    public ThirdPartyModAttribute(string name, string minimumVersion = null, string maximumVersion = null)
+    {
+        Name = name;
+        MinimumVersion = minimumVersion;
+        MaximumVersion = maximumVersion;
     }
 }

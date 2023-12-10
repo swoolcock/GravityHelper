@@ -5,83 +5,82 @@ using System;
 using Microsoft.Xna.Framework;
 using Monocle;
 
-namespace Celeste.Mod.GravityHelper.Entities
+namespace Celeste.Mod.GravityHelper.Entities;
+
+[Tracked]
+public class GravityRefillIndicator : Entity
 {
-    [Tracked]
-    public class GravityRefillIndicator : Entity
+    private const int columns = 3;
+
+    private string currentKey => GravityHelperModule.ShouldInvertPlayer ? "down" : "up";
+
+    private readonly Sprite _sprite;
+
+    public GravityRefillIndicator()
     {
-        private const int columns = 3;
+        Depth = Depths.Top;
 
-        private string currentKey => GravityHelperModule.ShouldInvertPlayer ? "down" : "up";
+        Tag = Tags.Persistent;
 
-        private readonly Sprite _sprite;
+        Add(_sprite = GFX.SpriteBank.Create("gravityRefillIndicator"));
+    }
 
-        public GravityRefillIndicator()
+    public override void Update()
+    {
+        base.Update();
+
+        if (Scene.Tracker.GetEntity<Player>() is not { } player)
         {
-            Depth = Depths.Top;
-
-            Tag = Tags.Persistent;
-
-            Add(_sprite = GFX.SpriteBank.Create("gravityRefillIndicator"));
+            Visible = false;
+            return;
         }
 
-        public override void Update()
+        var hasCharges = GravityRefill.NumberOfCharges > 0;
+        var offset = new Vector2(0, GravityHelperModule.ShouldInvertPlayer ? 20f : -20f);
+        Position = player.Position + offset;
+        Visible = hasCharges;
+
+        var key = currentKey;
+
+        if (_sprite.Animating && !hasCharges)
+            _sprite.Stop();
+        else if (!_sprite.Animating && hasCharges)
+            _sprite.Play(key, true);
+        else if (_sprite.Animating && _sprite.CurrentAnimationID != key)
         {
-            base.Update();
-
-            if (Scene.Tracker.GetEntity<Player>() is not { } player)
-            {
-                Visible = false;
-                return;
-            }
-
-            var hasCharges = GravityRefill.NumberOfCharges > 0;
-            var offset = new Vector2(0, GravityHelperModule.ShouldInvertPlayer ? 20f : -20f);
-            Position = player.Position + offset;
-            Visible = hasCharges;
-
-            var key = currentKey;
-
-            if (_sprite.Animating && !hasCharges)
-                _sprite.Stop();
-            else if (!_sprite.Animating && hasCharges)
-                _sprite.Play(key, true);
-            else if (_sprite.Animating && _sprite.CurrentAnimationID != key)
-            {
-                var frame = _sprite.CurrentAnimationFrame;
-                _sprite.Play(key);
-                _sprite.SetAnimationFrame(frame);
-            }
+            var frame = _sprite.CurrentAnimationFrame;
+            _sprite.Play(key);
+            _sprite.SetAnimationFrame(frame);
         }
+    }
 
-        public override void Render()
+    public override void Render()
+    {
+        if (!_sprite.Animating) return;
+
+        var numberOfCharges = GravityRefill.NumberOfCharges;
+        if (numberOfCharges == 0) return;
+
+        var rows = (int)Math.Ceiling(numberOfCharges / (float)columns);
+        var finalRowItems = numberOfCharges % columns;
+        if (finalRowItems == 0) finalRowItems = columns;
+        var yOffset = (int)_sprite.Height;
+        var xHalfOffset = (int)Math.Ceiling(_sprite.Width / 2f + 1);
+
+        if (!GravityHelperModule.ShouldInvertPlayer)
+            yOffset = -yOffset;
+
+        for (int row = 0; row < rows; row++)
         {
-            if (!_sprite.Animating) return;
-
-            var numberOfCharges = GravityRefill.NumberOfCharges;
-            if (numberOfCharges == 0) return;
-
-            var rows = (int)Math.Ceiling(numberOfCharges / (float)columns);
-            var finalRowItems = numberOfCharges % columns;
-            if (finalRowItems == 0) finalRowItems = columns;
-            var yOffset = (int)_sprite.Height;
-            var xHalfOffset = (int)Math.Ceiling(_sprite.Width / 2f + 1);
-
-            if (!GravityHelperModule.ShouldInvertPlayer)
-                yOffset = -yOffset;
-
-            for (int row = 0; row < rows; row++)
+            _sprite.Position.Y = row * yOffset;
+            int x = (columns - 1) * -xHalfOffset;
+            int rowItems = row < rows - 1 ? columns : finalRowItems;
+            x += (columns - rowItems) * xHalfOffset;
+            for (int column = 0; column < rowItems; column++)
             {
-                _sprite.Position.Y = row * yOffset;
-                int x = (columns - 1) * -xHalfOffset;
-                int rowItems = row < rows - 1 ? columns : finalRowItems;
-                x += (columns - rowItems) * xHalfOffset;
-                for (int column = 0; column < rowItems; column++)
-                {
-                    _sprite.Position.X = x;
-                    x += 2 * xHalfOffset;
-                    _sprite.Render();
-                }
+                _sprite.Position.X = x;
+                x += 2 * xHalfOffset;
+                _sprite.Render();
             }
         }
     }
