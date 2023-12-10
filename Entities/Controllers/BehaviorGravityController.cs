@@ -23,8 +23,10 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
         public bool SwitchOnHoldables { get; } = true;
         public bool DashToToggle { get; }
 
+        // ReSharper disable NotAccessedField.Local
         private readonly VersionInfo _modVersion;
         private readonly VersionInfo _pluginVersion;
+        // ReSharper restore NotAccessedField.Local
 
         // ReSharper disable once UnusedMember.Global
         public BehaviorGravityController()

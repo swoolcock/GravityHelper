@@ -21,8 +21,10 @@ namespace Celeste.Mod.GravityHelper.Entities
         public bool RefillsStamina { get; }
         public float RespawnTime { get; }
 
+        // ReSharper disable NotAccessedField.Local
         private readonly VersionInfo _modVersion;
         private readonly VersionInfo _pluginVersion;
+        // ReSharper restore NotAccessedField.Local
 
         // components
         private Sprite _sprite;

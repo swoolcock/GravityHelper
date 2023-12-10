@@ -19,7 +19,9 @@ namespace Celeste.Mod.GravityHelper.Components
         public Action FallParticles;
 
         // config
+#pragma warning disable CS0649
         public float FallDelay;
+#pragma warning restore CS0649
         public bool ShouldRumble = true;
         public bool ClimbFall = true;
         public float FallSpeed = 160f;
@@ -31,6 +33,7 @@ namespace Celeste.Mod.GravityHelper.Components
         public bool Triggered;
         public bool HasStartedFalling { get; private set; }
 
+        // ReSharper disable once NotAccessedField.Local
         private Coroutine _coroutine;
         private float _fallDelayRemaining;
         private bool _fallingUp;

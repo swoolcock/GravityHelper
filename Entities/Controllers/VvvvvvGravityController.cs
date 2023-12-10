@@ -1,6 +1,7 @@
 // Copyright (c) Shane Woolcock. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+using System;
 using System.Reflection;
 using Celeste.Mod.Entities;
 using Microsoft.Xna.Framework;
@@ -117,7 +118,7 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
 
             // see if an Extended Variant Jump(TM) is available
             if (ReflectionCache.ExtendedVariantsJumpCountGetJumpBufferMethodInfo != null)
-                jumpBuffer = (int)ReflectionCache.ExtendedVariantsJumpCountGetJumpBufferMethodInfo.Invoke(null, new object[0]);
+                jumpBuffer = (int)ReflectionCache.ExtendedVariantsJumpCountGetJumpBufferMethodInfo.Invoke(null, Array.Empty<object>());
 
             // we can flip if we're on the ground or have an extended variant jump
             return onGround || jumpBuffer > 0;

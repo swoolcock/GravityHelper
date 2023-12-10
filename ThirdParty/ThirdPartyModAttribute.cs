@@ -2,9 +2,11 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System;
+using JetBrains.Annotations;
 
 namespace Celeste.Mod.GravityHelper.ThirdParty
 {
+    [MeansImplicitUse]
     [AttributeUsage(AttributeTargets.Class)]
     internal class ThirdPartyModAttribute : Attribute
     {

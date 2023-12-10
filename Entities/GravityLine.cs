@@ -40,8 +40,10 @@ namespace Celeste.Mod.GravityHelper.Entities
         public Color LineColor { get; private set; }
         public float LineThickness { get; private set; }
 
+        // ReSharper disable NotAccessedField.Local
         private readonly VersionInfo _modVersion;
         private readonly VersionInfo _pluginVersion;
+        // ReSharper restore NotAccessedField.Local
 
         private readonly Dictionary<int, ComponentTracking> _trackedComponents = new();
 

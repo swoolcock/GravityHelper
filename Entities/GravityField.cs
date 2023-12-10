@@ -68,14 +68,17 @@ namespace Celeste.Mod.GravityHelper.Entities
         #region Private Helper Properties
 
         private GravityType arrowGravityType => ArrowType == VisualType.Default ? GravityType : (GravityType)ArrowType;
+        // ReSharper disable once UnusedMember.Local
         private GravityType fieldGravityType => FieldType == VisualType.Default ? GravityType : (GravityType)FieldType;
         private bool shouldDrawArrows => !(ArrowType == VisualType.None || ArrowType == VisualType.Default && GravityType == GravityType.None);
         private bool shouldDrawField => !(FieldType == VisualType.None || FieldType == VisualType.Default && GravityType == GravityType.None);
 
         #endregion
 
+        // ReSharper disable NotAccessedField.Local
         private readonly VersionInfo _modVersion;
         private readonly VersionInfo _pluginVersion;
+        // ReSharper restore NotAccessedField.Local
 
         private MTexture _arrowTexture;
         private MTexture _arrowSmallTexture;
@@ -83,6 +86,7 @@ namespace Celeste.Mod.GravityHelper.Entities
         private Vector2 _arrowSmallOrigin;
         private Vector2 _arrowShakeOffset;
 
+        // ReSharper disable once NotAccessedField.Local
         private readonly Hitbox _normalHitbox;
         private readonly Hitbox _staticMoverHitbox;
 
@@ -90,7 +94,7 @@ namespace Celeste.Mod.GravityHelper.Entities
         private readonly float[] _speeds = { 12f, 20f, 40f };
         private GravityFieldGroup _fieldGroup;
         private Vector2 _staticMoverOffset;
-        private CassetteComponent _cassetteComponent;
+        private readonly CassetteComponent _cassetteComponent;
 
         #region Managed by owner
 

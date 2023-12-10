@@ -17,8 +17,10 @@ namespace Celeste.Mod.GravityHelper.Entities
         public float RespawnTime { get; }
         public float ShieldTime { get; }
 
+        // ReSharper disable NotAccessedField.Local
         private readonly VersionInfo _modVersion;
         private readonly VersionInfo _pluginVersion;
+        // ReSharper restore NotAccessedField.Local
 
         private Level _level;
         private float _respawnTimeRemaining;

@@ -25,7 +25,7 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers
         public CassetteGravityController()
         {
             // ephemeral controller
-            CassetteSequence = new GravityType[0];
+            CassetteSequence = Array.Empty<GravityType>();
             MomentumMultiplier = 1f;
         }
 

@@ -13,8 +13,10 @@ namespace Celeste.Mod.GravityHelper.Entities
     [Tracked]
     public class UpsideDownJumpThru : JumpThru
     {
+        // ReSharper disable NotAccessedField.Local
         private readonly VersionInfo _modVersion;
         private readonly VersionInfo _pluginVersion;
+        // ReSharper restore NotAccessedField.Local
 
         private readonly int _columns;
         private readonly string _overrideTexture;

@@ -7,6 +7,11 @@ using System.Linq;
 using Microsoft.Xna.Framework;
 using Monocle;
 
+// ReSharper disable MemberCanBePrivate.Local
+// ReSharper disable NotAccessedField.Local
+// ReSharper disable InconsistentNaming
+// ReSharper disable FieldCanBeMadeReadOnly.Local
+
 namespace Celeste.Mod.GravityHelper.Entities
 {
     public class ConnectedFieldRenderer<TEntity> : Entity

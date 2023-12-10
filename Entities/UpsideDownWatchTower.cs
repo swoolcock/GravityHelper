@@ -22,8 +22,10 @@ namespace Celeste.Mod.GravityHelper.Entities
             new[] {"lookingUpLeft", "lookingDownLeft"},
         };
 
+        // ReSharper disable NotAccessedField.Local
         private readonly VersionInfo _modVersion;
         private readonly VersionInfo _pluginVersion;
+        // ReSharper restore NotAccessedField.Local
 
         private bool _addedUI;
 
@@ -46,7 +48,7 @@ namespace Celeste.Mod.GravityHelper.Entities
             sprite.Position.Y *= -1;
             sprite.Scale.Y *= -1;
 
-            var animations = sprite.GetAnimations();
+            var animations = sprite.Animations;
             bool failedKey = false;
 
             foreach (var prefix in prefixes)

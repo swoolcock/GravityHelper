@@ -12,12 +12,14 @@ namespace Celeste.Mod.GravityHelper.Hooks
 {
     internal static class AngryOshiroHooks
     {
+        // ReSharper disable UnusedMember.Local
         private const int StChase = 0;
         private const int StChargeUp = 1;
         private const int StAttack = 2;
         private const int StDummy = 3;
         private const int StWaiting = 4;
         private const int StHurt = 5;
+        // ReSharper restore UnusedMember.Local
 
         public static void Load()
         {

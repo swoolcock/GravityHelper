@@ -16,8 +16,10 @@ namespace Celeste.Mod.GravityHelper.Entities
     [TrackedAs(typeof(DreamBlock))]
     public class GravityDreamBlock : DreamBlock
     {
+        // ReSharper disable NotAccessedField.Local
         private readonly VersionInfo _modVersion;
         private readonly VersionInfo _pluginVersion;
+        // ReSharper restore NotAccessedField.Local
 
         private readonly FallingComponent _fallingComponent;
 

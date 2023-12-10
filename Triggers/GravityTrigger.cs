@@ -35,8 +35,10 @@ namespace Celeste.Mod.GravityHelper.Triggers
         public virtual bool ShouldAffectPlayer => true;
         protected bool AffectsNothing => !AffectsPlayer && !AffectsHoldableActors && !AffectsOtherActors;
 
+        // ReSharper disable NotAccessedField.Local
         private readonly VersionInfo _modVersion;
         private readonly VersionInfo _pluginVersion;
+        // ReSharper restore NotAccessedField.Local
 
         private readonly bool _defaultToController;
         private string _normalSound;

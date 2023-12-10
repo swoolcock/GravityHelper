@@ -13,8 +13,10 @@ namespace Celeste.Mod.GravityHelper.Entities
     [CustomEntity("GravityHelper/GravityBadelineBoost")]
     public class GravityBadelineBoost : BadelineBoost
     {
+        // ReSharper disable NotAccessedField.Local
         private readonly VersionInfo _modVersion;
         private readonly VersionInfo _pluginVersion;
+        // ReSharper restore NotAccessedField.Local
 
         public GravityType GravityType { get; }
         public string NodeGravityTypes { get; }

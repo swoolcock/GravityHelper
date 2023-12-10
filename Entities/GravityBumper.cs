@@ -21,8 +21,10 @@ namespace Celeste.Mod.GravityHelper.Entities
         private static ParticleType P_Launch_Toggle;
         // ReSharper restore InconsistentNaming
 
+        // ReSharper disable NotAccessedField.Local
         private readonly VersionInfo _modVersion;
         private readonly VersionInfo _pluginVersion;
+        // ReSharper restore NotAccessedField.Local
 
         public GravityType GravityType { get; }
         public bool IgnoreCoreMode { get; }

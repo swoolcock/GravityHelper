@@ -15,8 +15,10 @@ namespace Celeste.Mod.GravityHelper.Triggers
         public GravityType GravityType { get; }
         public bool FireOnBubbleReturn { get; }
 
+        // ReSharper disable NotAccessedField.Local
         private readonly VersionInfo _modVersion;
         private readonly VersionInfo _pluginVersion;
+        // ReSharper restore NotAccessedField.Local
 
         public SpawnGravityTrigger(EntityData data, Vector2 offset)
             : base(data.Position + offset)

@@ -36,8 +36,10 @@ namespace Celeste.Mod.GravityHelper.Entities
             _ => id,
         };
 
+        // ReSharper disable NotAccessedField.Local
         private readonly VersionInfo _modVersion;
         private readonly VersionInfo _pluginVersion;
+        // ReSharper restore NotAccessedField.Local
 
         private float _cooldownRemaining;
 

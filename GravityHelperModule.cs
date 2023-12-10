@@ -10,6 +10,7 @@ using Celeste.Mod.GravityHelper.Hooks;
 using Celeste.Mod.GravityHelper.ThirdParty;
 using Celeste.Mod.GravityHelper.ThirdParty.CelesteNet;
 using FMOD.Studio;
+using JetBrains.Annotations;
 using Monocle;
 using MonoMod.ModInterop;
 using Microsoft.Xna.Framework;
@@ -30,7 +31,7 @@ namespace Celeste.Mod.GravityHelper
         internal static PlayerGravityComponent PlayerComponent { get; set; }
         internal static bool ShouldInvertPlayer => PlayerComponent?.ShouldInvert ?? false;
         internal static bool ShouldInvertPlayerChecked => PlayerComponent?.ShouldInvertChecked ?? false;
-        internal static int OverrideSemaphore = 0;
+        internal static int OverrideSemaphore;
 
         private static object _speedrunToolSaveLoadAction;
 
@@ -305,6 +306,7 @@ namespace Celeste.Mod.GravityHelper
         {
         }
 
+        [UsedImplicitly]
         [Command("gravity", "Changes the current gravity (0 = normal, 1 = inverted, 2 = toggle)")]
         private static void CmdSetGravity(int gravityType = -1)
         {
@@ -321,6 +323,7 @@ namespace Celeste.Mod.GravityHelper
             Engine.Commands.Log($"Current gravity is now: {PlayerComponent?.CurrentGravity ?? GravityType.Normal}");
         }
 
+        [UsedImplicitly]
         [Command("initial_gravity", "Changes the room entry/spawn gravity (0 = normal, 1 = inverted)")]
         private static void CmdSetInitialGravity(int gravityType = -1)
         {
