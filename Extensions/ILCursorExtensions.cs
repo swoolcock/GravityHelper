@@ -9,6 +9,8 @@ using Monocle;
 using MonoMod.Cil;
 using MonoMod.Utils;
 
+// ReSharper disable UnusedMember.Global
+
 namespace Celeste.Mod.GravityHelper.Extensions;
 
 internal static class ILCursorExtensions

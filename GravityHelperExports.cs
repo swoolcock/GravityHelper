@@ -9,6 +9,8 @@ using Microsoft.Xna.Framework;
 using Monocle;
 using MonoMod.ModInterop;
 
+// ReSharper disable UnusedMember.Global
+
 namespace Celeste.Mod.GravityHelper;
 
 [ModExportName("GravityHelper")]

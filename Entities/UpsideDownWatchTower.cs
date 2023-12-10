@@ -4,6 +4,7 @@
 using Celeste.Mod.Entities;
 using Celeste.Mod.GravityHelper.Components;
 using Celeste.Mod.GravityHelper.Extensions;
+using JetBrains.Annotations;
 using Microsoft.Xna.Framework;
 using Monocle;
 
@@ -11,6 +12,7 @@ namespace Celeste.Mod.GravityHelper.Entities;
 
 [CustomEntity("GravityHelper/UpsideDownWatchTower")]
 [TrackedAs(typeof(Lookout))]
+[UsedImplicitly]
 public class UpsideDownWatchTower : Lookout
 {
     private static readonly string[] prefixes = {"", "badeline_", "nobackpack_"};

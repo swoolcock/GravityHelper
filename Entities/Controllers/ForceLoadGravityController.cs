@@ -23,7 +23,7 @@ public class ForceLoadGravityController : BaseGravityController<ForceLoadGravity
 
     public static void Load()
     {
-        Logger.Log(nameof(GravityHelperModule), $"Loading render-only hooks...");
+        Logger.Log(nameof(GravityHelperModule), "Loading render-only hooks...");
 
         On.Celeste.BadelineDummy.Render += BadelineDummy_Render;
         On.Celeste.PlayerSprite.Render += PlayerSprite_Render;
@@ -33,7 +33,7 @@ public class ForceLoadGravityController : BaseGravityController<ForceLoadGravity
 
     public static void Unload()
     {
-        Logger.Log(nameof(GravityHelperModule), $"Unloading render-only hooks...");
+        Logger.Log(nameof(GravityHelperModule), "Unloading render-only hooks...");
 
         On.Celeste.BadelineDummy.Render -= BadelineDummy_Render;
         On.Celeste.PlayerSprite.Render -= PlayerSprite_Render;

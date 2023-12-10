@@ -91,7 +91,7 @@ public class GravityHelperModule : EverestModule
 
     public override void Unload()
     {
-        Logger.Log(LogLevel.Info, nameof(GravityHelperModule), $"Unloading bootstrap hooks...");
+        Logger.Log(LogLevel.Info, nameof(GravityHelperModule), "Unloading bootstrap hooks...");
         On.Celeste.LevelLoader.ctor -= LevelLoader_ctor;
         On.Celeste.OverworldLoader.ctor -= OverworldLoader_ctor;
         updateHooks(HookLevel.None);

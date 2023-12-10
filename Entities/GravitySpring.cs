@@ -8,6 +8,7 @@ using Celeste.Mod.Entities;
 using Celeste.Mod.GravityHelper.Components;
 using Celeste.Mod.GravityHelper.Entities.Controllers;
 using Celeste.Mod.GravityHelper.Extensions;
+using JetBrains.Annotations;
 using Microsoft.Xna.Framework;
 using Monocle;
 
@@ -51,15 +52,19 @@ public class GravitySpring : Spring
     private IndicatorRenderer _indicatorRenderer;
     private Vector2 _indicatorShakeOffset;
 
+    [UsedImplicitly]
     public static Entity LoadFloor(Level level, LevelData levelData, Vector2 offset, EntityData entityData) =>
         new GravitySpring(entityData, offset, Orientations.Floor);
 
+    [UsedImplicitly]
     public static Entity LoadCeiling(Level level, LevelData levelData, Vector2 offset, EntityData entityData) =>
         new GravitySpring(entityData, offset, Orientations.Ceiling);
 
+    [UsedImplicitly]
     public static Entity LoadWallLeft(Level level, LevelData levelData, Vector2 offset, EntityData entityData) =>
         new GravitySpring(entityData, offset, Orientations.WallLeft);
 
+    [UsedImplicitly]
     public static Entity LoadWallRight(Level level, LevelData levelData, Vector2 offset, EntityData entityData) =>
         new GravitySpring(entityData, offset, Orientations.WallRight);
 

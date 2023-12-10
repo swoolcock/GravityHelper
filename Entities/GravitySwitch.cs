@@ -5,12 +5,14 @@ using Celeste.Mod.Entities;
 using Celeste.Mod.GravityHelper.Components;
 using Celeste.Mod.GravityHelper.Entities.Controllers;
 using Celeste.Mod.GravityHelper.Extensions;
+using JetBrains.Annotations;
 using Microsoft.Xna.Framework;
 using Monocle;
 
 namespace Celeste.Mod.GravityHelper.Entities;
 
 [CustomEntity("GravityHelper/GravitySwitch")]
+[UsedImplicitly]
 public class GravitySwitch : Entity
 {
     public float Cooldown { get; private set; }

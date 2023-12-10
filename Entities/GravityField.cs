@@ -513,6 +513,7 @@ public class GravityField : GravityTrigger, IConnectableField
         }
     }
 
+    // ReSharper disable UnusedMember.Global
     public enum VisualType
     {
         Default = -2,
@@ -521,4 +522,5 @@ public class GravityField : GravityTrigger, IConnectableField
         Inverted,
         Toggle,
     }
+    // ReSharper restore UnusedMember.Global
 }

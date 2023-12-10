@@ -6,6 +6,7 @@ using Monocle;
 
 namespace Celeste.Mod.GravityHelper.Extensions;
 
+// ReSharper disable once UnusedMember.Global
 internal static class ColorExtensions
 {
     public static Color Lighter(this Color color, float amount = 0.1f) => new Color(
@@ -14,5 +15,6 @@ internal static class ColorExtensions
         Calc.Clamp(color.B + amount, 0f, 1f),
         color.A);
 
+    // ReSharper disable once UnusedMember.Global
     public static Color Darker(this Color color, float amount = 0.1f) => color.Lighter(-amount);
 }

@@ -3,6 +3,9 @@
 
 using System;
 
+// ReSharper disable UnusedMember.Global
+// ReSharper disable InconsistentNaming
+
 namespace Celeste.Mod.GravityHelper;
 
 public struct VersionInfo : IComparable<VersionInfo> {

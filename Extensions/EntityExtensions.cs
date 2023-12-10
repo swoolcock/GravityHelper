@@ -10,6 +10,7 @@ using Microsoft.Xna.Framework;
 using Monocle;
 using MonoMod.Utils;
 
+// ReSharper disable UnusedMember.Global
 // ReSharper disable InconsistentNaming
 
 namespace Celeste.Mod.GravityHelper.Extensions;

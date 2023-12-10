@@ -57,6 +57,7 @@ internal static class TrackerExtensions
         return persistent;
     }
 
+    // ReSharper disable once UnusedMember.Global
     public static T GetEntityOrDefault<T>(this Tracker tracker, Func<T, bool> predicate = null)
         where T : Entity
     {
@@ -82,6 +83,7 @@ internal static class TrackerExtensions
         return predicate == null ? list : list.Where(predicate);
     }
 
+    // ReSharper disable once UnusedMember.Global
     public static T GetComponentOrDefault<T>(this Tracker tracker, Func<T, bool> predicate = null)
         where T : Component
     {
@@ -92,6 +94,7 @@ internal static class TrackerExtensions
             : list.FirstOrDefault(c => predicate(c as T)) as T;
     }
 
+    // ReSharper disable once UnusedMember.Global
     public static IEnumerable<Component> GetComponentsOrEmpty<T>(this Tracker tracker, Func<T, bool> predicate = null)
         where T : Component
     {
@@ -100,6 +103,7 @@ internal static class TrackerExtensions
         return predicate == null ? list : list.Where(e => predicate(e as T));
     }
 
+    // ReSharper disable once UnusedMember.Global
     public static IEnumerable<Component> GetComponentsOrEmpty(this Tracker tracker, Type entityType, Func<Component, bool> predicate = null)
     {
         if (entityType == null || !tracker.Components.TryGetValue(entityType, out var list))

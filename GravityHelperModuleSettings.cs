@@ -53,7 +53,7 @@ public class GravityHelperModuleSettings : EverestModuleSettings
     public void CreateModMenuSection(TextMenu menu, bool inGame, EventInstance snapshot)
     {
         // AllowInAllMaps
-        var a = menu.AddWithDescription(new ColorChangeOnOff(Dialog.Clean("GRAVITYHELPER_MENU_ALLOW_IN_ALL_MAPS"), AllowInAllMaps)
+        menu.AddWithDescription(new ColorChangeOnOff(Dialog.Clean("GRAVITYHELPER_MENU_ALLOW_IN_ALL_MAPS"), AllowInAllMaps)
         {
             Disabled = inGame,
             OnValueChange = value => AllowInAllMaps = value,

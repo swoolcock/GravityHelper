@@ -10,7 +10,7 @@ internal class DataPlayerGravity : DataType<DataPlayerGravity>
 {
     static DataPlayerGravity()
     {
-        DataID = $"GravityHelper_PlayerGravity";
+        DataID = "GravityHelper_PlayerGravity";
     }
 
     public override DataFlags DataFlags => DataFlags.CoreType;
@@ -36,6 +36,7 @@ internal class DataPlayerGravity : DataType<DataPlayerGravity>
 
     protected override void Read(CelesteNetBinaryReader reader)
     {
+        // ReSharper disable once UnusedVariable
         var protocolVersion = reader.ReadInt32();
         GravityType = (GravityType)reader.ReadInt32();
     }

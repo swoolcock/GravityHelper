@@ -72,6 +72,7 @@ internal class CelesteNetGravityComponent : GameComponent
         base.Update(gameTime);
     }
 
+    // ReSharper disable once UnusedMember.Global
     public void Handle(CelesteNetConnection connection, DataPlayerGravity data) => _updateQueue.Enqueue(() =>
     {
         var ghost = Engine.Scene?.Tracker

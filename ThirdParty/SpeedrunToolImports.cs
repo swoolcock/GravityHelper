@@ -5,6 +5,8 @@ using System;
 using System.Collections.Generic;
 using MonoMod.ModInterop;
 
+#pragma warning disable CA2211
+
 namespace Celeste.Mod.GravityHelper.ThirdParty;
 
 [ModImportName("SpeedrunTool.SaveLoad")]

@@ -4,6 +4,8 @@
 using System;
 using Monocle;
 
+// ReSharper disable UnusedMember.Global
+
 namespace Celeste.Mod.GravityHelper.Extensions;
 
 internal static class BasicExtensions
