@@ -125,7 +125,7 @@ namespace Celeste.Mod.GravityHelper
                 Logger.Log(LogLevel.Info, nameof(GravityHelperModule), "Unloading all hooks...");
                 ThirdPartyHooks.Unload();
 
-                On.Celeste.Mod.AssetReloadHelper.ReloadLevel -= AssetReloadHelper_ReloadLevel;
+                Everest.Events.AssetReload.OnBeforeReload -= AssetReload_OnBeforeReload;
 
                 ActorHooks.Unload();
                 AngryOshiroHooks.Unload();
@@ -182,7 +182,7 @@ namespace Celeste.Mod.GravityHelper
                 Logger.Log(LogLevel.Info, nameof(GravityHelperModule), "Loading all hooks...");
                 ThirdPartyHooks.Load(requiredHookLevel);
 
-                On.Celeste.Mod.AssetReloadHelper.ReloadLevel += AssetReloadHelper_ReloadLevel;
+                Everest.Events.AssetReload.OnBeforeReload += AssetReload_OnBeforeReload;
 
                 ActorHooks.Load();
                 AngryOshiroHooks.Load();
@@ -226,10 +226,9 @@ namespace Celeste.Mod.GravityHelper
             }
         }
 
-        private static void AssetReloadHelper_ReloadLevel(On.Celeste.Mod.AssetReloadHelper.orig_ReloadLevel orig)
+        private static void AssetReload_OnBeforeReload(bool silent)
         {
             Instance.GravityBeforeReload = PlayerComponent?.CurrentGravity;
-            orig();
         }
 
         private static void OverworldLoader_ctor(On.Celeste.OverworldLoader.orig_ctor orig, OverworldLoader self, Overworld.StartMode startmode, HiresSnow snow)
