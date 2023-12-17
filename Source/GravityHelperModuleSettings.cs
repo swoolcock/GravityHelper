@@ -25,7 +25,7 @@ public class GravityHelperModuleSettings : EverestModuleSettings
     public VvvvvvSetting VvvvvvAllowGrabbing { get; set; }
     public VvvvvvSetting VvvvvvAllowDashing { get; set; }
     public bool ReplaceRefills { get; set; }
-    public bool MHHUDJTCornerCorrection { get; set; }
+    public bool MHHUDJTCornerCorrection { get; set; } = true;
     public ButtonBinding ToggleInvertGravity { get; set; }
 
     // default to zero to indicate this is the first execution since versioning was introduced
@@ -165,11 +165,7 @@ public class GravityHelperModuleSettings : EverestModuleSettings
         // bail if no migration required
         if (SettingsVersion >= LatestSettingsVersion) return;
 
-        if (SettingsVersion == 0)
-        {
-            // version 0 requires us to reset MHH corner correction to the new default of false
-            MHHUDJTCornerCorrection = false;
-        }
+        // TODO: any required migration
 
         SettingsVersion = LatestSettingsVersion;
     }
