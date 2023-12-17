@@ -121,7 +121,7 @@ public class GravityHelperModule : EverestModule
             ForceLoadGravityController.Unload();
         }
         // or unload everything
-        else if (CurrentHookLevel == HookLevel.Everything)
+        else if (CurrentHookLevel == HookLevel.Everything || CurrentHookLevel == HookLevel.Forced)
         {
             Logger.Log(LogLevel.Info, nameof(GravityHelperModule), "Unloading all hooks...");
             ThirdPartyHooks.Unload();
