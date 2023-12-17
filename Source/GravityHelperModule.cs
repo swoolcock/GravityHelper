@@ -29,7 +29,7 @@ public class GravityHelperModule : EverestModule
     public static GravityHelperModule Instance { get; private set; }
 
     internal static PlayerGravityComponent PlayerComponent { get; set; }
-    internal static bool ShouldInvertPlayer => PlayerComponent?.ShouldInvert ?? false;
+    public static bool ShouldInvertPlayer => PlayerComponent?.ShouldInvert ?? false;
     internal static bool ShouldInvertPlayerChecked => PlayerComponent?.ShouldInvertChecked ?? false;
     internal static int OverrideSemaphore;
 
