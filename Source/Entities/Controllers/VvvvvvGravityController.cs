@@ -101,7 +101,7 @@ public class VvvvvvGravityController : BaseGravityController<VvvvvvGravityContro
         if (player.dreamJump) return;
 
         // on ground or within coyote frames
-        var onGround = player.OnGround() || player.jumpGraceTimer > 0;
+        var onGround = player.onGround || player.jumpGraceTimer > 0;
 
         // if we're not on ground, see if we have any Extended Variant Jumps(TM)
         int extVarJumps = 0;
