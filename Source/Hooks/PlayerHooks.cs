@@ -1461,17 +1461,20 @@ internal static class PlayerHooks
         var level = self.SceneAs<Level>();
 
         // vvvvvv should be ignored if paused or in cutscene
-        var checkVvvvvv = !level.InCutscene && !level.Paused;
-        var vvvvvvController = self.Scene.GetPersistentController<VvvvvvGravityController>();
-
-        // try to consume a jump for vvvvvv if required
-        if (checkVvvvvv) vvvvvvController?.CheckJump(self);
+        if (!level.InCutscene && !level.Paused && self.Scene.GetPersistentController<VvvvvvGravityController>() is { } vvvvvvController)
+        {
+            // CheckJump() will consume jump and set a buffer time
+            vvvvvvController.CheckJump(self);
+            // TryFlip() will check Player.onGround to ensure Madeline has been on the ground for at least one frame
+            // this ensures her dash and stamina refills
+            vvvvvvController.TryFlip(self);
+        }
 
         var shouldInvert = GravityHelperModule.ShouldInvertPlayer;
         var useAbsolute = GravityHelperModule.Settings.ControlScheme == GravityHelperModuleSettings.ControlSchemeSetting.Absolute;
         var useAbsoluteFeather = GravityHelperModule.Settings.FeatherControlScheme == GravityHelperModuleSettings.ControlSchemeSetting.Absolute;
 
-        // invert inputs if should
+        // invert inputs if we should
         if (shouldInvert)
         {
             if (useAbsolute)
@@ -1499,9 +1502,6 @@ internal static class PlayerHooks
                 Input.Aim.Value = aim;
             }
         }
-
-        // try to do the VVVVVV flip
-        if (checkVvvvvv) vvvvvvController?.TryFlip(self);
     }
 
     private static void Player_WindMove(On.Celeste.Player.orig_WindMove orig, Player self, Vector2 move) =>
