@@ -28,7 +28,6 @@ public class VvvvvvGravityController : BaseGravityController<VvvvvvGravityContro
 
     private bool _dashDisabled;
     private float _bufferTimeRemaining;
-    private bool _autoFlip;
 
     private const float flip_buffer_seconds = 0.1f;
     private const string default_flip_sound = "event:/gravityhelper/toggle";
@@ -83,62 +82,52 @@ public class VvvvvvGravityController : BaseGravityController<VvvvvvGravityContro
         var jumpPressed = Input.Jump.Pressed;
         Input.Jump.ConsumePress();
 
-        // do nothing if we don't press jump
+        // do nothing if we didn't press jump
         if (!jumpPressed) return;
 
-        if (canFlip(player, out var jumpBuffer))
-        {
-            // consume an Extended Variant Jump(TM)
-            if (jumpBuffer > 0)
-                ReflectionCache.ExtendedVariantsJumpCountSetJumpCountMethodInfo?.Invoke(null, new object[] { jumpBuffer - 1, false });
-            // do the flip right now
-            doFlip(player);
-        }
-        else
-        {
-            // delay the flip until we're able to
-            _autoFlip = true;
-            _bufferTimeRemaining = flip_buffer_seconds;
-        }
+        // set jump buffer, we'll check it afterwards
+        _bufferTimeRemaining = flip_buffer_seconds;
     }
 
-    private bool canFlip(Player player, out int jumpBuffer)
+    public void TryFlip(Player player)
     {
-        // assume no extended variants jumps
-        jumpBuffer = 0;
+        // bail if no jump has been buffered
+        if (_bufferTimeRemaining <= 0) return;
 
         // for now we'll only allow normal state
-        if (player.StateMachine != Player.StNormal) return false;
+        if (player.StateMachine != Player.StNormal) return;
 
         // never allow from dream jumps
-        if (player.dreamJump) return false;
+        if (player.dreamJump) return;
 
         // on ground or within coyote frames
         var onGround = player.OnGround() || player.jumpGraceTimer > 0;
 
-        // see if an Extended Variant Jump(TM) is available
-        if (ReflectionCache.ExtendedVariantsJumpCountGetJumpBufferMethodInfo != null)
-            jumpBuffer = (int)ReflectionCache.ExtendedVariantsJumpCountGetJumpBufferMethodInfo.Invoke(null, Array.Empty<object>());
+        // if we're not on ground, see if we have any Extended Variant Jumps(TM)
+        int extVarJumps = 0;
+        if (!onGround && ReflectionCache.ExtendedVariantsJumpCountGetJumpBufferMethodInfo != null)
+            extVarJumps = (int)ReflectionCache.ExtendedVariantsJumpCountGetJumpBufferMethodInfo.Invoke(null, Array.Empty<object>());
 
-        // we can flip if we're on the ground or have an extended variant jump
-        return onGround || jumpBuffer > 0;
-    }
+        // consume an Extended Variant Jump(TM) if we can
+        if (extVarJumps > 0)
+            ReflectionCache.ExtendedVariantsJumpCountSetJumpCountMethodInfo?.Invoke(null, new object[] { extVarJumps - 1, false });
+        // otherwise bail if we're not on ground
+        else if (!onGround)
+            return;
 
-    private void doFlip(Player player)
-    {
-        _autoFlip = false;
-        _bufferTimeRemaining = 0f;
+        // reset autoflip
+        _bufferTimeRemaining = -1f;
 
+        // flip the player
         var active = ActiveController;
-
         GravityHelperModule.PlayerComponent?.SetGravity(GravityType.Toggle, instant: true);
 
+        // play a sound if we should
         var flipSound = active.FlipSound;
         if (GravityHelperModule.Settings.VvvvvvFlipSound == GravityHelperModuleSettings.VvvvvvSetting.Enabled)
             flipSound = string.IsNullOrWhiteSpace(flipSound) ? default_flip_sound : flipSound;
         else if (GravityHelperModule.Settings.VvvvvvFlipSound == GravityHelperModuleSettings.VvvvvvSetting.Disabled)
             flipSound = string.Empty;
-
         if (!string.IsNullOrEmpty(flipSound))
             Audio.Play(flipSound);
     }
@@ -159,11 +148,7 @@ public class VvvvvvGravityController : BaseGravityController<VvvvvvGravityContro
         }
 
         if (_bufferTimeRemaining > 0)
-        {
             _bufferTimeRemaining -= Engine.DeltaTime;
-            if (_autoFlip && Scene.Tracker.GetEntity<Player>() is { } player && canFlip(player, out _))
-                doFlip(player);
-        }
     }
 
     private void updateInventory()

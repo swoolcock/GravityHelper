@@ -1453,46 +1453,55 @@ internal static class PlayerHooks
 
     private static void Player_Update(On.Celeste.Player.orig_Update orig, Player self)
     {
-        var featherY = Input.Feather.Value.Y;
-        var aimY = Input.Aim.Value.Y;
+        // cache current inputs
+        var feather = Input.Feather.Value;
+        var aim = Input.Aim.Value;
         var moveY = Input.MoveY.Value;
         var gliderMoveY = Input.GliderMoveY.Value;
         var level = self.SceneAs<Level>();
 
-        if (!level.InCutscene && !level.Paused)
-        {
-            self.Scene.GetPersistentController<VvvvvvGravityController>()?.CheckJump(self);
-        }
+        // vvvvvv should be ignored if paused or in cutscene
+        var checkVvvvvv = !level.InCutscene && !level.Paused;
+        var vvvvvvController = self.Scene.GetPersistentController<VvvvvvGravityController>();
+
+        // try to consume a jump for vvvvvv if required
+        if (checkVvvvvv) vvvvvvController?.CheckJump(self);
 
         var shouldInvert = GravityHelperModule.ShouldInvertPlayer;
         var useAbsolute = GravityHelperModule.Settings.ControlScheme == GravityHelperModuleSettings.ControlSchemeSetting.Absolute;
         var useAbsoluteFeather = GravityHelperModule.Settings.FeatherControlScheme == GravityHelperModuleSettings.ControlSchemeSetting.Absolute;
 
+        // invert inputs if should
         if (shouldInvert)
         {
             if (useAbsolute)
             {
-                Input.Aim.Value = new Vector2(Input.Aim.Value.X, -aimY);
+                Input.Aim.Value = new Vector2(aim.X, -aim.Y);
                 Input.MoveY.Value = -moveY;
                 Input.GliderMoveY.Value = -gliderMoveY;
             }
             if (useAbsoluteFeather)
-                Input.Feather.Value = new Vector2(Input.Feather.Value.X, -featherY);
+                Input.Feather.Value = new Vector2(feather.X, -feather.Y);
         }
 
+        // call orig
         orig(self);
 
+        // restore inputs if we should
         if (shouldInvert)
         {
             if (useAbsoluteFeather)
-                Input.Feather.Value = new Vector2(Input.Feather.Value.X, featherY);
+                Input.Feather.Value = feather;
             if (useAbsolute)
             {
                 Input.GliderMoveY.Value = gliderMoveY;
                 Input.MoveY.Value = moveY;
-                Input.Aim.Value = new Vector2(Input.Aim.Value.X, aimY);
+                Input.Aim.Value = aim;
             }
         }
+
+        // try to do the VVVVVV flip
+        if (checkVvvvvv) vvvvvvController?.TryFlip(self);
     }
 
     private static void Player_WindMove(On.Celeste.Player.orig_WindMove orig, Player self, Vector2 move) =>
