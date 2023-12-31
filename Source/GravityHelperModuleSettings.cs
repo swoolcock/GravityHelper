@@ -71,7 +71,7 @@ public class GravityHelperModuleSettings : EverestModuleSettings
         menu.AddSubHeader("GRAVITYHELPER_MENU_SUBHEADER_FUN_OPTIONS");
 
         // VVVVVV
-        var vvvvvvAllowed = !inGame || GravityHelperModule.CurrentHookLevel == GravityHelperModule.HookLevel.Everything;
+        var vvvvvvAllowed = !inGame || GravityHelperModule.CurrentHookLevel is GravityHelperModule.HookLevel.Everything or GravityHelperModule.HookLevel.Forced;
         if (vvvvvvAllowed)
         {
             // VvvvvvMode
