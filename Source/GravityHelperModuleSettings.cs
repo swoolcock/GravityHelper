@@ -35,18 +35,26 @@ public class GravityHelperModuleSettings : EverestModuleSettings
     private static IEnumerable<Tuple<string, TEnum>> getEnumOptions<TEnum>() where TEnum : Enum =>
         Enum.GetValues(typeof(TEnum))
             .Cast<TEnum>()
-            .Select(v => new Tuple<string, TEnum>(v.ToString(), v));
+            .Select(v => new Tuple<string, TEnum>(v.ToDialogClean(), v));
 
     public enum VvvvvvSetting
     {
+        [DialogId("GRAVITYHELPER_ENUM_VVVVVV_DEFAULT")]
         Default,
+
+        [DialogId("GRAVITYHELPER_ENUM_VVVVVV_ENABLED")]
         Disabled,
+
+        [DialogId("GRAVITYHELPER_ENUM_VVVVVV_DISABLED")]
         Enabled,
     }
 
     public enum ControlSchemeSetting
     {
+        [DialogId("GRAVITYHELPER_ENUM_CONTROL_SCHEME_ABSOLUTE")]
         Absolute,
+
+        [DialogId("GRAVITYHELPER_ENUM_CONTROL_SCHEME_RELATIVE")]
         Relative,
     }
 

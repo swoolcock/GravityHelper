@@ -1,16 +1,17 @@
+# Menu Items
 GRAVITYHELPER_MENU_SUBHEADER_CONTROLS= Controls
 GRAVITYHELPER_MENU_SUBHEADER_FUN_OPTIONS= Fun Options
 GRAVITYHELPER_MENU_SUBHEADER_ADVANCED= Advanced
 GRAVITYHELPER_MENU_ALLOW_IN_ALL_MAPS= Allow In All Maps
 GRAVITYHELPER_MENU_ALLOW_IN_ALL_MAPS_SUBTEXT= Allows the use of the debug flip key or fun options in any map.{n}This can only be changed from the overworld.
 GRAVITYHELPER_MENU_VVVVVV_MODE= V6 Mode
-GRAVITYHELPER_MENU_VVVVVV_MODE_SUBTEXT= Enables or disables VVVVVV mode.{n}Default uses the settings for the current map.
+GRAVITYHELPER_MENU_VVVVVV_MODE_SUBTEXT= Forces VVVVVV mode on or off.
 GRAVITYHELPER_MENU_VVVVVV_FLIP_SOUND= V6 Flip Sound
-GRAVITYHELPER_MENU_VVVVVV_FLIP_SOUND_SUBTEXT= Enables or disables the flip sound in VVVVVV mode.{n}Default uses the settings for the current map.
+GRAVITYHELPER_MENU_VVVVVV_FLIP_SOUND_SUBTEXT= Enables or disables the flip sound in VVVVVV mode.
 GRAVITYHELPER_MENU_VVVVVV_ALLOW_DASHING= V6 Allow Dashing
-GRAVITYHELPER_MENU_VVVVVV_ALLOW_DASHING_SUBTEXT= Enables or disables dashing in VVVVVV mode.{n}Default uses the settings for the current map.
+GRAVITYHELPER_MENU_VVVVVV_ALLOW_DASHING_SUBTEXT= Enables or disables dashing in VVVVVV mode.
 GRAVITYHELPER_MENU_VVVVVV_ALLOW_GRABBING= V6 Allow Grabbing
-GRAVITYHELPER_MENU_VVVVVV_ALLOW_GRABBING_SUBTEXT= Enables or disables grabbing in VVVVVV mode.{n}Default uses the settings for the current map.
+GRAVITYHELPER_MENU_VVVVVV_ALLOW_GRABBING_SUBTEXT= Enables or disables grabbing in VVVVVV mode.
 GRAVITYHELPER_MENU_CONTROL_SCHEME= Control Scheme
 GRAVITYHELPER_MENU_CONTROL_SCHEME_SUBTEXT= Absolute: Madeline will go in the exact direction you press, aka "up to crouch".{n}Relative: Vertical inputs are flipped while upside down, aka "down to crouch".
 GRAVITYHELPER_MENU_FEATHER_CONTROL_SCHEME= Control Scheme (Feathers)
@@ -20,3 +21,10 @@ GRAVITYHELPER_MENU_MHH_UDJT_CORNER_CORRECTION_SUBTEXT= For backward compatibilit
 GRAVITYHELPER_MENU_REPLACE_REFILLS= Replace Refills
 GRAVITYHELPER_MENU_REPLACE_REFILLS_SUBTEXT= Replaces all standard vanilla refills with gravity refills.
 GRAVITYHELPER_POSTCARD_VVVVVV= This map contains VVVVVV mechanics.{n}Your custom settings have been restored to default.
+
+# Enums
+GRAVITYHELPER_ENUM_VVVVVV_DEFAULT= Use Map Settings
+GRAVITYHELPER_ENUM_VVVVVV_ENABLED= Enabled
+GRAVITYHELPER_ENUM_VVVVVV_DISABLED= Disabled
+GRAVITYHELPER_ENUM_CONTROL_SCHEME_ABSOLUTE= Absolute
+GRAVITYHELPER_ENUM_CONTROL_SCHEME_RELATIVE= Relative
