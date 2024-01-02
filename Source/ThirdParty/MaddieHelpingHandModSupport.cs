@@ -52,11 +52,8 @@ internal class MaddieHelpingHandModSupport : ThirdPartyModSupport
             hook_MaddieHelpingHand_UpsideDownJumpThru_onJumpthruHasPlayerRider = new ILHook(onJumpthruHasPlayerRiderMethod, MaddieHelpingHand_onJumpthruHasPlayerRider);
         }
 
-        // if the map is actually a gravity helper map, then we ignore the setting entirely
-        // mappers should be using the gravity helper UDJT in their gravity helper maps
-        // if they're using Maddie's then bad luck, accept the corner correction
-        // this setting is really for people who play maps that rely on a bug for actual gameplay (no names, you know who you are)
-        if (GravityHelperModule.Settings.MHHUDJTCornerCorrection || hookLevel != GravityHelperModule.HookLevel.Forced)
+        // we only apply corner correction if it's actually a gravity helper map, and it's enabled in options
+        if (hookLevel is GravityHelperModule.HookLevel.GravityHelperMap && GravityHelperModule.Settings.MHHUDJTCornerCorrection)
         {
             var onPlayerOnCollideVMethod = mhhudjt?.GetMethod("onPlayerOnCollideV", BindingFlags.Static | BindingFlags.NonPublic);
             if (onPlayerOnCollideVMethod != null)

@@ -109,19 +109,19 @@ public class GravityHelperModule : EverestModule
         // if we're already at the right hook level, bail
         if (requiredHookLevel == CurrentHookLevel)
         {
-            if (requiredHookLevel != HookLevel.None)
+            if (requiredHookLevel is not HookLevel.None)
                 Logger.Log(LogLevel.Info, nameof(GravityHelperModule), $"Required hooks ({requiredHookLevel}) already applied.");
             return;
         }
 
         // unload render
-        if (CurrentHookLevel == HookLevel.Render)
+        if (CurrentHookLevel is HookLevel.RenderOnly)
         {
             Logger.Log(LogLevel.Info, nameof(GravityHelperModule), "Unloading render-only hooks...");
             ForceLoadGravityController.Unload();
         }
         // or unload everything
-        else if (CurrentHookLevel == HookLevel.Everything || CurrentHookLevel == HookLevel.Forced)
+        else if (CurrentHookLevel is HookLevel.GravityHelperMap or HookLevel.Forced)
         {
             Logger.Log(LogLevel.Info, nameof(GravityHelperModule), "Unloading all hooks...");
             ThirdPartyHooks.Unload();
@@ -172,13 +172,13 @@ public class GravityHelperModule : EverestModule
         CurrentHookLevel = requiredHookLevel;
 
         // load render
-        if (requiredHookLevel == HookLevel.Render)
+        if (requiredHookLevel is HookLevel.RenderOnly)
         {
             Logger.Log(LogLevel.Info, nameof(GravityHelperModule), "Loading render-only hooks...");
             ForceLoadGravityController.Load();
         }
         // or load everything
-        else if (requiredHookLevel == HookLevel.Everything || requiredHookLevel == HookLevel.Forced)
+        else if (requiredHookLevel is HookLevel.GravityHelperMap or HookLevel.Forced)
         {
             Logger.Log(LogLevel.Info, nameof(GravityHelperModule), "Loading all hooks...");
             ThirdPartyHooks.Load(requiredHookLevel);
@@ -252,12 +252,12 @@ public class GravityHelperModule : EverestModule
         // if the player is forcing hooks on
         if (Settings.AllowInAllMaps)
             // enable hooks, but set the hook level based on whether the map actually needed it
-            updateHooks(requiresHooks ? HookLevel.Everything : HookLevel.Forced);
+            updateHooks(requiresHooks ? HookLevel.GravityHelperMap : HookLevel.Forced);
 
         // if the player isn't forcing hooks but the map needs it
         else if (requiresHooks)
             // enable hooks, honouring the "render only" request
-            updateHooks(renderOnly ? HookLevel.Render : HookLevel.Everything);
+            updateHooks(renderOnly ? HookLevel.RenderOnly : HookLevel.GravityHelperMap);
 
         // we don't want hooks
         else
@@ -353,14 +353,14 @@ public class GravityHelperModule : EverestModule
         /// This is the case when a <see cref="ForceLoadGravityController"/> is present,
         /// no other gravity helper entities are present, and AllowAllMaps is false.
         /// </summary>
-        Render,
+        RenderOnly,
 
         /// <summary>
         /// Load everything.
         /// This is the case when gravity helper entities other than <see cref="ForceLoadGravityController"/>
         /// are present.  AllowAllMaps is irrelevant since this is a gravity helper map.
         /// </summary>
-        Everything,
+        GravityHelperMap,
 
         /// <summary>
         /// Load everything, with some exceptions so as to not break maps in specific situations.
