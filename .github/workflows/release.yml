@@ -17,9 +17,9 @@ jobs:
     - name: Get current tag
       run: echo "CURRENT_TAG=$(git describe --abbrev=0 --tags $(git rev-list --tags --max-count=1))" >> $GITHUB_ENV
     - name: Install dependencies
-      run: dotnet restore
+      run: dotnet restore Source/GravityHelper.csproj
     - name: Build
-      run: dotnet build GravityHelper.csproj --configuration Release -p:version=${{env.CURRENT_TAG}} --no-restore
+      run: dotnet build Source/GravityHelper.csproj --configuration Release -p:version=${{env.CURRENT_TAG}} --no-restore
     - name: Package
       run: zip -q -r GravityHelper.zip everest.yaml bin/GravityHelper.dll bin/GravityHelper.pdb Ahorn Audio Dialog Graphics Loenn
     - name: Create Release

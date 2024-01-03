@@ -1,9 +1,9 @@
 - Name: GravityHelper
-  Version: 1.1.50
+  Version: 1.2.0
   DLL: bin/GravityHelper.dll
   Dependencies:
-    - Name: Everest
-      Version: 1.3971.0
+    - Name: EverestCore
+      Version: 1.4465.0
   OptionalDependencies:
     - Name: Cateline
       Version: 0.0.2
@@ -22,7 +22,7 @@
     - Name: OutbackHelper
       Version: 1.6.2
     - Name: SpeedrunTool
-      Version: 3.7.2
+      Version: 3.22.0
     - Name: StaminaMeter
       Version: 1.3.0
     - Name: CelesteNet.Client
