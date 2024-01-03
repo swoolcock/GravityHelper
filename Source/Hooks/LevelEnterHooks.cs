@@ -50,6 +50,8 @@ internal static class LevelEnterHooks
             _vvvvvvPostcard = null;
         }
 
+        _hasVvvvvv = false;
+
         yield return new SwapImmediately(orig(self));
     }
 

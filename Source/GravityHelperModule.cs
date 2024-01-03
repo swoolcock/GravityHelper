@@ -84,6 +84,7 @@ public class GravityHelperModule : EverestModule
         Logger.Log(LogLevel.Info, nameof(GravityHelperModule), "Loading bootstrap hooks...");
         On.Celeste.LevelLoader.ctor += LevelLoader_ctor;
         On.Celeste.OverworldLoader.ctor += OverworldLoader_ctor;
+        LevelEnterHooks.Load();
 
         // always try CelesteNet
         ThirdPartyHooks.ForceLoadType(typeof(CelesteNetModSupport), HookLevel.Forced);
@@ -94,6 +95,8 @@ public class GravityHelperModule : EverestModule
         Logger.Log(LogLevel.Info, nameof(GravityHelperModule), "Unloading bootstrap hooks...");
         On.Celeste.LevelLoader.ctor -= LevelLoader_ctor;
         On.Celeste.OverworldLoader.ctor -= OverworldLoader_ctor;
+        LevelEnterHooks.Unload();
+
         updateHooks(HookLevel.None);
 
         // always try CelesteNet
@@ -150,7 +153,6 @@ public class GravityHelperModule : EverestModule
             InputHooks.Unload();
             JumpThruHooks.Unload();
             LevelHooks.Unload();
-            LevelEnterHooks.Unload();
             MoveBlockHooks.Unload();
             PlayerDeadBodyHooks.Unload();
             PlayerHairHooks.Unload();
@@ -207,7 +209,6 @@ public class GravityHelperModule : EverestModule
             InputHooks.Load();
             JumpThruHooks.Load();
             LevelHooks.Load();
-            LevelEnterHooks.Load();
             MoveBlockHooks.Load();
             PlayerDeadBodyHooks.Load();
             PlayerHairHooks.Load();
