@@ -39,22 +39,22 @@ public class GravityHelperModuleSettings : EverestModuleSettings
 
     public enum VvvvvvSetting
     {
-        [DialogId("GRAVITYHELPER_ENUM_VVVVVV_DEFAULT")]
+        [SettingsEnumCase("GRAVITYHELPER_ENUM_VVVVVV_DEFAULT")]
         Default,
 
-        [DialogId("GRAVITYHELPER_ENUM_VVVVVV_ENABLED")]
+        [SettingsEnumCase("GRAVITYHELPER_ENUM_VVVVVV_DISABLED")]
         Disabled,
 
-        [DialogId("GRAVITYHELPER_ENUM_VVVVVV_DISABLED")]
+        [SettingsEnumCase("GRAVITYHELPER_ENUM_VVVVVV_ENABLED")]
         Enabled,
     }
 
     public enum ControlSchemeSetting
     {
-        [DialogId("GRAVITYHELPER_ENUM_CONTROL_SCHEME_ABSOLUTE")]
+        [SettingsEnumCase("GRAVITYHELPER_ENUM_CONTROL_SCHEME_ABSOLUTE")]
         Absolute,
 
-        [DialogId("GRAVITYHELPER_ENUM_CONTROL_SCHEME_RELATIVE")]
+        [SettingsEnumCase("GRAVITYHELPER_ENUM_CONTROL_SCHEME_RELATIVE")]
         Relative,
     }
 

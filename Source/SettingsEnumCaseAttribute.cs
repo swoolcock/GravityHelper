@@ -7,20 +7,20 @@ using System.Linq;
 namespace Celeste.Mod.GravityHelper;
 
 [AttributeUsage(AttributeTargets.Field)]
-public class DialogIdAttribute(string id) : Attribute
+public class SettingsEnumCaseAttribute(string dialogId) : Attribute
 {
-    public string Id { get; } = id;
+    public string DialogId { get; } = dialogId;
 }
 
-public static class DialogIdExtensions
+public static class SettingsEnumCaseExtensions
 {
     public static string ToDialogClean<TEnum>(this TEnum self) where TEnum : Enum
     {
         var caseName = self.ToString();
         var attr = typeof(TEnum).GetField(caseName)?
             .GetCustomAttributes(false)
-            .OfType<DialogIdAttribute>()
+            .OfType<SettingsEnumCaseAttribute>()
             .FirstOrDefault();
-        return attr != null ? Dialog.Clean(attr.Id) : caseName;
+        return attr != null ? Dialog.Clean(attr.DialogId) : caseName;
     }
 }
