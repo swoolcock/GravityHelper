@@ -67,13 +67,13 @@ public class GravityHelperModuleSettings : EverestModuleSettings
             OnValueChange = value => AllowInAllMaps = value,
         }, Dialog.Clean("GRAVITYHELPER_MENU_ALLOW_IN_ALL_MAPS_SUBTEXT"));
 
-        // Fun Options Subheader
-        menu.AddSubHeader("GRAVITYHELPER_MENU_SUBHEADER_FUN_OPTIONS");
+        var ghActive = GravityHelperModule.CurrentHookLevel is GravityHelperModule.HookLevel.GravityHelperMap or GravityHelperModule.HookLevel.Forced;
 
-        // VVVVVV
-        var vvvvvvAllowed = !inGame || GravityHelperModule.CurrentHookLevel is GravityHelperModule.HookLevel.GravityHelperMap or GravityHelperModule.HookLevel.Forced;
-        if (vvvvvvAllowed)
+        if (!inGame || ghActive)
         {
+            // Fun Options Subheader
+            menu.AddSubHeader("GRAVITYHELPER_MENU_SUBHEADER_FUN_OPTIONS");
+
             // VvvvvvMode
             menu.AddWithDescription(new ColorChangeTextMenuOption<VvvvvvSetting>(Dialog.Clean("GRAVITYHELPER_MENU_VVVVVV_MODE"))
             {
@@ -121,24 +121,24 @@ public class GravityHelperModuleSettings : EverestModuleSettings
                     (Engine.Scene as Level)?.GetPersistentController<VvvvvvGravityController>()?.Transitioned();
                 },
             }, Dialog.Clean("GRAVITYHELPER_MENU_VVVVVV_FLIP_SOUND_SUBTEXT"));
+
+            // ReplaceRefills
+            menu.AddWithDescription(new ColorChangeOnOff(Dialog.Clean("GRAVITYHELPER_MENU_REPLACE_REFILLS"), ReplaceRefills)
+            {
+                Disabled = inGame,
+                OnValueChange = value => ReplaceRefills = value,
+            }, Dialog.Clean("GRAVITYHELPER_MENU_REPLACE_REFILLS_SUBTEXT"));
+
+            // Advanced Subheader
+            menu.AddSubHeader("GRAVITYHELPER_MENU_SUBHEADER_ADVANCED");
+
+            // MHHUDJTCornerCorrection
+            menu.AddWithDescription(new ColorChangeOnOff(Dialog.Clean("GRAVITYHELPER_MENU_MHH_UDJT_CORNER_CORRECTION"), MHHUDJTCornerCorrection, true)
+            {
+                Disabled = inGame,
+                OnValueChange = value => MHHUDJTCornerCorrection = value,
+            }, Dialog.Clean("GRAVITYHELPER_MENU_MHH_UDJT_CORNER_CORRECTION_SUBTEXT"));
         }
-
-        // ReplaceRefills
-        menu.AddWithDescription(new ColorChangeOnOff(Dialog.Clean("GRAVITYHELPER_MENU_REPLACE_REFILLS"), ReplaceRefills)
-        {
-            Disabled = inGame,
-            OnValueChange = value => ReplaceRefills = value,
-        }, Dialog.Clean("GRAVITYHELPER_MENU_REPLACE_REFILLS_SUBTEXT"));
-
-        // Advanced Subheader
-        menu.AddSubHeader("GRAVITYHELPER_MENU_SUBHEADER_ADVANCED");
-
-        // MHHUDJTCornerCorrection
-        menu.AddWithDescription(new ColorChangeOnOff(Dialog.Clean("GRAVITYHELPER_MENU_MHH_UDJT_CORNER_CORRECTION"), MHHUDJTCornerCorrection, true)
-        {
-            Disabled = inGame,
-            OnValueChange = value => MHHUDJTCornerCorrection = value,
-        }, Dialog.Clean("GRAVITYHELPER_MENU_MHH_UDJT_CORNER_CORRECTION_SUBTEXT"));
 
         // Controls Subheader
         menu.AddSubHeader("GRAVITYHELPER_MENU_SUBHEADER_CONTROLS");
