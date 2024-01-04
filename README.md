@@ -199,7 +199,7 @@ I always welcome decent pull requests or even the occasional "me too" reply as l
 * coloursofnoise for the initial proof-of-concept hooks.
 * JaThePlayer for the original inspiration.
 * Viv for the Badeline chaser hooks.
-* max480 for putting up with my upside-down jumpthru complaints for months.
+* maddie480 for putting up with my upside-down jumpthru complaints for months.
 * Cruor/Vexatos for Ahorn/Lönn.
 * 0x0ade and the Everest team for Everest.
 * The Strawberry Jam team.
