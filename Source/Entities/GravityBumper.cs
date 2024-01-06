@@ -4,6 +4,7 @@
 using Celeste.Mod.Entities;
 using Celeste.Mod.GravityHelper.Extensions;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Monocle;
 
 namespace Celeste.Mod.GravityHelper.Entities;
@@ -57,6 +58,9 @@ public class GravityBumper : Bumper
                 _ => ""
             };
             GFX.SpriteBank.CreateOn(sprite, id);
+
+            if (GravityType == GravityType.Inverted)
+                spriteEvil.Effects = sprite.Effects = SpriteEffects.FlipVertically;
 
             Add(_rippleSprite = GFX.SpriteBank.Create("gravityRipple"));
             _rippleSprite.Color = GravityType.Color();
@@ -148,6 +152,9 @@ public class GravityBumper : Bumper
     public override void Update()
     {
         base.Update();
+
+        if (GravityType == GravityType.Toggle)
+            spriteEvil.Effects = sprite.Effects = GravityHelperModule.ShouldInvertPlayer ? SpriteEffects.None : SpriteEffects.FlipVertically;
 
         if (_rippleSprite != null)
         {
