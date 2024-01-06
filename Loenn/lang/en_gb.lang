@@ -13,7 +13,7 @@ entities.GravityHelper/GravityBooster.placements.name.normal=Gravity Booster (No
 entities.GravityHelper/GravityBooster.placements.name.inverted=Gravity Booster (Inverted)
 entities.GravityHelper/GravityBooster.placements.name.toggle=Gravity Booster (Toggle)
 entities.GravityHelper/GravityBooster.attributes.description.gravityType=The gravity type to set when Madeline leaves the booster (bubble). Defaults to Normal.
-entities.GravityHelper/GravityBooster.attributes.red=Whether to act the same as a Mirror Temple bubble, where travel ends upon hitting a solid. Defaults to false.
+entities.GravityHelper/GravityBooster.attributes.description.red=Whether to act the same as a Mirror Temple bubble, where travel ends upon hitting a solid. Defaults to false.
 
 # Gravity Bumper
 entities.GravityHelper/GravityBumper.placements.name.normal=Gravity Bumper (Normal)
@@ -23,6 +23,7 @@ entities.GravityHelper/GravityBumper.placements.name.none=Gravity Bumper (None, 
 entities.GravityHelper/GravityBumper.attributes.description.gravityType=The gravity type to set when Madeline touches the bumper.
 entities.GravityHelper/GravityBumper.attributes.description.wobbleRate=The rate multiplier at which the bumper will wobble back and forth.  Set to 0 to disable wobbling.  Defaults to 1 (vanilla).
 entities.GravityHelper/GravityBumper.attributes.description.ignoreCoreMode=Whether the bumper should stay in "cold" mode even if the core mode is set to "hot".  Defaults to false.
+entities.GravityHelper/GravityBumper.attributes.description.singleUse=Whether the bumper should change to "hot" mode once it is used, regardless of the ignoreCoreMode setting.  Defaults to false.
 
 # Gravity Dream Block
 entities.GravityHelper/GravityDreamBlock.placements.name.normal=Gravity Dream Block (Normal)

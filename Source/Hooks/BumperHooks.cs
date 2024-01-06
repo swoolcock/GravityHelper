@@ -41,7 +41,11 @@ internal static class BumperHooks
         cursor.EmitDelegate<Action<Bumper>>(self =>
         {
             if (self is GravityBumper gravityBumper && !gravityBumper.fireMode)
+            {
                 GravityHelperModule.PlayerComponent?.SetGravity(gravityBumper.GravityType);
+                if (gravityBumper.SingleUse)
+                    gravityBumper.SetFireMode(true);
+            }
         });
 
         if (!cursor.TryGotoPrev(MoveType.After, instr => instr.MatchLdfld<Entity>(nameof(Entity.Position))))

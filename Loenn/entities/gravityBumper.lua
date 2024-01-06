@@ -10,6 +10,7 @@ local placementData = helpers.createPlacementData('1', {
     gravityType = consts.gravityTypes.normal.index,
     wobbleRate = 1,
     ignoreCoreMode = false,
+    singleUse = false,
 })
 
 local gravityBumper = {
@@ -61,18 +62,19 @@ end
 
 function gravityBumper.sprite(room, entity)
     local gravityType = entity.gravityType
-    local bumperSprite = drawableSprite.fromTexture("objects/Bumper/Idle22", entity)
 
     if gravityType == consts.gravityTypes.none.index then
-        return bumperSprite
+        return drawableSprite.fromTexture("objects/Bumper/Idle22", entity)
     end
 
-    local maskSprite = drawableSprite.fromTexture("objects/GravityHelper/gravityBumper/mask00", entity)
+    local bumperSpriteTexture =
+            gravityType == consts.gravityTypes.normal.index and "objects/GravityHelper/gravityBumper/normal00" or
+            gravityType == consts.gravityTypes.inverted.index and "objects/GravityHelper/gravityBumper/invert00" or
+            gravityType == consts.gravityTypes.toggle.index and "objects/GravityHelper/gravityBumper/toggle00" or nil
+
+    local bumperSprite = drawableSprite.fromTexture(bumperSpriteTexture, entity)
+    local sprites = {bumperSprite}
     local gravityInfo = consts.gravityTypeForIndex(gravityType)
-
-    maskSprite:setColor(gravityInfo.color)
-
-    local sprites = {maskSprite, bumperSprite}
 
     local function createRippleSprite(scaleY)
         local rippleSprite = drawableSprite.fromTexture("objects/GravityHelper/ripple03", entity)

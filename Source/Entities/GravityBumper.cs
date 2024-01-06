@@ -1,7 +1,6 @@
 // Copyright (c) Shane Woolcock. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
-using System.Linq;
 using Celeste.Mod.Entities;
 using Celeste.Mod.GravityHelper.Extensions;
 using Microsoft.Xna.Framework;
@@ -28,9 +27,9 @@ public class GravityBumper : Bumper
 
     public GravityType GravityType { get; }
     public bool IgnoreCoreMode { get; }
+    public bool SingleUse { get; }
 
     private readonly Sprite _rippleSprite;
-    private readonly Sprite _maskSprite;
 
     public GravityBumper(EntityData data, Vector2 offset)
         : base(data, offset)
@@ -40,6 +39,7 @@ public class GravityBumper : Bumper
 
         GravityType = (GravityType)data.Int("gravityType");
         IgnoreCoreMode = data.Bool("ignoreCoreMode");
+        SingleUse = data.Bool("singleUse");
 
         if (IgnoreCoreMode && Get<CoreModeListener>() is { } coreModeListener)
             Remove(coreModeListener);
@@ -48,8 +48,15 @@ public class GravityBumper : Bumper
 
         if (GravityType != GravityType.None)
         {
-            _maskSprite = GFX.SpriteBank.Create("gravityBumper");
-            _maskSprite.Play("mask");
+            // replace default bumper sprite
+            var id = GravityType switch
+            {
+                GravityType.Normal => "gravityBumperNormal",
+                GravityType.Inverted => "gravityBumperInvert",
+                GravityType.Toggle => "gravityBumperToggle",
+                _ => ""
+            };
+            GFX.SpriteBank.CreateOn(sprite, id);
 
             Add(_rippleSprite = GFX.SpriteBank.Create("gravityRipple"));
             _rippleSprite.Color = GravityType.Color();
@@ -128,38 +135,14 @@ public class GravityBumper : Bumper
         base.Added(scene);
 
         if (IgnoreCoreMode)
-        {
-            fireMode = false;
-            spriteEvil.Visible = fireMode;
-            sprite.Visible = !fireMode;
-        }
+            SetFireMode(false);
     }
 
-    public override void Render()
+    public void SetFireMode(bool newFireMode)
     {
-        if (sprite.Visible && GravityType != GravityType.None)
-        {
-            var animation = _maskSprite.Animations["mask"];
-            var frameIndex = 0;
-            if (sprite.CurrentAnimationID == "hit")
-                frameIndex = sprite.CurrentAnimationFrame >= 2 ? sprite.CurrentAnimationFrame - 1 : 0;
-            else if (sprite.CurrentAnimationID == "off")
-                frameIndex = 7;
-            else if (sprite.CurrentAnimationID == "on")
-                frameIndex = (sprite.CurrentAnimationFrame + 7) % 9;
-            var frame = animation.Frames.ElementAtOrDefault(frameIndex);
-
-            if (frame != null)
-            {
-                var color = GravityType.Color();
-                if (frameIndex == 7)
-                    color *= 0.5f;
-
-                frame.DrawCentered(Position + sprite.Position, color);
-            }
-        }
-
-        base.Render();
+        fireMode = newFireMode;
+        spriteEvil.Visible = newFireMode;
+        sprite.Visible = !newFireMode;
     }
 
     public override void Update()
