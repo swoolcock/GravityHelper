@@ -4,6 +4,7 @@
 using System;
 using Celeste.Mod.GravityHelper.Extensions;
 using Mono.Cecil.Cil;
+using Monocle;
 using MonoMod.Cil;
 
 namespace Celeste.Mod.GravityHelper.Hooks;
@@ -33,6 +34,35 @@ internal static class JumpThruHooks
         cursor.Emit(OpCodes.Ldarg_0);
         cursor.EmitDelegate<Func<int, JumpThru, int>>((move, self) =>
             self.IsUpsideDownJumpThru() ? -move : move);
+
+        if (!cursor.TryGotoNext(MoveType.AfterLabel,
+                instr => instr.MatchLdloc(1),
+                instr => instr.MatchLdarg(0),
+                instr => instr.MatchCall<Entity>("get_Top")))
+            throw new HookException("Couldn't find entity.Top");
+
+        cursor.Emit(OpCodes.Ldarg_0);
+        cursor.Emit(OpCodes.Ldarg_1);
+        cursor.Emit(OpCodes.Ldloc_1);
+        cursor.EmitDelegate<Func<JumpThru, int, Actor, bool>>((self, move, entity) =>
+        {
+            if (self.IsUpsideDownJumpThru() && GravityHelperModule.ShouldInvertPlayer)
+            {
+                entity.MoveVExact((int)(self.Bottom - entity.Top + move));
+                return true;
+            }
+
+            return false;
+        });
+
+        var cursor2 = cursor.Clone();
+        if (!cursor2.TryGotoNext(MoveType.AfterLabel,
+                instr => instr.MatchLdloc(1),
+                instr => instr.MatchLdarg(0),
+                instr => instr.MatchLdfld<Platform>(nameof(Platform.LiftSpeed))))
+            throw new HookException("Couldn't find entity.LiftSpeed");
+
+        cursor.Emit(OpCodes.Brtrue_S, cursor2.Next);
     });
 
     private static void JumpThru_MoveVExact(On.Celeste.JumpThru.orig_MoveVExact orig, JumpThru self, int move)

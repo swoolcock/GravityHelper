@@ -42,10 +42,29 @@
         <Anim id="mask" path="mask" delay="0.1" frames="0-3" />
     </gravityBadelineBoost>
 
-    <gravityBumper path="objects/GravityHelper/gravityBumper/">
-        <Center />
-        <Anim id="mask" path="mask" delay="0.1" frames="0-8" />
-    </gravityBumper>
+    <gravityBumperNormal path="objects/GravityHelper/gravityBumper/" start="idle">
+        <Center/>
+        <Anim id="on" path="normal" frames="42-44" delay="0.06" goto="idle"/>
+        <Loop id="idle" path="normal" frames="0-33" delay="0.06"/>
+        <Anim id="hit" path="normal" frames="34-42" delay="0.06" goto="off"/>
+        <Loop id="off" path="normal" frames="42" delay="0.06"/>
+    </gravityBumperNormal>
+
+    <gravityBumperInvert path="objects/GravityHelper/gravityBumper/" start="idle">
+        <Center/>
+        <Anim id="on" path="invert" frames="42-44" delay="0.06" goto="idle"/>
+        <Loop id="idle" path="invert" frames="0-33" delay="0.06"/>
+        <Anim id="hit" path="invert" frames="34-42" delay="0.06" goto="off"/>
+        <Loop id="off" path="invert" frames="42" delay="0.06"/>
+    </gravityBumperInvert>
+
+    <gravityBumperToggle path="objects/GravityHelper/gravityBumper/" start="idle">
+        <Center/>
+        <Anim id="on" path="toggle" frames="42-44" delay="0.06" goto="idle"/>
+        <Loop id="idle" path="toggle" frames="0-33" delay="0.06"/>
+        <Anim id="hit" path="toggle" frames="34-42" delay="0.06" goto="off"/>
+        <Loop id="off" path="toggle" frames="42" delay="0.06"/>
+    </gravityBumperToggle>
 
     <gravitySwitch path="objects/GravityHelper/gravitySwitch/" start="down">
         <Center />
