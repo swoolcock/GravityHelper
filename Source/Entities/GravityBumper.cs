@@ -60,7 +60,7 @@ public class GravityBumper : Bumper
             GFX.SpriteBank.CreateOn(sprite, id);
 
             if (GravityType == GravityType.Inverted)
-                spriteEvil.Effects = sprite.Effects = SpriteEffects.FlipVertically;
+                spriteEvil.Scale.Y = sprite.Scale.Y = -1;
 
             Add(_rippleSprite = GFX.SpriteBank.Create("gravityRipple"));
             _rippleSprite.Color = GravityType.Color();
@@ -154,7 +154,7 @@ public class GravityBumper : Bumper
         base.Update();
 
         if (GravityType == GravityType.Toggle)
-            spriteEvil.Effects = sprite.Effects = GravityHelperModule.ShouldInvertPlayer ? SpriteEffects.None : SpriteEffects.FlipVertically;
+            spriteEvil.Scale.Y = sprite.Scale.Y = GravityHelperModule.ShouldInvertPlayer ? -1 : 1;
 
         if (_rippleSprite != null)
         {
