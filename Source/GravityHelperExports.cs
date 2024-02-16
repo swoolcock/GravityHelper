@@ -64,6 +64,9 @@ public static class GravityHelperExports
     public static Vector2 GetBottomRight(Actor actor) =>
         actor?.ShouldInvert() == true ? actor.TopRight : actor?.BottomRight ?? Vector2.Zero;
 
+    public static TalkComponent.TalkComponentUI CreateUpsideDownTalkComponentUI(TalkComponent talkComponent) =>
+        new UpsideDownTalkComponentUI(talkComponent);
+
     // TODO: make this support instant
     public static Component CreateGravityListener(Actor actor, Action<Entity, int, float> gravityChanged) =>
         new GravityListener(actor, (e, a) =>
