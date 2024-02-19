@@ -7,7 +7,7 @@ using Monocle;
 
 namespace Celeste.Mod.GravityHelper.Components;
 
-internal class UpsideDownTalkComponentUI : TalkComponent.TalkComponentUI
+public class UpsideDownTalkComponentUI : TalkComponent.TalkComponentUI
 {
     public UpsideDownTalkComponentUI(TalkComponent handler) : base(handler)
     {

@@ -103,15 +103,19 @@ public class GravityComponent : Component
     private void updateGravity(GravityChangeArgs args)
     {
         if (Locked) return;
-
+        if (Scene == null) return;
         if (!UpdateEntity) return;
+
+        var holdable = Entity.Get<Holdable>();
 
         if (UpdatePosition != null)
             UpdatePosition(args);
         else if (args.Changed && Entity.Collider != null)
+        {
             Entity.Position.Y = args.NewValue == GravityType.Inverted
                 ? Entity.Collider.AbsoluteTop
                 : Entity.Collider.AbsoluteBottom;
+        }
 
         if (UpdateColliders != null)
             UpdateColliders(args);
@@ -119,12 +123,29 @@ public class GravityComponent : Component
         {
             if (Entity.Collider != null)
                 Entity.Collider.Top = -Entity.Collider.Bottom;
-            if (Entity.Get<Holdable>() is { } holdable)
+            if (holdable != null)
                 holdable.PickupCollider.Top = -holdable.PickupCollider.Bottom;
         }
 
-        UpdateSpeed?.Invoke(args);
-        UpdateVisuals?.Invoke(args);
+        if (UpdateSpeed != null)
+            UpdateSpeed(args);
+        else if (args.Changed && GetSpeed != null && SetSpeed != null)
+        {
+            var oldSpeed = GetSpeed();
+            if (args.Instant)
+                oldSpeed.Y = 160f * (SceneAs<Level>().InSpace ? 0.6f : 1f);
+            else
+                oldSpeed.Y *= -args.MomentumMultiplier;
+            SetSpeed(oldSpeed);
+        }
+
+        if (UpdateVisuals != null)
+            UpdateVisuals(args);
+        // jellies handle their own sprite scale
+        else if (args.Changed && Entity is not Glider && holdable != null && Entity.Get<Sprite>() is { } sprite)
+        {
+            sprite.Scale.Y = args.NewValue == GravityType.Inverted ? -1 : 1;
+        }
 
         if (Flag != null) SceneAs<Level>()?.Session.SetFlag(Flag, args.NewValue == GravityType.Inverted);
     }

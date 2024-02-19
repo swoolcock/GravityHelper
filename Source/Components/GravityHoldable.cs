@@ -44,10 +44,22 @@ public class GravityHoldable : Component
         if (entity.Scene != null)
             updateInvertTime(entity.Scene);
 
-        entity.Add(new GravityListener(entity)
+        if (entity.Get<GravityComponent>() == null && entity.Get<Holdable>() is { } holdable)
         {
-            GravityChanged = (_, _) => ResetInvertTime(),
-        });
+            entity.Add(new GravityComponent
+            {
+                GetSpeed = holdable.GetSpeed,
+                SetSpeed = holdable.SetSpeed,
+            });
+        }
+
+        if (entity.Get<GravityListener>() == null)
+        {
+            entity.Add(new GravityListener(entity)
+            {
+                GravityChanged = (_, _) => ResetInvertTime(),
+            });
+        }
     }
 
     public override void EntityAdded(Scene scene)

@@ -2,7 +2,6 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System;
-using Celeste.Mod.GravityHelper.Components;
 using Celeste.Mod.GravityHelper.Extensions;
 using Microsoft.Xna.Framework;
 using Mono.Cecil.Cil;
@@ -18,7 +17,6 @@ internal static class TheoCrystalHooks
         Logger.Log(nameof(GravityHelperModule), $"Loading {nameof(TheoCrystal)} hooks...");
 
         IL.Celeste.TheoCrystal.Update += TheoCrystal_Update;
-        On.Celeste.TheoCrystal.Added += TheoCrystal_Added;
     }
 
     public static void Unload()
@@ -26,33 +24,6 @@ internal static class TheoCrystalHooks
         Logger.Log(nameof(GravityHelperModule), $"Unloading {nameof(TheoCrystal)} hooks...");
 
         IL.Celeste.TheoCrystal.Update -= TheoCrystal_Update;
-        On.Celeste.TheoCrystal.Added -= TheoCrystal_Added;
-    }
-
-    private static void TheoCrystal_Added(On.Celeste.TheoCrystal.orig_Added orig, TheoCrystal self, Scene scene)
-    {
-        orig(self, scene);
-        if (self.Get<GravityComponent>() != null) return;
-
-        self.Add(new GravityComponent
-        {
-            UpdateVisuals = args =>
-            {
-                if (!args.Changed || self.Scene == null) return;
-                var sprite = self.sprite;
-                sprite.Scale.Y = args.NewValue == GravityType.Inverted ? -1 : 1;
-            },
-            UpdateSpeed = args =>
-            {
-                if (!args.Changed || self.Scene == null) return;
-                if (args.Instant)
-                    self.Speed.Y = 160f * (self.SceneAs<Level>().InSpace ? 0.6f : 1f);
-                else
-                    self.Speed.Y *= -args.MomentumMultiplier;
-            },
-            GetSpeed = () => self.Speed,
-            SetSpeed = value => self.Speed = value,
-        });
     }
 
     private static void TheoCrystal_Update(ILContext il) => HookUtils.SafeHook(() =>

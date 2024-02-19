@@ -2,7 +2,6 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System;
-using Celeste.Mod.GravityHelper.Components;
 using Celeste.Mod.GravityHelper.Extensions;
 using Microsoft.Xna.Framework;
 using Mono.Cecil.Cil;
@@ -18,7 +17,6 @@ internal static class GliderHooks
         Logger.Log(nameof(GravityHelperModule), $"Loading {nameof(Glider)} hooks...");
 
         IL.Celeste.Glider.Update += Glider_Update;
-        On.Celeste.Glider.Added += Glider_Added;
         On.Celeste.Glider.Render += Glider_Render;
         On.Celeste.Glider.Update += Glider_Update;
     }
@@ -28,28 +26,8 @@ internal static class GliderHooks
         Logger.Log(nameof(GravityHelperModule), $"Unloading {nameof(Glider)} hooks...");
 
         IL.Celeste.Glider.Update -= Glider_Update;
-        On.Celeste.Glider.Added -= Glider_Added;
         On.Celeste.Glider.Render -= Glider_Render;
         On.Celeste.Glider.Update -= Glider_Update;
-    }
-
-    private static void Glider_Added(On.Celeste.Glider.orig_Added orig, Glider self, Scene scene)
-    {
-        orig(self, scene);
-        if (self.Get<GravityComponent>() != null) return;
-        self.Add(new GravityComponent
-        {
-            UpdateSpeed = args =>
-            {
-                if (!args.Changed || self.Scene == null) return;
-                if (args.Instant)
-                    self.Speed.Y = 160f * (self.SceneAs<Level>().InSpace ? 0.6f : 1f);
-                else
-                    self.Speed.Y *= -args.MomentumMultiplier;
-            },
-            GetSpeed = () => self.Speed,
-            SetSpeed = value => self.Speed = value,
-        });
     }
 
     private static void Glider_Render(On.Celeste.Glider.orig_Render orig, Glider self)
