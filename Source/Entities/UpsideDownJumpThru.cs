@@ -56,9 +56,10 @@ public class UpsideDownJumpThru : JumpThru
                     {
                         foreach (Actor actor in Scene?.Tracker.GetEntities<Actor>())
                         {
-                            if (actor.IsRiding(this) && actor.IsRiding(solid) && !actor.IgnoreJumpThrus)
+                            if (actor.IsRiding(this) && actor.IsRiding(solid) && !actor.IgnoreJumpThrus && !actor.TreatNaive)
                             {
                                 actor.IgnoreJumpThrus = true;
+                                actor.TreatNaive = true;
                                 sharedRiders.Add(actor);
                             }
                         }
@@ -72,6 +73,7 @@ public class UpsideDownJumpThru : JumpThru
                     foreach (var rider in sharedRiders)
                     {
                         rider.IgnoreJumpThrus = false;
+                        rider.TreatNaive = false;
                     }
                     sharedRiders.Clear();
                 },

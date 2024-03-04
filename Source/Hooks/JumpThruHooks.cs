@@ -46,7 +46,7 @@ internal static class JumpThruHooks
         cursor.Emit(OpCodes.Ldloc_1);
         cursor.EmitDelegate<Func<JumpThru, int, Actor, bool>>((self, move, entity) =>
         {
-            if (self.IsUpsideDownJumpThru() && GravityHelperModule.ShouldInvertPlayer)
+            if (self.IsUpsideDownJumpThru())
             {
                 entity.MoveVExact((int)(self.Bottom - entity.Top + move));
                 return true;

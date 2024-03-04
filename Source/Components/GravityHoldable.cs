@@ -3,6 +3,7 @@
 
 using Celeste.Mod.GravityHelper.Entities.Controllers;
 using Celeste.Mod.GravityHelper.Extensions;
+using Celeste.Mod.GravityHelper.Triggers;
 using Monocle;
 
 namespace Celeste.Mod.GravityHelper.Components;
@@ -10,7 +11,7 @@ namespace Celeste.Mod.GravityHelper.Components;
 [Tracked]
 public class GravityHoldable : Component
 {
-    private float _invertTime = 2f;
+    private float _invertTime = BehaviorGravityController.DEFAULT_HOLDABLE_RESET_TIME;
     public float InvertTime
     {
         get => _invertTime;
@@ -68,10 +69,19 @@ public class GravityHoldable : Component
         updateInvertTime(scene);
     }
 
+    public override void EntityAwake()
+    {
+        base.EntityAwake();
+
+        // for now we'll assume a holdable spawn gravity trigger always inverts
+        if (Entity.CollideCheck<HoldableSpawnGravityTrigger>())
+            Entity.SetGravity(GravityType.Inverted);
+    }
+
     private void updateInvertTime(Scene scene)
     {
         var controller = scene.GetActiveController<BehaviorGravityController>();
-        InvertTime = controller?.HoldableResetTime ?? 2f;
+        InvertTime = controller?.HoldableResetTime ?? BehaviorGravityController.DEFAULT_HOLDABLE_RESET_TIME;
     }
 
     public override void Update()

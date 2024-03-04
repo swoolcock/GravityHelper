@@ -179,6 +179,9 @@ triggers.GravityHelper/SpawnGravityTrigger.placements.name.inverted=Spawn Gravit
 triggers.GravityHelper/SpawnGravityTrigger.attributes.description.gravityType=The gravity type to set when Madeline spawns inside the trigger.
 triggers.GravityHelper/SpawnGravityTrigger.attributes.description.fireOnBubbleReturn=Whether gravity should be applied if Madeline is sent to the spawn trigger via a cassette or berry return bubble.
 
+# Holdable Spawn Gravity Trigger
+triggers.GravityHelper/HoldableSpawnGravityTrigger.placements.name.inverted=Holdable Spawn Gravity Trigger (Inverted)
+
 # Behavior Gravity Controller
 entities.GravityHelper/BehaviorGravityController.placements.name.single_room=Behaviour Gravity Controller (Single Room)
 entities.GravityHelper/BehaviorGravityController.placements.name.persistent=Behaviour Gravity Controller (Persistent)
