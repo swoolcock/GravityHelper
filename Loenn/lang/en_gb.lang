@@ -98,12 +98,24 @@ entities.GravityHelper/GravityRefill.attributes.description.respawnTime=How long
 
 # Gravity Spring
 entities.GravityHelper/GravitySpringFloor.placements.name.normal=Gravity Spring (Floor)
-entities.GravityHelper/GravitySpringCeiling.placements.name.normal=Gravity Spring (Ceiling)
-entities.GravityHelper/GravitySpringWallLeft.placements.name.normal=Gravity Spring (Wall Left)
-entities.GravityHelper/GravitySpringWallRight.placements.name.normal=Gravity Spring (Wall Right)
+entities.GravityHelper/GravitySpringFloor.placements.name.twoDash=Gravity Spring (Floor, Two Dash)
+entities.GravityHelper/GravitySpringFloor.placements.name.noDash=Gravity Spring (Floor, No Dash)
+entities.GravityHelper/GravitySpringFloor.placements.name.noStamina=Gravity Spring (Floor, No Stamina)
 entities.GravityHelper/GravitySpringFloor.placements.name.withIndicator=Gravity Spring (Floor, with indicator)
+entities.GravityHelper/GravitySpringCeiling.placements.name.normal=Gravity Spring (Ceiling)
+entities.GravityHelper/GravitySpringCeiling.placements.name.twoDash=Gravity Spring (Ceiling, Two Dash)
+entities.GravityHelper/GravitySpringCeiling.placements.name.noDash=Gravity Spring (Ceiling, No Dash)
+entities.GravityHelper/GravitySpringCeiling.placements.name.noStamina=Gravity Spring (Ceiling, No Stamina)
 entities.GravityHelper/GravitySpringCeiling.placements.name.withIndicator=Gravity Spring (Ceiling, with indicator)
+entities.GravityHelper/GravitySpringWallLeft.placements.name.normal=Gravity Spring (Wall Left)
+entities.GravityHelper/GravitySpringWallLeft.placements.name.twoDash=Gravity Spring (Wall Left, Two Dash)
+entities.GravityHelper/GravitySpringWallLeft.placements.name.noDash=Gravity Spring (Wall Left, No Dash)
+entities.GravityHelper/GravitySpringWallLeft.placements.name.noStamina=Gravity Spring (Wall Left, No Stamina)
 entities.GravityHelper/GravitySpringWallLeft.placements.name.withIndicator=Gravity Spring (Wall Left, with indicator)
+entities.GravityHelper/GravitySpringWallRight.placements.name.normal=Gravity Spring (Wall Right)
+entities.GravityHelper/GravitySpringWallRight.placements.name.twoDash=Gravity Spring (Wall Right, Two Dash)
+entities.GravityHelper/GravitySpringWallRight.placements.name.noDash=Gravity Spring (Wall Right, No Dash)
+entities.GravityHelper/GravitySpringWallRight.placements.name.noStamina=Gravity Spring (Wall Right, No Stamina)
 entities.GravityHelper/GravitySpringWallRight.placements.name.withIndicator=Gravity Spring (Wall Right, with indicator)
 entities.GravityHelper/GravitySpringFloor.attributes.description.defaultToController=If true (default), supported properties for this entity will use the value from the active controller.
 entities.GravityHelper/GravitySpringFloor.attributes.description.playerCanUse=Whether the spring will activate for the player.
@@ -112,6 +124,13 @@ entities.GravityHelper/GravitySpringFloor.attributes.description.gravityCooldown
 entities.GravityHelper/GravitySpringFloor.attributes.description.showIndicator=Whether an arrow indicator should be rendered, just below the FG decal layer. Defaults to false.
 entities.GravityHelper/GravitySpringFloor.attributes.description.largeIndicator=Whether the indicator should be a larger arrow. Defaults to false.
 entities.GravityHelper/GravitySpringFloor.attributes.description.indicatorOffset=The number of pixels away from the spring to render the indicator. Defaults to 8.
+entities.GravityHelper/GravitySpringFloor.attributes.description.refillStamina=Whether or not the spring should refill Madeline's stamina. Defaults to true.
+entities.GravityHelper/GravitySpringFloor.attributes.description.refillDashCount=The number of dashes to give Madeline. Defaults to -1, which means max refills.
+entities.GravityHelper/GravitySpringFloor.attributes.description.spriteName=The name of the sprite to use. Defaults to empty string, which uses the predefined sprites.
+entities.GravityHelper/GravitySpringFloor.attributes.description.overlaySpriteName=The name of the overlay sprite to use. Defaults to empty string, which uses the predefined sprites.
+entities.GravityHelper/GravitySpringFloor.attributes.description.indicatorTexture=The full name of the texture to use for the wall indicator. Defaults to empty string, which uses the standard arrow textures.
+entities.GravityHelper/GravitySpringFloor.attributes.description.showOverlay=Whether to show the refill/stamina type overlay if applicable. Defaults to true.
+entities.GravityHelper/GravitySpringFloor.attributes.description.refillSound=The sound to play when the spring gives Madeline more dashes than MaxDashes.
 entities.GravityHelper/GravitySpringWallLeft.attributes.description.defaultToController=If true (default), supported properties for this entity will use the value from the active controller.
 entities.GravityHelper/GravitySpringWallLeft.attributes.description.playerCanUse=Whether the spring will activate for the player.
 entities.GravityHelper/GravitySpringWallLeft.attributes.description.gravityType=The gravity type to set when Madeline activates the spring. Defaults to Toggle.
@@ -119,6 +138,13 @@ entities.GravityHelper/GravitySpringWallLeft.attributes.description.gravityCoold
 entities.GravityHelper/GravitySpringWallLeft.attributes.description.showIndicator=Whether an arrow indicator should be rendered, just below the FG decal layer. Defaults to false.
 entities.GravityHelper/GravitySpringWallLeft.attributes.description.largeIndicator=Whether the indicator should be a larger arrow. Defaults to false.
 entities.GravityHelper/GravitySpringWallLeft.attributes.description.indicatorOffset=The number of pixels away from the spring to render the indicator. Defaults to 8.
+entities.GravityHelper/GravitySpringWallLeft.attributes.description.refillStamina=Whether or not the spring should refill Madeline's stamina. Defaults to true.
+entities.GravityHelper/GravitySpringWallLeft.attributes.description.refillDashCount=The number of dashes to give Madeline. Defaults to -1, which means max refills.
+entities.GravityHelper/GravitySpringWallLeft.attributes.description.spriteName=The name of the sprite to use. Defaults to empty string, which uses the predefined sprites.
+entities.GravityHelper/GravitySpringWallLeft.attributes.description.overlaySpriteName=The name of the overlay sprite to use. Defaults to empty string, which uses the predefined sprites.
+entities.GravityHelper/GravitySpringWallLeft.attributes.description.indicatorTexture=The full name of the texture to use for the wall indicator. Defaults to empty string, which uses the standard arrow textures.
+entities.GravityHelper/GravitySpringWallLeft.attributes.description.showOverlay=Whether to show the refill/stamina type overlay if applicable. Defaults to true.
+entities.GravityHelper/GravitySpringWallLeft.attributes.description.refillSound=The sound to play when the spring gives Madeline more dashes than MaxDashes.
 entities.GravityHelper/GravitySpringWallRight.attributes.description.defaultToController=If true (default), supported properties for this entity will use the value from the active controller.
 entities.GravityHelper/GravitySpringWallRight.attributes.description.playerCanUse=Whether the spring will activate for the player.
 entities.GravityHelper/GravitySpringWallRight.attributes.description.gravityType=The gravity type to set when Madeline activates the spring. Defaults to Toggle.
@@ -126,6 +152,13 @@ entities.GravityHelper/GravitySpringWallRight.attributes.description.gravityCool
 entities.GravityHelper/GravitySpringWallRight.attributes.description.showIndicator=Whether an arrow indicator should be rendered, just below the FG decal layer. Defaults to false.
 entities.GravityHelper/GravitySpringWallRight.attributes.description.largeIndicator=Whether the indicator should be a larger arrow. Defaults to false.
 entities.GravityHelper/GravitySpringWallRight.attributes.description.indicatorOffset=The number of pixels away from the spring to render the indicator. Defaults to 8.
+entities.GravityHelper/GravitySpringWallRight.attributes.description.refillStamina=Whether or not the spring should refill Madeline's stamina. Defaults to true.
+entities.GravityHelper/GravitySpringWallRight.attributes.description.refillDashCount=The number of dashes to give Madeline. Defaults to -1, which means max refills.
+entities.GravityHelper/GravitySpringWallRight.attributes.description.spriteName=The name of the sprite to use. Defaults to empty string, which uses the predefined sprites.
+entities.GravityHelper/GravitySpringWallRight.attributes.description.overlaySpriteName=The name of the overlay sprite to use. Defaults to empty string, which uses the predefined sprites.
+entities.GravityHelper/GravitySpringWallRight.attributes.description.indicatorTexture=The full name of the texture to use for the wall indicator. Defaults to empty string, which uses the standard arrow textures.
+entities.GravityHelper/GravitySpringWallRight.attributes.description.showOverlay=Whether to show the refill/stamina type overlay if applicable. Defaults to true.
+entities.GravityHelper/GravitySpringWallRight.attributes.description.refillSound=The sound to play when the spring gives Madeline more dashes than MaxDashes.
 entities.GravityHelper/GravitySpringCeiling.attributes.description.defaultToController=If true (default), supported properties for this entity will use the value from the active controller.
 entities.GravityHelper/GravitySpringCeiling.attributes.description.playerCanUse=Whether the spring will activate for the player.
 entities.GravityHelper/GravitySpringCeiling.attributes.description.gravityType=The gravity type to set when Madeline activates the spring. Defaults to Inverted.
@@ -133,6 +166,13 @@ entities.GravityHelper/GravitySpringCeiling.attributes.description.gravityCooldo
 entities.GravityHelper/GravitySpringCeiling.attributes.description.showIndicator=Whether an arrow indicator should be rendered, just below the FG decal layer. Defaults to false.
 entities.GravityHelper/GravitySpringCeiling.attributes.description.largeIndicator=Whether the indicator should be a larger arrow. Defaults to false.
 entities.GravityHelper/GravitySpringCeiling.attributes.description.indicatorOffset=The number of pixels away from the spring to render the indicator. Defaults to 8.
+entities.GravityHelper/GravitySpringCeiling.attributes.description.refillStamina=Whether or not the spring should refill Madeline's stamina. Defaults to true.
+entities.GravityHelper/GravitySpringCeiling.attributes.description.refillDashCount=The number of dashes to give Madeline. Defaults to -1, which means max refills.
+entities.GravityHelper/GravitySpringCeiling.attributes.description.spriteName=The name of the sprite to use. Defaults to empty string, which uses the predefined sprites.
+entities.GravityHelper/GravitySpringCeiling.attributes.description.overlaySpriteName=The name of the overlay sprite to use. Defaults to empty string, which uses the predefined sprites.
+entities.GravityHelper/GravitySpringCeiling.attributes.description.indicatorTexture=The full name of the texture to use for the wall indicator. Defaults to empty string, which uses the standard arrow textures.
+entities.GravityHelper/GravitySpringCeiling.attributes.description.showOverlay=Whether to show the refill/stamina type overlay if applicable. Defaults to true.
+entities.GravityHelper/GravitySpringCeiling.attributes.description.refillSound=The sound to play when the spring gives Madeline more dashes than MaxDashes.
 
 # Upside Down Jump Thru
 entities.GravityHelper/UpsideDownJumpThru.placements.name.wood=Upside Down Jump Through (Wood)

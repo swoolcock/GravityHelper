@@ -27,6 +27,8 @@ public class GravitySpring : Spring
     public bool PlayerCanUse { get; }
     public new Orientations Orientation { get; }
     public GravityType GravityType { get; }
+    public int RefillDashCount { get; }
+    public bool RefillStamina { get; }
 
     private string getAnimId(string id) => GravityType switch
     {
@@ -36,6 +38,18 @@ public class GravitySpring : Spring
         GravityType.Toggle => $"toggle_{id}",
         _ => id,
     };
+
+    private string getOverlayAnimId(string id)
+    {
+        if (!RefillStamina)
+            return $"no_stamina_{id}";
+        return RefillDashCount switch
+        {
+            0 => $"no_dash_{id}",
+            >= 2 => $"two_dash_{id}",
+            _ => "",
+        };
+    }
 
     // ReSharper disable NotAccessedField.Local
     private readonly VersionInfo _modVersion;
@@ -48,9 +62,16 @@ public class GravitySpring : Spring
     private readonly bool _showIndicator;
     private readonly bool _largeIndicator;
     private readonly int _indicatorOffset;
+    private readonly string _indicatorTexture;
     private readonly bool _defaultToController;
     private IndicatorRenderer _indicatorRenderer;
     private Vector2 _indicatorShakeOffset;
+    private string _spriteName;
+    private string _overlaySpriteName;
+    private bool _showOverlay;
+    private string _refillSound;
+
+    private Sprite _overlaySprite;
 
     [UsedImplicitly]
     public static Entity LoadFloor(Level level, LevelData levelData, Vector2 offset, EntityData entityData) =>
@@ -80,12 +101,27 @@ public class GravitySpring : Spring
 
         PlayerCanUse = data.Bool("playerCanUse", true);
         GravityType = data.Enum<GravityType>("gravityType");
+        RefillDashCount = data.Int("refillDashCount", -1);
+        RefillStamina = data.Bool("refillStamina", true);
 
         _defaultToController = data.Bool("defaultToController");
         _gravityCooldown = data.Float("gravityCooldown", defaultCooldown);
         _showIndicator = data.Bool("showIndicator");
         _largeIndicator = data.Bool("largeIndicator");
         _indicatorOffset = data.Int("indicatorOffset", 8);
+        _indicatorTexture = data.Attr("indicatorTexture");
+        _spriteName = data.Attr("spriteName");
+        _overlaySpriteName = data.Attr("overlaySpriteName");
+        _refillSound = data.Attr("refillSound");
+
+        if (string.IsNullOrWhiteSpace(_spriteName))
+            _spriteName = "gravitySpring";
+
+        if (string.IsNullOrWhiteSpace(_overlaySpriteName))
+            _overlaySpriteName = "gravitySpringOverlay";
+
+        // showOverlay defaults to false to handle legacy springs
+        _showOverlay = data.Bool("showOverlay");
 
         // handle legacy spring settings
         if (data.TryFloat("cooldown", out var cooldown))
@@ -99,10 +135,19 @@ public class GravitySpring : Spring
         var pufferCollider = Get<PufferCollider>();
 
         // update sprite
-        GFX.SpriteBank.CreateOn(sprite, "gravitySpring");
+        GFX.SpriteBank.CreateOn(sprite, _spriteName);
         sprite.Play(getAnimId("idle"));
-        sprite.Origin.X = sprite.Width / 2f;
-        sprite.Origin.Y = sprite.Height;
+
+        // create overlay sprite
+        if (_showOverlay)
+        {
+            var anim = getOverlayAnimId("idle");
+            if (!string.IsNullOrWhiteSpace(anim))
+            {
+                Add(_overlaySprite = GFX.SpriteBank.Create(_overlaySpriteName));
+                _overlaySprite.Play(anim);
+            }
+        }
 
         // update callbacks
         staticMover.OnEnable = OnEnable;
@@ -135,6 +180,9 @@ public class GravitySpring : Spring
                 staticMover.JumpThruChecker = jt => CollideCheck(jt, Position - Vector2.UnitY);
                 break;
         }
+
+        if (_overlaySprite != null)
+            _overlaySprite.Rotation = sprite.Rotation;
     }
 
     public override void Added(Scene scene)
@@ -163,8 +211,15 @@ public class GravitySpring : Spring
     private new void OnEnable()
     {
         Visible = Collidable = true;
+
         sprite.Color = Color.White;
         sprite.Play(getAnimId("idle"));
+
+        if (_overlaySprite != null)
+        {
+            _overlaySprite.Color = Color.White;
+            _overlaySprite.Play(getOverlayAnimId("idle"));
+        }
     }
 
     private new void OnDisable()
@@ -174,6 +229,12 @@ public class GravitySpring : Spring
         {
             sprite.Play("disabled");
             sprite.Color = DisabledColor;
+
+            if (_overlaySprite != null)
+            {
+                _overlaySprite.Color = Color.White;
+                _overlaySprite.Play(getOverlayAnimId("idle"));
+            }
         }
         else
             Visible = false;
@@ -184,6 +245,9 @@ public class GravitySpring : Spring
     public override void Update()
     {
         base.Update();
+
+        if (_overlaySprite != null)
+            _overlaySprite.Scale = sprite.Scale;
 
         if (_indicatorRenderer != null)
             _indicatorRenderer.Visible = Visible;
@@ -223,6 +287,10 @@ public class GravitySpring : Spring
         // boing!
         bounceAnimate();
 
+        // cache stamina and inventory
+        var oldStamina = player.Stamina;
+        var oldDashes = player.Dashes;
+
         // bounce player away
         switch (Orientation)
         {
@@ -247,6 +315,18 @@ public class GravitySpring : Spring
             case Orientations.WallRight:
                 player.SideBounce(-1, CenterLeft.X, CenterLeft.Y);
                 break;
+        }
+
+        // undo stamina refill if required
+        if (!RefillStamina)
+            player.Stamina = oldStamina;
+
+        // undo or override dash refill if required
+        if (RefillDashCount >= 0)
+        {
+            player.Dashes = Math.Max(oldDashes, RefillDashCount);
+            if (!string.IsNullOrWhiteSpace(_refillSound) && RefillDashCount > player.MaxDashes && oldDashes < RefillDashCount)
+                Audio.Play(_refillSound, Position);
         }
     }
 
@@ -275,56 +355,34 @@ public class GravitySpring : Spring
         const float y_value = 160f;
         const float no_gravity_timer = 0.15f;
 
-        // handle Theo
-        if (h.Entity is TheoCrystal theoCrystal)
+        // get the speed
+        var speed = h.GetSpeed();
+
+        // do nothing if moving away
+        if (speed.Y > 0) return false;
+
+        // update values
+        speed.X *= x_multiplier;
+        speed.Y = y_value;
+
+        // set speed
+        h.SetSpeed(speed);
+
+        switch (h.Entity)
         {
-            // do nothing if moving away
-            if (theoCrystal.Speed.Y > 0) return false;
-            theoCrystal.Speed.X *= x_multiplier;
-            theoCrystal.Speed.Y = y_value;
-            theoCrystal.noGravityTimer = no_gravity_timer;
-            return true;
+            // handle Theo
+            case TheoCrystal theoCrystal:
+                theoCrystal.noGravityTimer = no_gravity_timer;
+                break;
+
+            // handle jellies
+            case Glider glider:
+                glider.noGravityTimer = no_gravity_timer;
+                glider.wiggler.Start();
+                break;
         }
 
-        // handle jellies
-        if (h.Entity is Glider glider)
-        {
-            // do nothing if moving away
-            if (glider.Speed.Y > 0) return false;
-            glider.Speed.X *= x_multiplier;
-            glider.Speed.Y = y_value;
-            glider.noGravityTimer = no_gravity_timer;
-            glider.wiggler.Start();
-            return true;
-        }
-
-        // if the entity has a GravityComponent then try to use the speed delegates from that
-        if (h.Entity.Get<GravityComponent>() is { } gravityComponent)
-        {
-            var speed = gravityComponent.EntitySpeed;
-            // do nothing if moving away
-            if (speed.Y > 0) return false;
-            speed.X *= x_multiplier;
-            speed.Y = y_value;
-            gravityComponent.EntitySpeed = speed;
-            return true;
-        }
-
-        // just take a guess that there's a Speed field if it's an unknown entity
-        var entityType = h.Entity.GetType();
-        var speedField = entityType.GetRuntimeFields().FirstOrDefault(f => f.Name == "Speed" && f.FieldType == typeof(Vector2));
-        if (speedField != null)
-        {
-            var speed = (Vector2)speedField.GetValue(h.Entity);
-            // do nothing if moving away
-            if (speed.Y > 0) return false;
-            speed.X *= x_multiplier;
-            speed.Y = y_value;
-            speedField.SetValue(h.Entity, speed);
-            return true;
-        }
-
-        return false;
+        return true;
     }
 
     private new void OnPuffer(Puffer p)
@@ -351,9 +409,10 @@ public class GravitySpring : Spring
 
     private void bounceAnimate()
     {
-        Audio.Play("event:/game/general/spring", BottomCenter);
+        Audio.Play("event:/game/general/spring", Position);
         staticMover.TriggerPlatform();
         sprite.Play(getAnimId("bounce"), true);
+        _overlaySprite?.Play(getOverlayAnimId("bounce"), true);
         wiggler.Start();
     }
 
@@ -387,7 +446,7 @@ public class GravitySpring : Spring
         self.wallSlideTimer = 1.2f;
         self.wallBoostTimer = 0.0f;
         self.varJumpSpeed = 0f;
-        self.launched =  false;
+        self.launched = false;
 
         self.StateMachine.State = Player.StNormal;
         self.AutoJump = false;
@@ -421,7 +480,11 @@ public class GravitySpring : Spring
 
             var size = _spring._largeIndicator ? string.Empty : "Small";
 
-            _arrowTexture = GFX.Game[$"objects/GravityHelper/gravityField/{prefix}Arrow{size}"];
+            if (!string.IsNullOrWhiteSpace(spring._indicatorTexture))
+                _arrowTexture = GFX.Game[spring._indicatorTexture];
+            else
+                _arrowTexture = GFX.Game[$"objects/GravityHelper/gravityField/{prefix}Arrow{size}"];
+
             _arrowOrigin = new Vector2(_arrowTexture.Width / 2f, _arrowTexture.Height / 2f);
 
             Depth = Depths.FGDecals - 1;
