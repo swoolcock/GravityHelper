@@ -14,7 +14,7 @@ using Monocle;
 
 namespace Celeste.Mod.GravityHelper.Entities;
 
-[CustomEntity(
+[CustomEntity("GravityHelper/GravitySpring = LoadSpring",
     "GravityHelper/GravitySpringFloor = LoadFloor",
     "GravityHelper/GravitySpringCeiling = LoadCeiling",
     "GravityHelper/GravitySpringWallLeft = LoadWallLeft",
@@ -72,6 +72,13 @@ public class GravitySpring : Spring
     private string _refillSound;
 
     private Sprite _overlaySprite;
+
+    [UsedImplicitly]
+    public static Entity LoadSpring(Level level, LevelData levelData, Vector2 offset, EntityData entityData)
+    {
+        var orientation = entityData.Enum<Orientations>("orientation");
+        return new GravitySpring(entityData, offset, orientation);
+    }
 
     [UsedImplicitly]
     public static Entity LoadFloor(Level level, LevelData levelData, Vector2 offset, EntityData entityData) =>

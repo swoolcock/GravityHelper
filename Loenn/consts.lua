@@ -26,6 +26,7 @@ local consts = {
     fieldInformation = {
         gravityType = function(...)
             return {
+                editable = false,
                 options = makeOptions({
                     [0] = "Normal",
                     [1] = "Inverted",
@@ -37,6 +38,7 @@ local consts = {
         end,
         vvvvvvMode = {
             options = {
+                editable = false,
                 {"Trigger-based", 0},
                 {"Off", 1},
                 {"On", 2},
@@ -44,11 +46,22 @@ local consts = {
         },
         fallType = {
             options = {
+                editable = false,
                 {"None", 0},
                 {"Down", 1},
                 {"Up", 2},
                 {"Match Player", 3},
                 {"Opposite Player", 4},
+            },
+        },
+        orientation = {
+            fieldType = "string",
+            editable = false,
+            options = {
+                {"Floor", "Floor"},
+                {"Ceiling", "Ceiling"},
+                {"Wall Left", "WallLeft"},
+                {"Wall Right", "WallRight"},
             },
         },
     },

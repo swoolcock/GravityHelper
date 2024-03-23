@@ -6,7 +6,8 @@ local consts = require("mods").requireFromPlugin("consts")
 local helpers = require("mods").requireFromPlugin("helpers")
 local utils = require("utils")
 
-local placementData = helpers.createPlacementData('2', {
+local placementData = helpers.createPlacementData('3', {
+    orientation = "Floor",
     defaultToController = true,
     playerCanUse = true,
     gravityType = consts.gravityTypes.normal.index,
@@ -23,7 +24,90 @@ local placementData = helpers.createPlacementData('2', {
     refillSound = "event:/new_content/game/10_farewell/pinkdiamond_touch",
 })
 
-local function springSprite(entity, rotation)
+local gravitySpring = {
+    name = "GravityHelper/GravitySpring",
+    depth = -8501,
+    ignoredFields = consts.ignoredFields,
+    fieldInformation = {
+        gravityType = consts.fieldInformation.gravityType(0,1,2,-1),
+        refillDashCount = {
+            fieldType = "integer",
+        },
+        orientation = consts.fieldInformation.orientation,
+    },
+}
+
+local function createAllPlacements()
+    local allPlacements = { }
+    local function createPlacements(name, gravityType, orientation)
+        table.insert(allPlacements, {
+            name = name .. "_normal",
+            data = helpers.union(placementData, {
+                orientation = orientation,
+                gravityType = gravityType,
+            }),
+        })
+        table.insert(allPlacements, {
+            name = name .. "_twoDash",
+            data = helpers.union(placementData, {
+                orientation = orientation,
+                gravityType = gravityType,
+                refillDashCount = 2,
+            }),
+        })
+        table.insert(allPlacements, {
+            name = name .. "_noDash",
+            data = helpers.union(placementData, {
+                orientation = orientation,
+                gravityType = gravityType,
+                refillDashCount = 0,
+            }),
+        })
+        table.insert(allPlacements, {
+            name = name .. "_noStamina",
+            data = helpers.union(placementData, {
+                orientation = orientation,
+                gravityType = gravityType,
+                refillDashCount = 0,
+                refillStamina = false,
+            }),
+        })
+        table.insert(allPlacements, {
+            name = name .. "_withIndicator",
+            data = helpers.union(placementData, {
+                orientation = orientation,
+                gravityType = gravityType,
+                showIndicator = true,
+            }),
+        })
+    end
+
+    createPlacements("floor", 0, "Floor")
+    createPlacements("ceiling", 1, "Ceiling")
+    createPlacements("wallleft", 2, "WallLeft")
+    createPlacements("wallright", 2, "WallRight")
+
+    return allPlacements
+end
+
+local function transformsForOrientation(orientation)
+    if orientation == "Floor" then
+        return 0, -6, -3, 12, 3
+    elseif orientation == "WallLeft" then
+        return math.pi / 2, 0, -6, 3, 12
+    elseif orientation == "WallRight" then
+        return -math.pi / 2, -3, -6, 3, 12
+    elseif orientation == "Ceiling" then
+        return math.pi, -6, 0, 12, 3
+    end
+end
+
+function gravitySpring.selection(room, entity)
+    local _, xOffset, yOffset, width, height = transformsForOrientation(entity.orientation)
+    return utils.rectangle(entity.x + xOffset, entity.y + yOffset, width, height)
+end
+
+function gravitySpring.sprite(room, entity)
     local sprites = { }
     local spritePath = "objects/GravityHelper/gravitySpring/"
     local textureName = "none00"
@@ -36,6 +120,7 @@ local function springSprite(entity, rotation)
         textureName = "toggle00"
     end
 
+    local rotation = transformsForOrientation(entity.orientation)
     local mainSprite = drawableSprite.fromTexture(spritePath .. textureName, entity)
     mainSprite:setJustification(0.5, 1.0)
     mainSprite.rotation = rotation
@@ -62,76 +147,6 @@ local function springSprite(entity, rotation)
     return sprites
 end
 
-local function makeSpring(name, rotation, xOffset, yOffset, width, height, gravityType)
-    return {
-        name = name,
-        depth = -8501,
-        ignoredFields = consts.ignoredFields,
-        fieldInformation = {
-            gravityType = consts.fieldInformation.gravityType(0,1,2,-1),
-            refillDashCount = {
-                fieldType = "integer",
-            },
-        },
-        selection = function(room, entity)
-            return utils.rectangle(entity.x + xOffset, entity.y + yOffset, width, height)
-        end,
-        sprite = function(room, entity)
-            return springSprite(entity, rotation)
-        end,
-        placements = {
-            {
-                name = "normal",
-                data = helpers.union(placementData, {
-                    gravityType = gravityType,
-                }),
-            },
-            {
-                name = "twoDash",
-                data = helpers.union(placementData, {
-                    gravityType = gravityType,
-                    refillDashCount = 2,
-                }),
-            },
-            {
-                name = "noDash",
-                data = helpers.union(placementData, {
-                    gravityType = gravityType,
-                    refillDashCount = 0,
-                }),
-            },
-            {
-                name = "noStamina",
-                data = helpers.union(placementData, {
-                    gravityType = gravityType,
-                    refillStamina = false,
-                    refillDashCount = 0,
-                }),
-            },
-            {
-                name = "withIndicator",
-                data = helpers.union(placementData, {
-                    gravityType = gravityType,
-                    showIndicator = true,
-                }),
-            },
-        },
-    }
-end
+gravitySpring.placements = createAllPlacements()
 
-local gravitySprings = {
-    makeSpring("GravityHelper/GravitySpringFloor",
-            0, -6, -3, 12, 3,
-            consts.gravityTypes.normal.index),
-    makeSpring("GravityHelper/GravitySpringWallLeft",
-            math.pi / 2, 0, -6, 3, 12,
-            consts.gravityTypes.toggle.index),
-    makeSpring("GravityHelper/GravitySpringWallRight",
-            -math.pi / 2, -3, -6, 3, 12,
-            consts.gravityTypes.toggle.index),
-    makeSpring("GravityHelper/GravitySpringCeiling",
-            math.pi, -6, 0, 12, 3,
-            consts.gravityTypes.inverted.index),
-}
-
-return gravitySprings
+return gravitySpring
