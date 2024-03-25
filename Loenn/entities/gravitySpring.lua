@@ -37,6 +37,13 @@ local gravitySpring = {
     },
 }
 
+local orientations = {
+    "Floor",
+    "WallLeft",
+    "Ceiling",
+    "WallRight",
+}
+
 local function createAllPlacements()
     local allPlacements = { }
     local function createPlacements(name, gravityType, orientation)
@@ -82,23 +89,23 @@ local function createAllPlacements()
         })
     end
 
-    createPlacements("floor", 0, "Floor")
-    createPlacements("ceiling", 1, "Ceiling")
-    createPlacements("wallleft", 2, "WallLeft")
-    createPlacements("wallright", 2, "WallRight")
+    createPlacements("floor", 0, orientations[1])
+    createPlacements("wallleft", 2, orientations[2])
+    createPlacements("ceiling", 1, orientations[3])
+    createPlacements("wallright", 2, orientations[4])
 
     return allPlacements
 end
 
 local function transformsForOrientation(orientation)
-    if orientation == "Floor" then
+    if orientation == orientations[1] then
         return 0, -6, -3, 12, 3
-    elseif orientation == "WallLeft" then
+    elseif orientation == orientations[2] then
         return math.pi / 2, 0, -6, 3, 12
-    elseif orientation == "WallRight" then
-        return -math.pi / 2, -3, -6, 3, 12
-    elseif orientation == "Ceiling" then
+    elseif orientation == orientations[3] then
         return math.pi, -6, 0, 12, 3
+    elseif orientation == orientations[4] then
+        return -math.pi / 2, -3, -6, 3, 12
     end
 end
 
@@ -145,6 +152,41 @@ function gravitySpring.sprite(room, entity)
     end
 
     return sprites
+end
+
+function gravitySpring.flip(room, entity, horizontal, vertical)
+    local nameIndex = 0
+    for i = 1,4 do
+        if entity.orientation == orientations[i] then
+            nameIndex = i - 1
+            break
+        end
+    end
+
+    if nameIndex % 2 == 0 and vertical or nameIndex % 2 == 1 and horizontal then
+        nameIndex = (nameIndex + 2) % 4
+    else
+        return false
+    end
+
+    entity.orientation = orientations[nameIndex + 1]
+
+    return true
+end
+
+function gravitySpring.rotate(room, entity, direction)
+    local nameIndex = 0
+    for i = 1,4 do
+        if entity.orientation == orientations[i] then
+            nameIndex = i - 1
+            break
+        end
+    end
+
+    nameIndex = (nameIndex + direction + 4) % 4
+    entity.orientation = orientations[nameIndex + 1]
+
+    return true
 end
 
 gravitySpring.placements = createAllPlacements()

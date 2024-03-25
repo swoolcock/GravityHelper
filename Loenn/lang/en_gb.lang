@@ -162,6 +162,10 @@ entities.GravityHelper/GravitySpring.attributes.description.indicatorTexture=The
 entities.GravityHelper/GravitySpring.attributes.description.showOverlay=Whether to show the refill/stamina type overlay if applicable. Defaults to true.
 entities.GravityHelper/GravitySpring.attributes.description.refillSound=The sound to play when the spring gives Madeline more dashes than MaxDashes.
 
+# Ceiling Momentum Spring
+entities.GravityHelper/CeilingMomentumSpring.placements.name.normal=Momentum Spring (Down)
+entities.GravityHelper/CeilingMomentumSpring.attributes.description.sprite=Determines the visual appearance of the spring.
+
 # Upside Down Jump Thru
 entities.GravityHelper/UpsideDownJumpThru.placements.name.wood=Upside Down Jump Through (Wood)
 entities.GravityHelper/UpsideDownJumpThru.placements.name.dream=Upside Down Jump Through (Dream)
