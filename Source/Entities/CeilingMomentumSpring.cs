@@ -56,14 +56,10 @@ public class CeilingMomentumSpring : Spring
             return;
         }
 
-        // ignore spring if moving away
-        var realY = GravityHelperModule.ShouldInvertPlayer ? -player.Speed.Y : player.Speed.Y;
-        if (realY > 0) return;
-
-        BounceAnimate();
-
         if (!GravityHelperModule.ShouldInvertPlayer)
         {
+            if (player.Speed.Y > 0) return;
+            BounceAnimate();
             GravitySpring.InvertedSuperBounce(player, Bottom);
             return;
         }
@@ -83,6 +79,7 @@ public class CeilingMomentumSpring : Spring
         player.Speed.X = 0;
         player.Speed.Y = 0;
 
+        BounceAnimate();
         player.SuperBounce(Bottom);
 
         player.Speed.X = origSpeedX;
