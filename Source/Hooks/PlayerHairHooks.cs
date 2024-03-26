@@ -81,11 +81,8 @@ internal static class PlayerHairHooks
             if (p.Entity is Player)
                 return GravityHelperModule.ShouldInvertPlayer ? inverted : v;
 
-            if (p.Entity is PlayerDeadBody or BadelineDummy or BadelineOldsite ||
-                p.Entity.GetType() == ReflectionCache.CelesteNetGhostType)
-                return p.Entity.ShouldInvert() ? inverted : v;
-
-            return v;
+            // player hair should only ever be added to an entity that supports gravity, anyway
+            return p.Entity.ShouldInvert() ? inverted : v;
         });
     }
 }

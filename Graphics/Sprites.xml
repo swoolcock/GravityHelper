@@ -18,6 +18,16 @@
         <Anim id="disabled" path="white" delay="0.07" />
     </gravitySpring>
 
+    <gravitySpringOverlay path="objects/GravityHelper/gravitySpring/" start="no_dash_idle">
+        <Justify x="0.5" y="1" />
+        <Anim id="no_dash_idle" path="no_dash" delay="0.0" frames="0" />
+        <Anim id="no_dash_bounce" path="no_dash" goto="no_dash_idle" delay="0.07" frames="0,1,2,2,2,2,2,2,2,2,2,3,4,5" />
+        <Anim id="two_dash_idle" path="two_dash" delay="0.0" frames="0" />
+        <Anim id="two_dash_bounce" path="two_dash" goto="two_dash_idle" delay="0.07" frames="0,1,2,2,2,2,2,2,2,2,2,3,4,5" />
+        <Anim id="no_stamina_idle" path="no_stamina" delay="0.0" frames="0" />
+        <Anim id="no_stamina_bounce" path="no_stamina" goto="no_stamina_idle" delay="0.07" frames="0,1,2,2,2,2,2,2,2,2,2,3,4,5" />
+    </gravitySpringOverlay>
+
     <gravityRefill path="objects/GravityHelper/gravityRefill/" start="idle">
         <Center />
         <Loop id="idle" path="idle" delay="0.1" frames="0-7" />
