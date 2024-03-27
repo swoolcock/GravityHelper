@@ -37,8 +37,12 @@ public class GravityHelperModule : EverestModule
 
     internal static bool RequiresHooksForSession(Session session, out bool forceLoad)
     {
-        forceLoad = false;
-        bool requiresHooks(EntityData data) => data.Name.StartsWith("GravityHelper") || data.Has("_gravityHelper");
+        bool requiresHooks(EntityData data)
+        {
+            if (_ignoreHooks.Contains(data.Name)) return false;
+            return data.Name.StartsWith("GravityHelper") || data.Has("_gravityHelper");
+        }
+
         var entityData = session.MapData.Levels.SelectMany(l => l.Entities).FirstOrDefault(requiresHooks);
         forceLoad = entityData?.Name == "GravityHelper/ForceLoadGravityController";
         return entityData != null || session.MapData.Levels.SelectMany(l => l.Triggers).Any(requiresHooks);
@@ -369,4 +373,12 @@ public class GravityHelperModule : EverestModule
         /// </summary>
         Forced,
     }
+
+    /// <summary>
+    /// List of entity names that are ignored when determining whether we need hooks.
+    /// </summary>
+    internal static List<string> _ignoreHooks = [
+        "GravityHelper/MomentumSpring",
+        "GravityHelper/CeilingMomentumSpring",
+    ];
 }
