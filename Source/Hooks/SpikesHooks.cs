@@ -2,6 +2,7 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using Celeste.Mod.GravityHelper.Components;
+using Celeste.Mod.GravityHelper.Entities;
 using Microsoft.Xna.Framework;
 using MonoMod.RuntimeDetour;
 
@@ -15,6 +16,7 @@ internal static class SpikesHooks
     {
         Logger.Log(nameof(GravityHelperModule), $"Loading {nameof(Spikes)} hooks...");
 
+        On.Celeste.Spikes.IsRiding_JumpThru += Spikes_IsRiding_JumpThru;
         On.Celeste.Spikes.ctor_Vector2_int_Directions_string += Spikes_ctor_Vector2_int_Directions_string;
         using (new DetourContext { Before = { "*" } })
             On.Celeste.Spikes.OnCollide += Spikes_OnCollide;
@@ -24,8 +26,21 @@ internal static class SpikesHooks
     {
         Logger.Log(nameof(GravityHelperModule), $"Unloading {nameof(Spikes)} hooks...");
 
+        On.Celeste.Spikes.IsRiding_JumpThru -= Spikes_IsRiding_JumpThru;
         On.Celeste.Spikes.ctor_Vector2_int_Directions_string -= Spikes_ctor_Vector2_int_Directions_string;
         On.Celeste.Spikes.OnCollide -= Spikes_OnCollide;
+    }
+
+    private static bool Spikes_IsRiding_JumpThru(On.Celeste.Spikes.orig_IsRiding_JumpThru orig, Spikes self, JumpThru jumpThru)
+    {
+        // accept regular logic
+        if (orig(self, jumpThru))
+            return true;
+        // also allow for down spikes to attach to gravity helper upside down jumpthrus (not maddie's)
+        if (self.Direction == Spikes.Directions.Down && jumpThru is UpsideDownJumpThru && self.CollideCheck(jumpThru, self.Position - Vector2.UnitY))
+            return true;
+        // otherwise not riding
+        return false;
     }
 
     private static void Spikes_ctor_Vector2_int_Directions_string(On.Celeste.Spikes.orig_ctor_Vector2_int_Directions_string orig, Spikes self, Vector2 position, int size, Spikes.Directions direction, string type)

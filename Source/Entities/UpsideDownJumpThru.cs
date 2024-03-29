@@ -77,8 +77,26 @@ public class UpsideDownJumpThru : JumpThru
                     }
                     sharedRiders.Clear();
                 },
-                OnShake = amount => shakeOffset += amount,
-                OnAttach = p => _attachedPlatform = p,
+                OnShake = amount =>
+                {
+                    ShakeStaticMovers(amount);
+                    shakeOffset += amount;
+                },
+                OnAttach = p =>
+                {
+                    _attachedPlatform = p;
+                    Depth = p.Depth + 1;
+                },
+                OnEnable = () =>
+                {
+                    EnableStaticMovers();
+                    Active = Visible = Collidable = true;
+                },
+                OnDisable = () =>
+                {
+                    DisableStaticMovers();
+                    Active = Visible = Collidable = false;
+                }
             });
         }
 
@@ -98,9 +116,7 @@ public class UpsideDownJumpThru : JumpThru
         base.Update();
 
         if (_attachedPlatform != null && _attached && _triggerStaticMovers && HasPlayerRider())
-        {
-            _attachedPlatform.OnStaticMoverTrigger(_staticMover);
-        }
+            triggerPlatform();
     }
 
     public override void Removed(Scene scene)
@@ -156,5 +172,20 @@ public class UpsideDownJumpThru : JumpThru
                 Scale = {Y = -1},
             });
         }
+
+        foreach (StaticMover mover in scene.Tracker.GetComponents<StaticMover>())
+        {
+            if (mover.IsRiding(this) && mover.Platform == null)
+            {
+                staticMovers.Add(mover);
+                mover.Platform = this;
+                mover.OnAttach?.Invoke(this);
+            }
+        }
     }
+
+
+    public override void OnStaticMoverTrigger(StaticMover sm) => triggerPlatform();
+
+    private void triggerPlatform() => _attachedPlatform?.OnStaticMoverTrigger(_staticMover);
 }
