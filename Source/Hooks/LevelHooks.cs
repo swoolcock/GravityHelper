@@ -144,15 +144,13 @@ internal static class LevelHooks
         }
         else if (player.CenterY > bounds.Bottom)
         {
-            if (self.Session.MapData.CanTransitionTo(self,
-                    player.Center + Vector2.UnitY * 12f) &&
-                !self.Session.LevelData.DisableDownTransition &&
-                !player.CollideCheck<Solid>(player.Position + Vector2.UnitY * 4f))
+            if (self.Session.MapData.CanTransitionTo(self, player.Center + Vector2.UnitY * 12f))
             {
                 player.BeforeDownTransition();
                 self.NextLevel(player.Center + Vector2.UnitY * 12f, Vector2.UnitY);
+                return;
             }
-            else if (player.Bottom > bounds.Bottom + 24)
+            if (player.Bottom > bounds.Bottom + 24)
             {
                 player.Bottom = bounds.Bottom + 24;
                 player.OnBoundsV();
@@ -162,8 +160,11 @@ internal static class LevelHooks
         // die or transition up if required
         if (self.CameraLockMode != Level.CameraLockModes.None && rectangle.Top > bounds.Top + 4 && player.Bottom < rectangle.Top)
             tryToDie(rectangle.Top);
-        else if (player.Top < bounds.Top && self.Session.MapData.CanTransitionTo(self, player.Center - Vector2.UnitY * 12f))
+        else if (player.Top < bounds.Top && self.Session.MapData.CanTransitionTo(self, player.Center - Vector2.UnitY * 12f) &&
+                 !self.Session.LevelData.DisableDownTransition)
         {
+            if (player.CollideCheck<Solid>(player.Position - Vector2.UnitY * 4f))
+                return;
             player.BeforeUpTransition();
             self.NextLevel(player.Center - Vector2.UnitY * 12f, -Vector2.UnitY);
         }
