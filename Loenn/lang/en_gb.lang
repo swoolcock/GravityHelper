@@ -96,6 +96,21 @@ entities.GravityHelper/GravityRefill.attributes.description.refillsDash=Whether 
 entities.GravityHelper/GravityRefill.attributes.description.refillsStamina=Whether collecting the crystal will also refill Madeline's stamina. Defaults to true.
 entities.GravityHelper/GravityRefill.attributes.description.respawnTime=How long in seconds it will take for the crystal to respawn if enabled. Defaults to 2.5.
 
+# Gravity Refill Wall
+entities.GravityHelper/GravityRefillWall.placements.name.normal=Gravity Refill Wall
+entities.GravityHelper/GravityRefillWall.placements.name.normalSingleUse=Gravity Refill Wall (Single Use)
+entities.GravityHelper/GravityRefillWall.placements.name.noDash=Gravity Refill Wall (No Dash/Stamina)
+entities.GravityHelper/GravityRefillWall.placements.name.noDashSingleUse=Gravity Refill Wall (No Dash/Stamina, Single Use)
+entities.GravityHelper/GravityRefillWall.placements.name.twoDash=Gravity Refill Wall (Two Dashes/Charges)
+entities.GravityHelper/GravityRefillWall.placements.name.twoDashSingleUse=Gravity Refill Wall (Two Dashes/Charges, Single Use)
+entities.GravityHelper/GravityRefillWall.attributes.description.charges=The number of charges of gravity toggle that Madeline will receive. Defaults to 1.
+entities.GravityHelper/GravityRefillWall.attributes.description.dashes=The number of dashes to refill, if refillsDash is true. Negative value means Player.MaxDashes. Defaults to -1.
+entities.GravityHelper/GravityRefillWall.attributes.description.oneUse=If true, the wall will not respawn after it has been collected. Defaults to false.
+entities.GravityHelper/GravityRefillWall.attributes.description.refillsDash=Whether colliding with the wall will also refill Madeline's dash. Defaults to true.
+entities.GravityHelper/GravityRefillWall.attributes.description.refillsStamina=Whether colliding with the wall will also refill Madeline's stamina. Defaults to true.
+entities.GravityHelper/GravityRefillWall.attributes.description.respawnTime=How long in seconds it will take for the wall to respawn if enabled. Defaults to 2.5.
+entities.GravityHelper/GravityRefillWall.attributes.description.wallAlpha=The opacity of the wall. Defaults to 0.8.
+
 # Gravity Spring (Legacy)
 entities.GravityHelper/GravitySpringFloor.attributes.description.defaultToController=If true (default), supported properties for this entity will use the value from the active controller.
 entities.GravityHelper/GravitySpringFloor.attributes.description.playerCanUse=Whether the spring will activate for the player.
