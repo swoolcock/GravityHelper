@@ -29,6 +29,12 @@ public class VvvvvvTrigger : Trigger
         string.IsNullOrWhiteSpace(EnableFlag) ||
         SceneAs<Level>() is { } level && level.Session.GetFlag(EnableFlag);
 
+    public override void Added(Scene scene)
+    {
+        base.Added(scene);
+        Collidable = CheckFlag();
+    }
+
     public override void Update()
     {
         Collidable = CheckFlag();

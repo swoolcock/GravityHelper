@@ -95,6 +95,8 @@ public class GravityTrigger : Trigger
     {
         base.Added(scene);
 
+        Collidable = CheckFlag();
+
         if (_defaultToController && Scene.GetActiveController<SoundGravityController>() is { } soundController)
         {
             if (GravityType == GravityType.Normal)
