@@ -30,6 +30,7 @@ local placementData = helpers.createPlacementData('1', {
     momentumMultiplier = 1.0,
     cassetteIndex = -1,
     cassetteSequence = "",
+    enableFlag = "",
 })
 
 local gravityField = {
@@ -42,6 +43,9 @@ local gravityField = {
         exitGravityType = consts.fieldInformation.gravityType(0,1,2,-1),
         arrowType = consts.fieldInformation.gravityType(0,1,2,-1,-2),
         fieldType = consts.fieldInformation.gravityType(0,1,2,-1,-2),
+        cassetteIndex = {
+            fieldType = "integer",
+        },
     },
     placements = {
         {

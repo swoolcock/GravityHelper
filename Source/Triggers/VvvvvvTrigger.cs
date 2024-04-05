@@ -15,12 +15,24 @@ public class VvvvvvTrigger : Trigger
 {
     public bool Enable { get; }
     public bool OnlyOnSpawn { get; }
+    public string EnableFlag { get; }
 
     public VvvvvvTrigger(EntityData data, Vector2 offset)
         : base(data, offset)
     {
         Enable = data.Bool("enable", true);
         OnlyOnSpawn = data.Bool("onlyOnSpawn");
+        EnableFlag = data.Attr("enableFlag");
+    }
+
+    protected bool CheckFlag() =>
+        string.IsNullOrWhiteSpace(EnableFlag) ||
+        SceneAs<Level>() is { } level && level.Session.GetFlag(EnableFlag);
+
+    public override void Update()
+    {
+        Collidable = CheckFlag();
+        base.Update();
     }
 
     public override void OnEnter(Player player)

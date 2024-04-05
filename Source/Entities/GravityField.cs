@@ -405,6 +405,9 @@ public class GravityField : GravityTrigger, IConnectableField
 
     public override void Render()
     {
+        if (!CheckFlag())
+            return;
+
         base.Render();
 
         var cassetteIndex = _cassetteComponent?.CassetteIndex ?? -1;
