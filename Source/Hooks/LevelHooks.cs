@@ -1,6 +1,7 @@
 // Copyright (c) Shane Woolcock. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+using System;
 using System.Linq;
 using Celeste.Mod.GravityHelper.Entities;
 using Celeste.Mod.GravityHelper.Entities.Controllers;
@@ -28,6 +29,8 @@ internal static class LevelHooks
         On.Celeste.Level.Update += Level_Update;
         On.Celeste.Level.End += Level_End;
 
+        IL.Celeste.Level.EnforceBounds += Level_EnforceBounds;
+
         hook_Level_orig_TransitionRoutine = new ILHook(ReflectionCache.Level_OrigTransitionRoutine.GetStateMachineTarget(), Level_orig_TransitionRoutine);
     }
 
@@ -39,6 +42,8 @@ internal static class LevelHooks
         On.Celeste.Level.EnforceBounds -= Level_EnforceBounds;
         On.Celeste.Level.Update -= Level_Update;
         On.Celeste.Level.End -= Level_End;
+
+        IL.Celeste.Level.EnforceBounds -= Level_EnforceBounds;
 
         hook_Level_orig_TransitionRoutine?.Dispose();
         hook_Level_orig_TransitionRoutine = null;
@@ -144,8 +149,7 @@ internal static class LevelHooks
         }
         else if (player.CenterY > bounds.Bottom)
         {
-            if (self.Session.MapData.CanTransitionTo(self,
-                    player.Center + Vector2.UnitY * 12f) &&
+            if (self.Session.MapData.CanTransitionTo(self, player.Center + Vector2.UnitY * 12f) &&
                 !self.Session.LevelData.DisableDownTransition &&
                 !player.CollideCheck<Solid>(player.Position + Vector2.UnitY * 4f))
             {
@@ -160,9 +164,12 @@ internal static class LevelHooks
         }
 
         // die or transition up if required
+        var disableUpTransition = self.Tracker.GetEntity<DisableUpTransitionController>() != null;
         if (self.CameraLockMode != Level.CameraLockModes.None && rectangle.Top > bounds.Top + 4 && player.Bottom < rectangle.Top)
             tryToDie(rectangle.Top);
-        else if (player.Top < bounds.Top && self.Session.MapData.CanTransitionTo(self, player.Center - Vector2.UnitY * 12f))
+        else if (player.Top < bounds.Top &&
+                 self.Session.MapData.CanTransitionTo(self, player.Center - Vector2.UnitY * 12f) &&
+                 !disableUpTransition)
         {
             player.BeforeUpTransition();
             self.NextLevel(player.Center - Vector2.UnitY * 12f, -Vector2.UnitY);
@@ -172,6 +179,23 @@ internal static class LevelHooks
         else if (player.Bottom < bounds.Top - 4)
             player.Die(Vector2.Zero);
     }
+
+    private static void Level_EnforceBounds(ILContext il) => HookUtils.SafeHook(() =>
+    {
+        var cursor = new ILCursor(il);
+        if (!cursor.TryGotoNext(MoveType.Before, instr => instr.MatchCallvirt<Player>(nameof(Player.BeforeUpTransition))))
+            throw new HookException("Couldn't find Player.BeforeUpTransition.");
+        if (!cursor.TryGotoPrev(MoveType.After, instr => instr.MatchCallvirt<MapData>(nameof(MapData.CanTransitionTo))))
+            throw new HookException("Couldn't find MapData.CanTransitionTo.");
+
+        cursor.Emit(OpCodes.Ldarg_0);
+        cursor.EmitDelegate<Func<bool, Level, bool>>((b, self) =>
+        {
+            if (!b) return false;
+            var disableUpTransition = self.Tracker.GetEntity<DisableUpTransitionController>() != null;
+            return !disableUpTransition;
+        });
+    });
 
     private static void Level_Update(On.Celeste.Level.orig_Update orig, Level self)
     {
@@ -220,6 +244,8 @@ internal static class LevelHooks
 
         foreach (var data in controllers)
         {
+            // if the "persistent" flag does not exist (regardless of whether it's set), don't skip loading
+            if (!data.Has("persistent")) continue;
             self.Session.DoNotLoad.Add(new EntityID(data.Level.Name, data.ID));
             Level.LoadCustomEntity(data, self);
         }

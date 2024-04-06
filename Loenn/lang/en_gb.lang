@@ -343,3 +343,6 @@ entities.GravityHelper/InversionBlock.attributes.description.blockOneUse=Whether
 
 # Force Load Gravity Controller
 entities.GravityHelper/ForceLoadGravityController.placements.name.normal=Force Load Gravity Controller
+
+# Disable Up Transition Controller
+entities.GravityHelper/DisableUpTransitionController.placements.name.normal=Disable Up Transition Controller
