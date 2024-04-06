@@ -76,7 +76,8 @@ local function makeSpring(name, rotation, xOffset, yOffset, width, height, gravi
             local type = consts.gravityTypeForIndex(entity.gravityType)
             return type.springTexture
         end,
-        placements = {
+        -- legacy spring, don't include any placements
+        --[[placements = {
             {
                 name = "normal",
                 data = helpers.union(placementData, {
@@ -90,7 +91,7 @@ local function makeSpring(name, rotation, xOffset, yOffset, width, height, gravi
                     showIndicator = true,
                 }),
             }
-        },
+        },]]
     }
 end
 

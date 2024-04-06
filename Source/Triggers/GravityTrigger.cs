@@ -18,6 +18,7 @@ public class GravityTrigger : Trigger
     public bool AffectsPlayer { get; }
     public bool AffectsHoldableActors { get; }
     public bool AffectsOtherActors { get; }
+    public string EnableFlag { get; }
 
     public GravityType GravityType
     {
@@ -71,6 +72,7 @@ public class GravityTrigger : Trigger
         GravityType = (GravityType)data.Int("gravityType");
         ExitGravityType = (GravityType)data.Int("exitGravityType", (int)GravityType.None);
         MomentumMultiplier = data.Float("momentumMultiplier", 1f);
+        EnableFlag = data.Attr("enableFlag");
 
         _defaultToController = data.Bool("defaultToController", true);
         _forceSound = data.Attr("sound", string.Empty);
@@ -93,6 +95,8 @@ public class GravityTrigger : Trigger
     {
         base.Added(scene);
 
+        Collidable = CheckFlag();
+
         if (_defaultToController && Scene.GetActiveController<SoundGravityController>() is { } soundController)
         {
             if (GravityType == GravityType.Normal)
@@ -113,11 +117,17 @@ public class GravityTrigger : Trigger
 
     public override void Update()
     {
+        Collidable = CheckFlag();
+
         base.Update();
 
         if (_audioMuffleSecondsRemaining > 0)
             _audioMuffleSecondsRemaining -= Engine.DeltaTime;
     }
+
+    protected bool CheckFlag() =>
+        string.IsNullOrWhiteSpace(EnableFlag) ||
+        SceneAs<Level>() is { } level && level.Session.GetFlag(EnableFlag);
 
     public override void OnEnter(Player player)
     {

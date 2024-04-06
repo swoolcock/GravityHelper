@@ -414,7 +414,7 @@ public class GravityField : GravityTrigger, IConnectableField
 
         var opacity = cassetteOpacity * flashOpacity;
 
-        if (shouldDrawField && (cassetteIndex < 0 || cassetteState >= CassetteStates.On))
+        if (Collidable && shouldDrawField && (cassetteIndex < 0 || cassetteState >= CassetteStates.On))
         {
             var color = ParticleColor * _particleOpacity * opacity;
             foreach (Vector2 particle in _particles)
@@ -433,7 +433,7 @@ public class GravityField : GravityTrigger, IConnectableField
             // if width or height is 1, scale down the arrows
             var texture = widthInTiles == 1 || heightInTiles == 1 ? _arrowSmallTexture : _arrowTexture;
             var origin = widthInTiles == 1 || heightInTiles == 1 ? _arrowSmallOrigin : _arrowOrigin;
-            var color = ArrowColor * _arrowOpacity * opacity;
+            var color = ArrowColor * _arrowOpacity * opacity * (Collidable ? 1 : 0.5f);
 
             // arrows should be centre aligned in each 2x2 box
             // offset by half a tile if the width or height is odd

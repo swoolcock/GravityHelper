@@ -239,8 +239,11 @@ public class ConnectedFieldRenderer<TEntity> : Entity
             var multiplier = (Entity as ConnectedFieldRenderer<TEntity>)?.AlphaMultiplier ?? 1f;
 
             var color = Color * multiplier;
+            var disabledColor = Color.Gray * (Color.A / 255f);
+            var anyCollidable = _list.Any(e => e.Collidable);
+
             foreach (var entity in _list)
-                Draw.Rect(entity.Collider, color);
+                Draw.Rect(entity.Collider, anyCollidable ? color : disabledColor);
 
             if (_edges.Count == 0)
                 return;
@@ -253,7 +256,7 @@ public class ConnectedFieldRenderer<TEntity> : Entity
                     for (int index = 0; index <= (double) edge.Length; ++index)
                     {
                         Vector2 start = vector2_1 + edge.Normal * index;
-                        Draw.Line(start, start + edge.Perpendicular * edge.Wave[index], color);
+                        Draw.Line(start, start + edge.Perpendicular * edge.Wave[index], anyCollidable ? color : disabledColor);
                     }
                 }
             }
