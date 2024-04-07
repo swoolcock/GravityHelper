@@ -9,6 +9,7 @@ using Celeste.Mod.GravityHelper.Components;
 using Celeste.Mod.GravityHelper.Entities.Controllers;
 using Celeste.Mod.GravityHelper.Extensions;
 using Celeste.Mod.GravityHelper.Triggers;
+using Celeste.Mod.Helpers;
 using Microsoft.Xna.Framework;
 using Monocle;
 
@@ -26,6 +27,7 @@ public class GravityField : GravityTrigger, IConnectableField
     public const string DEFAULT_ARROW_COLOR = "FFFFFF";
     public const string DEFAULT_PARTICLE_COLOR = "FFFFFF";
     public const string DEFAULT_SINGLE_USE_SOUND = "event:/new_content/game/10_farewell/glider_emancipate";
+    public const int DEFAULT_PARTICLE_DENSITY = 4;
 
     private const float audio_muffle_seconds = 0.2f;
     private const float flash_seconds = 0.5f;
@@ -51,6 +53,8 @@ public class GravityField : GravityTrigger, IConnectableField
     public bool FlashOnTrigger { get; private set; }
     public string Sound { get; private set; }
     public string SingleUseSound { get; private set; }
+    public bool ShowParticles { get; private set; }
+    public int ParticleDensity { get; private set; }
 
     private readonly bool _defaultToController;
     private float _arrowOpacity;
@@ -62,6 +66,8 @@ public class GravityField : GravityTrigger, IConnectableField
     private bool _flashOnTrigger;
     private string _sound;
     private string _singleUseSound;
+    private bool _showParticles;
+    private int _particleDensity;
 
     #endregion
 
@@ -90,7 +96,7 @@ public class GravityField : GravityTrigger, IConnectableField
     private readonly Hitbox _normalHitbox;
     private readonly Hitbox _staticMoverHitbox;
 
-    private readonly List<Vector2> _particles = new List<Vector2>();
+    private Vector2[] _particles = Array.Empty<Vector2>();
     private readonly float[] _speeds = { 12f, 20f, 40f };
     private GravityFieldGroup _fieldGroup;
     private Vector2 _staticMoverOffset;
@@ -172,6 +178,8 @@ public class GravityField : GravityTrigger, IConnectableField
         _flashOnTrigger = data.Bool("flashOnTrigger", true);
         _sound = data.Attr("sound", string.Empty);
         _singleUseSound = data.Attr("singleUseSound", DEFAULT_SINGLE_USE_SOUND);
+        _showParticles = data.Bool("showParticles", true);
+        _particleDensity = data.Int("particleDensity", DEFAULT_PARTICLE_DENSITY);
 
         Collider = _normalHitbox = new Hitbox(data.Width, data.Height);
 
@@ -202,13 +210,6 @@ public class GravityField : GravityTrigger, IConnectableField
             Depth = Depths.FGDecals - 1;
 
         UpdateArrows();
-
-        if (shouldDrawField && !_particles.Any())
-        {
-            using var _ = new PushRandomDisposable(data.ID);
-            for (int index = 0; index < Width * (double)Height / 16.0; ++index)
-                _particles.Add(new Vector2(Calc.Random.NextFloat(Width - 1f), Calc.Random.NextFloat(Height - 1f)));
-        }
     }
 
     protected void UpdateArrows()
@@ -291,7 +292,7 @@ public class GravityField : GravityTrigger, IConnectableField
         // defer to the owner
         if (_fieldGroup?.Owner != this)
         {
-            _fieldGroup?.Owner.HandleOnLeave(player);
+            _fieldGroup?.Owner?.HandleOnLeave(player);
             return;
         }
 
@@ -314,9 +315,12 @@ public class GravityField : GravityTrigger, IConnectableField
         if (_fieldGroup == null)
         {
             scene.Add(buildFieldGroup(scene));
-            foreach (var field in _fieldGroup.Fields)
-                field.configure(scene);
-            _fieldGroup.CreateComponents(_fieldGroup.Fields);
+            if (_fieldGroup != null)
+            {
+                foreach (var field in _fieldGroup.Fields)
+                    field.configure(scene);
+                _fieldGroup.CreateComponents(_fieldGroup.Fields);
+            }
         }
     }
 
@@ -337,12 +341,16 @@ public class GravityField : GravityTrigger, IConnectableField
                 _ => null,
             };
             _flashOnTrigger = visualController.FieldFlashOnTrigger;
+            _showParticles = visualController.FieldShowParticles;
+            _particleDensity = visualController.FieldParticleDensity;
         }
 
         FieldColor = (string.IsNullOrWhiteSpace(_fieldColor) ? GravityType.Color() : Calc.HexToColor(_fieldColor)) * _fieldOpacity;
         ArrowColor = Calc.HexToColor(!string.IsNullOrWhiteSpace(_arrowColor) ? _arrowColor : DEFAULT_ARROW_COLOR);
         ParticleColor = Calc.HexToColor(!string.IsNullOrWhiteSpace(_particleColor) ? _particleColor : DEFAULT_PARTICLE_COLOR);
         FlashOnTrigger = _flashOnTrigger;
+        ShowParticles = _showParticles;
+        ParticleDensity = Math.Clamp(_particleDensity, 0, 8);
 
         if (_defaultToController && scene.GetActiveController<SoundGravityController>() is { } soundController)
         {
@@ -360,6 +368,21 @@ public class GravityField : GravityTrigger, IConnectableField
         SingleUseSound = _singleUseSound;
 
         _arrowShakeOffset = Vector2.Zero;
+
+        if (shouldDrawField && ShowParticles && ParticleDensity > 0)
+        {
+            using var _ = new PushRandomDisposable(Scene);
+            var divisor = MathF.Pow(2, 8 - ParticleDensity);
+            var particleCount = (int)(Width * Height / divisor);
+            var list = new List<Vector2>(particleCount);
+            for (int index = 0; index < particleCount; index++)
+                list.Add(new Vector2(Calc.Random.NextFloat(Width - 1f), Calc.Random.NextFloat(Height - 1f)));
+            _particles = list.OrderBy(v => v.X).ToArray();
+        }
+        else
+        {
+            _particles = Array.Empty<Vector2>();
+        }
     }
 
     public override void Removed(Scene scene)
@@ -373,6 +396,8 @@ public class GravityField : GravityTrigger, IConnectableField
 
     public override void Update()
     {
+        var level = SceneAs<Level>();
+
         // only the owner should update these values
         if (_fieldGroup?.Owner == this)
         {
@@ -384,18 +409,27 @@ public class GravityField : GravityTrigger, IConnectableField
         }
 
         int length = _speeds.Length;
-        float height = Height;
-        int index = 0;
+        int count = _particles.Length;
 
-        for (int count = _particles.Count; index < count; ++index)
+        float left = Math.Max(level.Camera.Left, X) - X;
+        float top = Math.Max(level.Camera.Top, Y) - Y;
+        float bottom = Math.Min(level.Camera.Bottom, Y + Height) - Y;
+        float right = Math.Min(level.Camera.Right, X + Width) - X;
+
+        for (int index = 0; index < count; index++)
         {
+            if (_particles[index].X > right)
+                break;
+            if (_particles[index].X < left || _particles[index].Y < top || _particles[index].Y > bottom)
+                continue;
+
             bool flip = GravityType == GravityType.Inverted || GravityType == GravityType.Toggle && index % 2 == 1;
             Vector2 target = _particles[index] + Vector2.UnitY * _speeds[index % length] * Engine.DeltaTime * (flip ? -1 : 1);
 
-            if (target.Y < 0)
-                target.Y += height;
-            else if (target.Y >= height)
-                target.Y -= height;
+            if (target.Y < top)
+                target.Y += bottom - top;
+            else if (target.Y >= bottom)
+                target.Y -= bottom - top;
 
             _particles[index] = target;
         }
@@ -407,6 +441,7 @@ public class GravityField : GravityTrigger, IConnectableField
     {
         base.Render();
 
+        var level = SceneAs<Level>();
         var cassetteIndex = _cassetteComponent?.CassetteIndex ?? -1;
         var cassetteState = _cassetteComponent?.CassetteState ?? CassetteStates.On;
         var cassetteOpacity = cassetteIndex < 0 || cassetteState == CassetteStates.On ? 1f : cassetteState == CassetteStates.Off ? 0.25f : 0.5f;
@@ -414,11 +449,23 @@ public class GravityField : GravityTrigger, IConnectableField
 
         var opacity = cassetteOpacity * flashOpacity;
 
+        var left = level.Camera.Left;
+        var right = level.Camera.Right;
+        var top = level.Camera.Top;
+        var bottom = level.Camera.Bottom;
+
         if (Collidable && shouldDrawField && (cassetteIndex < 0 || cassetteState >= CassetteStates.On))
         {
             var color = ParticleColor * _particleOpacity * opacity;
             foreach (Vector2 particle in _particles)
-                Draw.Pixel.Draw(Position + particle, Vector2.Zero, color);
+            {
+                var pos = Position + particle;
+                if (pos.X < left) continue;
+                if (pos.X > right) break;
+
+                if (pos.Y >= top && pos.Y <= bottom)
+                    Draw.Pixel.Draw(pos, Vector2.Zero, color);
+            }
         }
 
         if (shouldDrawArrows)
@@ -434,6 +481,7 @@ public class GravityField : GravityTrigger, IConnectableField
             var texture = widthInTiles == 1 || heightInTiles == 1 ? _arrowSmallTexture : _arrowTexture;
             var origin = widthInTiles == 1 || heightInTiles == 1 ? _arrowSmallOrigin : _arrowOrigin;
             var color = ArrowColor * _arrowOpacity * opacity * (Collidable ? 1 : 0.5f);
+            const int padding = 32;
 
             // arrows should be centre aligned in each 2x2 box
             // offset by half a tile if the width or height is odd
@@ -441,11 +489,20 @@ public class GravityField : GravityTrigger, IConnectableField
             {
                 int offsetY = y * 16 + 8 + heightInTiles % 2 * 4;
                 if (heightInTiles == 1) offsetY = 4;
+
+                if (Position.Y + offsetY < top - padding) continue;
+                if (Position.Y + offsetY > bottom + padding) break;
+
                 for (int x = 0; x < arrowsX; x++)
                 {
                     int offsetX = x * 16 + 8 + widthInTiles % 2 * 4;
                     if (widthInTiles == 1) offsetX = 4;
-                    texture.Draw(Position + _arrowShakeOffset + new Vector2(offsetX, offsetY), origin, color, 1f, 0f);
+
+                    if (Position.X + offsetX < left - padding) continue;
+                    if (Position.X + offsetX > right + padding) break;
+
+                    var pos = Position + _arrowShakeOffset + new Vector2(offsetX, offsetY);
+                    texture.Draw(pos, origin, color, 1f, 0f);
                 }
             }
         }
