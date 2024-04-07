@@ -23,6 +23,8 @@ local placementData = helpers.createPlacementData('1', {
     arrowColor = "FFFFFF",
     fieldColor = "",
     particleColor = "FFFFFF",
+    showParticles = true,
+    particleDensity = 4,
     flashOnTrigger = true,
     affectsPlayer = true,
     affectsHoldableActors = false,
@@ -44,6 +46,9 @@ local gravityField = {
         arrowType = consts.fieldInformation.gravityType(0,1,2,-1,-2),
         fieldType = consts.fieldInformation.gravityType(0,1,2,-1,-2),
         cassetteIndex = {
+            fieldType = "integer",
+        },
+        particleDensity = {
             fieldType = "integer",
         },
     },

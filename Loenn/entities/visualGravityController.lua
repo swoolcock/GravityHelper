@@ -15,6 +15,8 @@ local placementData = helpers.createPlacementData('1', {
     fieldToggleColor = "800080",
     fieldArrowColor = "FFFFFF",
     fieldParticleColor = "FFFFFF",
+    fieldShowParticles = true,
+    fieldParticleDensity = 4,
     fieldFlashOnTrigger = true,
     lineMinAlpha = 0.45,
     lineMaxAlpha = 0.95,
@@ -27,6 +29,11 @@ local visualGravityController = {
     name = "GravityHelper/VisualGravityController",
     depth = -8500,
     ignoredFields = consts.ignoredFields,
+    fieldInformation = {
+        fieldParticleDensity = {
+            fieldType = "integer",
+        },
+    },
     placements = {
         {
             name = "single_room",

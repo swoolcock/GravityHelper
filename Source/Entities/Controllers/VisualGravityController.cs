@@ -20,6 +20,8 @@ public class VisualGravityController : BaseGravityController<VisualGravityContro
     public string FieldArrowColor { get; } = GravityField.DEFAULT_ARROW_COLOR;
     public string FieldParticleColor { get; } = GravityField.DEFAULT_PARTICLE_COLOR;
     public bool FieldFlashOnTrigger { get; } = true;
+    public bool FieldShowParticles { get; } = true;
+    public int FieldParticleDensity { get; } = GravityField.DEFAULT_PARTICLE_DENSITY;
     public float LineMinAlpha { get; } = GravityLine.DEFAULT_MIN_ALPHA;
     public float LineMaxAlpha { get; } = GravityLine.DEFAULT_MAX_ALPHA;
     public float LineFlashTime { get; } = GravityLine.DEFAULT_FLASH_TIME;
@@ -45,6 +47,8 @@ public class VisualGravityController : BaseGravityController<VisualGravityContro
         FieldArrowColor = data.Attr("fieldArrowColor", FieldArrowColor);
         FieldParticleColor = data.Attr("fieldParticleColor", FieldParticleColor);
         FieldFlashOnTrigger = data.Bool("fieldFlashOnTrigger", FieldFlashOnTrigger);
+        FieldShowParticles = data.Bool("fieldShowParticles",FieldShowParticles);
+        FieldParticleDensity = data.Int("fieldParticleDensity", FieldParticleDensity);
         LineMinAlpha = data.Float("lineMinAlpha", LineMinAlpha);
         LineMaxAlpha = data.Float("lineMaxAlpha", LineMaxAlpha);
         LineFlashTime = data.Float("lineFlashTime", LineFlashTime);

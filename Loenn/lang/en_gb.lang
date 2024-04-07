@@ -62,6 +62,8 @@ entities.GravityHelper/GravityField.attributes.description.affectsHoldableActors
 entities.GravityHelper/GravityField.attributes.description.affectsOtherActors=Whether the field affects non-holdable Actors. Defaults to false.
 entities.GravityHelper/GravityField.attributes.description.cassetteIndex=Which cassette block index the field should be active on. Defaults to -1, which disables cassette block logic.
 entities.GravityHelper/GravityField.attributes.description.cassetteSequence=A comma separated list of gravity types (0: normal, 1: inverted, 2: toggle), one per cassette index (up to 4). Acts like a cassette gravity controller, but only within this field.
+entities.GravityHelper/GravityField.attributes.description.showParticles=Whether to show the particle field. Defaults to true.
+entities.GravityHelper/GravityField.attributes.description.particleDensity=How many particles to display. This is calculated as (width * height / (2 ^ (8 - particleDensity))), where 0 means no particles and 8 means enough to lag Celeste.\nDefaults to 4, which is width * height / 16.
 
 # Gravity Line
 entities.GravityHelper/GravityLine.placements.name.crossable=Gravity Line (Crossable)
@@ -251,6 +253,8 @@ entities.GravityHelper/VisualGravityController.attributes.description.fieldBackg
 entities.GravityHelper/VisualGravityController.attributes.description.fieldArrowOpacity=The default opacity of arrows, if enabled.\nRanges from 0 (invisible) to 1 (fully opaque). Defaults to 0.5.
 entities.GravityHelper/VisualGravityController.attributes.description.fieldParticleOpacity=The default opacity of moving particles, if enabled.\nRanges from 0 (invisible) to 1 (fully opaque). Defaults to 0.5.
 entities.GravityHelper/VisualGravityController.attributes.description.fieldFlashOnTrigger=The global setting for GravityField flashOnTrigger. Defaults to true.
+entities.GravityHelper/VisualGravityController.attributes.description.fieldShowParticles=The global setting for GravityField showParticles. Defaults to true.
+entities.GravityHelper/VisualGravityController.attributes.description.fieldParticleDensity=The global setting for GravityField particleDensity. Defaults to 4.
 entities.GravityHelper/VisualGravityController.attributes.description.lineMinAlpha=The global setting for GravityLine minAlpha. Defaults to 0.45.
 entities.GravityHelper/VisualGravityController.attributes.description.lineMaxAlpha=The global setting for GravityLine maxAlpha. Defaults to 0.95.
 entities.GravityHelper/VisualGravityController.attributes.description.lineFlashTime=The global setting for GravityLine flashTime. Defaults to 0.35 seconds.
