@@ -539,7 +539,7 @@ public class InversionBlock : Solid
                 return false;
 
             // bail if gravity flip failed for some reason
-            if (!player.SetGravity(GravityType.Toggle, 0f))
+            if (!player.SetGravity(LeftGravityType, 0f))
                 return false;
 
             // change facing if we're not pushing into the block
@@ -566,7 +566,7 @@ public class InversionBlock : Solid
                 return false;
 
             // bail if gravity flip failed for some reason
-            if (!player.SetGravity(GravityType.Toggle, 0f))
+            if (!player.SetGravity(RightGravityType, 0f))
                 return false;
 
             // change facing if we're not pushing into the block
