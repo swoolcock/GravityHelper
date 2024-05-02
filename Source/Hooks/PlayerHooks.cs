@@ -1,6 +1,8 @@
 // Copyright (c) Shane Woolcock. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+//#define REPLACE_LIFTBOOST
+
 using System;
 using System.Linq;
 using System.Reflection;
@@ -312,9 +314,11 @@ internal static class PlayerHooks
     {
         var cursor = new ILCursor(il);
 
+#if REPLACE_LIFTBOOST
         // replace all calls to LiftBoost (should be 4)
         cursor.replaceGetLiftBoost(4);
         cursor.Goto(0);
+#endif
 
         // if (this.CollideCheck<Solid>(this.Position - Vector2.UnitY) || this.ClimbHopBlockedCheck() && this.SlipCheck(-1f))
         cursor.GotoNext(MoveType.After,
@@ -586,8 +590,10 @@ internal static class PlayerHooks
     {
         var cursor = new ILCursor(il);
 
+#if REPLACE_LIFTBOOST
         // this.Speed += this.LiftBoost;
         cursor.replaceGetLiftBoost();
+#endif
 
         // Platform platformByPriority = SurfaceIndex.GetPlatformByPriority(this.CollideAll<Platform>(this.Position + Vector2.UnitY, this.temp));
         if (!cursor.TryGotoNext(instr => instr.MatchCall<Vector2>("get_UnitY")))
@@ -610,16 +616,20 @@ internal static class PlayerHooks
     private static void Player_LaunchedBoostCheck(ILContext il) => HookUtils.SafeHook(() =>
     {
         var cursor = new ILCursor(il);
+#if REPLACE_LIFTBOOST
         // this.Speed += this.LiftBoost;
         cursor.replaceGetLiftBoost();
+#endif
     });
 
     private static void Player_NormalUpdate(ILContext il) => HookUtils.SafeHook(() =>
     {
         var cursor = new ILCursor(il);
 
+#if REPLACE_LIFTBOOST
         cursor.replaceGetLiftBoost(3);
         cursor.Goto(0);
+#endif
 
         /* FIX 2 pixel wall grab leniency
         if (!SaveData.Instance.Assists.NoGrabbing && (double) (float) Input.MoveY < 1.0 && (double) this.level.Wind.Y <= 0.0)
@@ -985,8 +995,10 @@ internal static class PlayerHooks
     private static void Player_orig_WallJump(ILContext il) => HookUtils.SafeHook(() =>
     {
         var cursor = new ILCursor(il);
+#if REPLACE_LIFTBOOST
         // this.Speed += this.LiftBoost;
         cursor.replaceGetLiftBoost();
+#endif
     });
 
     private static void Player_PointBounce(ILContext il) => HookUtils.SafeHook(() =>
@@ -1096,8 +1108,11 @@ internal static class PlayerHooks
     private static void Player_SuperJump(ILContext il) => HookUtils.SafeHook(() =>
     {
         var cursor = new ILCursor(il);
+
+#if REPLACE_LIFTBOOST
         // this.Speed += this.LiftBoost;
         cursor.replaceGetLiftBoost();
+#endif
 
         // Platform platformByPriority = SurfaceIndex.GetPlatformByPriority(this.CollideAll<Platform>(this.Position + Vector2.UnitY, this.temp));
         cursor.GotoNext(instr => instr.MatchCall<SurfaceIndex>(nameof(SurfaceIndex.GetPlatformByPriority)));
@@ -1119,8 +1134,11 @@ internal static class PlayerHooks
     private static void Player_SuperWallJump(ILContext il) => HookUtils.SafeHook(() =>
     {
         var cursor = new ILCursor(il);
+
+#if REPLACE_LIFTBOOST
         // this.Speed += this.LiftBoost;
         cursor.replaceGetLiftBoost();
+#endif
 
         // Dust.Burst(this.Center + Vector2.UnitX * 2f, -2.3561945f, 4, this.DustParticleFromSurfaceIndex(index));
         cursor.GotoNext(instr => instr.MatchCallvirt<Player>("DustParticleFromSurfaceIndex"));
@@ -1556,6 +1574,7 @@ internal static class PlayerHooks
         cursor.Emit(OpCodes.Brtrue_S, target);
     }
 
+#if REPLACE_LIFTBOOST
     private static void replaceGetLiftBoost(this ILCursor cursor, int count = 1) =>
         cursor.ReplaceWithDelegate<Func<Player, Vector2>>(instr => instr.MatchCallvirt<Player>("get_LiftBoost"), getLiftBoost, count);
 
@@ -1575,6 +1594,7 @@ internal static class PlayerHooks
 
         return liftSpeed;
     }
+#endif
 
     private static Lazy<ParticleType> _invertedDustParticle = new Lazy<ParticleType>(() => new ParticleType(ParticleTypes.Dust)
     {
