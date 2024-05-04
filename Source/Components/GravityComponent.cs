@@ -75,10 +75,32 @@ public class GravityComponent : Component
         _data = null;
     }
 
+    public override void EntityAdded(Scene scene)
+    {
+        base.EntityAdded(scene);
+
+        if (Flag != null && scene is Level level)
+        {
+            level.Session.SetFlag(Flag, CurrentGravity == GravityType.Inverted);
+        }
+    }
+
     public override void EntityAwake()
     {
-        base.EntityAwake();
         triggerGravityListeners(new GravityChangeArgs(CurrentGravity));
+    }
+
+    public override void Update()
+    {
+        if (Flag != null && Scene is Level level)
+        {
+            var flagValue = level.Session.GetFlag(Flag);
+            var isInverted = CurrentGravity == GravityType.Inverted;
+            if (flagValue != isInverted)
+            {
+                SetGravity(flagValue ? GravityType.Inverted : GravityType.Normal);
+            }
+        }
     }
 
     public bool SetGravity(GravityType newValue, float momentumMultiplier = 1f, bool instant = false)

@@ -10,6 +10,8 @@ namespace Celeste.Mod.GravityHelper.Components;
 
 internal class PlayerGravityComponent : GravityComponent
 {
+    public static readonly string PLAYER_FLAG = "GravityHelper_PlayerInverted";
+
     public GravityType PreDreamBlockGravityType { get; set; }
     public new Player Entity => base.Entity as Player;
 
@@ -95,7 +97,7 @@ internal class PlayerGravityComponent : GravityComponent
         GetSpeed = () => Entity.Speed;
         SetSpeed = value => Entity.Speed = value;
 
-        Flag = "GravityHelper_PlayerInverted";
+        Flag = PLAYER_FLAG;
     }
 
     private static void invertHitbox(Hitbox hitbox) => hitbox.Position.Y = -hitbox.Position.Y - hitbox.Height;
