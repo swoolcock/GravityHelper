@@ -115,4 +115,26 @@
         <Anim id="block" path="block" />
         <Anim id="edges" path="edges" />
     </inversionBlock>
+
+    <gravityBooster path="objects/GravityHelper/gravityBooster/" start="loop">
+        <Justify x="0.5" y="0.5"/>
+        <Loop id="normal_arrows" path="normal" delay="0.1" frames="0-19"/>
+        <Loop id="invert_arrows" path="invert" delay="0.1" frames="0-19"/>
+        <Loop id="toggle_arrows" path="toggle" delay="0.1" frames="0-19"/>
+        <Loop id="loop" path="booster" delay="0.1" frames="0-4"/>
+        <Loop id="inside" path="booster" delay="0.1" frames="5-8"/>
+        <Loop id="spin" path="booster" delay="0.06" frames="18-25"/>
+        <Anim id="pop" path="booster" delay="0.08" frames="9-17"/>
+    </gravityBooster>
+    
+    <gravityBoosterRed path="objects/GravityHelper/gravityBooster/" start="loop">
+        <Justify x="0.5" y="0.5"/>
+        <Loop id="normal_arrows" path="normal" delay="0.1" frames="0-19"/>
+        <Loop id="invert_arrows" path="invert" delay="0.1" frames="0-19"/>
+        <Loop id="toggle_arrows" path="toggle" delay="0.1" frames="0-19"/>
+        <Loop id="loop" path="boosterRed" delay="0.1" frames="0-4"/>
+        <Loop id="inside" path="boosterRed" delay="0.1" frames="5-8"/>
+        <Loop id="spin" path="boosterRed" delay="0.06" frames="18-25"/>
+        <Anim id="pop" path="booster" delay="0.08" frames="9-17"/>
+    </gravityBoosterRed>
 </Sprites>

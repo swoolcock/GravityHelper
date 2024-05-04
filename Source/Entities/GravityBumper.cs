@@ -62,7 +62,7 @@ public class GravityBumper : Bumper
                 spriteEvil.Scale.Y = sprite.Scale.Y = -1;
 
             Add(_rippleSprite = GFX.SpriteBank.Create("gravityRipple"));
-            _rippleSprite.Color = GravityType.Color();
+            _rippleSprite.Color = GravityType.HighlightColor();
             _rippleSprite.Play("loop");
         }
     }
