@@ -41,12 +41,13 @@ local gravityBooster = {
 
 function gravityBooster.sprite(room, entity)
     local gravityType = entity.gravityType
-    local spriteTexture = entity.red and "objects/booster/boosterRed00" or "objects/booster/booster00"
-    local overlaySprite = drawableSprite.fromTexture("objects/GravityHelper/gravityBooster/overlay", entity)
+    local spriteTexture = entity.red and "objects/GravityHelper/gravityBooster/boosterRed00" or "objects/GravityHelper/gravityBooster/booster00"
+    local overlayTexture = "objects/GravityHelper/gravityBooster/" ..
+            (gravityType == 2 and "toggle00" or gravityType == 1 and "invert00" or "normal00")
+    
+    local overlaySprite = drawableSprite.fromTexture(overlayTexture, entity)
     local boosterSprite = drawableSprite.fromTexture(spriteTexture, entity)
     local gravityInfo = consts.gravityTypeForIndex(gravityType)
-
-    overlaySprite:setColor(gravityInfo.color)
 
     local sprites = {boosterSprite, overlaySprite}
 
@@ -54,16 +55,16 @@ function gravityBooster.sprite(room, entity)
         local rippleSprite = drawableSprite.fromTexture("objects/GravityHelper/ripple03", entity)
         local offset = scaleY < 0 and 5 or -5
         rippleSprite:addPosition(0, offset)
-        rippleSprite:setColor(gravityInfo.color)
+        rippleSprite:setColor(helpers.parseHexColor(gravityInfo.highlightColor))
         rippleSprite:setScale(1, scaleY)
         return rippleSprite
     end
 
-    if gravityType == 1 or gravityType == 2 then
-        table.insert(sprites, createRippleSprite(1))
-    end
     if gravityType == 0 or gravityType == 2 then
         table.insert(sprites, createRippleSprite(-1))
+    end
+    if gravityType == 1 or gravityType == 2 then
+        table.insert(sprites, createRippleSprite(1))
     end
 
     return sprites
