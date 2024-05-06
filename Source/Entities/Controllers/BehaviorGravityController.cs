@@ -22,6 +22,7 @@ public class BehaviorGravityController : BaseGravityController<BehaviorGravityCo
     public float SwitchCooldown { get; } = DEFAULT_SWITCH_COOLDOWN;
     public bool SwitchOnHoldables { get; } = true;
     public bool DashToToggle { get; }
+    public string ToggleFlag { get; }
 
     // ReSharper disable NotAccessedField.Local
     private readonly VersionInfo _modVersion;
@@ -48,5 +49,18 @@ public class BehaviorGravityController : BaseGravityController<BehaviorGravityCo
         SwitchCooldown = data.Float("switchCooldown", DEFAULT_SWITCH_COOLDOWN).ClampLower(0f);
         SwitchOnHoldables = data.Bool("switchOnHoldables", true);
         DashToToggle = data.Bool("dashToToggle");
+        ToggleFlag = data.Attr("toggleFlag");
+    }
+
+    public override void Update()
+    {
+        base.Update();
+        if (!Persistent || SceneAs<Level>() is not { } level) return;
+
+        if (!string.IsNullOrWhiteSpace(ToggleFlag) && level.Session.GetFlag(ToggleFlag))
+        {
+            level.Session.SetFlag(ToggleFlag, false);
+            GravityHelperModule.PlayerComponent?.SetGravity(GravityType.Toggle);
+        }
     }
 }
