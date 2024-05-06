@@ -244,6 +244,7 @@ entities.GravityHelper/BehaviorGravityController.attributes.description.springCo
 entities.GravityHelper/BehaviorGravityController.attributes.description.switchCooldown=The global setting for GravitySwitch cooldown. Defaults to 1 second.
 entities.GravityHelper/BehaviorGravityController.attributes.description.switchOnHoldables=The global setting for GravitySwitch switchOnHoldables. Defaults to true.
 entities.GravityHelper/BehaviorGravityController.attributed.description.dashToToggle=Whether dashing should trigger a gravity toggle, always. Acts as if Madeline had a permanent GravityRefill charge. Defaults to false.
+entities.GravityHelper/BehaviorGravityController.attributed.description.toggleFlag=If this flag is true, it will be immediately set to false and Madeline's gravity will be toggled. Defaults to empty string, and only works for persistent controllers.
 
 # Visual Gravity Controller
 entities.GravityHelper/VisualGravityController.placements.name.single_room=Visual Gravity Controller (Single Room)

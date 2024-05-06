@@ -2,6 +2,7 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using Microsoft.Xna.Framework;
+using Monocle;
 
 namespace Celeste.Mod.GravityHelper;
 
@@ -30,6 +31,14 @@ internal static class GravityTypeExtensions
         GravityType.Normal => Microsoft.Xna.Framework.Color.Blue,
         GravityType.Inverted => Microsoft.Xna.Framework.Color.Red,
         GravityType.Toggle => Microsoft.Xna.Framework.Color.Purple,
+        _ => Microsoft.Xna.Framework.Color.White,
+    };
+
+    public static Color HighlightColor(this GravityType type) => type switch
+    {
+        GravityType.Normal => Calc.HexToColor("007cff"),
+        GravityType.Inverted => Calc.HexToColor("dc1828"),
+        GravityType.Toggle => Calc.HexToColor("ca41f5"),
         _ => Microsoft.Xna.Framework.Color.White,
     };
 }

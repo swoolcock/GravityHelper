@@ -147,7 +147,7 @@ public class GravityIndicator : Entity
             const float ripple_offset = 2f;
             _rippleSprite.Y = ripple_offset * -multiplier;
             _rippleSprite.Scale.Y = multiplier;
-            _rippleSprite.Color = (upArrowFrame ? GravityType.Inverted : GravityType.Normal).Color() * 0.8f;
+            _rippleSprite.Color = (upArrowFrame ? GravityType.Inverted : GravityType.Normal).HighlightColor() * 0.8f;
             _rippleSprite.Visible = upArrowFrame || downArrowFrame;
         }
     }

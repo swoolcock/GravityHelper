@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using System.Reflection;
 using Celeste.Mod.GravityHelper.Extensions;
 using Microsoft.Xna.Framework;
 using Mono.Cecil.Cil;
@@ -16,6 +17,8 @@ namespace Celeste.Mod.GravityHelper.Hooks;
 
 internal static class ActorHooks
 {
+    private static Hook hook_Actor_set_LiftSpeed;
+
     public static void Load()
     {
         Logger.Log(nameof(GravityHelperModule), $"Loading {nameof(Actor)} hooks...");
@@ -23,6 +26,9 @@ internal static class ActorHooks
         IL.Celeste.Actor.IsRiding_Solid += Actor_IsRiding_Solid;
         IL.Celeste.Actor.OnGround_int += Actor_OnGround_int;
         IL.Celeste.Actor.TrySquishWiggle_CollisionData_int_int += Actor_TrySquishWiggle_CollisionData_int_int;
+
+        var setLiftSpeedMethod = typeof(Actor).GetProperty(nameof(Actor.LiftSpeed), BindingFlags.Instance | BindingFlags.Public).GetSetMethod();
+        hook_Actor_set_LiftSpeed = new Hook(setLiftSpeedMethod, typeof(ActorHooks).GetMethod(nameof(Actor_set_LiftSpeed), BindingFlags.Static | BindingFlags.NonPublic));
 
         // we need to run this after MaddieHelpingHand to ensure both UDJT types are handled
         using (new DetourContext {After = {"MaxHelpingHand"}}) {
@@ -45,6 +51,14 @@ internal static class ActorHooks
         On.Celeste.Actor.MoveV -= Actor_MoveV;
         On.Celeste.Actor.MoveVExact -= Actor_MoveVExact;
         On.Celeste.Actor.IsRiding_JumpThru -= Actor_IsRiding_JumpThru;
+
+        hook_Actor_set_LiftSpeed?.Dispose();
+        hook_Actor_set_LiftSpeed = null;
+    }
+
+    private static void Actor_set_LiftSpeed(Action<Actor, Vector2> orig, Actor self, Vector2 value)
+    {
+        orig(self, !self.ShouldInvert() ? value : new Vector2(value.X, -value.Y));
     }
 
     private static bool Actor_IsRiding_JumpThru(On.Celeste.Actor.orig_IsRiding_JumpThru orig, Actor self, JumpThru jumpThru)

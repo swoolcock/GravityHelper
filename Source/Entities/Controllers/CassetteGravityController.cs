@@ -8,6 +8,7 @@ using Celeste.Mod.GravityHelper.Components;
 using Celeste.Mod.GravityHelper.Extensions;
 using Microsoft.Xna.Framework;
 using Monocle;
+using CassetteListener = Celeste.Mod.GravityHelper.Components.CassetteListener;
 
 namespace Celeste.Mod.GravityHelper.Entities.Controllers;
 

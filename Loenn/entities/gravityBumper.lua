@@ -80,16 +80,16 @@ function gravityBumper.sprite(room, entity)
         local rippleSprite = drawableSprite.fromTexture("objects/GravityHelper/ripple03", entity)
         local offset = scaleY < 0 and 8 or -8
         rippleSprite:addPosition(0, offset)
-        rippleSprite:setColor(gravityInfo.color)
+        rippleSprite:setColor(helpers.parseHexColor(gravityInfo.highlightColor))
         rippleSprite:setScale(1, scaleY)
         return rippleSprite
     end
 
     if gravityType == 0 or gravityType == 2 then
-        table.insert(sprites, createRippleSprite(1))
+        table.insert(sprites, createRippleSprite(-1))
     end
     if gravityType == 1 or gravityType == 2 then
-        table.insert(sprites, createRippleSprite(-1))
+        table.insert(sprites, createRippleSprite(1))
     end
 
     return sprites

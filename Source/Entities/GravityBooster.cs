@@ -18,7 +18,15 @@ public class GravityBooster : Booster
 
     public GravityType GravityType { get; }
 
-    private readonly Sprite _animationSprite;
+    private readonly Sprite _rippleSprite;
+    private readonly Sprite _overlaySprite;
+
+    private string arrowId => GravityType switch
+    {
+        GravityType.Inverted => "invert_arrows",
+        GravityType.Toggle => "toggle_arrows",
+        _ => "normal_arrows",
+    };
 
     public GravityBooster(EntityData data, Vector2 offset)
         : base(data.Position + offset, data.Bool("red"))
@@ -28,27 +36,49 @@ public class GravityBooster : Booster
 
         GravityType = (GravityType)data.Int("gravityType");
 
-        Add(_animationSprite = GFX.SpriteBank.Create("gravityRipple"));
-        _animationSprite.Color = GravityType.Color();
-        _animationSprite.Play("loop");
+        GFX.SpriteBank.CreateOn(sprite, red ? "gravityBoosterRed" : "gravityBooster");
+
+        Add(_overlaySprite = sprite.CreateClone());
+        _overlaySprite.Play(arrowId);
+
+        Add(_rippleSprite = GFX.SpriteBank.Create("gravityRipple"));
+        _rippleSprite.Color = GravityType.HighlightColor();
+        _rippleSprite.Play("loop");
+    }
+
+    public override void Awake(Scene scene)
+    {
+        base.Awake(scene);
+        fixSprites();
     }
 
     public override void Update()
     {
         base.Update();
+        fixSprites();
+    }
 
+    private void fixSprites()
+    {
         const float ripple_offset = 5f;
         var currentGravity = GravityHelperModule.PlayerComponent?.CurrentGravity ?? GravityType.Normal;
 
         if (GravityType == GravityType.Inverted || GravityType == GravityType.Toggle && currentGravity == GravityType.Normal)
         {
-            _animationSprite.Y = -ripple_offset;
-            _animationSprite.Scale.Y = 1f;
+            _rippleSprite.Y = -ripple_offset;
+            _rippleSprite.Scale.Y = 1f;
         }
         else if (GravityType == GravityType.Normal || GravityType == GravityType.Toggle && currentGravity == GravityType.Inverted)
         {
-            _animationSprite.Y = ripple_offset;
-            _animationSprite.Scale.Y = -1f;
+            _rippleSprite.Y = ripple_offset;
+            _rippleSprite.Scale.Y = -1f;
         }
+
+        if (GravityType == GravityType.Toggle)
+        {
+            _overlaySprite.Scale.Y = currentGravity == GravityType.Normal ? -1 : 1;
+        }
+
+        _rippleSprite.Visible = _overlaySprite.Visible = sprite.CurrentAnimationID == "loop";
     }
 }

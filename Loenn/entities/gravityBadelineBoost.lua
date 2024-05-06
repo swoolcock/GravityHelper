@@ -34,13 +34,14 @@ local function getSprites(room, entity, gravityType, x, y)
     local maskSprite = drawableSprite.fromTexture("objects/GravityHelper/gravityBadelineBoost/mask00", entity)
     local badelineSprite = drawableSprite.fromTexture("objects/badelineboost/idle00", entity)
     local gravityInfo = consts.gravityTypeForIndex(gravityType)
+    local highlightColor = helpers.parseHexColor(gravityInfo.highlightColor);
 
     if x ~= nil and y ~= nil then
         maskSprite:setPosition(x, y)
         badelineSprite:setPosition(x, y)
     end
 
-    maskSprite:setColor(gravityInfo.color)
+    maskSprite:setColor(highlightColor)
 
     local sprites = {maskSprite, badelineSprite}
 
@@ -52,7 +53,7 @@ local function getSprites(room, entity, gravityType, x, y)
         else
             rippleSprite:addPosition(0, offset)
         end
-        rippleSprite:setColor(gravityInfo.color)
+        rippleSprite:setColor(highlightColor)
         rippleSprite:setScale(1, scaleY)
         return rippleSprite
     end

@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using Celeste.Mod.GravityHelper.Components;
 using Celeste.Mod.GravityHelper.Entities;
 using Celeste.Mod.GravityHelper.Entities.Controllers;
 using Celeste.Mod.GravityHelper.Extensions;
@@ -202,7 +203,7 @@ internal static class LevelHooks
         if (GravityHelperModule.Settings.ToggleInvertGravity.Pressed && !self.FrozenOrPaused && self.Tracker.GetEntity<Player>() != null)
         {
             GravityHelperModule.Settings.ToggleInvertGravity.ConsumePress();
-            GravityHelperModule.PlayerComponent?.SetGravity(GravityType.Toggle);
+            self.Session.SetFlag(PlayerGravityComponent.PLAYER_FLAG, !self.Session.GetFlag(PlayerGravityComponent.PLAYER_FLAG));
         }
 
         orig(self);

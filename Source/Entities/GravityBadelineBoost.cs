@@ -46,7 +46,7 @@ public class GravityBadelineBoost : BadelineBoost
 
         Add(_rippleSprite = GFX.SpriteBank.Create("gravityRipple"));
         _rippleSprite.Play("loop");
-        _rippleSprite.Color = GravityType.Color();
+        _rippleSprite.Color = GravityType.HighlightColor();
 
         _maskSprite = GFX.SpriteBank.Create("gravityBadelineBoost");
         _maskSprite.Play("mask");
