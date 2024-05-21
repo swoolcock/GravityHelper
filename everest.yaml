@@ -1,9 +1,9 @@
 - Name: GravityHelper
-  Version: 1.2.11
+  Version: 1.2.12
   DLL: bin/GravityHelper.dll
   Dependencies:
     - Name: EverestCore
-      Version: 1.4465.0
+      Version: 1.4783.0
   OptionalDependencies:
     - Name: Cateline
       Version: 0.0.2
