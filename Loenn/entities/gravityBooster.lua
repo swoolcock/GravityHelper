@@ -39,11 +39,15 @@ local gravityBooster = {
     },
 }
 
+function gravityBooster.selection(room, entity)
+    return utils.rectangle(entity.x - 10, entity.y - 10, 20, 20)
+end
+
 function gravityBooster.sprite(room, entity)
     local gravityType = entity.gravityType
-    local spriteTexture = entity.red and "objects/GravityHelper/gravityBooster/boosterRed00" or "objects/GravityHelper/gravityBooster/booster00"
+    local spriteTexture = entity.red and "objects/GravityHelper/gravityBooster/boosterRedUp00" or "objects/GravityHelper/gravityBooster/boosterUp00"
     local overlayTexture = "objects/GravityHelper/gravityBooster/" ..
-            (gravityType == 2 and "toggle00" or gravityType == 1 and "invert00" or "normal00")
+            (gravityType == 2 and "overlayToggle01" or gravityType == 1 and "overlayInvert00" or "overlayNormal00")
     
     local overlaySprite = drawableSprite.fromTexture(overlayTexture, entity)
     local boosterSprite = drawableSprite.fromTexture(spriteTexture, entity)
