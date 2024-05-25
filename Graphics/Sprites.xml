@@ -118,23 +118,25 @@
 
     <gravityBooster path="objects/GravityHelper/gravityBooster/" start="loop">
         <Justify x="0.5" y="0.5"/>
-        <Loop id="normal_arrows" path="normal" delay="0.1" frames="0-19"/>
-        <Loop id="invert_arrows" path="invert" delay="0.1" frames="0-19"/>
-        <Loop id="toggle_arrows" path="toggle" delay="0.1" frames="0-19"/>
-        <Loop id="loop" path="booster" delay="0.1" frames="0-4"/>
-        <Loop id="inside" path="booster" delay="0.1" frames="5-8"/>
-        <Loop id="spin" path="booster" delay="0.06" frames="18-25"/>
-        <Anim id="pop" path="booster" delay="0.08" frames="9-17"/>
+        <Loop id="overlay_normal" path="overlayNormal" delay="0.1" frames="0-19"/>
+        <Loop id="overlay_invert" path="overlayInvert" delay="0.1" frames="0-19"/>
+        <Loop id="overlay_toggle" path="overlayToggle" delay="0.1" frames="0-19"/>
+        <Loop id="loop_down" path="boosterDown" delay="0.1" frames="0-4"/>
+        <Loop id="loop" path="boosterUp" delay="0.1" frames="0-4"/>
+        <Loop id="inside" path="boosterInside" delay="0.1" frames="0-3"/>
+        <Loop id="spin" path="boosterSpin" delay="0.06" frames="0-7"/>
+        <Anim id="pop" path="boosterPop" delay="0.08" frames="0-8"/>
     </gravityBooster>
-    
+
     <gravityBoosterRed path="objects/GravityHelper/gravityBooster/" start="loop">
         <Justify x="0.5" y="0.5"/>
-        <Loop id="normal_arrows" path="normal" delay="0.1" frames="0-19"/>
-        <Loop id="invert_arrows" path="invert" delay="0.1" frames="0-19"/>
-        <Loop id="toggle_arrows" path="toggle" delay="0.1" frames="0-19"/>
-        <Loop id="loop" path="boosterRed" delay="0.1" frames="0-4"/>
-        <Loop id="inside" path="boosterRed" delay="0.1" frames="5-8"/>
-        <Loop id="spin" path="boosterRed" delay="0.06" frames="18-25"/>
-        <Anim id="pop" path="booster" delay="0.08" frames="9-17"/>
+        <Loop id="overlay_normal" path="overlayNormal" delay="0.1" frames="0-19"/>
+        <Loop id="overlay_invert" path="overlayInvert" delay="0.1" frames="0-19"/>
+        <Loop id="overlay_toggle" path="overlayToggle" delay="0.1" frames="0-19"/>
+        <Loop id="loop_down" path="boosterRedDown" delay="0.1" frames="0-4"/>
+        <Loop id="loop" path="boosterRedUp" delay="0.1" frames="0-4"/>
+        <Loop id="inside" path="boosterRedInside" delay="0.1" frames="0-3"/>
+        <Loop id="spin" path="boosterRedSpin" delay="0.06" frames="0-7"/>
+        <Anim id="pop" path="boosterPop" delay="0.08" frames="0-8"/>
     </gravityBoosterRed>
 </Sprites>

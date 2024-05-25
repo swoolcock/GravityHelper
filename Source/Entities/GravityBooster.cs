@@ -21,11 +21,11 @@ public class GravityBooster : Booster
     private readonly Sprite _rippleSprite;
     private readonly Sprite _overlaySprite;
 
-    private string arrowId => GravityType switch
+    private string overlayId => GravityType switch
     {
-        GravityType.Inverted => "invert_arrows",
-        GravityType.Toggle => "toggle_arrows",
-        _ => "normal_arrows",
+        GravityType.Inverted => "overlay_invert",
+        GravityType.Toggle => "overlay_toggle",
+        _ => "overlay_normal",
     };
 
     public GravityBooster(EntityData data, Vector2 offset)
@@ -39,7 +39,7 @@ public class GravityBooster : Booster
         GFX.SpriteBank.CreateOn(sprite, red ? "gravityBoosterRed" : "gravityBooster");
 
         Add(_overlaySprite = sprite.CreateClone());
-        _overlaySprite.Play(arrowId);
+        _overlaySprite.Play(overlayId);
 
         Add(_rippleSprite = GFX.SpriteBank.Create("gravityRipple"));
         _rippleSprite.Color = GravityType.HighlightColor();
@@ -67,11 +67,17 @@ public class GravityBooster : Booster
         {
             _rippleSprite.Y = -ripple_offset;
             _rippleSprite.Scale.Y = 1f;
+            // change to the correct loop if we need to
+            if (sprite.CurrentAnimationID == "loop_down")
+                sprite.Play("loop");
         }
         else if (GravityType == GravityType.Normal || GravityType == GravityType.Toggle && currentGravity == GravityType.Inverted)
         {
             _rippleSprite.Y = ripple_offset;
             _rippleSprite.Scale.Y = -1f;
+            // change to the correct loop if we need to
+            if (sprite.CurrentAnimationID == "loop")
+                sprite.Play("loop_down");
         }
 
         if (GravityType == GravityType.Toggle)
@@ -79,6 +85,6 @@ public class GravityBooster : Booster
             _overlaySprite.Scale.Y = currentGravity == GravityType.Normal ? -1 : 1;
         }
 
-        _rippleSprite.Visible = _overlaySprite.Visible = sprite.CurrentAnimationID == "loop";
+        _rippleSprite.Visible = _overlaySprite.Visible = sprite.CurrentAnimationID.StartsWith("loop");
     }
 }
