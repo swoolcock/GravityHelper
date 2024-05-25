@@ -29,6 +29,7 @@ local placementData = helpers.createPlacementData('1', {
     giveGravityRefill = false,
     refillOneUse = false,
     blockOneUse = false,
+    showEdgeIndicators = true,
 })
 
 local inversionBlock = {
@@ -108,7 +109,7 @@ function inversionBlock.sprite(room, entity, node)
         sprites = ninePatch:getDrawableSprite()
     end
 
-    if entity.leftEnabled then
+    if entity.showEdgeIndicators and entity.leftEnabled then
         table.insert(sprites, getEdgeSprite(entity, 0, 0, entity.leftGravityType, 2, -math.pi / 2))
         table.insert(sprites, getEdgeSprite(entity, 0, height - 8, entity.leftGravityType, 0, -math.pi / 2))
         for i = 1,heightInTiles-2 do
@@ -116,7 +117,7 @@ function inversionBlock.sprite(room, entity, node)
         end
     end
 
-    if entity.rightEnabled then
+    if entity.showEdgeIndicators and entity.rightEnabled then
         table.insert(sprites, getEdgeSprite(entity, width - 8, 0, entity.rightGravityType, 0, math.pi / 2))
         table.insert(sprites, getEdgeSprite(entity, width - 8, height - 8, entity.rightGravityType, 2, math.pi / 2))
         for i = 1,heightInTiles-2 do
@@ -124,7 +125,7 @@ function inversionBlock.sprite(room, entity, node)
         end
     end
 
-    if entity.topEnabled then
+    if entity.showEdgeIndicators and entity.topEnabled then
         table.insert(sprites, getEdgeSprite(entity, 0, 0, topGravityType, 0, 0))
         table.insert(sprites, getEdgeSprite(entity, width - 8, 0, topGravityType, 2, 0))
         for i = 1,widthInTiles-2 do
@@ -132,7 +133,7 @@ function inversionBlock.sprite(room, entity, node)
         end
     end
 
-    if entity.bottomEnabled then
+    if entity.showEdgeIndicators and entity.bottomEnabled then
         table.insert(sprites, getEdgeSprite(entity, 0, height - 8, bottomGravityType, 2, math.pi))
         table.insert(sprites, getEdgeSprite(entity, width - 8, height - 8, bottomGravityType, 0, math.pi))
         for i = 1,widthInTiles-2 do

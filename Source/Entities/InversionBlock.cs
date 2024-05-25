@@ -58,6 +58,7 @@ public class InversionBlock : Solid
     public bool RefillStamina { get; }
     public float RefillRespawnTime { get; }
     public bool GiveGravityRefill { get; }
+    public bool ShowEdgeIndicators { get; }
 
     private readonly bool _defaultToController;
     private string _sound;
@@ -160,6 +161,7 @@ public class InversionBlock : Solid
         GiveGravityRefill = data.Bool("giveGravityRefill", false);
         RefillOneUse = data.Bool("refillOneUse", false);
         BlockOneUse = data.Bool("blockOneUse", false);
+        ShowEdgeIndicators = data.Bool("showEdgeIndicators", true);
 
         if (GiveGravityRefill)
         {
@@ -369,8 +371,8 @@ public class InversionBlock : Solid
         if (_refillSprite?.Visible == true) _refillSprite.Render();
         if (_refillOutlineImage?.Visible == true) _refillOutlineImage.Render();
 
-        // only draw the edges if it's not expired
-        if (!expired)
+        // only draw the edges if requested and if it's not expired
+        if (ShowEdgeIndicators && !expired)
         {
             // top left corner
             var position = TopLeft;
