@@ -22,7 +22,7 @@ local placementData = helpers.createPlacementData('1', {
     endFallOnSolidTiles = true,
     sound = "event:/char/badeline/disappear",
     autotile = false,
-    tiletype = '3',
+    tiletype = fakeTilesHelper.getPlacementMaterial(),
     refillDashCount = 0,
     refillStamina = false,
     refillRespawnTime = 2.5,
@@ -36,7 +36,7 @@ local inversionBlock = {
     name = "GravityHelper/InversionBlock",
     minimumSize = {16, 16},
     ignoredFields = consts.ignoredFields,
-    fieldInformation = {
+    fieldInformation = function() return {
         leftGravityType = consts.fieldInformation.gravityType(0,1,2),
         rightGravityType = consts.fieldInformation.gravityType(0,1,2),
         fallType = consts.fieldInformation.fallType,
@@ -50,7 +50,7 @@ local inversionBlock = {
         refillRespawnTime = {
             fieldType = "number",
         }
-    },
+    } end,
     placements = {
         {
             name = "normal",
