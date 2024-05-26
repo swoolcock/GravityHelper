@@ -345,6 +345,7 @@ entities.GravityHelper/InversionBlock.attributes.description.refillRespawnTime=H
 entities.GravityHelper/InversionBlock.attributes.description.giveGravityRefill=Whether the block should give a gravity refill rather than a regular refill. Defaults to false, and overrides Refill Dash Count if true.
 entities.GravityHelper/InversionBlock.attributes.description.refillOneUse=Whether the refill has a single use and should not respawn. Defaults to false.
 entities.GravityHelper/InversionBlock.attributes.description.blockOneUse=Whether the block has a single use and will be disabled once triggered. Defaults to false.
+entities.GravityHelper/InversionBlock.attributes.description.showEdgeIndicators=Whether to show the coloured edge indicators. Defaults to true.
 
 # Force Load Gravity Controller
 entities.GravityHelper/ForceLoadGravityController.placements.name.normal=Force Load Gravity Controller
