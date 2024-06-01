@@ -31,10 +31,13 @@ public class GravityBumper : Bumper
     public bool Static { get; }
 
     private readonly Sprite _rippleSprite;
+    private readonly bool _randomizeFrame;
 
     public GravityBumper(EntityData data, Vector2 offset)
         : base(data, offset)
     {
+        using var _ = new PushRandomDisposable(data.ID);
+
         _modVersion = data.ModVersion();
         _pluginVersion = data.PluginVersion();
 
@@ -47,6 +50,7 @@ public class GravityBumper : Bumper
 
         sine.Rate = data.Float("wobbleRate", 1f);
         Static = data.Bool("static", false);
+        _randomizeFrame = data.Bool("randomizeFrame", true);
 
         // if we have a wobble rate of 0 and plugin version >= 2, force static
         if (sine.Rate == 0 && _pluginVersion.Major >= 2)
@@ -77,6 +81,9 @@ public class GravityBumper : Bumper
             _rippleSprite.Color = GravityType.HighlightColor();
             _rippleSprite.Play("loop");
         }
+
+        if (_randomizeFrame)
+            sprite.Play("idle", true, true);
     }
 
     public ParticleType GetAmbientParticleType()
