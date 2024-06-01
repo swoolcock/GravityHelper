@@ -20,10 +20,19 @@ entities.GravityHelper/GravityBumper.placements.name.normal=Gravity Bumper (Norm
 entities.GravityHelper/GravityBumper.placements.name.inverted=Gravity Bumper (Inverted)
 entities.GravityHelper/GravityBumper.placements.name.toggle=Gravity Bumper (Toggle)
 entities.GravityHelper/GravityBumper.placements.name.none=Gravity Bumper (None, Ignore Core Mode)
+entities.GravityHelper/GravityBumper.placements.name.static_normal=Gravity Bumper (Normal, Static)
+entities.GravityHelper/GravityBumper.placements.name.static_inverted=Gravity Bumper (Inverted, Static)
+entities.GravityHelper/GravityBumper.placements.name.static_toggle=Gravity Bumper (Toggle, Static)
+entities.GravityHelper/GravityBumper.placements.name.static_none=Gravity Bumper (None, Ignore Core Mode, Static)
 entities.GravityHelper/GravityBumper.attributes.description.gravityType=The gravity type to set when Madeline touches the bumper.
-entities.GravityHelper/GravityBumper.attributes.description.wobbleRate=The rate multiplier at which the bumper will wobble back and forth.  Set to 0 to disable wobbling.  Defaults to 1 (vanilla).
+entities.GravityHelper/GravityBumper.attributes.description.wobbleRate=The rate multiplier at which the bumper will wobble back and forth.  Set to 0 to pause wobbling after creation.  Defaults to 1 (vanilla).\nNote that in older versions of Gravity Helper, setting wobbleRate to 0 is not the same as static, since bumpers have an inherent random wobble offset based on the order they are loaded.\nIf you want the bumper to be exactly at the coordinates you enter, enable static mode.
 entities.GravityHelper/GravityBumper.attributes.description.ignoreCoreMode=Whether the bumper should stay in "cold" mode even if the core mode is set to "hot".  Defaults to false.
 entities.GravityHelper/GravityBumper.attributes.description.singleUse=Whether the bumper should change to "hot" mode once it is used, regardless of the ignoreCoreMode setting.  Defaults to false.
+entities.GravityHelper/GravityBumper.attributes.description.static=Whether the bumper should spawn exactly where you tell it and never wobble.
+entities.GravityHelper/GravityBumper.attributes.description.randomizeFrame=Whether to start the bumper's idle animation on a random frame.  Defaults to true.
+entities.GravityHelper/GravityBumper.attributes.description.respawnTime=The number of seconds after touching a bumper that it will respawn.  Defaults to 0.6 (vanilla).  Setting <= 0 will disable respawning.
+entities.GravityHelper/GravityBumper.attributes.description.spriteName=Sets a custom sprite name to use for the bumper.  Leaving this field empty will use the default for the gravity type.
+entities.GravityHelper/GravityBumper.attributes.description.evilSpriteName=Sets a custom sprite name to use for the bumper when in fire mode.  Leaving this field empty will use the vanilla sprite.
 
 # Gravity Dream Block
 entities.GravityHelper/GravityDreamBlock.placements.name.normal=Gravity Dream Block (Normal)

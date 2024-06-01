@@ -6,11 +6,16 @@ local consts = require("mods").requireFromPlugin("consts")
 local helpers = require("mods").requireFromPlugin("helpers")
 local drawableSprite = require("structs.drawable_sprite")
 
-local placementData = helpers.createPlacementData('1', {
+local placementData = helpers.createPlacementData('2', {
     gravityType = consts.gravityTypes.normal.index,
     wobbleRate = 1,
     ignoreCoreMode = false,
     singleUse = false,
+    static = false,
+    randomizeFrame = true,
+    respawnTime = 0.6,
+    spriteName = "",
+    evilSpriteName = "",
 })
 
 local gravityBumper = {
@@ -19,6 +24,13 @@ local gravityBumper = {
     ignoredFields = consts.ignoredFields,
     fieldInformation = {
         gravityType = consts.fieldInformation.gravityType(0,1,2,-1),
+    },
+    fieldOrder = {
+        "x", "y",
+        "gravityType", "respawnTime",
+        "spriteName", "evilSpriteName",
+        "wobbleRate", "static", "singleUse",
+        "ignoreCoreMode", "randomizeFrame",
     },
     placements = {
         {
@@ -44,6 +56,39 @@ local gravityBumper = {
             data = helpers.union(placementData, {
                 gravityType = consts.gravityTypes.none.index,
                 ignoreCoreMode = true,
+            }),
+        },
+        {
+            name = "static_normal",
+            data = helpers.union(placementData, {
+                gravityType = consts.gravityTypes.normal.index,
+                static = true,
+                wobbleRate = 0,
+            }),
+        },
+        {
+            name = "static_inverted",
+            data = helpers.union(placementData, {
+                gravityType = consts.gravityTypes.inverted.index,
+                static = true,
+                wobbleRate = 0,
+            }),
+        },
+        {
+            name = "static_toggle",
+            data = helpers.union(placementData, {
+                gravityType = consts.gravityTypes.toggle.index,
+                static = true,
+                wobbleRate = 0,
+            }),
+        },
+        {
+            name = "static_none",
+            data = helpers.union(placementData, {
+                gravityType = consts.gravityTypes.none.index,
+                ignoreCoreMode = true,
+                static = true,
+                wobbleRate = 0,
             }),
         },
     },

@@ -28,12 +28,19 @@ public class GravityBumper : Bumper
     public GravityType GravityType { get; }
     public bool IgnoreCoreMode { get; }
     public bool SingleUse { get; }
+    public bool Static { get; }
 
     private readonly Sprite _rippleSprite;
+    private readonly bool _randomizeFrame;
+    internal readonly float _respawnTime;
+    private readonly string _spriteName;
+    private readonly string _evilSpriteName;
 
     public GravityBumper(EntityData data, Vector2 offset)
         : base(data, offset)
     {
+        using var _ = new PushRandomDisposable(data.ID);
+
         _modVersion = data.ModVersion();
         _pluginVersion = data.PluginVersion();
 
@@ -45,23 +52,55 @@ public class GravityBumper : Bumper
             Remove(coreModeListener);
 
         sine.Rate = data.Float("wobbleRate", 1f);
+        Static = data.Bool("static", false);
+        _randomizeFrame = data.Bool("randomizeFrame", true);
+        _respawnTime = data.Float("respawnTime", 0.6f);
+        _spriteName = data.Attr("spriteName");
+        _evilSpriteName = data.Attr("evilSpriteName");
 
-        if (GravityType != GravityType.None)
+        if (_respawnTime <= 0)
+            _respawnTime = float.MaxValue / 2f;
+
+        // if we have a wobble rate of 0 and plugin version >= 2, force static
+        if (sine.Rate == 0 && _pluginVersion.Major >= 2)
+            Static = true;
+
+        // static bumpers should totally reset the sine wave
+        if (Static)
         {
-            // replace default bumper sprite
-            var id = GravityType switch
+            sine.Counter = 0;
+            sine.Rate = 0;
+            sine.Frequency = 0;
+            sine.Active = false;
+        }
+
+        var spriteName = _spriteName;
+        if (string.IsNullOrWhiteSpace(spriteName))
+        {
+            spriteName = GravityType switch
             {
                 GravityType.Normal => "gravityBumperNormal",
                 GravityType.Inverted => "gravityBumperInvert",
                 GravityType.Toggle => "gravityBumperToggle",
-                _ => ""
+                _ => "",
             };
-            GFX.SpriteBank.CreateOn(sprite, id);
+        }
 
+        if (!string.IsNullOrWhiteSpace(spriteName))
+            GFX.SpriteBank.CreateOn(sprite, spriteName);
+
+        if (!string.IsNullOrWhiteSpace(_evilSpriteName))
+            GFX.SpriteBank.CreateOn(spriteEvil, _evilSpriteName);
+
+        if (GravityType != GravityType.None)
+        {
             Add(_rippleSprite = GFX.SpriteBank.Create("gravityRipple"));
             _rippleSprite.Color = GravityType.HighlightColor();
             _rippleSprite.Play("loop");
         }
+
+        if (_randomizeFrame)
+            sprite.Play("idle", true, true);
     }
 
     public ParticleType GetAmbientParticleType()
@@ -164,6 +203,8 @@ public class GravityBumper : Bumper
                 _rippleSprite.Y = ripple_offset;
                 _rippleSprite.Scale.Y = -1f;
             }
+
+            _rippleSprite.Visible = respawnTimer <= 0 && !fireMode;
         }
     }
 }
