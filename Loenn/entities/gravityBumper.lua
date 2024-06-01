@@ -14,6 +14,8 @@ local placementData = helpers.createPlacementData('2', {
     static = false,
     randomizeFrame = true,
     respawnTime = 0.6,
+    spriteName = "",
+    evilSpriteName = "",
 })
 
 local gravityBumper = {

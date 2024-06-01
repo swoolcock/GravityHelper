@@ -33,6 +33,8 @@ public class GravityBumper : Bumper
     private readonly Sprite _rippleSprite;
     private readonly bool _randomizeFrame;
     internal readonly float _respawnTime;
+    private readonly string _spriteName;
+    private readonly string _evilSpriteName;
 
     public GravityBumper(EntityData data, Vector2 offset)
         : base(data, offset)
@@ -53,6 +55,8 @@ public class GravityBumper : Bumper
         Static = data.Bool("static", false);
         _randomizeFrame = data.Bool("randomizeFrame", true);
         _respawnTime = data.Float("respawnTime", 0.6f);
+        _spriteName = data.Attr("spriteName");
+        _evilSpriteName = data.Attr("evilSpriteName");
 
         if (_respawnTime <= 0)
             _respawnTime = float.MaxValue / 2f;
@@ -70,18 +74,26 @@ public class GravityBumper : Bumper
             sine.Active = false;
         }
 
-        if (GravityType != GravityType.None)
+        var spriteName = _spriteName;
+        if (string.IsNullOrWhiteSpace(spriteName))
         {
-            // replace default bumper sprite
-            var id = GravityType switch
+            spriteName = GravityType switch
             {
                 GravityType.Normal => "gravityBumperNormal",
                 GravityType.Inverted => "gravityBumperInvert",
                 GravityType.Toggle => "gravityBumperToggle",
-                _ => ""
+                _ => "",
             };
-            GFX.SpriteBank.CreateOn(sprite, id);
+        }
 
+        if (!string.IsNullOrWhiteSpace(spriteName))
+            GFX.SpriteBank.CreateOn(sprite, spriteName);
+
+        if (!string.IsNullOrWhiteSpace(_evilSpriteName))
+            GFX.SpriteBank.CreateOn(spriteEvil, _evilSpriteName);
+
+        if (GravityType != GravityType.None)
+        {
             Add(_rippleSprite = GFX.SpriteBank.Create("gravityRipple"));
             _rippleSprite.Color = GravityType.HighlightColor();
             _rippleSprite.Play("loop");
