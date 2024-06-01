@@ -13,6 +13,7 @@ local placementData = helpers.createPlacementData('2', {
     singleUse = false,
     static = false,
     randomizeFrame = true,
+    respawnTime = 0.6,
 })
 
 local gravityBumper = {

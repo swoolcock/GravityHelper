@@ -20,6 +20,7 @@ internal static class BumperHooks
         Logger.Log(nameof(GravityHelperModule), $"Loading {nameof(Bumper)} hooks...");
         IL.Celeste.Bumper.OnPlayer += Bumper_OnPlayer;
         IL.Celeste.Bumper.Update += Bumper_Update;
+        On.Celeste.Bumper.OnPlayer += Bumper_OnPlayer;
     }
 
     public static void Unload()
@@ -27,6 +28,7 @@ internal static class BumperHooks
         Logger.Log(nameof(GravityHelperModule), $"Unloading {nameof(Bumper)} hooks...");
         IL.Celeste.Bumper.OnPlayer -= Bumper_OnPlayer;
         IL.Celeste.Bumper.Update -= Bumper_Update;
+        On.Celeste.Bumper.OnPlayer -= Bumper_OnPlayer;
     }
 
     private static void Bumper_OnPlayer(ILContext il) => HookUtils.SafeHook(() =>
@@ -73,4 +75,18 @@ internal static class BumperHooks
         cursor.EmitDelegate<Func<ParticleType, Bumper, ParticleType>>((pt, self) =>
             self is GravityBumper gravityBumper ? gravityBumper.GetAmbientParticleType() : pt);
     });
+
+    private static void Bumper_OnPlayer(On.Celeste.Bumper.orig_OnPlayer orig, Bumper self, Player player)
+    {
+        if (self is not GravityBumper gravityBumper)
+        {
+            orig(self, player);
+            return;
+        }
+
+        var oldRespawnTimer = self.respawnTimer;
+        orig(self, player);
+        if (oldRespawnTimer <= 0 && self.respawnTimer > 0)
+            self.respawnTimer = gravityBumper._respawnTime;
+    }
 }

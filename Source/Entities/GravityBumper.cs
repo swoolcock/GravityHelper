@@ -32,6 +32,7 @@ public class GravityBumper : Bumper
 
     private readonly Sprite _rippleSprite;
     private readonly bool _randomizeFrame;
+    internal readonly float _respawnTime;
 
     public GravityBumper(EntityData data, Vector2 offset)
         : base(data, offset)
@@ -51,6 +52,10 @@ public class GravityBumper : Bumper
         sine.Rate = data.Float("wobbleRate", 1f);
         Static = data.Bool("static", false);
         _randomizeFrame = data.Bool("randomizeFrame", true);
+        _respawnTime = data.Float("respawnTime", 0.6f);
+
+        if (_respawnTime <= 0)
+            _respawnTime = float.MaxValue / 2f;
 
         // if we have a wobble rate of 0 and plugin version >= 2, force static
         if (sine.Rate == 0 && _pluginVersion.Major >= 2)
