@@ -29,6 +29,10 @@ entities.GravityHelper/GravityBumper.attributes.description.wobbleRate=The rate 
 entities.GravityHelper/GravityBumper.attributes.description.ignoreCoreMode=Whether the bumper should stay in "cold" mode even if the core mode is set to "hot".  Defaults to false.
 entities.GravityHelper/GravityBumper.attributes.description.singleUse=Whether the bumper should change to "hot" mode once it is used, regardless of the ignoreCoreMode setting.  Defaults to false.
 entities.GravityHelper/GravityBumper.attributes.description.static=Whether the bumper should spawn exactly where you tell it and never wobble.
+entities.GravityHelper/GravityBumper.attributes.description.randomizeFrame=Whether to start the bumper's idle animation on a random frame.  Defaults to true.
+entities.GravityHelper/GravityBumper.attributes.description.respawnTime=The number of seconds after touching a bumper that it will respawn.  Defaults to 0.6 (vanilla).  Setting <= 0 will disable respawning.
+entities.GravityHelper/GravityBumper.attributes.description.spriteName=Sets a custom sprite name to use for the bumper.  Leaving this field empty will use the default for the gravity type.
+entities.GravityHelper/GravityBumper.attributes.description.evilSpriteName=Sets a custom sprite name to use for the bumper when in fire mode.  Leaving this field empty will use the vanilla sprite.
 
 # Gravity Dream Block
 entities.GravityHelper/GravityDreamBlock.placements.name.normal=Gravity Dream Block (Normal)
