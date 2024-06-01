@@ -25,6 +25,13 @@ local gravityBumper = {
     fieldInformation = {
         gravityType = consts.fieldInformation.gravityType(0,1,2,-1),
     },
+    fieldOrder = {
+        "x", "y",
+        "gravityType", "respawnTime",
+        "spriteName", "evilSpriteName",
+        "wobbleRate", "static", "singleUse",
+        "ignoreCoreMode", "randomizeFrame",
+    },
     placements = {
         {
             name = "normal",
