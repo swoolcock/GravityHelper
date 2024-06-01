@@ -191,6 +191,8 @@ public class GravityBumper : Bumper
                 _rippleSprite.Y = ripple_offset;
                 _rippleSprite.Scale.Y = -1f;
             }
+
+            _rippleSprite.Visible = respawnTimer <= 0;
         }
     }
 }
