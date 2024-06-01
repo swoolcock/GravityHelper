@@ -28,6 +28,7 @@ public class GravityBumper : Bumper
     public GravityType GravityType { get; }
     public bool IgnoreCoreMode { get; }
     public bool SingleUse { get; }
+    public bool Static { get; }
 
     private readonly Sprite _rippleSprite;
 
@@ -45,6 +46,20 @@ public class GravityBumper : Bumper
             Remove(coreModeListener);
 
         sine.Rate = data.Float("wobbleRate", 1f);
+        Static = data.Bool("static", false);
+
+        // if we have a wobble rate of 0 and plugin version >= 2, force static
+        if (sine.Rate == 0 && _pluginVersion.Major >= 2)
+            Static = true;
+
+        // static bumpers should totally reset the sine wave
+        if (Static)
+        {
+            sine.Counter = 0;
+            sine.Rate = 0;
+            sine.Frequency = 0;
+            sine.Active = false;
+        }
 
         if (GravityType != GravityType.None)
         {
