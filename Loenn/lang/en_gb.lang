@@ -315,7 +315,7 @@ entities.GravityHelper/GravityShield.attributes.description.respawnTime=How long
 entities.GravityHelper/CassetteGravityController.placements.name.single_room=Cassette Gravity Controller (Single Room)
 entities.GravityHelper/CassetteGravityController.placements.name.persistent=Cassette Gravity Controller (Persistent)
 entities.GravityHelper/CassetteGravityController.attributes.description.persistent=Whether this controller should be considered the default for its type.\nThere should only ever be one persistent in your map, and not in a room with another controller of the same type.
-entities.GravityHelper/CassetteGravityController.attributes.description.cassetteSequence=A comma separated list of gravity types (0: normal, 1: inverted, 2: toggle), one per cassette index (up to 4).
+entities.GravityHelper/CassetteGravityController.attributes.description.cassetteSequence=A comma separated list of gravity types (0: normal, 1: inverted, 2: toggle, -1: maintain current gravity), one per cassette index (up to 4).
 entities.GravityHelper/CassetteGravityController.attributes.description.momentumMultiplier=The multiplier to apply to Madeline's Y velocity when gravity flips. 0 means instantly change, positive values give a gradual change. Defaults to 1.
 entities.GravityHelper/CassetteGravityController.attributes.description.instantFlip=Whether Madeline should immediately be set to at least falling speed on flip. Defaults to false.
 

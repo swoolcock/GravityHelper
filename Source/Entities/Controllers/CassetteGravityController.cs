@@ -43,8 +43,7 @@ public class CassetteGravityController : BaseGravityController<CassetteGravityCo
             {
                 if (!int.TryParse(s, out var value)) return default;
                 var type = (GravityType)value;
-                // TODO: support none and toggle once there's a nice way to visualise them
-                return type >= GravityType.Normal && type <= GravityType.Inverted ? type : default;
+                return type >= GravityType.None && type <= GravityType.Toggle ? type : default;
             })
             .ToArray();
 
