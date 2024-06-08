@@ -95,7 +95,8 @@ public class GravityTrigger : Trigger
     {
         base.Added(scene);
 
-        Collidable = CheckFlag();
+        if (!string.IsNullOrWhiteSpace(EnableFlag))
+            Collidable = CheckFlag();
 
         if (_defaultToController && Scene.GetActiveController<SoundGravityController>() is { } soundController)
         {
@@ -117,7 +118,8 @@ public class GravityTrigger : Trigger
 
     public override void Update()
     {
-        Collidable = CheckFlag();
+        if (!string.IsNullOrWhiteSpace(EnableFlag))
+            Collidable = CheckFlag();
 
         base.Update();
 
@@ -126,7 +128,7 @@ public class GravityTrigger : Trigger
     }
 
     protected bool CheckFlag() =>
-        string.IsNullOrWhiteSpace(EnableFlag) ||
+        !string.IsNullOrWhiteSpace(EnableFlag) &&
         SceneAs<Level>() is { } level && level.Session.GetFlag(EnableFlag);
 
     public override void OnEnter(Player player)
