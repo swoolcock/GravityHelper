@@ -101,6 +101,53 @@ public class GravityBumper : Bumper
 
         if (_randomizeFrame)
             sprite.Play("idle", true, true);
+
+        if (Get<PlayerCollider>() is { } playerCollider)
+            playerCollider.OnCollide = OnPlayer;
+    }
+
+    private new void OnPlayer(Player player)
+    {
+        if (fireMode)
+        {
+            if (SaveData.Instance.Assists.Invincible) return;
+
+            Vector2 hitDirection = (player.Center - Center).SafeNormalize();
+            hitDir = -hitDirection;
+            hitWiggler.Start();
+            Audio.Play(SFX.game_09_hotpinball_activate, Position);
+            respawnTimer = _respawnTime;
+            player.Die(hitDirection);
+            SceneAs<Level>().Particles.Emit(P_FireHit, 12, Center + hitDirection * 12f, Vector2.One * 3f, hitDirection.Angle());
+        }
+        else
+        {
+            if (respawnTimer > 0.0f) return;
+            respawnTimer = _respawnTime;
+
+            Audio.Play(SceneAs<Level>().Session.Area.ID == 9 ? SFX.game_09_pinballbumper_hit : SFX.game_06_pinballbumper_hit, Position);
+
+            // change gravity first if required
+            GravityHelperModule.PlayerComponent?.SetGravity(GravityType);
+
+            // now launch
+            Vector2 launchDirection = player.ExplodeLaunch(Position, false, false);
+
+            // set to fire mode if it's single use
+            if (SingleUse)
+                SetFireMode(true);
+
+            // update sprites and light/bloom
+            sprite.Play("hit", true);
+            spriteEvil.Play("hit", true);
+            light.Visible = false;
+            bloom.Visible = false;
+
+            // effects
+            SceneAs<Level>().DirectionalShake(launchDirection, 0.15f);
+            SceneAs<Level>().Displacement.AddBurst(Center, 0.3f, 8f, 32f, 0.8f);
+            SceneAs<Level>().Particles.Emit(GetLaunchParticleType(), 12, Center + launchDirection * 12f, Vector2.One * 3f, launchDirection.Angle());
+        }
     }
 
     public ParticleType GetAmbientParticleType()

@@ -17,6 +17,7 @@ internal static class TheoCrystalHooks
         Logger.Log(nameof(GravityHelperModule), $"Loading {nameof(TheoCrystal)} hooks...");
 
         IL.Celeste.TheoCrystal.Update += TheoCrystal_Update;
+        IL.Celeste.TheoCrystal.OnCollideV += TheoCrystal_OnCollideV;
     }
 
     public static void Unload()
@@ -24,7 +25,17 @@ internal static class TheoCrystalHooks
         Logger.Log(nameof(GravityHelperModule), $"Unloading {nameof(TheoCrystal)} hooks...");
 
         IL.Celeste.TheoCrystal.Update -= TheoCrystal_Update;
+        IL.Celeste.TheoCrystal.OnCollideV -= TheoCrystal_OnCollideV;
     }
+
+    private static void TheoCrystal_OnCollideV(ILContext il) => HookUtils.SafeHook(() =>
+    {
+        var cursor = new ILCursor(il);
+        // make falling theo trigger ceiling dash switches
+        if (!cursor.TryGotoNext(MoveType.After, instr => instr.MatchLdfld<Vector2>(nameof(Vector2.Y))))
+            throw new HookException("Couldn't find Speed.Y");
+        cursor.EmitActorInvertFloatDelegate(OpCodes.Ldarg_0);
+    });
 
     private static void TheoCrystal_Update(ILContext il) => HookUtils.SafeHook(() =>
     {

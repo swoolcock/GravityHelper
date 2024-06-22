@@ -47,6 +47,7 @@ internal static class PlayerHooks
         IL.Celeste.Player.ClimbUpdate += Player_ClimbUpdate;
         IL.Celeste.Player.CreateWallSlideParticles += Player_CreateWallSlideParticles;
         IL.Celeste.Player.DashUpdate += Player_DashUpdate;
+        IL.Celeste.Player.ExplodeLaunch_Vector2_bool_bool += Player_ExplodeLaunch_Vector2_bool_bool;
         IL.Celeste.Player.GetChasePosition += Player_GetChasePosition;
         IL.Celeste.Player._IsOverWater += Player_IsOverWater;
         IL.Celeste.Player.Jump += Player_Jump;
@@ -83,6 +84,7 @@ internal static class PlayerHooks
         On.Celeste.Player.DreamDashCheck += Player_DreamDashCheck;
         On.Celeste.Player.DreamDashUpdate += Player_DreamDashUpdate;
         On.Celeste.Player.DustParticleFromSurfaceIndex += Player_DustParticleFromSurfaceIndex;
+        On.Celeste.Player.ExplodeLaunch_Vector2_bool_bool += Player_ExplodeLaunch_Vector2_bool_bool;
         On.Celeste.Player.Jump += Player_Jump;
         On.Celeste.Player.JumpThruBoostBlockedCheck += Player_JumpThruBoostBlockedCheck;
         On.Celeste.Player.ReflectBounce += Player_ReflectBounce;
@@ -130,6 +132,7 @@ internal static class PlayerHooks
         IL.Celeste.Player.ClimbUpdate -= Player_ClimbUpdate;
         IL.Celeste.Player.CreateWallSlideParticles -= Player_CreateWallSlideParticles;
         IL.Celeste.Player.DashUpdate -= Player_DashUpdate;
+        IL.Celeste.Player.ExplodeLaunch_Vector2_bool_bool -= Player_ExplodeLaunch_Vector2_bool_bool;
         IL.Celeste.Player.GetChasePosition -= Player_GetChasePosition;
         IL.Celeste.Player._IsOverWater -= Player_IsOverWater;
         IL.Celeste.Player.Jump -= Player_Jump;
@@ -166,6 +169,7 @@ internal static class PlayerHooks
         On.Celeste.Player.DreamDashCheck -= Player_DreamDashCheck;
         On.Celeste.Player.DreamDashUpdate -= Player_DreamDashUpdate;
         On.Celeste.Player.DustParticleFromSurfaceIndex -= Player_DustParticleFromSurfaceIndex;
+        On.Celeste.Player.ExplodeLaunch_Vector2_bool_bool -= Player_ExplodeLaunch_Vector2_bool_bool;
         On.Celeste.Player.Jump -= Player_Jump;
         On.Celeste.Player.JumpThruBoostBlockedCheck -= Player_JumpThruBoostBlockedCheck;
         On.Celeste.Player.ReflectBounce -= Player_ReflectBounce;
@@ -476,6 +480,14 @@ internal static class PlayerHooks
         // invert summit launch offset
         if (!cursor.TryGotoNext(MoveType.After, instr => instr.MatchLdcR4(64f)))
             throw new HookException("Couldn't find 64");
+        cursor.EmitInvertFloatDelegate();
+    });
+
+    private static void Player_ExplodeLaunch_Vector2_bool_bool(ILContext il) => HookUtils.SafeHook(() =>
+    {
+        var cursor = new ILCursor(il);
+        // invert the angle passed to SlashFx.Burst
+        cursor.TryGotoNext(MoveType.Before, instr => instr.MatchCall<SlashFx>(nameof(SlashFx.Burst)));
         cursor.EmitInvertFloatDelegate();
     });
 
@@ -1383,6 +1395,17 @@ internal static class PlayerHooks
         if (!GravityHelperModule.ShouldInvertPlayer)
             return orig(self, index);
         return index == 40 ? _invertedSparkyDustParticle.Value : _invertedDustParticle.Value;
+    }
+
+    private static Vector2 Player_ExplodeLaunch_Vector2_bool_bool(On.Celeste.Player.orig_ExplodeLaunch_Vector2_bool_bool orig, Player self, Vector2 from, bool snapup, bool sidesonly)
+    {
+        if (!GravityHelperModule.ShouldInvertPlayer)
+            return orig(self, from, snapup, sidesonly);
+        // we need to pretend we've touched the source entity from the opposite side
+        var newFrom = new Vector2(from.X, self.Center.Y + (self.Center.Y - from.Y));
+        var rv = orig(self, newFrom, snapup, sidesonly);
+        // and then invert the vector back on return
+        return new Vector2(rv.X, -rv.Y);
     }
 
     private static void Player_Jump(On.Celeste.Player.orig_Jump orig, Player self, bool particles, bool playsfx)

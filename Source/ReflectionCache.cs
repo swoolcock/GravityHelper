@@ -76,6 +76,8 @@ internal static class ReflectionCache
     public static Type CelesteNetGhostNameTagType { get; private set; }
     public static Type CelesteNetGhostEmoteType { get; private set; }
     public static Type BounceHelperModuleType { get; private set; }
+    public static MethodInfo JackalHelperCardinalBumper_CardinalLaunch { get; private set; }
+    public static Type JackalHelperCardinalBumperType { get; private set; }
 
     public static void LoadThirdPartyTypes()
     {
@@ -103,6 +105,8 @@ internal static class ReflectionCache
         CelesteNetGhostNameTagType = GetModdedTypeByName("CelesteNet.Client", "Celeste.Mod.CelesteNet.Client.Entities.GhostNameTag");
         CelesteNetGhostEmoteType = GetModdedTypeByName("CelesteNet.Client", "Celeste.Mod.CelesteNet.Client.Entities.GhostEmote");
         BounceHelperModuleType = GetModdedTypeByName("BounceHelper", "Celeste.Mod.BounceHelper.BounceHelperModule");
+        JackalHelperCardinalBumperType = GetModdedTypeByName("JackalHelper", "Celeste.Mod.JackalHelper.Entities.CardinalBumper");
+        JackalHelperCardinalBumper_CardinalLaunch = JackalHelperCardinalBumperType?.GetMethod("CardinalLaunch", BindingFlags.Instance | BindingFlags.Public);
     }
 
     #endregion
