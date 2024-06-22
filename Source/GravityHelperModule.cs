@@ -145,6 +145,7 @@ public class GravityHelperModule : EverestModule
             BumperHooks.Unload();
             CassetteBlockManagerHooks.Unload();
             CrushBlockHooks.Unload();
+            DashSwitchHooks.Unload();
             DreamBlockHooks.Unload();
             FinalBossHooks.Unload();
             FireBarrierHooks.Unload();
@@ -201,6 +202,7 @@ public class GravityHelperModule : EverestModule
             BumperHooks.Load();
             CassetteBlockManagerHooks.Load();
             CrushBlockHooks.Load();
+            DashSwitchHooks.Load();
             DreamBlockHooks.Load();
             FinalBossHooks.Load();
             FireBarrierHooks.Load();
