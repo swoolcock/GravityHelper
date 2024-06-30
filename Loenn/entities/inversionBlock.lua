@@ -7,7 +7,7 @@ local drawableSprite = require("structs.drawable_sprite")
 local drawableNinePatch = require("structs.drawable_nine_patch")
 local fakeTilesHelper = require("helpers.fake_tiles")
 
-local placementData = helpers.createPlacementData('1', {
+local placementData = helpers.createPlacementData('2', {
     width = 16,
     height = 16,
     defaultToController = true,
@@ -30,12 +30,24 @@ local placementData = helpers.createPlacementData('1', {
     refillOneUse = false,
     blockOneUse = false,
     showEdgeIndicators = true,
+    legacyFallBehavior = false,
 })
 
 local inversionBlock = {
     name = "GravityHelper/InversionBlock",
     minimumSize = {16, 16},
     ignoredFields = consts.ignoredFields,
+    fieldOrder = {
+        "x", "y",
+        "width", "height",
+        "topEnabled", "bottomEnabled", "leftEnabled", "rightEnabled",
+        "leftGravityType", "rightGravityType",
+        "refillDashCount", "refillRespawnTime",
+        "refillStamina", "refillOneUse", "giveGravityRefill", "blockOneUse",
+        "fallType", "climbFall", "endFallOnSolidTiles",
+        "tiletype", "sound",
+        "autotile", "showEdgeIndicators", "defaultToController", "legacyFallBehavior",
+    },
     fieldInformation = function() return {
         leftGravityType = consts.fieldInformation.gravityType(0,1,2),
         rightGravityType = consts.fieldInformation.gravityType(0,1,2),
@@ -68,6 +80,46 @@ local inversionBlock = {
                 bottomEnabled = false,
                 leftEnabled = true,
                 rightEnabled = true,
+            }),
+        },
+        {
+            name = "normal_fall_down",
+            data = helpers.union(placementData, {
+                topEnabled = true,
+                bottomEnabled = true,
+                leftEnabled = false,
+                rightEnabled = false,
+                fallType = 1,
+            }),
+        },
+        {
+            name = "normal_fall_up",
+            data = helpers.union(placementData, {
+                topEnabled = true,
+                bottomEnabled = true,
+                leftEnabled = false,
+                rightEnabled = false,
+                fallType = 2,
+            }),
+        },
+        {
+            name = "sides_fall_down",
+            data = helpers.union(placementData, {
+                topEnabled = false,
+                bottomEnabled = false,
+                leftEnabled = true,
+                rightEnabled = true,
+                fallType = 1,
+            }),
+        },
+        {
+            name = "sides_fall_up",
+            data = helpers.union(placementData, {
+                topEnabled = false,
+                bottomEnabled = false,
+                leftEnabled = true,
+                rightEnabled = true,
+                fallType = 2,
             }),
         },
     },

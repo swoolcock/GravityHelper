@@ -334,7 +334,11 @@ entities.GravityHelper/GravityIndicator.attributes.description.syncToPlayer=Whet
 
 # Inversion Block
 entities.GravityHelper/InversionBlock.placements.name.normal=Inversion Block
+entities.GravityHelper/InversionBlock.placements.name.normal_fall_down=Inversion Block (Fall Down)
+entities.GravityHelper/InversionBlock.placements.name.normal_fall_up=Inversion Block (Fall Up)
 entities.GravityHelper/InversionBlock.placements.name.sides=Inversion Block (Toggle Sides)
+entities.GravityHelper/InversionBlock.placements.name.sides_fall_down=Inversion Block (Toggle Sides, Fall Down)
+entities.GravityHelper/InversionBlock.placements.name.sides_fall_up=Inversion Block (Toggle Sides, Fall Up)
 entities.GravityHelper/InversionBlock.attributes.description.leftGravityType=The gravity type Madeline must have to activate the left side of the block. Defaults to toggle, which means her gravity type is ignored.
 entities.GravityHelper/InversionBlock.attributes.description.rightGravityType=The gravity type Madeline must have to activate the right side of the block. Defaults to toggle, which means her gravity type is ignored.
 entities.GravityHelper/InversionBlock.attributes.description.topEnabled=Whether jumping on the top of the block will trigger inversion.
@@ -355,6 +359,7 @@ entities.GravityHelper/InversionBlock.attributes.description.giveGravityRefill=W
 entities.GravityHelper/InversionBlock.attributes.description.refillOneUse=Whether the refill has a single use and should not respawn. Defaults to false.
 entities.GravityHelper/InversionBlock.attributes.description.blockOneUse=Whether the block has a single use and will be disabled once triggered. Defaults to false.
 entities.GravityHelper/InversionBlock.attributes.description.showEdgeIndicators=Whether to show the coloured edge indicators. Defaults to true.
+entities.GravityHelper/InversionBlock.attributes.description.legacyFallBehavior=Prior to Gravity Helper 1.2.17, jumping on an inversion block about to fall\nwould cause it to shake for the maximum amount of time rather than honouring the\n"player has jumped therefore immediately fall" behaviour with regular falling blocks.\n\nEnabling this reverts to the old behaviour, and is not recommended.
 
 # Force Load Gravity Controller
 entities.GravityHelper/ForceLoadGravityController.placements.name.normal=Force Load Gravity Controller
