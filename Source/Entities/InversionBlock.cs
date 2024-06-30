@@ -89,6 +89,7 @@ public class InversionBlock : Solid
     private Vector2 _shakeOffset;
     private bool _blockUsed;
     private bool _refillUsed;
+    private readonly bool _legacyFallBehavior;
 
     private ParticleType p_shatter;
     private ParticleType p_regen;
@@ -230,6 +231,8 @@ public class InversionBlock : Solid
         Edges |= data.Bool("bottomEnabled", true) ? Edges.Bottom : Edges.None;
 
         var fallType = (FallingComponent.FallingType)data.Int("fallType", (int)FallingComponent.FallingType.None);
+        _legacyFallBehavior = data.Bool("legacyFallBehavior", true);
+
         if (data.Bool("fall", false)) fallType = data.Bool("fallUp", false) ? FallingComponent.FallingType.Up : FallingComponent.FallingType.Down;
 
         if (fallType != FallingComponent.FallingType.None)
@@ -593,7 +596,9 @@ public class InversionBlock : Solid
         }
 
         // trigger falling if we should
-        if (_fallingComponent != null)
+        // "legacy fall behavior" says that the block should continue to shake
+        // after teleporting
+        if (_fallingComponent != null && (_legacyFallBehavior || !_fallingComponent.HasStartedFalling))
         {
             _fallingComponent.Triggered = true;
         }

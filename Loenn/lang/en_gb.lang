@@ -355,6 +355,7 @@ entities.GravityHelper/InversionBlock.attributes.description.giveGravityRefill=W
 entities.GravityHelper/InversionBlock.attributes.description.refillOneUse=Whether the refill has a single use and should not respawn. Defaults to false.
 entities.GravityHelper/InversionBlock.attributes.description.blockOneUse=Whether the block has a single use and will be disabled once triggered. Defaults to false.
 entities.GravityHelper/InversionBlock.attributes.description.showEdgeIndicators=Whether to show the coloured edge indicators. Defaults to true.
+entities.GravityHelper/InversionBlock.attributes.description.legacyFallBehavior=Prior to Gravity Helper 1.2.17, jumping on an inversion block about to fall\nwould cause it to shake for the maximum amount of time rather than honouring the\n"player has jumped therefore immediately fall" behaviour with regular falling blocks.\n\nEnabling this reverts to the old behaviour, and is not recommended.
 
 # Force Load Gravity Controller
 entities.GravityHelper/ForceLoadGravityController.placements.name.normal=Force Load Gravity Controller

@@ -30,12 +30,24 @@ local placementData = helpers.createPlacementData('1', {
     refillOneUse = false,
     blockOneUse = false,
     showEdgeIndicators = true,
+    legacyFallBehavior = false,
 })
 
 local inversionBlock = {
     name = "GravityHelper/InversionBlock",
     minimumSize = {16, 16},
     ignoredFields = consts.ignoredFields,
+    fieldOrder = {
+        "x", "y",
+        "width", "height",
+        "topEnabled", "bottomEnabled", "leftEnabled", "rightEnabled",
+        "leftGravityType", "rightGravityType",
+        "refillDashCount", "refillRespawnTime",
+        "refillStamina", "refillOneUse", "giveGravityRefill", "blockOneUse",
+        "fallType", "climbFall", "endFallOnSolidTiles",
+        "tiletype", "sound",
+        "autotile", "showEdgeIndicators", "defaultToController", "legacyFallBehavior",
+    },
     fieldInformation = function() return {
         leftGravityType = consts.fieldInformation.gravityType(0,1,2),
         rightGravityType = consts.fieldInformation.gravityType(0,1,2),

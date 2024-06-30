@@ -5,7 +5,7 @@ module GravityHelperInversionBlock
 
 using ..Ahorn, Maple
 
-const PLUGIN_VERSION = "1"
+const PLUGIN_VERSION = "2"
 
 const default_sound = "event:/char/badeline/disappear"
 
@@ -20,6 +20,7 @@ const default_sound = "event:/char/badeline/disappear"
     autotile::Bool=false, tiletype::String="3",
     refillDashCount::Integer=0, refillStamina::Bool=false, refillRespawnTime::Real=2.5,
     giveGravityRefill::Bool=false, refillOneUse::Bool=false, blockOneUse::Bool=false,
+    legacyFallBehavior::Bool=false,
     pluginVersion::String=PLUGIN_VERSION,
 )
 
