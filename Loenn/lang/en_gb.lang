@@ -334,7 +334,11 @@ entities.GravityHelper/GravityIndicator.attributes.description.syncToPlayer=Whet
 
 # Inversion Block
 entities.GravityHelper/InversionBlock.placements.name.normal=Inversion Block
+entities.GravityHelper/InversionBlock.placements.name.normal_fall_down=Inversion Block (Fall Down)
+entities.GravityHelper/InversionBlock.placements.name.normal_fall_up=Inversion Block (Fall Up)
 entities.GravityHelper/InversionBlock.placements.name.sides=Inversion Block (Toggle Sides)
+entities.GravityHelper/InversionBlock.placements.name.sides_fall_down=Inversion Block (Toggle Sides, Fall Down)
+entities.GravityHelper/InversionBlock.placements.name.sides_fall_up=Inversion Block (Toggle Sides, Fall Up)
 entities.GravityHelper/InversionBlock.attributes.description.leftGravityType=The gravity type Madeline must have to activate the left side of the block. Defaults to toggle, which means her gravity type is ignored.
 entities.GravityHelper/InversionBlock.attributes.description.rightGravityType=The gravity type Madeline must have to activate the right side of the block. Defaults to toggle, which means her gravity type is ignored.
 entities.GravityHelper/InversionBlock.attributes.description.topEnabled=Whether jumping on the top of the block will trigger inversion.
