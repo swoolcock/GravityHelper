@@ -29,7 +29,32 @@ public class GravityComponent : Component
 
     private DynamicData _data;
 
-    public bool Locked { get; set; }
+    private int _lockSemaphore;
+    /// <summary>
+    /// Indicates that the component cannot currently have its gravity changed.
+    /// Any calls to <see cref="SetGravity"/> will immediately fail and return false.
+    /// </summary>
+    public bool Locked => _lockSemaphore > 0;
+
+    /// <summary>
+    /// Increments the lock semaphore and returns the modified value.
+    /// </summary>
+    public int Lock()
+    {
+        _lockSemaphore = Math.Max(_lockSemaphore + 1, 1);
+        return _lockSemaphore;
+    }
+
+    /// <summary>
+    /// Decrements the lock semaphore and returns the modified value.
+    /// If <paramref name="force"/> is true, or if for some reason the semaphore is
+    /// less than 0, it will be set to 0, and 0 is returned.
+    /// </summary>
+    public int Unlock(bool force = false)
+    {
+        _lockSemaphore = force ? 0 : Math.Max(0, _lockSemaphore - 1);
+        return _lockSemaphore;
+    }
 
     public bool UpdateEntity { get; set; } = true;
     public Func<bool> CheckInvert;

@@ -113,10 +113,9 @@ public class GravityShieldIndicator : Entity
 
     public void Activate(float time)
     {
-        if (GravityHelperModule.PlayerComponent is not { } playerComponent) return;
         ShieldTimeRemaining = ShieldTotalTime = time;
         Active = Visible = true;
-        playerComponent.Locked = true;
+        GravityHelperModule.PlayerComponent?.Lock();
         _flash = false;
 
         _bloom.Alpha = bloom_alpha;
@@ -127,8 +126,7 @@ public class GravityShieldIndicator : Entity
     {
         ShieldTimeRemaining = ShieldTotalTime = 0;
         Active = Visible = false;
-        if (GravityHelperModule.PlayerComponent is { } playerComponent)
-            playerComponent.Locked = false;
+        GravityHelperModule.PlayerComponent?.Unlock();
 
         _bloom.Alpha = 0f;
         _light.Alpha = 0f;

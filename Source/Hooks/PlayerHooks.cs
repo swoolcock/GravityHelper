@@ -77,6 +77,7 @@ internal static class PlayerHooks
         On.Celeste.Player.BoostEnd += Player_BoostEnd;
         On.Celeste.Player.ClimbCheck += Player_ClimbCheck;
         On.Celeste.Player.ClimbJump += Player_ClimbJump;
+        On.Celeste.Player.CassetteFlyBegin += Player_CassetteFlyBegin;
         On.Celeste.Player.CassetteFlyEnd += Player_CassetteFlyEnd;
         On.Celeste.Player.CreateTrail += Player_CreateTrail;
         On.Celeste.Player.DoFlingBird += Player_DoFlingBird;
@@ -90,7 +91,6 @@ internal static class PlayerHooks
         On.Celeste.Player.ReflectBounce += Player_ReflectBounce;
         On.Celeste.Player.Render += Player_Render;
         On.Celeste.Player.StarFlyBegin += Player_StarFlyBegin;
-        On.Celeste.Player.StartCassetteFly += Player_StartCassetteFly;
         On.Celeste.Player.SuperJump += Player_SuperJump;
         On.Celeste.Player.TransitionTo += Player_TransitionTo;
         On.Celeste.Player.Update += Player_Update;
@@ -160,6 +160,7 @@ internal static class PlayerHooks
         On.Celeste.Player.Added -= Player_Added;
         On.Celeste.Player.BoostUpdate -= Player_BoostUpdate;
         On.Celeste.Player.BoostEnd -= Player_BoostEnd;
+        On.Celeste.Player.CassetteFlyBegin -= Player_CassetteFlyBegin;
         On.Celeste.Player.CassetteFlyEnd -= Player_CassetteFlyEnd;
         On.Celeste.Player.ClimbCheck -= Player_ClimbCheck;
         On.Celeste.Player.ClimbJump -= Player_ClimbJump;
@@ -175,7 +176,6 @@ internal static class PlayerHooks
         On.Celeste.Player.ReflectBounce -= Player_ReflectBounce;
         On.Celeste.Player.Render -= Player_Render;
         On.Celeste.Player.StarFlyBegin -= Player_StarFlyBegin;
-        On.Celeste.Player.StartCassetteFly -= Player_StartCassetteFly;
         On.Celeste.Player.SuperJump -= Player_SuperJump;
         On.Celeste.Player.TransitionTo -= Player_TransitionTo;
         On.Celeste.Player.Update -= Player_Update;
@@ -1254,9 +1254,18 @@ internal static class PlayerHooks
         scene.Add(new GravityShieldIndicator());
     }
 
+    private static void Player_CassetteFlyBegin(On.Celeste.Player.orig_CassetteFlyBegin orig, Player self)
+    {
+        GravityHelperModule.PlayerComponent?.SetGravity(GravityType.Normal);
+        GravityHelperModule.PlayerComponent?.Lock();
+        orig(self);
+    }
+
     private static void Player_CassetteFlyEnd(On.Celeste.Player.orig_CassetteFlyEnd orig, Player self)
     {
         orig(self);
+
+        GravityHelperModule.PlayerComponent?.Unlock();
 
         SpawnGravityTrigger trigger = self.CollideFirstOrDefault<SpawnGravityTrigger>();
         if (trigger?.FireOnBubbleReturn ?? false)
@@ -1469,12 +1478,6 @@ internal static class PlayerHooks
             if (bloom != null)
                 bloom.Y = Math.Abs(bloom.Y);
         }
-    }
-
-    private static void Player_StartCassetteFly(On.Celeste.Player.orig_StartCassetteFly orig, Player self, Vector2 targetPosition, Vector2 control)
-    {
-        GravityHelperModule.PlayerComponent?.SetGravity(GravityType.Normal);
-        orig(self, targetPosition, control);
     }
 
     private static void Player_SuperJump(On.Celeste.Player.orig_SuperJump orig, Player self)
