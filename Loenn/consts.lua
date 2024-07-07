@@ -37,16 +37,16 @@ local consts = {
             }
         end,
         vvvvvvMode = {
+            editable = false,
             options = {
-                editable = false,
                 {"Trigger-based", 0},
                 {"Off", 1},
                 {"On", 2},
             },
         },
         fallType = {
+            editable = false,
             options = {
-                editable = false,
                 {"None", 0},
                 {"Down", 1},
                 {"Up", 2},
