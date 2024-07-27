@@ -16,7 +16,7 @@ local function makeOptions(options, defaults, ...)
 end
 
 local consts = {
-    modVersion = "1.2.17",
+    modVersion = "1.2.18",
     ignoredFields = {
         "modVersion",
         "pluginVersion",
@@ -37,16 +37,16 @@ local consts = {
             }
         end,
         vvvvvvMode = {
+            editable = false,
             options = {
-                editable = false,
                 {"Trigger-based", 0},
                 {"Off", 1},
                 {"On", 2},
             },
         },
         fallType = {
+            editable = false,
             options = {
-                editable = false,
                 {"None", 0},
                 {"Down", 1},
                 {"Up", 2},
