@@ -23,8 +23,9 @@ public class UpsideDownJumpThru : JumpThru
     private readonly int _overrideSoundIndex;
     private readonly bool _attached;
     private readonly bool _triggerStaticMovers;
+    private readonly bool _invisible;
 
-    private Vector2 shakeOffset;
+    private Vector2 _shakeOffset;
     private Platform _attachedPlatform;
     private readonly StaticMover _staticMover;
 
@@ -39,6 +40,7 @@ public class UpsideDownJumpThru : JumpThru
         _overrideSoundIndex = data.Int("surfaceIndex", -1);
         _attached = data.Bool("attached", false);
         _triggerStaticMovers = data.Bool("triggerStaticMovers", true);
+        _invisible = data.Bool("invisible", false);
 
         if (_attached)
         {
@@ -80,7 +82,7 @@ public class UpsideDownJumpThru : JumpThru
                 OnShake = amount =>
                 {
                     ShakeStaticMovers(amount);
-                    shakeOffset += amount;
+                    _shakeOffset += amount;
                 },
                 OnAttach = p =>
                 {
@@ -106,9 +108,9 @@ public class UpsideDownJumpThru : JumpThru
 
     public override void Render()
     {
-        Position += shakeOffset;
+        Position += _shakeOffset;
         base.Render();
-        Position -= shakeOffset;
+        Position -= _shakeOffset;
     }
 
     public override void Update()
@@ -143,34 +145,40 @@ public class UpsideDownJumpThru : JumpThru
             };
 
         using var _ = new PushRandomDisposable(scene);
-        var mtexture = GFX.Game[$"objects/jumpthru/{str}"];
-        int textureWidthInTiles = mtexture.Width / 8;
-        for (int i = 0; i < _columns; ++i)
-        {
-            int xOffset;
-            int yOffset;
-            if (i == 0)
-            {
-                xOffset = 0;
-                yOffset = CollideCheck<Solid, SwapBlock, ExitBlock>(Position + new Vector2(-1f, 0.0f)) ? 0 : 1;
-            }
-            else if (i == _columns - 1)
-            {
-                xOffset = textureWidthInTiles - 1;
-                yOffset = CollideCheck<Solid, SwapBlock, ExitBlock>(Position + new Vector2(1f, 0.0f)) ? 0 : 1;
-            }
-            else
-            {
-                xOffset = 1 + Calc.Random.Next(textureWidthInTiles - 2);
-                yOffset = Calc.Random.Choose(0, 1);
-            }
 
-            Add(new Image(mtexture.GetSubtexture(xOffset * 8, yOffset * 8, 8, 8))
+        // "invisible" determines whether we add image components to the entity
+        // this allows us to leave Visible = true so that subclasses can inherit the shake offset functionality
+        if (!_invisible)
+        {
+            var mtexture = GFX.Game[$"objects/jumpthru/{str}"];
+            int textureWidthInTiles = mtexture.Width / 8;
+            for (int i = 0; i < _columns; ++i)
             {
-                X = i * 8,
-                Y = 8,
-                Scale = {Y = -1},
-            });
+                int xOffset;
+                int yOffset;
+                if (i == 0)
+                {
+                    xOffset = 0;
+                    yOffset = CollideCheck<Solid, SwapBlock, ExitBlock>(Position + new Vector2(-1f, 0.0f)) ? 0 : 1;
+                }
+                else if (i == _columns - 1)
+                {
+                    xOffset = textureWidthInTiles - 1;
+                    yOffset = CollideCheck<Solid, SwapBlock, ExitBlock>(Position + new Vector2(1f, 0.0f)) ? 0 : 1;
+                }
+                else
+                {
+                    xOffset = 1 + Calc.Random.Next(textureWidthInTiles - 2);
+                    yOffset = Calc.Random.Choose(0, 1);
+                }
+
+                Add(new Image(mtexture.GetSubtexture(xOffset * 8, yOffset * 8, 8, 8))
+                {
+                    X = i * 8,
+                    Y = 8,
+                    Scale = {Y = -1},
+                });
+            }
         }
 
         foreach (StaticMover mover in scene.Tracker.GetComponents<StaticMover>())
