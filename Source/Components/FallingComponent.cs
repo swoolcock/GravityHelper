@@ -28,6 +28,7 @@ internal class FallingComponent : Component
     public bool ShouldManageSafe = true;
     public FallingType FallType = FallingType.Down;
     public bool EndOnSolidTiles = true;
+    public string InvertFallingDirFlag = "";
 
     // coroutine properties
     public bool Triggered;
@@ -36,7 +37,15 @@ internal class FallingComponent : Component
     // ReSharper disable once NotAccessedField.Local
     private Coroutine _coroutine;
     private float _fallDelayRemaining;
+
     private bool _fallingUp;
+    // property to handle falling dir inversion
+    private bool fallingUp
+    {
+        get => _fallingUp ^ (InvertFallingDirFlag != "" && base.Entity.SceneAs<Level>().Session.GetFlag(InvertFallingDirFlag));
+
+        set => _fallingUp = value;
+    }
 
     public new Solid Entity => base.Entity as Solid;
 
@@ -99,9 +108,9 @@ internal class FallingComponent : Component
             var range = Vector2.One * 4f;
             var direction = (float)Math.PI / 2f;
             var offset = new Vector2(x, -2f);
-            var check = _fallingUp ? Entity.BottomLeft - offset : Entity.TopLeft + offset;
+            var check = fallingUp ? Entity.BottomLeft - offset : Entity.TopLeft + offset;
             if (level.CollideCheck<Solid>(check))
-                level.Particles.Emit(FallingBlock.P_FallDustA, 2, position, range, _fallingUp ? -direction : direction);
+                level.Particles.Emit(FallingBlock.P_FallDustA, 2, position, range, fallingUp ? -direction : direction);
             level.Particles.Emit(FallingBlock.P_FallDustB, 2, position, range);
         }
     }
@@ -113,15 +122,15 @@ internal class FallingComponent : Component
         for (int x = 2; x <= Entity.Width; x += 4)
         {
             var offset = new Vector2(x, 3f);
-            var checkPosition = _fallingUp ? Entity.TopLeft - offset : Entity.BottomLeft + offset;
+            var checkPosition = fallingUp ? Entity.TopLeft - offset : Entity.BottomLeft + offset;
             if (level.CollideCheck<Solid>(checkPosition))
             {
-                var position = new Vector2(Entity.X + x, _fallingUp ? Entity.Top : Entity.Bottom);
+                var position = new Vector2(Entity.X + x, fallingUp ? Entity.Top : Entity.Bottom);
                 var range = Vector2.One * 4f;
                 var fallDustDirection = -(float)Math.PI / 2f;
-                level.ParticlesFG.Emit(FallingBlock.P_FallDustA, 1, position, range, _fallingUp ? -fallDustDirection : fallDustDirection);
+                level.ParticlesFG.Emit(FallingBlock.P_FallDustA, 1, position, range, fallingUp ? -fallDustDirection : fallDustDirection);
                 var landDustDirection = x >= Entity.Width / 2f ? 0f : (float)Math.PI;
-                level.ParticlesFG.Emit(FallingBlock.P_LandDust, 1, position, range, _fallingUp ? -landDustDirection : landDustDirection);
+                level.ParticlesFG.Emit(FallingBlock.P_LandDust, 1, position, range, fallingUp ? -landDustDirection : landDustDirection);
             }
         }
     }
@@ -159,7 +168,7 @@ internal class FallingComponent : Component
         while (true)
         {
             // determine whether we should fall up
-            _fallingUp = FallType == FallingType.Up || FallType == FallingType.MatchPlayer && GravityHelperModule.ShouldInvertPlayer || FallType == FallingType.OppositePlayer && !GravityHelperModule.ShouldInvertPlayer;
+            fallingUp = FallType == FallingType.Up || FallType == FallingType.MatchPlayer && GravityHelperModule.ShouldInvertPlayer || FallType == FallingType.OppositePlayer && !GravityHelperModule.ShouldInvertPlayer;
 
             // start shaking
             self.ShakeSfx?.Invoke();
@@ -177,26 +186,26 @@ internal class FallingComponent : Component
             self.FallParticles?.Invoke();
 
             // fall
-            float speed = 0f;
+            float vel = 0f;
             float maxSpeed = self.FallSpeed;
             while (true)
             {
                 // update the speed
-                speed = Calc.Approach(speed, maxSpeed, 500f * Engine.DeltaTime);
+                vel = Calc.Approach(vel, maxSpeed * (fallingUp ? -1 : 1), 500f * Engine.DeltaTime);
                 // try to move
-                if (!entity.MoveVCollideSolids(speed * Engine.DeltaTime * (_fallingUp ? -1 : 1), true))
+                if (!entity.MoveVCollideSolids(vel * Engine.DeltaTime, true))
                 {
                     // if we've fallen out the bottom of the screen, we should remove the entity
                     // otherwise yield for a frame and loop
-                    if (!_fallingUp && entity.Top <= level.Bounds.Bottom + 16 && (entity.Top <= level.Bounds.Bottom - 1 || !entity.CollideCheck<Solid>(entity.Position + Vector2.UnitY)) ||
-                        _fallingUp && entity.Bottom >= level.Bounds.Top - 16 && (entity.Bottom >= level.Bounds.Top + 1 || !entity.CollideCheck<Solid>(entity.Position - Vector2.UnitY)))
+                    if (!fallingUp && entity.Top <= level.Bounds.Bottom + 16 && (entity.Top <= level.Bounds.Bottom - 1 || !entity.CollideCheck<Solid>(entity.Position + Vector2.UnitY)) ||
+                        fallingUp && entity.Bottom >= level.Bounds.Top - 16 && (entity.Bottom >= level.Bounds.Top + 1 || !entity.CollideCheck<Solid>(entity.Position - Vector2.UnitY)))
                         yield return null;
                     else
                     {
                         // we've fallen out of the screen and should remove the entity
                         entity.Collidable = entity.Visible = false;
                         yield return 0.2f;
-                        if (level.Session.MapData.CanTransitionTo(level, new Vector2(entity.Center.X, _fallingUp ? (entity.Top - 12f) : (entity.Bottom + 12f))))
+                        if (level.Session.MapData.CanTransitionTo(level, new Vector2(entity.Center.X, fallingUp ? (entity.Top - 12f) : (entity.Bottom + 12f))))
                         {
                             yield return 0.2f;
                             level.Shake();
@@ -218,26 +227,26 @@ internal class FallingComponent : Component
             // impact effects
             self.ImpactSfx?.Invoke();
             if (self.ShouldRumble) Input.Rumble(RumbleStrength.Strong, RumbleLength.Medium);
-            level.DirectionalShake(_fallingUp ? -Vector2.UnitY : Vector2.UnitY);
+            level.DirectionalShake(fallingUp ? -Vector2.UnitY : Vector2.UnitY);
             entity.StartShaking();
             self.LandParticles?.Invoke();
             yield return 0.2f;
             entity.StopShaking();
 
-            // if it's hit the fg tiles then make it safe and end
-            if (EndOnSolidTiles && entity.CollideCheck<SolidTiles>(entity.Position + (_fallingUp ? -Vector2.UnitY : Vector2.UnitY)))
+            // if it's hit the fg tiles and the falling dir cannot be changed then make it safe and end
+            if (EndOnSolidTiles && entity.CollideCheck<SolidTiles>(entity.Position + (fallingUp ? -Vector2.UnitY : Vector2.UnitY)) && InvertFallingDirFlag == "")
             {
                 entity.Safe |= self.ShouldManageSafe;
                 yield break;
             }
 
             // wait until we can fall again
-            while (entity.CollideCheck<Platform>(entity.Position + (_fallingUp ? -Vector2.UnitY : Vector2.UnitY)))
+            while (entity.CollideCheck<Platform>(entity.Position + (fallingUp ? -Vector2.UnitY : Vector2.UnitY)))
             {
                 yield return 0.1f;
-                // if the block is dependent on the player's gravity and the player is able to trigger it, update _fallingUp
+                // if the block is dependent on the player's gravity and the player is able to trigger it, update fallingUp
                 if (FallType is FallingType.MatchPlayer or FallingType.OppositePlayer && PlayerFallCheck?.Invoke() != false)
-                    _fallingUp = FallType == FallingType.MatchPlayer && GravityHelperModule.ShouldInvertPlayer ||
+                    fallingUp = FallType == FallingType.MatchPlayer && GravityHelperModule.ShouldInvertPlayer ||
                         FallType == FallingType.OppositePlayer && !GravityHelperModule.ShouldInvertPlayer;
             }
         }
