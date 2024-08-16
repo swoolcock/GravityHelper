@@ -27,7 +27,24 @@ public class UpsideDownJumpThru : JumpThru
 
     private Vector2 _shakeOffset;
     private Platform _attachedPlatform;
-    private readonly StaticMover _staticMover;
+    private StaticMover _staticMover;
+
+    public UpsideDownJumpThru(Vector2 position, int width, string overrideTexture, int overrideSoundIndex = -1,
+        bool safe = true, bool attached = false, bool triggerStaticMovers = true, bool invisible = false)
+        : base(position, width, safe)
+    {
+        _modVersion = default;
+        _pluginVersion = default;
+
+        _columns = width / 8;
+        _overrideTexture = overrideTexture;
+        _overrideSoundIndex = overrideSoundIndex;
+        _attached = attached;
+        _triggerStaticMovers = triggerStaticMovers;
+        _invisible = invisible;
+
+        init();
+    }
 
     public UpsideDownJumpThru(EntityData data, Vector2 offset)
         : base(data.Position + offset, data.Width, true)
@@ -42,6 +59,11 @@ public class UpsideDownJumpThru : JumpThru
         _triggerStaticMovers = data.Bool("triggerStaticMovers", true);
         _invisible = data.Bool("invisible", false);
 
+        init();
+    }
+
+    private void init()
+    {
         if (_attached)
         {
             List<Actor> sharedRiders = new();
