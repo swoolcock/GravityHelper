@@ -39,13 +39,8 @@ internal class FallingComponent : Component
     private float _fallDelayRemaining;
 
     private bool _fallingUp;
-    // property to handle falling dir inversion
-    private bool fallingUp
-    {
-        get => _fallingUp ^ (InvertFallingDirFlag != "" && base.Entity.SceneAs<Level>().Session.GetFlag(InvertFallingDirFlag));
 
-        set => _fallingUp = value;
-    }
+    private bool shouldFallUp() => _fallingUp ^ (!string.IsNullOrWhiteSpace(InvertFallingDirFlag) && Entity.SceneAs<Level>().Session.GetFlag(InvertFallingDirFlag));
 
     public new Solid Entity => base.Entity as Solid;
 
@@ -102,6 +97,8 @@ internal class FallingComponent : Component
     {
         if (Entity == null) return;
         var level = Entity.SceneAs<Level>();
+        var fallingUp = shouldFallUp();
+
         for (int x = 2; x < Entity.Width; x += 4)
         {
             var position = new Vector2(Entity.X + x, Entity.Y);
@@ -119,6 +116,8 @@ internal class FallingComponent : Component
     {
         if (Entity == null) return;
         var level = Entity.SceneAs<Level>();
+        var fallingUp = shouldFallUp();
+
         for (int x = 2; x <= Entity.Width; x += 4)
         {
             var offset = new Vector2(x, 3f);
@@ -168,7 +167,7 @@ internal class FallingComponent : Component
         while (true)
         {
             // determine whether we should fall up
-            fallingUp = FallType == FallingType.Up || FallType == FallingType.MatchPlayer && GravityHelperModule.ShouldInvertPlayer || FallType == FallingType.OppositePlayer && !GravityHelperModule.ShouldInvertPlayer;
+            _fallingUp = FallType == FallingType.Up || FallType == FallingType.MatchPlayer && GravityHelperModule.ShouldInvertPlayer || FallType == FallingType.OppositePlayer && !GravityHelperModule.ShouldInvertPlayer;
 
             // start shaking
             self.ShakeSfx?.Invoke();
@@ -190,7 +189,9 @@ internal class FallingComponent : Component
             float maxSpeed = self.FallSpeed;
             while (true)
             {
-                // update the speed
+                // see if we're falling up on this frame
+                var fallingUp = shouldFallUp();
+                // update the velocity
                 vel = Calc.Approach(vel, maxSpeed * (fallingUp ? -1 : 1), 500f * Engine.DeltaTime);
                 // try to move
                 if (!entity.MoveVCollideSolids(vel * Engine.DeltaTime, true))
@@ -205,6 +206,7 @@ internal class FallingComponent : Component
                         // we've fallen out of the screen and should remove the entity
                         entity.Collidable = entity.Visible = false;
                         yield return 0.2f;
+                        // note: make sure we use the same snapshot fallingUp that triggered this code path
                         if (level.Session.MapData.CanTransitionTo(level, new Vector2(entity.Center.X, fallingUp ? (entity.Top - 12f) : (entity.Bottom + 12f))))
                         {
                             yield return 0.2f;
@@ -227,26 +229,26 @@ internal class FallingComponent : Component
             // impact effects
             self.ImpactSfx?.Invoke();
             if (self.ShouldRumble) Input.Rumble(RumbleStrength.Strong, RumbleLength.Medium);
-            level.DirectionalShake(fallingUp ? -Vector2.UnitY : Vector2.UnitY);
+            level.DirectionalShake(shouldFallUp() ? -Vector2.UnitY : Vector2.UnitY);
             entity.StartShaking();
             self.LandParticles?.Invoke();
             yield return 0.2f;
             entity.StopShaking();
 
             // if it's hit the fg tiles and the falling dir cannot be changed then make it safe and end
-            if (EndOnSolidTiles && entity.CollideCheck<SolidTiles>(entity.Position + (fallingUp ? -Vector2.UnitY : Vector2.UnitY)) && InvertFallingDirFlag == "")
+            if (EndOnSolidTiles && entity.CollideCheck<SolidTiles>(entity.Position + (shouldFallUp() ? -Vector2.UnitY : Vector2.UnitY)) && InvertFallingDirFlag == "")
             {
                 entity.Safe |= self.ShouldManageSafe;
                 yield break;
             }
 
             // wait until we can fall again
-            while (entity.CollideCheck<Platform>(entity.Position + (fallingUp ? -Vector2.UnitY : Vector2.UnitY)))
+            while (entity.CollideCheck<Platform>(entity.Position + (shouldFallUp() ? -Vector2.UnitY : Vector2.UnitY)))
             {
                 yield return 0.1f;
-                // if the block is dependent on the player's gravity and the player is able to trigger it, update fallingUp
+                // if the block is dependent on the player's gravity and the player is able to trigger it, update _fallingUp
                 if (FallType is FallingType.MatchPlayer or FallingType.OppositePlayer && PlayerFallCheck?.Invoke() != false)
-                    fallingUp = FallType == FallingType.MatchPlayer && GravityHelperModule.ShouldInvertPlayer ||
+                    _fallingUp = FallType == FallingType.MatchPlayer && GravityHelperModule.ShouldInvertPlayer ||
                         FallType == FallingType.OppositePlayer && !GravityHelperModule.ShouldInvertPlayer;
             }
         }
