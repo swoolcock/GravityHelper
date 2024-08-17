@@ -116,13 +116,13 @@ function gravityDreamBlock.draw(room, entity)
     local parsed, r, g, b, a
 
     parsed, r, g, b = utils.parseHexColor(entity.lineColor or "")
-    if parsed then lineColor = { r, g, b } end
+    if parsed then lineColor = {r, g, b} end
 
     parsed, r, g, b = utils.parseHexColor(entity.backColor or "")
-    if parsed then backColor = { r, g, b } end
+    if parsed then backColor = {r, g, b} end
 
     parsed, r, g, b = utils.parseHexColor(entity.particleColor or "")
-    if parsed then particleColor = { r, g, b } end
+    if parsed then particleColor = {r, g, b} end
 
     -- fill
     r, g, b, a = love.graphics.getColor()
@@ -138,19 +138,17 @@ function gravityDreamBlock.draw(room, entity)
     love.graphics.setScissor(x1, y1, x2 - x1, y2 - y1)
 
     -- find sprites
-    local largeSprite = entity.gravityType == 0 and downArrowSprite or entity.gravityType == 1 and upArrowSprite or
-    doubleArrowSprite
-    local smallSprite = entity.gravityType == 0 and downArrowSmallSprite or
-    entity.gravityType == 1 and upArrowSmallSprite or doubleArrowSmallSprite
+    local largeSprite = entity.gravityType == 0 and downArrowSprite or entity.gravityType == 1 and upArrowSprite or doubleArrowSprite
+    local smallSprite = entity.gravityType == 0 and downArrowSmallSprite or entity.gravityType == 1 and upArrowSmallSprite or doubleArrowSmallSprite
 
     -- set seed
     math.randomseed(entity._id or 1)
-
+    
     -- render particles
     local particleCount = math.floor((entity.width / 8) * (entity.height / 8) * 0.7)
-    for _ = 1, particleCount do
+    for _ = 1,particleCount do
         -- get random values
-        local px, py = math.random(0, entity.width), math.random(0, entity.height)
+        local px,py = math.random(0, entity.width), math.random(0, entity.height)
         local lightness = math.random() - 0.25
         local layer = math.random(0, 6)
         -- calculate visuals

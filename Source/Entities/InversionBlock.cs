@@ -336,8 +336,8 @@ public class InversionBlock : Solid
         var rightColor = activeEdges.HasFlag(Edges.Right) ? activeColor : inactiveColor;
         var topColor = activeEdges.HasFlag(Edges.Top) ? activeColor : inactiveColor;
         var bottomColor = activeEdges.HasFlag(Edges.Bottom) ? activeColor : inactiveColor;
-        int widthInTiles = (int)(Width / tile_size);
-        int heightInTiles = (int)(Height / tile_size);
+        int widthInTiles = (int) (Width / tile_size);
+        int heightInTiles = (int) (Height / tile_size);
 
         // draw 9-patch if we don't have an autotile
         if (_tiles == null)
