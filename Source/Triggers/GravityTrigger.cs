@@ -11,6 +11,7 @@ using Monocle;
 namespace Celeste.Mod.GravityHelper.Triggers;
 
 [CustomEntity("GravityHelper/GravityTrigger")]
+[Tracked(true)]
 public class GravityTrigger : Trigger
 {
     private const float audio_muffle_seconds = 0.2f;

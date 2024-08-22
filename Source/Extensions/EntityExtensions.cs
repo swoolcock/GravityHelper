@@ -63,6 +63,90 @@ internal static class EntityExtensions
         return entities != null && Collide.Check(entity, entities);
     }
 
+    public static bool CollideCheckWhere<TEntity>(this Entity entity, Predicate<TEntity> predicate)
+        where TEntity : Entity
+    {
+        var all = entity.Scene.Tracker.GetEntities<TEntity>();
+
+        foreach (TEntity e in all)
+        {
+            if (entity.CollideCheck(e) && predicate(e))
+                return true;
+        }
+
+        return false;
+    }
+
+    public static bool CollideCheckWhere<TEntity>(this Entity entity, Vector2 at, Predicate<TEntity> predicate)
+        where TEntity : Entity
+    {
+        var all = entity.Scene.Tracker.GetEntities<TEntity>();
+
+        foreach (TEntity e in all)
+        {
+            if (entity.CollideCheck(e, at) && predicate(e))
+                return true;
+        }
+
+        return false;
+    }
+
+    public static bool CollideCheckOutsideWhere<TEntity>(this Entity entity, Vector2 at, Predicate<TEntity> predicate)
+        where TEntity : Entity
+    {
+        var all = entity.Scene.Tracker.GetEntities<TEntity>();
+
+        foreach (TEntity e in all)
+        {
+            if (entity.CollideCheckOutside(e, at) && predicate(e))
+                return true;
+        }
+
+        return false;
+    }
+
+    public static TEntity CollideFirstWhere<TEntity>(this Entity entity, Predicate<TEntity> predicate)
+        where TEntity : Entity
+    {
+        var all = entity.Scene.Tracker.GetEntities<TEntity>();
+
+        foreach (TEntity e in all)
+        {
+            if (entity.CollideCheck(e) && predicate(e))
+                return e;
+        }
+
+        return null;
+    }
+
+    public static TEntity CollideFirstWhere<TEntity>(this Entity entity, Vector2 at, Predicate<TEntity> predicate)
+        where TEntity : Entity
+    {
+        var all = entity.Scene.Tracker.GetEntities<TEntity>();
+
+        foreach (TEntity e in all)
+        {
+            if (entity.CollideCheck(e, at) && predicate(e))
+                return e;
+        }
+
+        return null;
+    }
+
+    public static TEntity CollideFirstOutsideWhere<TEntity>(this Entity entity, Vector2 at, Predicate<TEntity> predicate)
+        where TEntity : Entity
+    {
+        var all = entity.Scene.Tracker.GetEntities<TEntity>();
+
+        foreach (TEntity e in all)
+        {
+            if (entity.CollideCheckOutside(e, at) && predicate(e))
+                return e;
+        }
+
+        return null;
+    }
+
     #endregion
 
     #region UpsideDownJumpThru Collision Helpers

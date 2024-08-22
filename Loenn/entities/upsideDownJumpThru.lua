@@ -18,6 +18,7 @@ local placementData = helpers.createPlacementData('1', {
     texture = "wood",
     attached = false,
     triggerStaticMovers = true,
+    invisible = false,
 })
 
 local upsideDownJumpThru = {
