@@ -20,6 +20,7 @@ local placementData = helpers.createPlacementData('2', {
     fallType = 0,
     climbFall = true,
     endFallOnSolidTiles = true,
+    invertFallingDirFlag = "",
     sound = "event:/char/badeline/disappear",
     autotile = false,
     tiletype = fakeTilesHelper.getPlacementMaterial(),

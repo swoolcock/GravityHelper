@@ -35,6 +35,7 @@ local placementData = helpers.createPlacementData('1', {
     fallType = 0,
     climbFall = true,
     endFallOnSolidTiles = true,
+    invertFallingDirFlag = "",
 })
 
 local gravityDreamBlock = {
