@@ -123,6 +123,7 @@ public class GravityComponent : Component
             var isInverted = CurrentGravity == GravityType.Inverted;
             if (flagValue != isInverted)
             {
+                // TODO: might want to prevent flips if in an opposing gravity field, similar to dash-to-toggle
                 SetGravity(flagValue ? GravityType.Inverted : GravityType.Normal);
             }
         }
