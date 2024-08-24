@@ -1327,7 +1327,16 @@ internal static class PlayerHooks
                         (self.SceneAs<Level>()?.GetActiveController<BehaviorGravityController>()?.DashToToggle ?? false))
                     {
                         GravityRefill.NumberOfCharges = Math.Max(GravityRefill.NumberOfCharges - 1, 0);
-                        GravityHelperModule.PlayerComponent?.SetGravity(GravityType.Toggle);
+                        if (GravityHelperModule.PlayerComponent is not { } playerComponent) return;
+
+                        // abort the gravity change if currently in a field/trigger that's forcing us
+                        // avoids the case of gravity being wrong for one frame
+                        var currentGravity = playerComponent.CurrentGravity;
+
+                        if (!self.CollideCheckWhere<GravityTrigger>(t => t.AffectsPlayer && t.GravityType == currentGravity))
+                        {
+                            playerComponent.SetGravity(GravityType.Toggle);
+                        }
                     }
                 },
             }

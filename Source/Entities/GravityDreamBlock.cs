@@ -47,6 +47,7 @@ public class GravityDreamBlock : DreamBlock
                 ClimbFall = data.Bool("climbFall", true),
                 FallType = fallType,
                 EndOnSolidTiles = data.Bool("endFallOnSolidTiles", true),
+                InvertFallingDirFlag = data.Attr("invertFallingDirFlag", ""),
             });
         }
 

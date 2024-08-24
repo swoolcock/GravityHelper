@@ -74,6 +74,9 @@ public class GravityBumper : Bumper
             sine.Active = false;
         }
 
+        // update the position manually since the sine may have changed since base()
+        UpdatePosition();
+
         var spriteName = _spriteName;
         if (string.IsNullOrWhiteSpace(spriteName))
         {
