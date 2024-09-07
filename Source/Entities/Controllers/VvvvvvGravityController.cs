@@ -17,6 +17,9 @@ public class VvvvvvGravityController : BaseGravityController<VvvvvvGravityContro
     public string FlipSound { get; } = default_flip_sound;
     public bool DisableGrab { get; } = true;
     public bool DisableDash { get; } = true;
+    public bool DisableWallJump { get; } = true;
+    public VvvvvvJumpBehavior SolidTilesBehavior { get; } = VvvvvvJumpBehavior.Flip;
+    public VvvvvvJumpBehavior OtherPlatformBehavior { get; } = VvvvvvJumpBehavior.Flip;
 
     public bool IsVvvvvv => GravityHelperModule.Settings.VvvvvvMode == GravityHelperModuleSettings.VvvvvvSetting.Default
         ? Mode == VvvvvvMode.TriggerBased && GravityHelperModule.Session.VvvvvvTrigger || Mode == VvvvvvMode.On
@@ -46,6 +49,9 @@ public class VvvvvvGravityController : BaseGravityController<VvvvvvGravityContro
         FlipSound = data.Attr("flipSound", FlipSound);
         DisableGrab = data.Bool("disableGrab", DisableGrab);
         DisableDash = data.Bool("disableDash", DisableDash);
+        DisableWallJump = data.Bool("disableWallJump", DisableWallJump);
+        SolidTilesBehavior = data.Enum("solidTilesBehavior", SolidTilesBehavior);
+        OtherPlatformBehavior = data.Enum("otherPlatformBehavior", OtherPlatformBehavior);
     }
 
     public override void Transitioned()
@@ -78,21 +84,51 @@ public class VvvvvvGravityController : BaseGravityController<VvvvvvGravityContro
         var active = ActiveController;
         if (!active.IsVvvvvv) return;
 
-        // greedily consume all jumps
-        var jumpPressed = Input.Jump.Pressed;
-        Input.Jump.ConsumePress();
-
-        // do nothing if we didn't press jump
-        if (!jumpPressed) return;
-
         // set jump buffer, we'll check it afterwards
-        _bufferTimeRemaining = flip_buffer_seconds;
+        if (Input.Jump.Pressed)
+            _bufferTimeRemaining = flip_buffer_seconds;
+
+        // if not on the ground and disable wall jump is true, consume the jump
+        if (active.DisableWallJump && !player.OnGround())
+            Input.Jump.ConsumePress();
     }
 
     public void TryFlip(Player player)
     {
-        // bail if no jump has been buffered
-        if (_bufferTimeRemaining <= 0) return;
+        // bail if no jump has been buffered or if we're not on the ground
+        if (_bufferTimeRemaining <= 0 || !player.OnGround()) return;
+
+        // bail if no active controller somehow
+        if (ActiveController is not { } active) return;
+
+        // if both behaviours are the same then we don't need to check the ground type
+        VvvvvvJumpBehavior behavior = active.SolidTilesBehavior;
+        if (active.SolidTilesBehavior != active.OtherPlatformBehavior)
+        {
+            // find out what type of ground we're on
+            var checkPos = player.Position + (GravityHelperModule.ShouldInvertPlayer ? -Vector2.UnitY : Vector2.UnitY);
+            var onSolidTiles = player.CollideCheck<SolidTiles>(checkPos);
+            var onOtherPlatform = player.CollideCheck<Platform, SolidTiles>(checkPos);
+
+            // priority is Flip > Jump > None
+            if (onSolidTiles && active.SolidTilesBehavior == VvvvvvJumpBehavior.Flip ||
+                onOtherPlatform && active.OtherPlatformBehavior == VvvvvvJumpBehavior.Flip)
+                behavior = VvvvvvJumpBehavior.Flip;
+            else if (onSolidTiles && active.SolidTilesBehavior == VvvvvvJumpBehavior.Jump ||
+                     onOtherPlatform && active.OtherPlatformBehavior == VvvvvvJumpBehavior.Jump)
+                behavior = VvvvvvJumpBehavior.Jump;
+            else
+                behavior = VvvvvvJumpBehavior.None;
+        }
+
+        // jump should bail here
+        if (behavior == VvvvvvJumpBehavior.Jump) return;
+
+        // prevent other jumps from happening
+        Input.Jump.ConsumePress();
+
+        // no jump or flip should occur so just bail
+        if (behavior == VvvvvvJumpBehavior.None) return;
 
         // for now we'll only allow normal state
         if (player.StateMachine != Player.StNormal) return;
@@ -119,7 +155,6 @@ public class VvvvvvGravityController : BaseGravityController<VvvvvvGravityContro
         _bufferTimeRemaining = -1f;
 
         // flip the player
-        var active = ActiveController;
         GravityHelperModule.PlayerComponent?.SetGravity(GravityType.Toggle, instant: true);
 
         // play a sound if we should
@@ -171,5 +206,12 @@ public class VvvvvvGravityController : BaseGravityController<VvvvvvGravityContro
             level.Session.Inventory = inv;
             player.Dashes = player.MaxDashes;
         }
+    }
+
+    public enum VvvvvvJumpBehavior
+    {
+        None,
+        Jump,
+        Flip,
     }
 }

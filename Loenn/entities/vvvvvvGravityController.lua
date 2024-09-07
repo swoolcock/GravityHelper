@@ -11,14 +11,39 @@ local placementData = helpers.createPlacementData('1', {
     flipSound = "event:/gravityhelper/toggle",
     disableGrab = true,
     disableDash = true,
+    disableWallJump = true,
+    solidTilesBehavior = "Flip",
+    otherPlatformBehavior = "Flip",
 })
 
 local vvvvvvGravityController = {
     name = "GravityHelper/VvvvvvGravityController",
     depth = -8500,
     ignoredFields = consts.ignoredFields,
+    fieldOrder = {
+        "x", "y",
+        "flipSound", "mode",
+        "solidTilesBehavior", "otherPlatformBehavior",
+        "disableDash", "disableGrab", "disableWallJump", "persistent"
+    },
     fieldInformation = {
         mode = consts.fieldInformation.vvvvvvMode,
+        solidTilesBehavior = {
+            editable = false,
+            options = {
+                "Flip",
+                "Jump",
+                "None",
+            }
+        },
+        otherPlatformBehavior = {
+            editable = false,
+            options = {
+                "Flip",
+                "Jump",
+                "None",
+            }
+        },
     },
     placements = {
         {

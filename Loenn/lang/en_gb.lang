@@ -290,7 +290,10 @@ entities.GravityHelper/VvvvvvGravityController.attributes.description.persistent
 entities.GravityHelper/VvvvvvGravityController.attributes.description.mode=On, Off, or Trigger-based control. When on, regular jumping is disabled and replaced with instant gravity flipping if on the ground. Defaults to On.
 entities.GravityHelper/VvvvvvGravityController.attributes.description.disableGrab=Whether grabbing should be disabled while vvvvvv mode is enabled. Defaults to true.
 entities.GravityHelper/VvvvvvGravityController.attributes.description.disableDash=Whether dashing should be disabled while vvvvvv mode is enabled. Defaults to true.
+entities.GravityHelper/VvvvvvGravityController.attributes.description.disableWallJump=Whether Madeline should not be able to kick off of walls when next to them. Defaults to true (no wall jumping).
 entities.GravityHelper/VvvvvvGravityController.attributes.description.flipSound=The sound to play when the player flips. Defaults to a custom sound.
+entities.GravityHelper/VvvvvvGravityController.attributes.description.solidTilesBehavior=What rule to apply when vvvvvv mode is enabled and Madeline is standing on SolidTiles. Defaults to Flip.
+entities.GravityHelper/VvvvvvGravityController.attributes.description.otherPlatformBehavior=What rule to apply when vvvvvv mode is enabled and Madeline is standing on something other than SolidTiles. Defaults to Flip.
 
 # VVVVVV Trigger
 triggers.GravityHelper/VvvvvvTrigger.placements.name.enable=VVVVVV Trigger (Enable)
