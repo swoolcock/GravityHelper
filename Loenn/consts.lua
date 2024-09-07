@@ -16,7 +16,7 @@ local function makeOptions(options, defaults, ...)
 end
 
 local consts = {
-    modVersion = "1.2.19",
+    modVersion = "1.2.20",
     ignoredFields = {
         "modVersion",
         "pluginVersion",
