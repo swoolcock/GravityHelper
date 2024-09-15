@@ -294,6 +294,7 @@ entities.GravityHelper/VvvvvvGravityController.attributes.description.disableWal
 entities.GravityHelper/VvvvvvGravityController.attributes.description.flipSound=The sound to play when the player flips. Defaults to a custom sound.
 entities.GravityHelper/VvvvvvGravityController.attributes.description.solidTilesBehavior=What rule to apply when vvvvvv mode is enabled and Madeline is standing on SolidTiles. Defaults to Flip.
 entities.GravityHelper/VvvvvvGravityController.attributes.description.otherPlatformBehavior=What rule to apply when vvvvvv mode is enabled and Madeline is standing on something other than SolidTiles. Defaults to Flip.
+entities.GravityHelper/VvvvvvGravityController.attributes.description.extraJumpsBehavior=What rule to apply when vvvvvv mode is enabled and Madeline consumes an Extended Variants Extra Jump. Defaults to Flip.
 
 # VVVVVV Trigger
 triggers.GravityHelper/VvvvvvTrigger.placements.name.enable=VVVVVV Trigger (Enable)

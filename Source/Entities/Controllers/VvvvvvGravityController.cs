@@ -20,6 +20,7 @@ public class VvvvvvGravityController : BaseGravityController<VvvvvvGravityContro
     public bool DisableWallJump { get; } = true;
     public VvvvvvJumpBehavior SolidTilesBehavior { get; } = VvvvvvJumpBehavior.Flip;
     public VvvvvvJumpBehavior OtherPlatformBehavior { get; } = VvvvvvJumpBehavior.Flip;
+    public VvvvvvJumpBehavior ExtraJumpsBehavior { get; } = VvvvvvJumpBehavior.Flip;
 
     public bool IsVvvvvv => GravityHelperModule.Settings.VvvvvvMode == GravityHelperModuleSettings.VvvvvvSetting.Default
         ? Mode == VvvvvvMode.TriggerBased && GravityHelperModule.Session.VvvvvvTrigger || Mode == VvvvvvMode.On
@@ -34,6 +35,7 @@ public class VvvvvvGravityController : BaseGravityController<VvvvvvGravityContro
 
     private const float flip_buffer_seconds = 0.1f;
     private const string default_flip_sound = "event:/gravityhelper/toggle";
+    private VvvvvvJumpBehavior _lastJumpBehavior = VvvvvvJumpBehavior.Flip;
 
     // ReSharper disable once UnusedMember.Global
     public VvvvvvGravityController()
@@ -52,6 +54,7 @@ public class VvvvvvGravityController : BaseGravityController<VvvvvvGravityContro
         DisableWallJump = data.Bool("disableWallJump", DisableWallJump);
         SolidTilesBehavior = data.Enum("solidTilesBehavior", SolidTilesBehavior);
         OtherPlatformBehavior = data.Enum("otherPlatformBehavior", OtherPlatformBehavior);
+        ExtraJumpsBehavior = data.Enum("extraJumpsBehavior", ExtraJumpsBehavior);
     }
 
     public override void Transitioned()
@@ -77,58 +80,63 @@ public class VvvvvvGravityController : BaseGravityController<VvvvvvGravityContro
         };
     }
 
-    public void CheckJump(Player player)
+    public void TryFlip(Player player)
     {
         if (!Persistent) return;
 
-        var active = ActiveController;
-        if (!active.IsVvvvvv) return;
+        // bail if no active controller somehow
+        if (ActiveController is not { } active || !active.IsVvvvvv) return;
 
         // set jump buffer, we'll check it afterwards
         if (Input.Jump.Pressed)
             _bufferTimeRemaining = flip_buffer_seconds;
 
-        // if not on the ground and disable wall jump is true, consume the jump
-        if (active.DisableWallJump && !player.OnGround())
-            Input.Jump.ConsumePress();
-    }
+        // see if we have any Extended Variant Jumps(TM)
+        int extVarJumps = 0;
+        if (ReflectionCache.ExtendedVariantsJumpCountGetJumpBufferMethodInfo != null)
+            extVarJumps = (int)ReflectionCache.ExtendedVariantsJumpCountGetJumpBufferMethodInfo.Invoke(null, Array.Empty<object>());
 
-    public void TryFlip(Player player)
-    {
-        // bail if no jump has been buffered or if we're not on the ground
-        if (_bufferTimeRemaining <= 0 || !player.OnGround()) return;
+        // on ground or within coyote frames
+        var onGroundChecked = player.OnGround();
+        var onGround = player.onGround || player.jumpGraceTimer > 0;
 
-        // bail if no active controller somehow
-        if (ActiveController is not { } active) return;
-
-        // if both behaviours are the same then we don't need to check the ground type
-        VvvvvvJumpBehavior behavior = active.SolidTilesBehavior;
-        if (active.SolidTilesBehavior != active.OtherPlatformBehavior)
+        // find out what type of ground we're on
+        if (onGroundChecked)
         {
-            // find out what type of ground we're on
             var checkPos = player.Position + (GravityHelperModule.ShouldInvertPlayer ? -Vector2.UnitY : Vector2.UnitY);
             var onSolidTiles = player.CollideCheck<SolidTiles>(checkPos);
             var onOtherPlatform = player.CollideCheck<Platform, SolidTiles>(checkPos);
-
-            // priority is Flip > Jump > None
-            if (onSolidTiles && active.SolidTilesBehavior == VvvvvvJumpBehavior.Flip ||
-                onOtherPlatform && active.OtherPlatformBehavior == VvvvvvJumpBehavior.Flip)
-                behavior = VvvvvvJumpBehavior.Flip;
-            else if (onSolidTiles && active.SolidTilesBehavior == VvvvvvJumpBehavior.Jump ||
-                     onOtherPlatform && active.OtherPlatformBehavior == VvvvvvJumpBehavior.Jump)
-                behavior = VvvvvvJumpBehavior.Jump;
-            else
-                behavior = VvvvvvJumpBehavior.None;
+            var solidTilesBehavior = onSolidTiles ? active.SolidTilesBehavior : VvvvvvJumpBehavior.None;
+            var otherPlatformBehavior = onOtherPlatform ? active.OtherPlatformBehavior : VvvvvvJumpBehavior.None;
+            _lastJumpBehavior = (VvvvvvJumpBehavior)Math.Max((int)solidTilesBehavior, (int)otherPlatformBehavior);
+        }
+        else if (!onGround)
+        {
+            _lastJumpBehavior = extVarJumps > 0 ? active.ExtraJumpsBehavior : VvvvvvJumpBehavior.Jump;
         }
 
-        // jump should bail here
-        if (behavior == VvvvvvJumpBehavior.Jump) return;
+        // if we're flipping or if we're not on checked ground and we're disabling walljumps, consume the jumps
+        var canUnDuck = player.CanUnDuck;
+        var consumed = false;
+        if (active.DisableWallJump && !onGroundChecked && !onGround && canUnDuck &&
+            (player.WallJumpCheck(-1) || player.WallJumpCheck(1)))
+        {
+            Input.Jump.ConsumePress();
+            consumed = true;
+        }
 
-        // prevent other jumps from happening
-        Input.Jump.ConsumePress();
+        // bail if no jump has been buffered
+        if (_bufferTimeRemaining <= 0) return;
 
-        // no jump or flip should occur so just bail
-        if (behavior == VvvvvvJumpBehavior.None) return;
+        // jump should bail here so that Player.orig_Update can handle it
+        if (_lastJumpBehavior == VvvvvvJumpBehavior.Jump) return;
+
+        // we must consume jumps here if not already
+        if (!consumed)
+            Input.Jump.ConsumePress();
+
+        // none should bail here
+        if (_lastJumpBehavior == VvvvvvJumpBehavior.None) return;
 
         // for now we'll only allow normal state
         if (player.StateMachine != Player.StNormal) return;
@@ -136,17 +144,9 @@ public class VvvvvvGravityController : BaseGravityController<VvvvvvGravityContro
         // never allow from dream jumps
         if (player.dreamJump) return;
 
-        // on ground or within coyote frames
-        var onGround = player.onGround || player.jumpGraceTimer > 0;
-
-        // if we're not on ground, see if we have any Extended Variant Jumps(TM)
-        int extVarJumps = 0;
-        if (!onGround && ReflectionCache.ExtendedVariantsJumpCountGetJumpBufferMethodInfo != null)
-            extVarJumps = (int)ReflectionCache.ExtendedVariantsJumpCountGetJumpBufferMethodInfo.Invoke(null, Array.Empty<object>());
-
-        // consume an Extended Variant Jump(TM) if we can
-        if (extVarJumps > 0)
-            ReflectionCache.ExtendedVariantsJumpCountSetJumpCountMethodInfo?.Invoke(null, new object[] { extVarJumps - 1, false });
+        // consume an Extended Variant Jump(TM) if we need to
+        if (!onGround && extVarJumps > 0)
+            ReflectionCache.ExtendedVariantsJumpCountSetJumpCountMethodInfo?.Invoke(null, [extVarJumps - 1, false]);
         // otherwise bail if we're not on ground
         else if (!onGround)
             return;
