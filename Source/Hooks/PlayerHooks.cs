@@ -1516,10 +1516,6 @@ internal static class PlayerHooks
         // vvvvvv should be ignored if paused or in cutscene
         if (!level.InCutscene && !level.Paused && self.Scene.GetPersistentController<VvvvvvGravityController>() is { } vvvvvvController)
         {
-            // CheckJump() will consume jump and set a buffer time
-            vvvvvvController.CheckJump(self);
-            // TryFlip() will check Player.onGround to ensure Madeline has been on the ground for at least one frame
-            // this ensures her dash and stamina refills
             vvvvvvController.TryFlip(self);
         }
 

@@ -14,6 +14,7 @@ local placementData = helpers.createPlacementData('1', {
     disableWallJump = true,
     solidTilesBehavior = "Flip",
     otherPlatformBehavior = "Flip",
+    extraJumpsBehavior = "Flip",
 })
 
 local vvvvvvGravityController = {
@@ -24,7 +25,8 @@ local vvvvvvGravityController = {
         "x", "y",
         "flipSound", "mode",
         "solidTilesBehavior", "otherPlatformBehavior",
-        "disableDash", "disableGrab", "disableWallJump", "persistent"
+        "extraJumpsBehavior", "disableDash", "disableGrab",
+        "disableWallJump", "persistent"
     },
     fieldInformation = {
         mode = consts.fieldInformation.vvvvvvMode,
@@ -37,6 +39,14 @@ local vvvvvvGravityController = {
             }
         },
         otherPlatformBehavior = {
+            editable = false,
+            options = {
+                "Flip",
+                "Jump",
+                "None",
+            }
+        },
+        extraJumpsBehavior = {
             editable = false,
             options = {
                 "Flip",
