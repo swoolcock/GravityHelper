@@ -59,9 +59,6 @@ internal static class ReflectionCache
     public static Type MaddyCrownModuleType { get; private set; }
     public static Type FrostHelperCustomSpringType { get; private set; }
     public static Type OutbackHelperPortalType { get; private set; }
-    public static Type CatelineModuleType { get; private set; }
-    public static FieldInfo CatelineModuleInstanceFieldInfo { get; private set; }
-    public static FieldInfo CatelineModuleTailNodesFieldInfo { get; private set; }
     public static Type CommunalHelperConnectedSolidType { get; private set; }
     public static Type CommunalHelperTimedTriggerSpikesType { get; private set; }
     public static Type ExtendedVariantsDashTrailAllTheTimeType { get; private set; }
@@ -71,7 +68,6 @@ internal static class ReflectionCache
     public static MethodInfo ExtendedVariantsJumpCountGetJumpBufferMethodInfo { get; private set; }
     public static MethodInfo ExtendedVariantsJumpCountSetJumpCountMethodInfo { get; private set; }
     public static Type StaminaMeterSmallStaminaMeterDisplayType { get; private set; }
-    public static Type BunnelineModuleType { get; private set; }
     public static Type CelesteNetGhostType { get; private set; }
     public static Type CelesteNetGhostNameTagType { get; private set; }
     public static Type CelesteNetGhostEmoteType { get; private set; }
@@ -88,9 +84,6 @@ internal static class ReflectionCache
         MaddieHelpingHandGroupedTriggerSpikesType = GetModdedTypeByName("MaxHelpingHand", "Celeste.Mod.MaxHelpingHand.Entities.GroupedTriggerSpikes");
         FrostHelperCustomSpringType = GetModdedTypeByName("FrostHelper", "FrostHelper.CustomSpring");
         OutbackHelperPortalType = GetModdedTypeByName("OutbackHelper", "Celeste.Mod.OutbackHelper.Portal");
-        CatelineModuleType = GetModdedTypeByName("Cateline", "Celeste.Mod.Cateline.CatelineModule");
-        CatelineModuleInstanceFieldInfo = CatelineModuleType?.GetField("Instance", BindingFlags.Static | BindingFlags.Public);
-        CatelineModuleTailNodesFieldInfo = CatelineModuleType?.GetField("tailNodes", BindingFlags.Instance | BindingFlags.NonPublic);
         CommunalHelperConnectedSolidType = GetModdedTypeByName("CommunalHelper", "Celeste.Mod.CommunalHelper.ConnectedSolid");
         CommunalHelperTimedTriggerSpikesType = GetModdedTypeByName("CommunalHelper", "Celeste.Mod.CommunalHelper.Entities.TimedTriggerSpikes");
         ExtendedVariantsDashTrailAllTheTimeType = GetModdedTypeByName("ExtendedVariantMode", "ExtendedVariants.Variants.DashTrailAllTheTime");
@@ -100,7 +93,6 @@ internal static class ReflectionCache
         ExtendedVariantsJumpCountGetJumpBufferMethodInfo = ExtendedVariantsJumpCountType?.GetMethod("GetJumpBuffer", BindingFlags.Public | BindingFlags.Static);
         ExtendedVariantsJumpCountSetJumpCountMethodInfo = ExtendedVariantsJumpCountType?.GetMethod("SetJumpCount", BindingFlags.Public | BindingFlags.Static);
         StaminaMeterSmallStaminaMeterDisplayType = GetModdedTypeByName("StaminaMeter", "Celeste.Mod.StaminaMeter.SmallStaminaMeterDisplay");
-        BunnelineModuleType = GetModdedTypeByName("Bunneline", "Celeste.Mod.Bunneline.BunnelineModule");
         CelesteNetGhostType = GetModdedTypeByName("CelesteNet.Client", "Celeste.Mod.CelesteNet.Client.Entities.Ghost");
         CelesteNetGhostNameTagType = GetModdedTypeByName("CelesteNet.Client", "Celeste.Mod.CelesteNet.Client.Entities.GhostNameTag");
         CelesteNetGhostEmoteType = GetModdedTypeByName("CelesteNet.Client", "Celeste.Mod.CelesteNet.Client.Entities.GhostEmote");
