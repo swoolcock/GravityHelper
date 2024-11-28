@@ -1312,7 +1312,6 @@ internal static class PlayerHooks
         orig(self, position, spriteMode);
 
         BadelineOldsiteHooks.ChaserStateGravity.Clear();
-        GravityRefill.NumberOfCharges = 0;
 
         self.Add(new TransitionListener
             {
@@ -1323,11 +1322,11 @@ internal static class PlayerHooks
             {
                 OnDash = _ =>
                 {
-                    if (GravityRefill.NumberOfCharges > 0 ||
+                    if (GravityHelperModule.PlayerComponent is not { } playerComponent) return;
+                    if (playerComponent.GravityCharges > 0 ||
                         (self.SceneAs<Level>()?.GetActiveController<BehaviorGravityController>()?.DashToToggle ?? false))
                     {
-                        GravityRefill.NumberOfCharges = Math.Max(GravityRefill.NumberOfCharges - 1, 0);
-                        if (GravityHelperModule.PlayerComponent is not { } playerComponent) return;
+                        playerComponent.ConsumeGravityCharge();
 
                         // abort the gravity change if currently in a field/trigger that's forcing us
                         // avoids the case of gravity being wrong for one frame

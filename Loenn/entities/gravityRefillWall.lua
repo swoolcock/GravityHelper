@@ -8,7 +8,7 @@ local colors = require("consts.xna_colors")
 local drawableSprite = require("structs.drawable_sprite")
 local drawableRectangle = require("structs.drawable_rectangle")
 
-local placementData = helpers.createPlacementData('1', {
+local placementData = helpers.createPlacementData('2', {
     width = 8,
     height = 8,
     charges = 1,
@@ -18,6 +18,7 @@ local placementData = helpers.createPlacementData('1', {
     refillsStamina = true,
     respawnTime = 2.5,
     wallAlpha = 0.8,
+    legacyRefillBehavior = false,
 })
 
 local gravityRefillWall = {
@@ -37,6 +38,13 @@ local gravityRefillWall = {
         wallAlpha = {
             fieldType = "number",
         },
+    },
+    fieldOrder = {
+        "x", "y",
+        "width", "height",
+        "charges", "respawnTime",
+        "dashes", "refillsDash", "refillsStamina",
+        "wallAlpha", "oneUse", "legacyRefillBehavior",
     },
     placements = {
         {

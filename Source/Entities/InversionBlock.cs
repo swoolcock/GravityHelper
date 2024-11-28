@@ -484,7 +484,7 @@ public class InversionBlock : Solid
         if (_cooldownTimeRemaining > 0) return false;
         if (_blockUsed && BlockOneUse) return false;
 
-        if (!hasPlayerRiderOrBuffered(player) || Scene is not Level level) return false;
+        if (!hasPlayerRiderOrBuffered(player) || Scene is not Level level || GravityHelperModule.PlayerComponent is not { } playerComponent) return false;
 
         var currentGravity = player.GetGravity();
         var activeEdges = ActiveEdges;
@@ -639,16 +639,17 @@ public class InversionBlock : Solid
         if (_respawnTimeRemaining <= 0 && (!_refillUsed || !RefillOneUse) && (RefillDashCount > 0 || GiveGravityRefill))
         {
             var targetDashes = Math.Max(RefillDashCount, player.Dashes);
-            var targetGravityRefills = Math.Max(GravityRefill.NumberOfCharges, GiveGravityRefill ? 1 : 0);
+
+            var targetGravityRefills = Math.Max(playerComponent.GravityCharges, GiveGravityRefill ? 1 : 0);
             var staminaWarning = player.Stamina < 20;
 
-            if (targetDashes > player.Dashes || targetGravityRefills > GravityRefill.NumberOfCharges || staminaWarning)
+            if (targetDashes > player.Dashes || targetGravityRefills > playerComponent.GravityCharges || staminaWarning)
             {
                 _refillUsed = true;
                 _respawnTimeRemaining = RefillRespawnTime;
                 player.Dashes = targetDashes;
                 player.RefillStamina();
-                GravityRefill.NumberOfCharges = targetGravityRefills;
+                playerComponent.RefillGravityCharges(targetGravityRefills);
                 Audio.Play(RefillDashCount == 2 ? "event:/new_content/game/10_farewell/pinkdiamond_touch" : "event:/game/general/diamond_touch", Position);
                 if (_refillSprite != null)
                     _refillSprite.Visible = false;

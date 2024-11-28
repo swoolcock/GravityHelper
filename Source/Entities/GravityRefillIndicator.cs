@@ -35,7 +35,8 @@ public class GravityRefillIndicator : Entity
             return;
         }
 
-        var hasCharges = GravityRefill.NumberOfCharges > 0;
+        var charges = GravityHelperModule.PlayerComponent?.GravityCharges ?? 0;
+        var hasCharges = charges > 0;
         var offset = new Vector2(0, GravityHelperModule.ShouldInvertPlayer ? 20f : -20f);
         Position = player.Position + offset;
         Visible = hasCharges;
@@ -58,7 +59,7 @@ public class GravityRefillIndicator : Entity
     {
         if (!_sprite.Animating) return;
 
-        var numberOfCharges = GravityRefill.NumberOfCharges;
+        var numberOfCharges = GravityHelperModule.PlayerComponent?.GravityCharges ?? 0;
         if (numberOfCharges == 0) return;
 
         var rows = (int)Math.Ceiling(numberOfCharges / (float)columns);

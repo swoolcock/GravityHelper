@@ -5,13 +5,14 @@ local utils = require("utils")
 local consts = require("mods").requireFromPlugin("consts")
 local helpers = require("mods").requireFromPlugin("helpers")
 
-local placementData = helpers.createPlacementData('1', {
+local placementData = helpers.createPlacementData('2', {
     charges = 1,
     dashes = -1,
     oneUse = false,
     refillsDash = true,
     refillsStamina = true,
     respawnTime = 2.5,
+    legacyRefillBehavior = false,
 })
 
 local gravityRefill = {
@@ -28,6 +29,12 @@ local gravityRefill = {
         respawnTime = {
             fieldType = "number",
         },
+    },
+    fieldOrder = {
+        "x", "y",
+        "charges", "respawnTime",
+        "dashes", "refillsDash", "refillsStamina",
+        "oneUse", "legacyRefillBehavior",
     },
     placements = {
         {
