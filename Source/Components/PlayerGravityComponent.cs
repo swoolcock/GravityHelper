@@ -181,6 +181,7 @@ internal class PlayerGravityComponent : GravityComponent
     public override void Update()
     {
         _refilledThisFrame = false;
+        base.Update();
     }
 
     public void RefillGravityCharges(int charges = 1, bool retainChargeThisFrame = true)
