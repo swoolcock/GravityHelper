@@ -13,6 +13,9 @@ internal class PlayerGravityComponent : GravityComponent
     public static readonly string PLAYER_FLAG = "GravityHelper_PlayerInverted";
 
     public GravityType PreDreamBlockGravityType { get; set; }
+    public int GravityCharges { get; set; }
+    private bool _refilledThisFrame;
+
     public new Player Entity => base.Entity as Player;
 
     public PlayerGravityComponent()
@@ -173,5 +176,22 @@ internal class PlayerGravityComponent : GravityComponent
         // only clear the cache if it's ourselves
         if (GravityHelperModule.PlayerComponent == this)
             GravityHelperModule.PlayerComponent = null;
+    }
+
+    public override void Update()
+    {
+        _refilledThisFrame = false;
+        base.Update();
+    }
+
+    public void RefillGravityCharges(int charges = 1, bool retainChargeThisFrame = true)
+    {
+        GravityCharges = charges;
+        _refilledThisFrame |= retainChargeThisFrame;
+    }
+
+    public void ConsumeGravityCharge()
+    {
+        if (!_refilledThisFrame) GravityCharges = Math.Max(GravityCharges - 1, 0);
     }
 }

@@ -159,6 +159,7 @@ public class GravityHelperModule : EverestModule
             JumpThruHooks.Unload();
             LevelHooks.Unload();
             MoveBlockHooks.Unload();
+            PlatformHooks.Unload();
             PlayerDeadBodyHooks.Unload();
             PlayerHairHooks.Unload();
             PlayerHooks.Unload();
@@ -216,6 +217,7 @@ public class GravityHelperModule : EverestModule
             JumpThruHooks.Load();
             LevelHooks.Load();
             MoveBlockHooks.Load();
+            PlatformHooks.Load();
             PlayerDeadBodyHooks.Load();
             PlayerHairHooks.Load();
             PlayerHooks.Load();

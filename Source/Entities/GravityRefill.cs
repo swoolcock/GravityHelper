@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using Celeste.Mod.Entities;
+using Celeste.Mod.GravityHelper.Components;
 using Celeste.Mod.GravityHelper.Extensions;
 using JetBrains.Annotations;
 using Microsoft.Xna.Framework;
@@ -71,13 +72,9 @@ public class GravityRefill : Entity
     private float _wallAlpha = 0.8f;
     private WallRenderMode _wallRenderMode;
 
-    private const string gravity_toggle_charges = "GravityHelper_toggle_charges";
-
-    public static int NumberOfCharges
-    {
-        get => (Engine.Scene as Level)?.Session.GetCounter(gravity_toggle_charges) ?? 0;
-        set => (Engine.Scene as Level)?.Session.SetCounter(gravity_toggle_charges, value);
-    }
+    // if set to true, dashing over the top of a gravity refill
+    // while Madeline already has a charge will not refund it
+    private bool _legacyRefillBehavior;
 
     internal GravityRefill(Vector2 position, bool twoDashes, bool oneUse) : base(position)
     {
@@ -114,6 +111,7 @@ public class GravityRefill : Entity
         RefillsStamina = data.Bool("refillsStamina", true);
         RespawnTime = data.Float("respawnTime", 2.5f);
         _wallAlpha = data.Float("wallAlpha", 0.8f);
+        _legacyRefillBehavior = data.Bool("legacyRefillBehavior", true);
 
         init(data.ID, data.Width, data.Height);
     }
@@ -308,10 +306,12 @@ public class GravityRefill : Entity
 
     private void OnPlayer(Player player)
     {
+        if (player.Get<PlayerGravityComponent>() is not { } playerGravityComponent) return;
+
         var dashes = Dashes < 0 ? player.MaxDashes : Dashes;
         bool canUse = RefillsDash && player.Dashes < dashes ||
                       RefillsStamina && player.Stamina < 20 ||
-                      NumberOfCharges < Charges;
+                      playerGravityComponent.GravityCharges < Charges;
 
         if (!canUse) return;
 
@@ -321,7 +321,7 @@ public class GravityRefill : Entity
             player.Dashes = Dashes;
 
         if (RefillsStamina) player.RefillStamina();
-        NumberOfCharges = Charges;
+        playerGravityComponent.RefillGravityCharges(Charges, !_legacyRefillBehavior);
 
         Audio.Play("event:/game/general/diamond_touch", Position);
         Input.Rumble(RumbleStrength.Medium, RumbleLength.Medium);

@@ -197,6 +197,8 @@ public class GravityLine : Entity
 
     public override void Added(Scene scene)
     {
+        base.Added(scene);
+
         // if the line is less than 8 pixels in length, log a warning and remove ourselves
         if (TargetOffset.LengthSquared() < 8 * 8)
         {
@@ -204,8 +206,6 @@ public class GravityLine : Entity
             RemoveSelf();
             return;
         }
-
-        base.Added(scene);
 
         if (_defaultToController && Scene.GetActiveController<VisualGravityController>() is { } visualController)
         {
