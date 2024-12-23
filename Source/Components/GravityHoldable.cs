@@ -1,6 +1,7 @@
 // Copyright (c) Shane Woolcock. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+using Celeste.Mod.GravityHelper.Entities;
 using Celeste.Mod.GravityHelper.Entities.Controllers;
 using Celeste.Mod.GravityHelper.Extensions;
 using Celeste.Mod.GravityHelper.Triggers;
@@ -96,6 +97,12 @@ public class GravityHoldable : Component
             SetGravityHeld();
         else if (InvertTime > 0 && _invertTimeRemaining > 0 && gravityComponent.CurrentGravity == GravityType.Inverted)
         {
+            // if the holdable is within a trigger/field that should keep it inverted, reset the inversion time
+            if (Entity.CollideCheckWhere<GravityTrigger>(f => f.GravityType == GravityType.Inverted && f.AffectsHoldableActors))
+            {
+                ResetInvertTime();
+                return;
+            }
             _invertTimeRemaining -= Engine.DeltaTime;
             if (_invertTimeRemaining <= 0)
                 gravityComponent.SetGravity(GravityType.Normal);
