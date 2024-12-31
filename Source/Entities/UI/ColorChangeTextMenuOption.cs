@@ -11,7 +11,7 @@ internal class ColorChangeTextMenuOption<T> : TextMenu.Option<T> where T : struc
     public T DefaultValue;
     public Color ChangedUnselectedColor = Color.Goldenrod;
 
-    private int _lastFrameIndex;
+    private int _lastFrameIndex = int.MinValue;
 
     public ColorChangeTextMenuOption(string label, T defaultValue = default) : base(label)
     {
@@ -20,7 +20,7 @@ internal class ColorChangeTextMenuOption<T> : TextMenu.Option<T> where T : struc
 
     public override void Render(Vector2 position, bool highlighted)
     {
-        if (_lastFrameIndex != Index)
+        if (_lastFrameIndex == int.MinValue || _lastFrameIndex != Index)
         {
             _lastFrameIndex = Index;
             UpdateUnselectedColor();
