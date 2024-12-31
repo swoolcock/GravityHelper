@@ -93,4 +93,16 @@ public static class GravityHelperExports
         GravityHelperModule.OverrideSemaphore++;
         return new InvokeOnDispose(() => GravityHelperModule.OverrideSemaphore--);
     }
+
+    public static Color GetColor(int gravityType) =>
+        (GravityHelperModule.Settings.GetColorScheme() ?? GravityColorScheme.Classic)[(GravityType)gravityType];
+
+    public static Color GetNormalColor() =>
+        (GravityHelperModule.Settings.GetColorScheme() ?? GravityColorScheme.Classic).NormalColor;
+
+    public static Color GetInvertedColor() =>
+        (GravityHelperModule.Settings.GetColorScheme() ?? GravityColorScheme.Classic).InvertedColor;
+
+    public static Color GetToggleColor() =>
+        (GravityHelperModule.Settings.GetColorScheme() ?? GravityColorScheme.Classic).ToggleColor;
 }

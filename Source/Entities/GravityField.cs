@@ -316,17 +316,14 @@ public class GravityField : GravityTrigger, IConnectableField
         if (_fieldGroup == null)
         {
             scene.Add(buildFieldGroup(scene));
-            if (_fieldGroup != null)
-            {
-                foreach (var field in _fieldGroup.Fields)
-                    field.configure(scene);
-                _fieldGroup.CreateComponents(_fieldGroup.Fields);
-            }
+            _fieldGroup?.RebuildComponents(scene);
         }
     }
 
     private void configure(Scene scene)
     {
+        if (scene == null) return;
+
         if (_defaultToController && scene.GetActiveController<VisualGravityController>() is { } visualController)
         {
             _arrowOpacity = visualController.FieldArrowOpacity.Clamp(0f, 1f);
@@ -352,6 +349,12 @@ public class GravityField : GravityTrigger, IConnectableField
         FlashOnTrigger = _flashOnTrigger;
         ShowParticles = _showParticles;
         ParticleDensity = Math.Clamp(_particleDensity, 0, 8);
+
+        // accessibility settings
+        ShowParticles &= GravityHelperModule.Settings.FieldParticles;
+
+        if (GravityHelperModule.Settings.GetColorScheme() is { } colorScheme)
+            FieldColor = colorScheme[GravityType] * _fieldOpacity;
 
         if (_defaultToController && scene.GetActiveController<SoundGravityController>() is { } soundController)
         {
@@ -455,7 +458,9 @@ public class GravityField : GravityTrigger, IConnectableField
         var top = level.Camera.Top;
         var bottom = level.Camera.Bottom;
 
-        if (Collidable && shouldDrawField && (cassetteIndex < 0 || cassetteState >= CassetteStates.On))
+        var shouldDrawParticles = GravityHelperModule.Settings.FieldParticles && shouldDrawField;
+
+        if (Collidable && shouldDrawParticles && (cassetteIndex < 0 || cassetteState >= CassetteStates.On))
         {
             var color = ParticleColor * _particleOpacity * opacity;
             foreach (Vector2 particle in _particles)
@@ -568,6 +573,14 @@ public class GravityField : GravityTrigger, IConnectableField
         public GravityFieldGroup(GravityField owner)
         {
             Owner = owner;
+            Add(new AccessibilityListener(() => RebuildComponents(Scene, true)));
+        }
+
+        public void RebuildComponents(Scene scene, bool forceRebuild = false)
+        {
+            foreach (var field in Fields)
+                field.configure(scene);
+            CreateComponents(Fields, forceRebuild);
         }
     }
 

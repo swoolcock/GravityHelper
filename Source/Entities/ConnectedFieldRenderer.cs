@@ -33,7 +33,7 @@ public class ConnectedFieldRenderer<TEntity> : Entity
             fieldGroup.OnRenderBloom();
     }
 
-    public void CreateComponents(IEnumerable<TEntity> entities)
+    public void CreateComponents(IEnumerable<TEntity> entities, bool forceRebuild = false)
     {
         Remove(Components
             .GetAll<FieldGroupRenderer>()
@@ -42,6 +42,16 @@ public class ConnectedFieldRenderer<TEntity> : Entity
             .GroupBy(e => e.FieldColor)
             .Select(g => new FieldGroupRenderer(g.Key, g))
             .ToArray<Component>());
+
+        if (forceRebuild)
+        {
+            foreach (FieldGroupRenderer renderer in Components.GetAll<FieldGroupRenderer>())
+            {
+                renderer.ensureTiles(Scene);
+                renderer.rebuildEdges();
+                renderer.updateEdges();
+            }
+        }
     }
 
     public void ForEachTile(Action<int, int, FieldGroupRenderer> action)
@@ -103,7 +113,7 @@ public class ConnectedFieldRenderer<TEntity> : Entity
             _list.Clear();
         }
 
-        private bool ensureTiles(Scene scene)
+        internal bool ensureTiles(Scene scene)
         {
             if (Tiles == null && scene is Level level)
             {
@@ -136,7 +146,7 @@ public class ConnectedFieldRenderer<TEntity> : Entity
             updateEdges();
         }
 
-        private void updateEdges()
+        internal void updateEdges()
         {
             Camera camera = SceneAs<Level>().Camera;
             Rectangle view = new Rectangle((int) camera.Left - 4, (int) camera.Top - 4,
@@ -158,11 +168,11 @@ public class ConnectedFieldRenderer<TEntity> : Entity
             }
         }
 
-        private void rebuildEdges()
+        internal void rebuildEdges()
         {
             _dirty = false;
             _edges.Clear();
-            if (_list.Count == 0 || Tiles == null)
+            if (!GravityHelperModule.Settings.FieldEdges || _list.Count == 0 || Tiles == null)
                 return;
 
             Point[] pointArray =

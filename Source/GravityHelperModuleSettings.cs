@@ -7,10 +7,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Celeste.Mod.GravityHelper.Components;
 using Celeste.Mod.GravityHelper.Entities.Controllers;
 using Celeste.Mod.GravityHelper.Entities.UI;
 using Celeste.Mod.GravityHelper.Extensions;
 using FMOD.Studio;
+using Microsoft.Xna.Framework;
 using Monocle;
 
 namespace Celeste.Mod.GravityHelper;
@@ -27,6 +29,15 @@ public class GravityHelperModuleSettings : EverestModuleSettings
     public bool ReplaceRefills { get; set; }
     public bool MHHUDJTCornerCorrection { get; set; } = true;
     public ButtonBinding ToggleInvertGravity { get; set; }
+
+    // accessibility
+    public ArrowSetting SpringArrowType { get; set; }
+    public ArrowSetting FieldArrowType { get; set; }
+    public bool FieldEdges { get; set; }
+    public bool FieldParticles { get; set; }
+    public int FieldOpacity { get; set; } = -1;
+    public ColorSchemeSetting ColorSchemeType { get; set; }
+    public GravityColorScheme CustomColorScheme { get; set; }
 
     // default to zero to indicate this is the first execution since versioning was introduced
     public int SettingsVersion { get; set; }
@@ -49,6 +60,18 @@ public class GravityHelperModuleSettings : EverestModuleSettings
         Enabled,
     }
 
+    public enum ForceBoolSetting
+    {
+        [SettingsEnumCase("GRAVITYHELPER_ENUM_FORCEBOOL_DEFAULT")]
+        Default,
+
+        [SettingsEnumCase("GRAVITYHELPER_ENUM_FORCEBOOL_DISABLED")]
+        Disabled,
+
+        [SettingsEnumCase("GRAVITYHELPER_ENUM_FORCEBOOL_ENABLED")]
+        Enabled,
+    }
+
     public enum ControlSchemeSetting
     {
         [SettingsEnumCase("GRAVITYHELPER_ENUM_CONTROL_SCHEME_ABSOLUTE")]
@@ -57,6 +80,33 @@ public class GravityHelperModuleSettings : EverestModuleSettings
         [SettingsEnumCase("GRAVITYHELPER_ENUM_CONTROL_SCHEME_RELATIVE")]
         Relative,
     }
+
+    public enum ArrowSetting
+    {
+        [SettingsEnumCase("GRAVITYHELPER_ENUM_ARROWSETTING_DEFAULT")]
+        Default,
+        Small,
+        Large,
+        None,
+    }
+
+    public enum ColorSchemeSetting
+    {
+        [SettingsEnumCase("GRAVITYHELPER_ENUM_COLORSCHEMESETTING_DEFAULT")]
+        Default,
+        Classic,
+        Colorblind,
+        Custom,
+    }
+
+    internal GravityColorScheme? GetColorScheme() => ColorSchemeType switch
+    {
+        ColorSchemeSetting.Default => null,
+        ColorSchemeSetting.Classic => GravityColorScheme.Classic,
+        ColorSchemeSetting.Colorblind => GravityColorScheme.Colorblind,
+        ColorSchemeSetting.Custom => CustomColorScheme,
+        _ => throw new ArgumentOutOfRangeException()
+    };
 
     public void CreateModMenuSection(TextMenu menu, bool inGame, EventInstance snapshot)
     {
@@ -166,6 +216,67 @@ public class GravityHelperModuleSettings : EverestModuleSettings
             Index = (int)FeatherControlScheme,
             OnValueChange = value => FeatherControlScheme = value,
         }, Dialog.Clean("GRAVITYHELPER_MENU_FEATHER_CONTROL_SCHEME_SUBTEXT"));
+
+        // Accessibility Subheader
+        menu.AddSubHeader("GRAVITYHELPER_MENU_SUBHEADER_ACCESSIBILITY");
+
+        // Spring Arrows
+        menu.Add(new ColorChangeTextMenuOption<ArrowSetting>(Dialog.Clean("GRAVITYHELPER_MENU_ACCESS_SPRING_ARROWS"))
+        {
+            Values = getEnumOptions<ArrowSetting>().ToList(),
+            Index = (int)SpringArrowType,
+            OnValueChange = value =>
+            {
+                SpringArrowType = value;
+                NotifyAccessibilityChange();
+            },
+        });
+
+        // Field Arrows
+        menu.Add(new ColorChangeTextMenuOption<ArrowSetting>(Dialog.Clean("GRAVITYHELPER_MENU_ACCESS_FIELD_ARROWS"))
+        {
+            Values = getEnumOptions<ArrowSetting>().ToList(),
+            Index = (int)FieldArrowType,
+            OnValueChange = value =>
+            {
+                FieldArrowType = value;
+                NotifyAccessibilityChange();
+            },
+        });
+
+        // Field Edges
+        menu.Add(new ColorChangeOnOff(Dialog.Clean("GRAVITYHELPER_MENU_ACCESS_FIELD_EDGES"), FieldEdges, true)
+        {
+            OnValueChange = value =>
+            {
+                FieldEdges = value;
+                NotifyAccessibilityChange();
+            },
+        });
+
+        // Field Particles
+        menu.Add(new ColorChangeOnOff(Dialog.Clean("GRAVITYHELPER_MENU_ACCESS_FIELD_PARTICLES"), FieldParticles, true)
+        {
+            OnValueChange = value =>
+            {
+                FieldParticles = value;
+                NotifyAccessibilityChange();
+            },
+        });
+
+        // Field Opacity
+
+        // Colour Scheme
+        menu.Add(new ColorChangeTextMenuOption<ColorSchemeSetting>(Dialog.Clean("GRAVITYHELPER_MENU_ACCESS_COLOR_SCHEME"))
+        {
+            Values = getEnumOptions<ColorSchemeSetting>().ToList(),
+            Index = (int)ColorSchemeType,
+            OnValueChange = value =>
+            {
+                ColorSchemeType = value;
+                NotifyAccessibilityChange();
+            },
+        });
     }
 
     public void MigrateIfRequired()
@@ -176,5 +287,13 @@ public class GravityHelperModuleSettings : EverestModuleSettings
         // TODO: any required migration
 
         SettingsVersion = LatestSettingsVersion;
+    }
+
+    private static void NotifyAccessibilityChange()
+    {
+        foreach (AccessibilityListener listener in Engine.Scene.Tracker.GetComponents<AccessibilityListener>())
+        {
+            listener.OnAccessibilityChange?.Invoke();
+        }
     }
 }
