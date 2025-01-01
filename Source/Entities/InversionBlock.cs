@@ -245,6 +245,18 @@ public class InversionBlock : Solid
                 InvertFallingDirFlag = data.Attr("invertFallingDirFlag", ""),
             });
         }
+
+        Add(new AccessibilityListener(onAccessibilityChange));
+    }
+
+    private void onAccessibilityChange()
+    {
+        _normalInvertedParticleType.Color = GravityType.Normal.Color().Lighter();
+        _normalInvertedParticleType.Color2 = GravityType.Inverted.Color().Lighter();
+        _normalToggleParticleType.Color = GravityType.Normal.Color().Lighter();
+        _normalToggleParticleType.Color2 = GravityType.Toggle.Color().Lighter();
+        _invertedToggleParticleType.Color = GravityType.Inverted.Color().Lighter();
+        _invertedToggleParticleType.Color2 = GravityType.Toggle.Color().Lighter();
     }
 
     public override void Added(Scene scene)

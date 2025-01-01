@@ -26,14 +26,19 @@ internal static class GravityTypeExtensions
     public static bool RequiresHooks(this GravityType type) =>
         type == GravityType.Inverted || type == GravityType.Toggle;
 
-    public static Color Color(this GravityType type) => type switch
+    public static Color Color(this GravityType type, GravityColorScheme? scheme = null)
     {
-        GravityType.Normal => Microsoft.Xna.Framework.Color.Blue,
-        GravityType.Inverted => Microsoft.Xna.Framework.Color.Red,
-        GravityType.Toggle => Microsoft.Xna.Framework.Color.Purple,
-        _ => Microsoft.Xna.Framework.Color.White,
-    };
+        scheme ??= GravityHelperModule.Settings.GetColorScheme() ?? GravityColorScheme.Classic;
+        return type switch
+        {
+            GravityType.Normal => scheme.Value.NormalColor,
+            GravityType.Inverted => scheme.Value.InvertedColor,
+            GravityType.Toggle => scheme.Value.ToggleColor,
+            _ => Microsoft.Xna.Framework.Color.White,
+        };
+    }
 
+    // TODO: calculate highlight from actual colour
     public static Color HighlightColor(this GravityType type) => type switch
     {
         GravityType.Normal => Calc.HexToColor("007cff"),

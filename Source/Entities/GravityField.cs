@@ -343,18 +343,16 @@ public class GravityField : GravityTrigger, IConnectableField
             _particleDensity = visualController.FieldParticleDensity;
         }
 
-        FieldColor = (string.IsNullOrWhiteSpace(_fieldColor) ? GravityType.Color() : Calc.HexToColor(_fieldColor)) * _fieldOpacity;
+        if (GravityHelperModule.Settings.GetColorScheme() is { } colorScheme)
+            FieldColor = colorScheme[GravityType] * _fieldOpacity;
+        else
+            FieldColor = (string.IsNullOrWhiteSpace(_fieldColor) ? GravityType.Color() : Calc.HexToColor(_fieldColor)) * _fieldOpacity;
+
         ArrowColor = Calc.HexToColor(!string.IsNullOrWhiteSpace(_arrowColor) ? _arrowColor : DEFAULT_ARROW_COLOR);
         ParticleColor = Calc.HexToColor(!string.IsNullOrWhiteSpace(_particleColor) ? _particleColor : DEFAULT_PARTICLE_COLOR);
         FlashOnTrigger = _flashOnTrigger;
-        ShowParticles = _showParticles;
+        ShowParticles = _showParticles && GravityHelperModule.Settings.FieldParticles;
         ParticleDensity = Math.Clamp(_particleDensity, 0, 8);
-
-        // accessibility settings
-        ShowParticles &= GravityHelperModule.Settings.FieldParticles;
-
-        if (GravityHelperModule.Settings.GetColorScheme() is { } colorScheme)
-            FieldColor = colorScheme[GravityType] * _fieldOpacity;
 
         if (_defaultToController && scene.GetActiveController<SoundGravityController>() is { } soundController)
         {

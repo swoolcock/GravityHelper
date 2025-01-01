@@ -2,6 +2,7 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using Celeste.Mod.Entities;
+using Celeste.Mod.GravityHelper.Components;
 using Celeste.Mod.GravityHelper.Extensions;
 using Microsoft.Xna.Framework;
 using Monocle;
@@ -12,12 +13,12 @@ namespace Celeste.Mod.GravityHelper.Entities;
 public class GravityBumper : Bumper
 {
     // ReSharper disable InconsistentNaming
-    private static ParticleType P_Ambience_Normal;
-    private static ParticleType P_Ambience_Inverted;
-    private static ParticleType P_Ambience_Toggle;
-    private static ParticleType P_Launch_Normal;
-    private static ParticleType P_Launch_Inverted;
-    private static ParticleType P_Launch_Toggle;
+    private readonly ParticleType P_Ambience_Normal = new ParticleType(P_Ambience);
+    private readonly ParticleType P_Ambience_Inverted = new ParticleType(P_Ambience);
+    private readonly ParticleType P_Ambience_Toggle = new ParticleType(P_Ambience);
+    private readonly ParticleType P_Launch_Normal = new ParticleType(P_Launch);
+    private readonly ParticleType P_Launch_Inverted = new ParticleType(P_Launch);
+    private readonly ParticleType P_Launch_Toggle = new ParticleType(P_Launch);
     // ReSharper restore InconsistentNaming
 
     // ReSharper disable NotAccessedField.Local
@@ -107,6 +108,21 @@ public class GravityBumper : Bumper
 
         if (Get<PlayerCollider>() is { } playerCollider)
             playerCollider.OnCollide = OnPlayer;
+
+        Add(new AccessibilityListener(onAccessibilityChange));
+        onAccessibilityChange();
+    }
+
+    private void onAccessibilityChange()
+    {
+        const float lightness = 0.5f;
+        P_Launch_Normal.Color = P_Ambience_Normal.Color = GravityType.Normal.Color();
+        P_Launch_Normal.Color2 = P_Ambience_Normal.Color2 = GravityType.Normal.Color().Lighter(lightness);
+        P_Launch_Inverted.Color = P_Ambience_Inverted.Color = GravityType.Inverted.Color();
+        P_Launch_Inverted.Color2 = P_Ambience_Inverted.Color2 = GravityType.Inverted.Color().Lighter(lightness);
+        P_Launch_Toggle.Color = P_Ambience_Toggle.Color = GravityType.Toggle.Color();
+        P_Launch_Toggle.Color2 = P_Ambience_Toggle.Color2 = GravityType.Toggle.Color().Lighter(lightness);
+        if (_rippleSprite != null) _rippleSprite.Color = GravityType.HighlightColor();
     }
 
     private new void OnPlayer(Player player)
@@ -153,71 +169,23 @@ public class GravityBumper : Bumper
         }
     }
 
-    public ParticleType GetAmbientParticleType()
-    {
-        if (GravityType == GravityType.None) return P_Ambience;
-
-        if (P_Ambience_Normal == null)
-        {
-            const float lightness = 0.5f;
-            P_Ambience_Normal = new ParticleType(P_Ambience)
-            {
-                Color = GravityType.Normal.Color(),
-                Color2 = GravityType.Normal.Color().Lighter(lightness),
-            };
-            P_Ambience_Inverted = new ParticleType(P_Ambience)
-            {
-                Color = GravityType.Inverted.Color(),
-                Color2 = GravityType.Inverted.Color().Lighter(lightness),
-            };
-            P_Ambience_Toggle = new ParticleType(P_Ambience)
-            {
-                Color = GravityType.Toggle.Color(),
-                Color2 = GravityType.Toggle.Color().Lighter(lightness),
-            };
-        }
-
-        return GravityType switch
+    public ParticleType GetAmbientParticleType() =>
+        GravityType switch
         {
             GravityType.Normal => P_Ambience_Normal,
             GravityType.Inverted => P_Ambience_Inverted,
             GravityType.Toggle => P_Ambience_Toggle,
             _ => P_Ambience,
         };
-    }
 
-    public ParticleType GetLaunchParticleType()
-    {
-        if (GravityType == GravityType.None) return P_Launch;
-
-        if (P_Launch_Normal == null)
-        {
-            const float lightness = 0.5f;
-            P_Launch_Normal = new ParticleType(P_Launch)
-            {
-                Color = GravityType.Normal.Color(),
-                Color2 = GravityType.Normal.Color().Lighter(lightness),
-            };
-            P_Launch_Inverted = new ParticleType(P_Launch)
-            {
-                Color = GravityType.Inverted.Color(),
-                Color2 = GravityType.Inverted.Color().Lighter(lightness),
-            };
-            P_Launch_Toggle = new ParticleType(P_Launch)
-            {
-                Color = GravityType.Toggle.Color(),
-                Color2 = GravityType.Toggle.Color().Lighter(lightness),
-            };
-        }
-
-        return GravityType switch
+    public ParticleType GetLaunchParticleType() =>
+        GravityType switch
         {
             GravityType.Normal => P_Launch_Normal,
             GravityType.Inverted => P_Launch_Inverted,
             GravityType.Toggle => P_Launch_Toggle,
             _ => P_Launch,
         };
-    }
 
     public override void Added(Scene scene)
     {
