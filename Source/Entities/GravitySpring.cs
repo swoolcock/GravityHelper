@@ -190,6 +190,9 @@ public class GravitySpring : Spring
 
         if (_overlaySprite != null)
             _overlaySprite.Rotation = sprite.Rotation;
+
+        Add(new AccessibilityListener(onAccessibilityChange));
+        onAccessibilityChange();
     }
 
     public override void Added(Scene scene)
@@ -248,6 +251,22 @@ public class GravitySpring : Spring
     }
 
     private void OnShake(Vector2 amount) => _indicatorShakeOffset += amount;
+
+    private void onAccessibilityChange()
+    {
+        var colorScheme = GravityHelperModule.Settings.GetColorScheme();
+        var hasColorScheme = colorScheme is not null;
+
+        if (Scene != null && _indicatorRenderer == null && GravityType is GravityType.Normal or GravityType.Inverted or GravityType.Toggle)
+        {
+            Scene.Add(_indicatorRenderer = new IndicatorRenderer(this));
+        }
+
+        if (sprite != null) sprite.Visible = !hasColorScheme;
+        if (_overlaySprite != null) _overlaySprite.Visible = !hasColorScheme;
+
+        _indicatorRenderer?.UpdateIndicator();
+    }
 
     public override void Update()
     {
@@ -471,28 +490,14 @@ public class GravitySpring : Spring
     public class IndicatorRenderer : Entity
     {
         private readonly GravitySpring _spring;
-        private readonly MTexture _arrowTexture;
-        private readonly Vector2 _arrowOrigin;
+        private MTexture _arrowTexture;
+        private Vector2 _arrowOrigin;
 
         public IndicatorRenderer(GravitySpring spring)
         {
             _spring = spring;
 
-            var prefix = _spring.GravityType switch
-            {
-                GravityType.Normal => "down",
-                GravityType.Inverted => "up",
-                _ => "double",
-            };
-
-            var size = _spring._largeIndicator ? string.Empty : "Small";
-
-            if (!string.IsNullOrWhiteSpace(spring._indicatorTexture))
-                _arrowTexture = GFX.Game[spring._indicatorTexture];
-            else
-                _arrowTexture = GFX.Game[$"objects/GravityHelper/gravityField/{prefix}Arrow{size}"];
-
-            _arrowOrigin = new Vector2(_arrowTexture.Width / 2f, _arrowTexture.Height / 2f);
+            UpdateIndicator();
 
             Depth = Depths.FGDecals - 1;
 
@@ -500,8 +505,45 @@ public class GravitySpring : Spring
             Collidable = false;
         }
 
+        public void UpdateIndicator()
+        {
+            var prefix = _spring.GravityType switch
+            {
+                GravityType.Normal => "down",
+                GravityType.Inverted => "up",
+                _ => "double",
+            };
+
+            var arrowType = GravityHelperModule.Settings.SpringArrowType;
+            if (arrowType is GravityHelperModuleSettings.ArrowSetting.Default)
+            {
+                arrowType = !_spring._showIndicator ? GravityHelperModuleSettings.ArrowSetting.None :
+                    _spring._largeIndicator ? GravityHelperModuleSettings.ArrowSetting.Large :
+                    GravityHelperModuleSettings.ArrowSetting.Small;
+            }
+
+            if (arrowType == GravityHelperModuleSettings.ArrowSetting.None)
+            {
+                Visible = false;
+            }
+            else
+            {
+                Visible = true;
+                var size = arrowType is GravityHelperModuleSettings.ArrowSetting.Large ? string.Empty : "Small";
+
+                if (!string.IsNullOrWhiteSpace(_spring._indicatorTexture))
+                    _arrowTexture = GFX.Game[_spring._indicatorTexture];
+                else
+                    _arrowTexture = GFX.Game[$"objects/GravityHelper/gravityField/{prefix}Arrow{size}"];
+
+                _arrowOrigin = new Vector2(_arrowTexture.Width / 2f, _arrowTexture.Height / 2f);
+            }
+        }
+
         public override void Render()
         {
+            if (_arrowTexture == null) return;
+
             var offset = _spring._indicatorOffset;
 
             var position = _spring.Position + _spring.Orientation switch

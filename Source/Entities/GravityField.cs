@@ -472,7 +472,29 @@ public class GravityField : GravityTrigger, IConnectableField
             }
         }
 
-        if (shouldDrawArrows)
+        // calculate arrow rendering info based on accessibility settings
+        MTexture smallTexture = _arrowSmallTexture;
+        MTexture largeTexture = _arrowTexture;
+        Vector2 smallOrigin = _arrowSmallOrigin;
+        Vector2 largeOrigin = _arrowOrigin;
+
+        var fieldArrowType = GravityHelperModule.Settings.FieldArrowType;
+        switch (fieldArrowType)
+        {
+            case GravityHelperModuleSettings.ArrowSetting.Default when !shouldDrawArrows:
+                fieldArrowType = GravityHelperModuleSettings.ArrowSetting.None;
+                break;
+            case GravityHelperModuleSettings.ArrowSetting.Small:
+                largeTexture = smallTexture;
+                largeOrigin = smallOrigin;
+                break;
+            case GravityHelperModuleSettings.ArrowSetting.Large:
+                smallTexture = largeTexture;
+                smallOrigin = largeOrigin;
+                break;
+        }
+
+        if (fieldArrowType != GravityHelperModuleSettings.ArrowSetting.None)
         {
             int widthInTiles = (int)(Width / 8);
             int heightInTiles = (int)(Height / 8);
@@ -482,8 +504,8 @@ public class GravityField : GravityTrigger, IConnectableField
             int arrowsY = Math.Max(heightInTiles / 2, 1);
 
             // if width or height is 1, scale down the arrows
-            var texture = widthInTiles == 1 || heightInTiles == 1 ? _arrowSmallTexture : _arrowTexture;
-            var origin = widthInTiles == 1 || heightInTiles == 1 ? _arrowSmallOrigin : _arrowOrigin;
+            var texture = widthInTiles == 1 || heightInTiles == 1 ? smallTexture : largeTexture;
+            var origin = widthInTiles == 1 || heightInTiles == 1 ? smallOrigin : largeOrigin;
             var color = ArrowColor * _arrowOpacity * opacity * (Collidable ? 1 : 0.5f);
             const int padding = 32;
 
