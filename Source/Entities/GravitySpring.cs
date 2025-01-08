@@ -39,8 +39,10 @@ public class GravitySpring : Spring
         _ => id,
     };
 
-    private string getOverlayAnimId(string id)
+    private string getOverlayAnimId(string id, bool checkAccessibility = true)
     {
+        if (checkAccessibility && GravityHelperModule.Settings.GetColorScheme() != null)
+            return $"white_{id}";
         if (!RefillStamina)
             return $"no_stamina_{id}";
         return RefillDashCount switch
@@ -72,6 +74,8 @@ public class GravitySpring : Spring
     private string _refillSound;
 
     private Sprite _overlaySprite;
+
+    private readonly int[] _accessibilityOffsets = [0, -6, -8, -6, -4, -1];
 
     [UsedImplicitly]
     public static Entity LoadSpring(Level level, LevelData levelData, Vector2 offset, EntityData entityData)
@@ -146,15 +150,10 @@ public class GravitySpring : Spring
         sprite.Play(getAnimId("idle"));
 
         // create overlay sprite
-        if (_showOverlay)
-        {
-            var anim = getOverlayAnimId("idle");
-            if (!string.IsNullOrWhiteSpace(anim))
-            {
-                Add(_overlaySprite = GFX.SpriteBank.Create(_overlaySpriteName));
-                _overlaySprite.Play(anim);
-            }
-        }
+        var overlayAnimId = getOverlayAnimId("idle");
+        Add(_overlaySprite = GFX.SpriteBank.Create(_overlaySpriteName));
+        _overlaySprite.Visible = _showOverlay && string.IsNullOrWhiteSpace(overlayAnimId);
+        if (_overlaySprite.Visible) _overlaySprite.PlayIfAvailable(overlayAnimId);
 
         // update callbacks
         staticMover.OnEnable = OnEnable;
@@ -188,16 +187,16 @@ public class GravitySpring : Spring
                 break;
         }
 
-        if (_overlaySprite != null)
-            _overlaySprite.Rotation = sprite.Rotation;
+        _overlaySprite.Rotation = sprite.Rotation;
 
         Add(new AccessibilityListener(onAccessibilityChange));
-        onAccessibilityChange();
     }
 
     public override void Added(Scene scene)
     {
         base.Added(scene);
+
+        onAccessibilityChange();
 
         if (_defaultToController && Scene.GetActiveController<BehaviorGravityController>() is { } behaviorController)
         {
@@ -225,11 +224,8 @@ public class GravitySpring : Spring
         sprite.Color = Color.White;
         sprite.Play(getAnimId("idle"));
 
-        if (_overlaySprite != null)
-        {
-            _overlaySprite.Color = Color.White;
-            _overlaySprite.Play(getOverlayAnimId("idle"));
-        }
+        // easier to just let the accessibility handler update the overlay
+        onAccessibilityChange();
     }
 
     private new void OnDisable()
@@ -240,11 +236,8 @@ public class GravitySpring : Spring
             sprite.Play("disabled");
             sprite.Color = DisabledColor;
 
-            if (_overlaySprite != null)
-            {
-                _overlaySprite.Color = Color.White;
-                _overlaySprite.Play(getOverlayAnimId("idle"));
-            }
+            _overlaySprite.Color = Color.White;
+            _overlaySprite.PlayIfAvailable(getOverlayAnimId("idle"));
         }
         else
             Visible = false;
@@ -262,8 +255,10 @@ public class GravitySpring : Spring
             Scene.Add(_indicatorRenderer = new IndicatorRenderer(this));
         }
 
-        if (sprite != null) sprite.Visible = !hasColorScheme;
-        if (_overlaySprite != null) _overlaySprite.Visible = !hasColorScheme;
+        var overlayAnimId = getOverlayAnimId("idle");
+        _overlaySprite.Visible = (_showOverlay || hasColorScheme) && _overlaySprite.Has(overlayAnimId);
+        _overlaySprite.Color = !hasColorScheme ? Color.White : colorScheme.Value[GravityType];
+        if (_overlaySprite.Visible) _overlaySprite.PlayIfAvailable(overlayAnimId);
 
         _indicatorRenderer?.UpdateIndicator();
     }
@@ -272,8 +267,7 @@ public class GravitySpring : Spring
     {
         base.Update();
 
-        if (_overlaySprite != null)
-            _overlaySprite.Scale = sprite.Scale;
+        _overlaySprite.Scale = sprite.Scale;
 
         if (_indicatorRenderer != null)
             _indicatorRenderer.Visible = Visible;
@@ -438,7 +432,7 @@ public class GravitySpring : Spring
         Audio.Play("event:/game/general/spring", Position);
         staticMover.TriggerPlatform();
         sprite.Play(getAnimId("bounce"), true);
-        _overlaySprite?.Play(getOverlayAnimId("bounce"), true);
+        _overlaySprite.PlayIfAvailable(getOverlayAnimId("bounce"), true);
         wiggler.Start();
     }
 

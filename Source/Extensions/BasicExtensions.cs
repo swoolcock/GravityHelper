@@ -28,4 +28,9 @@ internal static class BasicExtensions
 
     public static void AddSubHeader(this TextMenu self, string subHeader)
         => self.Add(new TextMenu.SubHeader(subHeader.DialogCleanOrNull() ?? subHeader, false));
+
+    public static void PlayIfAvailable(this Sprite self, string id, bool restart = false, bool randomizeFrame = false)
+    {
+        if (self.Has(id)) self.Play(id, restart, randomizeFrame);
+    }
 }

@@ -20,7 +20,7 @@ public struct GravityColorScheme
             GravityType.Normal => NormalColor,
             GravityType.Inverted => InvertedColor,
             GravityType.Toggle => ToggleColor,
-            _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
+            _ => Color.White
         };
 
     public static readonly GravityColorScheme Classic;
