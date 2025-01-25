@@ -93,4 +93,20 @@ public static class GravityHelperExports
         GravityHelperModule.OverrideSemaphore++;
         return new InvokeOnDispose(() => GravityHelperModule.OverrideSemaphore--);
     }
+
+    public static void SetHoldableResetTime(Holdable holdable, float resetTime)
+    {
+        if (holdable?.Entity.Get<GravityHoldable>() is { } gravityHoldable)
+        {
+            gravityHoldable.ResetTime = resetTime;
+        }
+    }
+
+    public static void SetHoldableResetType(Holdable holdable, int gravityType)
+    {
+        if (holdable?.Entity.Get<GravityHoldable>() is { } gravityHoldable)
+        {
+            gravityHoldable.ResetType = (GravityType)gravityType;
+        }
+    }
 }
