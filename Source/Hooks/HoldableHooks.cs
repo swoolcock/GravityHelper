@@ -56,7 +56,7 @@ internal static class HoldableHooks
     private static bool Holdable_Pickup(On.Celeste.Holdable.orig_Pickup orig, Holdable self, Player player)
     {
         var rv = orig(self, player);
-        if (self.Entity?.Get<GravityHoldable>() is { } gravityHoldable)
+        if (rv && self.Entity?.Get<GravityHoldable>() is { } gravityHoldable)
             gravityHoldable.SetGravityHeld();
         return rv;
     }

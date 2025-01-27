@@ -1,6 +1,7 @@
 // Copyright (c) Shane Woolcock. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+using System;
 using Celeste.Mod.GravityHelper.Entities.Controllers;
 using Celeste.Mod.GravityHelper.Extensions;
 using Celeste.Mod.GravityHelper.Triggers;
@@ -11,26 +12,35 @@ namespace Celeste.Mod.GravityHelper.Components;
 [Tracked]
 public class GravityHoldable : Component
 {
-    private float _invertTime = BehaviorGravityController.DEFAULT_HOLDABLE_RESET_TIME;
-    public float InvertTime
+    [Obsolete("Use ResetTime and ResetType instead.")]
+    public float InvertTime { get; set; }
+
+    private float _sceneResetTime = BehaviorGravityController.DEFAULT_HOLDABLE_RESET_TIME;
+    private float _resetTimeRemaining;
+    private float? _resetTime;
+    public float ResetTime
     {
-        get => _invertTime;
-        set => _invertTime = _invertTimeRemaining = value;
+        get => _resetTime ?? _sceneResetTime;
+        set
+        {
+            _resetTime = value < 0 ? null : value;
+            _resetTimeRemaining = ResetTime;
+        }
     }
 
-    private float _invertTimeRemaining;
+    public GravityType ResetType { get; set; } = GravityType.Normal;
 
     public GravityHoldable() : base(true, false)
     {
     }
 
-    public void ResetInvertTime() => _invertTimeRemaining = InvertTime;
+    public void ResetTimer() => _resetTimeRemaining = ResetTime;
 
     public void SetGravityHeld()
     {
         if (Entity?.Get<GravityComponent>() is not { } gravityComponent) return;
 
-        ResetInvertTime();
+        ResetTimer();
 
         var targetGravity = GravityHelperModule.PlayerComponent?.CurrentGravity ?? GravityType.Normal;
         if (gravityComponent.CurrentGravity != targetGravity)
@@ -43,7 +53,7 @@ public class GravityHoldable : Component
 
         // the entity may already be part of the scene before the component is added
         if (entity.Scene != null)
-            updateInvertTime(entity.Scene);
+            updateResetTime(entity.Scene);
 
         if (entity.Get<GravityComponent>() == null && entity.Get<Holdable>() is { } holdable)
         {
@@ -58,7 +68,7 @@ public class GravityHoldable : Component
         {
             entity.Add(new GravityListener(entity)
             {
-                GravityChanged = (_, _) => ResetInvertTime(),
+                GravityChanged = (_, _) => ResetTimer(),
             });
         }
     }
@@ -66,7 +76,7 @@ public class GravityHoldable : Component
     public override void EntityAdded(Scene scene)
     {
         base.EntityAdded(scene);
-        updateInvertTime(scene);
+        updateResetTime(scene);
     }
 
     public override void EntityAwake()
@@ -78,10 +88,11 @@ public class GravityHoldable : Component
             Entity.SetGravity(GravityType.Inverted);
     }
 
-    private void updateInvertTime(Scene scene)
+    private void updateResetTime(Scene scene)
     {
         var controller = scene.GetActiveController<BehaviorGravityController>();
-        InvertTime = controller?.HoldableResetTime ?? BehaviorGravityController.DEFAULT_HOLDABLE_RESET_TIME;
+        _sceneResetTime = controller?.HoldableResetTime ?? BehaviorGravityController.DEFAULT_HOLDABLE_RESET_TIME;
+        _resetTimeRemaining = _sceneResetTime;
     }
 
     public override void Update()
@@ -94,11 +105,18 @@ public class GravityHoldable : Component
 
         if (holdable.IsHeld)
             SetGravityHeld();
-        else if (InvertTime > 0 && _invertTimeRemaining > 0 && gravityComponent.CurrentGravity == GravityType.Inverted)
+        else if (ResetTime > 0 && _resetTimeRemaining > 0)
         {
-            _invertTimeRemaining -= Engine.DeltaTime;
-            if (_invertTimeRemaining <= 0)
-                gravityComponent.SetGravity(GravityType.Normal);
+            // if the holdable is within a trigger/field that should keep it something other than the reset type, reset the inversion timer
+            if (Entity.CollideCheckWhere<GravityTrigger>(f => f.GravityType != ResetType && f.AffectsHoldableActors))
+            {
+                ResetTimer();
+                return;
+            }
+
+            _resetTimeRemaining -= Engine.DeltaTime;
+            if (_resetTimeRemaining <= 0)
+                gravityComponent.SetGravity(ResetType);
         }
     }
 }

@@ -19,6 +19,7 @@ local placementData = helpers.createPlacementData('1', {
     attached = false,
     triggerStaticMovers = true,
     invisible = false,
+    surfaceIndex = -1,
 })
 
 local upsideDownJumpThru = {
