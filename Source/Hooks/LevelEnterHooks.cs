@@ -45,7 +45,7 @@ internal static class LevelEnterHooks
             GravityHelperModule.Settings.VvvvvvAllowGrabbing = GravityHelperModuleSettings.VvvvvvSetting.Default;
             GravityHelperModule.Settings.VvvvvvFlipSound = GravityHelperModuleSettings.VvvvvvSetting.Default;
             self.Add(_vvvvvvPostcard = new Postcard(Dialog.Clean("GRAVITYHELPER_POSTCARD_VVVVVV"),
-                "event:/ui/main/postcard_csides_in", "event:/ui/main/postcard_csides_out"));
+                SFX.ui_main_postcard_csides_in, SFX.ui_main_postcard_csides_out));
             yield return _vvvvvvPostcard.DisplayRoutine();
             _vvvvvvPostcard = null;
         }

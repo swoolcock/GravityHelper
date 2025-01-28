@@ -138,7 +138,7 @@ public class GravityShield : Entity
         _outline.Visible = false;
         Depth = Depths.Pickups;
         _wiggler.Start();
-        Audio.Play("event:/game/general/diamond_return", Position);
+        Audio.Play(SFX.game_gen_diamond_return, Position);
         _level.ParticlesFG.Emit(p_regen, 16, Position, Vector2.One * 2f);
     }
 
@@ -149,7 +149,7 @@ public class GravityShield : Entity
         if (ShieldTime > indicator.ShieldTimeRemaining)
         {
             indicator.Activate(ShieldTime);
-            Audio.Play("event:/game/general/diamond_touch", Position);
+            Audio.Play(SFX.game_gen_diamond_touch, Position);
             Input.Rumble(RumbleStrength.Medium, RumbleLength.Medium);
             Collidable = false;
             Add(new Coroutine(shieldRoutine(player)));

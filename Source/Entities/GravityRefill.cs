@@ -211,7 +211,7 @@ public class GravityRefill : Entity
         Depth = _isWall ? Depths.TheoCrystal : Depths.Pickups;
 
         _wiggler?.Start();
-        Audio.Play("event:/game/general/diamond_return", Center);
+        Audio.Play(SFX.game_gen_diamond_return, Center);
 
         _level.ParticlesFG.Emit(P_Regen, 16, Center, Vector2.One * 2f);
     }
@@ -323,7 +323,7 @@ public class GravityRefill : Entity
         if (RefillsStamina) player.RefillStamina();
         playerGravityComponent.RefillGravityCharges(Charges, !_legacyRefillBehavior);
 
-        Audio.Play("event:/game/general/diamond_touch", Position);
+        Audio.Play(SFX.game_gen_diamond_touch, Position);
         Input.Rumble(RumbleStrength.Medium, RumbleLength.Medium);
         Collidable = false;
         Add(new Coroutine(refillRoutine(player)));

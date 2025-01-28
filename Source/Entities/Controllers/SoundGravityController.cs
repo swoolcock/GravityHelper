@@ -12,8 +12,8 @@ namespace Celeste.Mod.GravityHelper.Entities.Controllers;
 [Tracked]
 public class SoundGravityController : BaseGravityController<SoundGravityController>
 {
-    public const string DEFAULT_NORMAL_SOUND = "event:/ui/game/lookout_off";
-    public const string DEFAULT_INVERTED_SOUND = "event:/ui/game/lookout_on";
+    public const string DEFAULT_NORMAL_SOUND = SFX.ui_game_lookout_off;
+    public const string DEFAULT_INVERTED_SOUND = SFX.ui_game_lookout_on;
     public const string DEFAULT_TOGGLE_SOUND = "";
 
     public string NormalSound { get; } = DEFAULT_NORMAL_SOUND;
