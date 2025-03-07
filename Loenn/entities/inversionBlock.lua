@@ -32,6 +32,7 @@ local placementData = helpers.createPlacementData('2', {
     blockOneUse = false,
     showEdgeIndicators = true,
     legacyFallBehavior = false,
+    climbjumpType = 0,
 })
 
 local inversionBlock = {
@@ -48,6 +49,7 @@ local inversionBlock = {
         "fallType", "climbFall", "endFallOnSolidTiles",
         "tiletype", "sound",
         "autotile", "showEdgeIndicators", "defaultToController", "legacyFallBehavior",
+        "climbjumpType",
     },
     fieldInformation = function() return {
         leftGravityType = consts.fieldInformation.gravityType(0,1,2),
@@ -62,6 +64,9 @@ local inversionBlock = {
         },
         refillRespawnTime = {
             fieldType = "number",
+        },
+        climbjumpType = {
+            fieldType = "integer",
         }
     } end,
     placements = {
