@@ -59,6 +59,7 @@ public class InversionBlock : Solid
     public float RefillRespawnTime { get; }
     public bool GiveGravityRefill { get; }
     public bool ShowEdgeIndicators { get; }
+    public int ClimbjumpType { get; } // 0 for speed-conditional, 1 for neutral only (legacy), 2 for always.
 
     private readonly bool _defaultToController;
     private string _sound;
@@ -79,6 +80,7 @@ public class InversionBlock : Solid
     private const float thick_line_thickness = 7f;
     private const float thin_line_thickness = 5f;
     private const float cooldown_time_seconds = 0.1f;
+    private const float min_retained_speed_required = Player.WallJumpHSpeed;
 
     private float _respawnTimeRemaining;
     private float _cooldownTimeRemaining;
@@ -163,6 +165,7 @@ public class InversionBlock : Solid
         RefillOneUse = data.Bool("refillOneUse", false);
         BlockOneUse = data.Bool("blockOneUse", false);
         ShowEdgeIndicators = data.Bool("showEdgeIndicators", true);
+        ClimbjumpType = data.Int("climbjumpType", 0);
 
         if (GiveGravityRefill)
         {
@@ -479,12 +482,13 @@ public class InversionBlock : Solid
         return false;
     }
 
-    public bool TryHandlePlayer(Player player)
+    // return 0 if fail to handle, 1 for walljump, 2 for climbjump
+    public int TryHandlePlayer(Player player)
     {
-        if (_cooldownTimeRemaining > 0) return false;
-        if (_blockUsed && BlockOneUse) return false;
+        if (_cooldownTimeRemaining > 0) return 0;
+        if (_blockUsed && BlockOneUse) return 0;
 
-        if (!hasPlayerRiderOrBuffered(player) || Scene is not Level level || GravityHelperModule.PlayerComponent is not { } playerComponent) return false;
+        if (!hasPlayerRiderOrBuffered(player) || Scene is not Level level || GravityHelperModule.PlayerComponent is not { } playerComponent) return 0;
 
         var currentGravity = player.GetGravity();
         var activeEdges = ActiveEdges;
@@ -493,16 +497,17 @@ public class InversionBlock : Solid
         var exitPoint = Vector2.Zero;
         var inType = GravityType.Normal;
         var outType = GravityType.Inverted;
+        var climbjumpDecision = ClimbjumpType == 2 ? true : false;
 
         if (activeEdges.HasFlag(Edges.Top) && player.Bottom <= Top && player.StateMachine.State != Player.StClimb)
         {
             // check whether we have space to move on the other side
             if (player.CollideCheck<Solid>(new Vector2(player.X, Bottom + player.Height)))
-                return false;
+                return 0;
 
             // bail if gravity flip failed for some reason
             if (!player.SetGravity(GravityType.Inverted, 0f))
-                return false;
+                return 0;
 
             // move us
             _enterPosition = player.BottomCenter;
@@ -519,11 +524,11 @@ public class InversionBlock : Solid
         {
             // check whether we have space to move on the other side
             if (player.CollideCheck<Solid>(new Vector2(player.X, Top - player.Height)))
-                return false;
+                return 0;
 
             // bail if gravity flip failed for some reason
             if (!player.SetGravity(GravityType.Normal, 0f))
-                return false;
+                return 0;
 
             // move us
             _enterPosition = player.TopCenter;
@@ -542,11 +547,17 @@ public class InversionBlock : Solid
             var targetX = Right - player.Collider.Left;
             var targetY = currentGravity == GravityType.Normal ? player.Bottom : player.Top;
             if (player.CollideCheck<Solid>(new Vector2(targetX, targetY)))
-                return false;
+                return 0;
+
+            // speed checking (for ClimbjumpType == 0 )
+            var ifRetained = player.wallSpeedRetentionTimer > 0;
+            var oldSpeedRetained = player.wallSpeedRetained;
+            if (ClimbjumpType == 0 && (player.Speed.X > min_retained_speed_required || ifRetained && player.wallSpeedRetained > min_retained_speed_required) )
+                climbjumpDecision = true;
 
             // bail if gravity flip failed for some reason
             if (!player.SetGravity(LeftGravityType, 0f))
-                return false;
+                return 0;
 
             // change facing if we're not pushing into the block
             if (Input.MoveX <= 0)
@@ -569,11 +580,17 @@ public class InversionBlock : Solid
             var targetX = Left - player.Collider.Right;
             var targetY = currentGravity == GravityType.Normal ? player.Bottom : player.Top;
             if (player.CollideCheck<Solid>(new Vector2(targetX, targetY)))
-                return false;
+                return 0;
+
+            // speed checking (for ClimbjumpType == 0 )
+            var ifRetained = player.wallSpeedRetentionTimer > 0;
+            var oldSpeedRetained = player.wallSpeedRetained;
+            if (ClimbjumpType == 0 && (player.Speed.X < -min_retained_speed_required || ifRetained && player.wallSpeedRetained < -min_retained_speed_required) )
+                climbjumpDecision = true;
 
             // bail if gravity flip failed for some reason
             if (!player.SetGravity(RightGravityType, 0f))
-                return false;
+                return 0;
 
             // change facing if we're not pushing into the block
             if (Input.MoveX >= 0)
@@ -593,7 +610,7 @@ public class InversionBlock : Solid
         else
         {
             // just fail
-            return false;
+            return 0;
         }
 
         // trigger falling if we should
@@ -665,6 +682,6 @@ public class InversionBlock : Solid
         }
 
         // we handled it
-        return true;
+        return climbjumpDecision ? 2 : 1;
     }
 }
