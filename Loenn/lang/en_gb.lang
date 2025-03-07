@@ -369,6 +369,7 @@ entities.GravityHelper/InversionBlock.attributes.description.refillOneUse=Whethe
 entities.GravityHelper/InversionBlock.attributes.description.blockOneUse=Whether the block has a single use and will be disabled once triggered. Defaults to false.
 entities.GravityHelper/InversionBlock.attributes.description.showEdgeIndicators=Whether to show the coloured edge indicators. Defaults to true.
 entities.GravityHelper/InversionBlock.attributes.description.legacyFallBehavior=Prior to Gravity Helper 1.2.17, jumping on an inversion block about to fall\nwould cause it to shake for the maximum amount of time rather than honouring the\n"player has jumped therefore immediately fall" behaviour with regular falling blocks.\n\nEnabling this reverts to the old behaviour, and is not recommended.
+entities.GravityHelper/InversionBlock.attributes.description.climbjumpType=Whether walljump or climbjump when player climb jumping into the otherside \nwith the same direction holding. If equal to 0 (default) it will climbjump when speed/retainedspeed \ngreater than 130 (walljumpXSpeed) and walljump otherwise; if equal to 1 it will always walljump \n(which is legacy behavior); if equal to 2 it will always climbjump.
 
 # Force Load Gravity Controller
 entities.GravityHelper/ForceLoadGravityController.placements.name.normal=Force Load Gravity Controller
