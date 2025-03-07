@@ -1295,9 +1295,9 @@ internal static class PlayerHooks
         var oldFacing = self.Facing;
         var handled = handleInversionBlocks(self);
 
-        if (handled && oldFacing == self.Facing)
+        if (oldFacing == self.Facing && handled == 1)
         {
-            // if we were warped and kept the same facing, we shouldn't lose stamina
+            // walljump when ClimbjumpType == 1 or ClimbjumpType == 0 and speed is not enough
             self.WallJump((int)self.Facing);
         }
         else
@@ -1432,15 +1432,16 @@ internal static class PlayerHooks
         orig(self, particles, playsfx);
     }
 
-    private static bool handleInversionBlocks(Player self)
+    private static int handleInversionBlocks(Player self)
     {
         foreach (InversionBlock block in self.Scene.Tracker.GetEntities<InversionBlock>())
         {
-            if (block.TryHandlePlayer(self))
-                return true;
+            var temp = block.TryHandlePlayer(self);
+            if (temp != 0)
+                return temp;
         }
 
-        return false;
+        return 0;
     }
 
     private static bool Player_JumpThruBoostBlockedCheck(On.Celeste.Player.orig_JumpThruBoostBlockedCheck orig, Player self)
