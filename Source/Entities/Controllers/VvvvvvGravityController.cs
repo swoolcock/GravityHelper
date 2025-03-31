@@ -34,7 +34,7 @@ public class VvvvvvGravityController : BaseGravityController<VvvvvvGravityContro
     private float _bufferTimeRemaining;
 
     private const float flip_buffer_seconds = 0.1f;
-    private const string default_flip_sound = "event:/gravityhelper/toggle";
+    private const string default_flip_sound = GravityHelperSFX.gh_toggle;
     private VvvvvvJumpBehavior _lastJumpBehavior = VvvvvvJumpBehavior.Flip;
 
     // ReSharper disable once UnusedMember.Global

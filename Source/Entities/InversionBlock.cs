@@ -17,7 +17,7 @@ namespace Celeste.Mod.GravityHelper.Entities;
 [CustomEntity("GravityHelper/InversionBlock")]
 public class InversionBlock : Solid
 {
-    public const string DEFAULT_SOUND = "event:/char/badeline/disappear";
+    public const string DEFAULT_SOUND = SFX.char_bad_disappear;
 
     private const int tile_size = 8;
 
@@ -282,7 +282,7 @@ public class InversionBlock : Solid
         _refillSprite.Visible = true;
         _refillOutlineImage.Visible = false;
         _wiggler.Start();
-        Audio.Play(RefillDashCount == 2 ? "event:/new_content/game/10_farewell/pinkdiamond_return" : "event:/game/general/diamond_return", Position);
+        Audio.Play(RefillDashCount == 2 ? SFX.game_10_pinkdiamond_return : SFX.game_gen_diamond_return, Position);
         SceneAs<Level>().ParticlesFG.Emit(p_regen, 16, Center, Vector2.One * 2f);
     }
 
@@ -662,7 +662,7 @@ public class InversionBlock : Solid
                 player.Dashes = targetDashes;
                 player.RefillStamina();
                 playerComponent.RefillGravityCharges(targetGravityRefills);
-                Audio.Play(RefillDashCount == 2 ? "event:/new_content/game/10_farewell/pinkdiamond_touch" : "event:/game/general/diamond_touch", Position);
+                Audio.Play(RefillDashCount == 2 ? SFX.game_10_pinkdiamond_touch : SFX.game_gen_diamond_touch, Position);
                 if (_refillSprite != null)
                     _refillSprite.Visible = false;
 

@@ -94,6 +94,22 @@ public static class GravityHelperExports
         return new InvokeOnDispose(() => GravityHelperModule.OverrideSemaphore--);
     }
 
+    public static void SetHoldableResetTime(Holdable holdable, float resetTime)
+    {
+        if (holdable?.Entity.Get<GravityHoldable>() is { } gravityHoldable)
+        {
+            gravityHoldable.ResetTime = resetTime;
+        }
+    }
+
+    public static void SetHoldableResetType(Holdable holdable, int gravityType)
+    {
+        if (holdable?.Entity.Get<GravityHoldable>() is { } gravityHoldable)
+        {
+            gravityHoldable.ResetType = (GravityType)gravityType;
+        }
+    }
+
     public static Color GetColor(int gravityType) =>
         (GravityHelperModule.Settings.GetColorScheme() ?? GravityColorScheme.Classic)[(GravityType)gravityType];
 

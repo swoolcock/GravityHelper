@@ -429,7 +429,7 @@ public class GravitySpring : Spring
 
     private void bounceAnimate()
     {
-        Audio.Play("event:/game/general/spring", Position);
+        Audio.Play(SFX.game_gen_spring, Position);
         staticMover.TriggerPlatform();
         sprite.Play(getAnimId("bounce"), true);
         _overlaySprite.PlayIfAvailable(getOverlayAnimId("bounce"), true);

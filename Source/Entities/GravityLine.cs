@@ -18,7 +18,7 @@ public class GravityLine : Entity
     public const float DEFAULT_MIN_ALPHA = 0.45f;
     public const float DEFAULT_MAX_ALPHA = 0.95f;
     public const float DEFAULT_FLASH_TIME = 0.35f;
-    public const string DEFAULT_SOUND = "event:/gravityhelper/gravity_line";
+    public const string DEFAULT_SOUND = GravityHelperSFX.gh_gravity_line;
     public const string DEFAULT_LINE_COLOR = "FFFFFF";
     public const float DEFAULT_LINE_THICKNESS = 2f;
 

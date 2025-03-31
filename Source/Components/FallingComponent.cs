@@ -84,13 +84,13 @@ internal class FallingComponent : Component
     private void shakeSfx()
     {
         if (Entity != null)
-            Audio.Play("event:/game/general/fallblock_shake", Entity.Center);
+            Audio.Play(SFX.game_gen_fallblock_shake, Entity.Center);
     }
 
     private void impactSfx()
     {
         if (Entity != null)
-            Audio.Play("event:/game/general/fallblock_impact", Entity.BottomCenter);
+            Audio.Play(SFX.game_gen_fallblock_impact, Entity.BottomCenter);
     }
 
     private void fallParticles()

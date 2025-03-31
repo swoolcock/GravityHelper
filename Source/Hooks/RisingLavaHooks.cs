@@ -40,6 +40,6 @@ internal static class RisingLavaHooks
         Tween.Set(self, Tween.TweenMode.Oneshot, 0.4f, Ease.CubeOut, t => self.Y = MathHelper.Lerp(from, to, t.Eased));
         self.delay = 0.5f;
         loopSfx.Param("rising", 0.0f);
-        Audio.Play("event:/game/general/assist_screenbottom", player.Position);
+        Audio.Play(SFX.game_assist_screenbottom, player.Position);
     }
 }

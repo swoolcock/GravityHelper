@@ -83,7 +83,7 @@ internal static class TheoCrystalHooks
             {
                 self.Top = level.Bounds.Top;
                 self.Speed.Y = -300f;
-                Audio.Play("event:/game/general/assist_screenbottom", self.Position);
+                Audio.Play(SFX.game_assist_screenbottom, self.Position);
             }
             else if (self.Bottom < level.Bounds.Top)
                 self.Die();

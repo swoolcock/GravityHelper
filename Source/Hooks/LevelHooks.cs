@@ -135,7 +135,7 @@ internal static class LevelHooks
         {
             if (SaveData.Instance.Assists.Invincible)
             {
-                player.Play("event:/game/general/assist_screenbottom");
+                player.Play(SFX.game_assist_screenbottom);
                 player.Bounce(bounceAtPoint);
             }
             else

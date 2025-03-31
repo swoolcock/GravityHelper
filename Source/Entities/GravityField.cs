@@ -27,7 +27,7 @@ public class GravityField : GravityTrigger, IConnectableField
     public const float DEFAULT_PARTICLE_OPACITY = 0.5f;
     public const string DEFAULT_ARROW_COLOR = "FFFFFF";
     public const string DEFAULT_PARTICLE_COLOR = "FFFFFF";
-    public const string DEFAULT_SINGLE_USE_SOUND = "event:/new_content/game/10_farewell/glider_emancipate";
+    public const string DEFAULT_SINGLE_USE_SOUND = SFX.game_10_glider_emancipate;
     public const int DEFAULT_PARTICLE_DENSITY = 4;
 
     private const float audio_muffle_seconds = 0.2f;

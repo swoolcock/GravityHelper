@@ -62,10 +62,10 @@ internal class MoveBlockBottomComponent : Component
             image.Y = Entity.Height + (collidePlayer ? -2f : 0f);
 
         if (collidePlayer && !BottomPressed)
-            Audio.Play("event:/game/04_cliffside/arrowblock_side_depress", Entity.Position);
+            Audio.Play(SFX.game_04_arrowblock_side_depress, Entity.Position);
 
         if (!collidePlayer && BottomPressed)
-            Audio.Play("event:/game/04_cliffside/arrowblock_side_release", Entity.Position);
+            Audio.Play(SFX.game_04_arrowblock_side_release, Entity.Position);
 
         BottomPressed = collidePlayer;
     }
