@@ -2,8 +2,6 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System;
-using System.Linq;
-using System.Reflection;
 using Celeste.Mod.Entities;
 using Celeste.Mod.GravityHelper.Components;
 using Celeste.Mod.GravityHelper.Entities.Controllers;

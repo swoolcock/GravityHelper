@@ -19,15 +19,16 @@ public class GravityShieldIndicator : Entity
 
     private const int particle_count = 20;
     private const float radius = 14f;
-    private readonly List<Vector2> _particles = new List<Vector2>();
-    private readonly float[] _speeds = {1.5f, 2f, 2.5f};
+    private readonly List<Vector2> _particles = [];
+    private readonly float[] _speeds = [1.5f, 2f, 2.5f];
 
-    private readonly Color[] _particleColors = {
+    private readonly Color[] _particleColors =
+    [
         Color.Blue,
         Color.BlueViolet,
         Color.Red,
-        Color.MediumVioletRed,
-    };
+        Color.MediumVioletRed
+    ];
 
     private readonly BloomPoint _bloom;
     private readonly VertexLight _light;

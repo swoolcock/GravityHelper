@@ -12,7 +12,7 @@ internal class MoveBlockBottomComponent : Component
 {
     public new MoveBlock Entity => base.Entity as MoveBlock;
 
-    public readonly List<Image> Images = new();
+    public readonly List<Image> Images = [];
     public bool BottomPressed;
 
     public MoveBlockBottomComponent() : base(true, false)

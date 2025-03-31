@@ -9,7 +9,6 @@ using Celeste.Mod.GravityHelper.Components;
 using Celeste.Mod.GravityHelper.Entities.Controllers;
 using Celeste.Mod.GravityHelper.Extensions;
 using Celeste.Mod.GravityHelper.Triggers;
-using Celeste.Mod.Helpers;
 using Microsoft.Xna.Framework;
 using Monocle;
 using CassetteListener = Celeste.Mod.GravityHelper.Components.CassetteListener;
@@ -97,8 +96,8 @@ public class GravityField : GravityTrigger, IConnectableField
     private readonly Hitbox _normalHitbox;
     private readonly Hitbox _staticMoverHitbox;
 
-    private Vector2[] _particles = Array.Empty<Vector2>();
-    private readonly float[] _speeds = { 12f, 20f, 40f };
+    private Vector2[] _particles = [];
+    private readonly float[] _speeds = [12f, 20f, 40f];
     private GravityFieldGroup _fieldGroup;
     private Vector2 _staticMoverOffset;
     private readonly CassetteComponent _cassetteComponent;
@@ -383,7 +382,7 @@ public class GravityField : GravityTrigger, IConnectableField
         }
         else
         {
-            _particles = Array.Empty<Vector2>();
+            _particles = [];
         }
     }
 
@@ -555,7 +554,7 @@ public class GravityField : GravityTrigger, IConnectableField
     {
         var allFields = scene.Entities.ToAdd.Concat(scene.Entities).OfType<GravityField>().ToArray();
         if (allFields.Length == 0)
-            return Enumerable.Empty<GravityField>();
+            return [];
 
         var tallRect = new Rectangle((int)X, (int)Y - 2, (int)Width, (int)Height + 4);
         var wideRect = new Rectangle((int)X - 2, (int)Y, (int)Width + 4, (int)Height);
@@ -587,7 +586,7 @@ public class GravityField : GravityTrigger, IConnectableField
     [Tracked]
     internal class GravityFieldGroup : ConnectedFieldRenderer<GravityField>
     {
-        public readonly List<GravityField> Fields = new();
+        public readonly List<GravityField> Fields = [];
         public readonly GravityField Owner;
 
         public GravityFieldGroup(GravityField owner)

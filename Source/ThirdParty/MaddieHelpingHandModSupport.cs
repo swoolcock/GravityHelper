@@ -153,7 +153,7 @@ internal class MaddieHelpingHandModSupport : ThirdPartyModSupport
                 self.Add(new LedgeBlocker
                 {
                     Blocking = false,
-                    BlockChecker = player => (bool)method.Invoke(self, new object[] { player }),
+                    BlockChecker = player => (bool)method.Invoke(self, [player]),
                 });
             }
 

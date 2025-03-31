@@ -151,7 +151,7 @@ internal static class EntityExtensions
 
     #region UpsideDownJumpThru Collision Helpers
 
-    private static readonly List<Entity> _entityList = new List<Entity>();
+    private static readonly List<Entity> _entityList = [];
 
     public static bool CollideCheckUpsideDownJumpThru(this Entity entity)
     {

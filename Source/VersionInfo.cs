@@ -78,7 +78,7 @@ public struct VersionInfo : IComparable<VersionInfo> {
         return str;
     }
 
-    private static readonly char[] separators = { '.' };
+    private static readonly char[] separators = ['.'];
     public static bool TryParse(string input, out VersionInfo result) {
         result = default;
         if (string.IsNullOrEmpty(input)) return false;

@@ -1,13 +1,7 @@
 // Copyright (c) Shane Woolcock. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
-using System;
-using Microsoft.Xna.Framework;
-using Mono.Cecil.Cil;
-using Monocle;
-using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
-using MonoMod.Utils;
 
 // ReSharper disable InconsistentNaming
 

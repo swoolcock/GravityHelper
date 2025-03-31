@@ -96,7 +96,7 @@ public class ConnectedFieldRenderer<TEntity> : Entity
         public Color Color { get; }
 
         private readonly List<TEntity> _list;
-        private readonly List<Edge> _edges = new List<Edge>();
+        private readonly List<Edge> _edges = [];
         public VirtualMap<bool> Tiles;
         private Rectangle _levelTileBounds;
         private bool _dirty;
@@ -176,12 +176,12 @@ public class ConnectedFieldRenderer<TEntity> : Entity
                 return;
 
             Point[] pointArray =
-            {
+            [
                 new Point(0, -1),
                 new Point(0, 1),
                 new Point(-1, 0),
-                new Point(1, 0),
-            };
+                new Point(1, 0)
+            ];
 
             foreach (var parent in _list)
             {

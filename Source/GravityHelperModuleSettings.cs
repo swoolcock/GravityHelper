@@ -12,7 +12,6 @@ using Celeste.Mod.GravityHelper.Entities.Controllers;
 using Celeste.Mod.GravityHelper.Entities.UI;
 using Celeste.Mod.GravityHelper.Extensions;
 using FMOD.Studio;
-using Microsoft.Xna.Framework;
 using Monocle;
 
 namespace Celeste.Mod.GravityHelper;

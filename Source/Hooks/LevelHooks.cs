@@ -225,7 +225,7 @@ internal static class LevelHooks
         GravityHelperModule.ClearStatics();
 
         // find all gravity controllers
-        var entities = self.Session.MapData?.Levels?.SelectMany(l => l.Entities) ?? Enumerable.Empty<EntityData>();
+        var entities = self.Session.MapData?.Levels?.SelectMany(l => l.Entities) ?? [];
         var controllers = entities.Where(d => d.Name.StartsWith("GravityHelper") && d.Name.Contains("Controller")).ToArray();
 
         // log controller warnings if required
@@ -255,7 +255,7 @@ internal static class LevelHooks
 
         replaceRefills(self);
 
-        var triggers = self.Session.MapData?.Levels?.SelectMany(l => l.Triggers) ?? Enumerable.Empty<EntityData>();
+        var triggers = self.Session.MapData?.Levels?.SelectMany(l => l.Triggers) ?? [];
         var hasVvvvvvTriggers = triggers.Any(e => e.Name == "GravityHelper/VvvvvvTrigger");
         var hasCassetteControllers = controllers.Any(e => e.Name == "GravityHelper/CassetteGravityController");
 

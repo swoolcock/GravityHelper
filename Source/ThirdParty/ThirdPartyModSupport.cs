@@ -11,7 +11,7 @@ namespace Celeste.Mod.GravityHelper.ThirdParty;
 internal abstract class ThirdPartyModSupport : IDisposable
 {
     // ReSharper disable once InconsistentNaming
-    public static readonly List<string> BlacklistedMods = new();
+    public static readonly List<string> BlacklistedMods = [];
 
     private bool _loaded;
 

@@ -79,7 +79,7 @@ internal static class TrackerExtensions
     public static IEnumerable<Entity> GetEntitiesOrEmpty(this Tracker tracker, Type entityType, Func<Entity, bool> predicate = null)
     {
         if (entityType == null || !tracker.Entities.TryGetValue(entityType, out var list))
-            return Enumerable.Empty<Entity>();
+            return [];
         return predicate == null ? list : list.Where(predicate);
     }
 
@@ -107,7 +107,7 @@ internal static class TrackerExtensions
     public static IEnumerable<Component> GetComponentsOrEmpty(this Tracker tracker, Type entityType, Func<Component, bool> predicate = null)
     {
         if (entityType == null || !tracker.Components.TryGetValue(entityType, out var list))
-            return Enumerable.Empty<Component>();
+            return [];
         return predicate == null ? list : list.Where(predicate);
     }
 }
