@@ -74,19 +74,25 @@ public class GravityDreamBlock : DreamBlock
         Depth--;
     }
 
+    public override void Added(Scene scene)
+    {
+        base.Added(scene);
+        // we need to add the accessibility listener in Added to ensure that the Scene is always set
+        if (Get<AccessibilityListener>() == null)
+            Add(new AccessibilityListener(InitialiseParticleColors));
+    }
+
     public void InitialiseParticleColors()
     {
         using var _ = new PushRandomDisposable(Scene);
         var baseColor = ParticleColor ?? GravityType.Color();
-        if (particles is Array particlesArray)
+
+        for (int i = 0; i < particles.Length; i++)
         {
-            for (int i = 0; i < particlesArray.Length; i++)
-            {
-                var particle = (DreamParticle)particlesArray.GetValue(i);
-                var lightness = -0.25f + Calc.Random.NextFloat();
-                particle.Color = baseColor.Lighter(lightness);
-                particlesArray.SetValue(particle, i);
-            }
+            var particle = particles[i];
+            var lightness = -0.25f + Calc.Random.NextFloat();
+            particle.Color = baseColor.Lighter(lightness);
+            particles[i] = particle;
         }
     }
 
