@@ -35,6 +35,7 @@ public class GravityHelperModuleSettings : EverestModuleSettings
     public bool FieldEdges { get; set; }
     public bool FieldParticles { get; set; }
     public int FieldOpacity { get; set; } = -1;
+    public bool HighVisibilityLines { get; set; }
     public ColorSchemeSetting ColorSchemeType { get; set; }
     public GravityColorScheme CustomColorScheme { get; set; }
 
@@ -264,6 +265,16 @@ public class GravityHelperModuleSettings : EverestModuleSettings
         });
 
         // Field Opacity
+
+        // High Vis Lines
+        menu.Add(new ColorChangeOnOff(Dialog.Clean("GRAVITYHELPER_MENU_ACCESS_HIGH_VIS_LINES"), HighVisibilityLines, false)
+        {
+            OnValueChange = value =>
+            {
+                HighVisibilityLines = value;
+                NotifyAccessibilityChange();
+            }
+        });
 
         // Colour Scheme
         menu.Add(new ColorChangeTextMenuOption<ColorSchemeSetting>(Dialog.Clean("GRAVITYHELPER_MENU_ACCESS_COLOR_SCHEME"))
