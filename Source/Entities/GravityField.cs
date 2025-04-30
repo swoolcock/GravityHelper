@@ -342,8 +342,8 @@ public class GravityField : GravityTrigger, IConnectableField
             _particleDensity = visualController.FieldParticleDensity;
         }
 
-        if (GravityHelperModule.Settings.GetColorScheme() is { } colorScheme)
-            FieldColor = colorScheme[GravityType] * _fieldOpacity;
+        if (GravityHelperModule.Settings.ForceColorScheme)
+            FieldColor = GravityType.Color() * _fieldOpacity;
         else
             FieldColor = (string.IsNullOrWhiteSpace(_fieldColor) ? GravityType.Color() : Calc.HexToColor(_fieldColor)) * _fieldOpacity;
 

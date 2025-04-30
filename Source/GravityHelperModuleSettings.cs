@@ -36,6 +36,7 @@ public class GravityHelperModuleSettings : EverestModuleSettings
     public bool FieldParticles { get; set; }
     public int FieldOpacity { get; set; } = -1;
     public bool HighVisibilityLines { get; set; }
+    public bool ForceColorScheme { get; set; }
     public ColorSchemeSetting ColorSchemeType { get; set; }
     public GravityColorScheme CustomColorScheme { get; set; }
 
@@ -92,16 +93,13 @@ public class GravityHelperModuleSettings : EverestModuleSettings
 
     public enum ColorSchemeSetting
     {
-        [SettingsEnumCase("GRAVITYHELPER_ENUM_COLORSCHEMESETTING_DEFAULT")]
-        Default,
         Classic,
         Colorblind,
         Custom,
     }
 
-    internal GravityColorScheme? GetColorScheme() => ColorSchemeType switch
+    internal GravityColorScheme GetColorScheme() => ColorSchemeType switch
     {
-        ColorSchemeSetting.Default => null,
         ColorSchemeSetting.Classic => GravityColorScheme.Classic,
         ColorSchemeSetting.Colorblind => GravityColorScheme.Colorblind,
         ColorSchemeSetting.Custom => CustomColorScheme,

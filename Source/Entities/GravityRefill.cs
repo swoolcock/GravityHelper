@@ -38,31 +38,6 @@ public class GravityRefill : Entity
     private VertexLight _light;
     private SineWave _sine;
 
-    // particles
-    public static readonly ParticleType P_Shatter = new ParticleType(Refill.P_Shatter)
-    {
-        Color = Color.Purple,
-        Color2 = Color.MediumPurple,
-    };
-
-    public static readonly ParticleType P_Regen = new ParticleType(Refill.P_Regen)
-    {
-        Color = Color.BlueViolet,
-        Color2 = Color.Violet,
-    };
-
-    public static readonly ParticleType P_Glow_Normal = new ParticleType(Refill.P_Glow)
-    {
-        Color = Color.Blue,
-        Color2 = Color.BlueViolet,
-    };
-
-    public static readonly ParticleType P_Glow_Inverted = new ParticleType(Refill.P_Glow)
-    {
-        Color = Color.Red,
-        Color2 = Color.MediumVioletRed,
-    };
-
     private Level _level;
     private float _respawnTimeRemaining;
     private float _arrowIntervalOffset;
@@ -171,10 +146,11 @@ public class GravityRefill : Entity
         }
         else if (Scene.OnInterval(0.1f) && !_isWall)
         {
+            var colorScheme = GravityHelperModule.Settings.GetColorScheme();
             var offset = Vector2.UnitY * (_emitNormal ? 5f : -5f);
             var range = Vector2.One * 4f;
             var direction = Vector2.UnitY.Angle() * (_emitNormal ? 1 : -1);
-            var p_glow = _emitNormal ? P_Glow_Normal : P_Glow_Inverted;
+            var p_glow = _emitNormal ? colorScheme.P_GravityRefill_Glow_Normal : colorScheme.P_GravityRefill_Glow_Inverted;
             _level.ParticlesFG.Emit(p_glow, 1, Position + offset, range, direction);
             _emitNormal = !_emitNormal;
         }
@@ -213,7 +189,8 @@ public class GravityRefill : Entity
         _wiggler?.Start();
         Audio.Play(SFX.game_gen_diamond_return, Center);
 
-        _level.ParticlesFG.Emit(P_Regen, 16, Center, Vector2.One * 2f);
+        var colorScheme = GravityHelperModule.Settings.GetColorScheme();
+        _level.ParticlesFG.Emit(colorScheme.P_GravityRefill_Regen, 16, Center, Vector2.One * 2f);
     }
 
     private void updateSpritePos()
@@ -349,8 +326,9 @@ public class GravityRefill : Entity
         if (!_isWall)
         {
             float direction = player.Speed.Angle();
-            refill._level.ParticlesFG.Emit(P_Shatter, 5, refill.Position, Vector2.One * 4f, direction - (float)Math.PI / 2f);
-            refill._level.ParticlesFG.Emit(P_Shatter, 5, refill.Position, Vector2.One * 4f, direction + (float)Math.PI / 2f);
+            var colorScheme = GravityHelperModule.Settings.GetColorScheme();
+            refill._level.ParticlesFG.Emit(colorScheme.P_GravityRefill_Shatter, 5, refill.Position, Vector2.One * 4f, direction - (float)Math.PI / 2f);
+            refill._level.ParticlesFG.Emit(colorScheme.P_GravityRefill_Shatter, 5, refill.Position, Vector2.One * 4f, direction + (float)Math.PI / 2f);
             SlashFx.Burst(refill.Position, direction);
         }
 

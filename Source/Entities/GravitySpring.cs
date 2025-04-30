@@ -246,7 +246,7 @@ public class GravitySpring : Spring
     private void onAccessibilityChange()
     {
         var colorScheme = GravityHelperModule.Settings.GetColorScheme();
-        var hasColorScheme = colorScheme is not null;
+        var isClassic = GravityHelperModule.Settings.ColorSchemeType is GravityHelperModuleSettings.ColorSchemeSetting.Classic;
 
         if (Scene != null && _indicatorRenderer == null && GravityType is GravityType.Normal or GravityType.Inverted or GravityType.Toggle)
         {
@@ -254,8 +254,8 @@ public class GravitySpring : Spring
         }
 
         var overlayAnimId = getOverlayAnimId("idle");
-        _overlaySprite.Visible = (_showOverlay || hasColorScheme) && _overlaySprite.Has(overlayAnimId);
-        _overlaySprite.Color = !hasColorScheme ? Color.White : colorScheme.Value[GravityType];
+        _overlaySprite.Visible = (_showOverlay || !isClassic) && _overlaySprite.Has(overlayAnimId);
+        _overlaySprite.Color = !isClassic ? Color.White : colorScheme[GravityType];
         if (_overlaySprite.Visible) _overlaySprite.PlayIfAvailable(overlayAnimId);
 
         _indicatorRenderer?.UpdateIndicator();

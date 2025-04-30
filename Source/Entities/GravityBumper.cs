@@ -12,15 +12,6 @@ namespace Celeste.Mod.GravityHelper.Entities;
 [CustomEntity("GravityHelper/GravityBumper")]
 public class GravityBumper : Bumper
 {
-    // ReSharper disable InconsistentNaming
-    private readonly ParticleType P_Ambience_Normal = new ParticleType(P_Ambience);
-    private readonly ParticleType P_Ambience_Inverted = new ParticleType(P_Ambience);
-    private readonly ParticleType P_Ambience_Toggle = new ParticleType(P_Ambience);
-    private readonly ParticleType P_Launch_Normal = new ParticleType(P_Launch);
-    private readonly ParticleType P_Launch_Inverted = new ParticleType(P_Launch);
-    private readonly ParticleType P_Launch_Toggle = new ParticleType(P_Launch);
-    // ReSharper restore InconsistentNaming
-
     // ReSharper disable NotAccessedField.Local
     private readonly VersionInfo _modVersion;
     private readonly VersionInfo _pluginVersion;
@@ -115,13 +106,6 @@ public class GravityBumper : Bumper
 
     private void onAccessibilityChange()
     {
-        const float lightness = 0.5f;
-        P_Launch_Normal.Color = P_Ambience_Normal.Color = GravityType.Normal.Color();
-        P_Launch_Normal.Color2 = P_Ambience_Normal.Color2 = GravityType.Normal.Color().Lighter(lightness);
-        P_Launch_Inverted.Color = P_Ambience_Inverted.Color = GravityType.Inverted.Color();
-        P_Launch_Inverted.Color2 = P_Ambience_Inverted.Color2 = GravityType.Inverted.Color().Lighter(lightness);
-        P_Launch_Toggle.Color = P_Ambience_Toggle.Color = GravityType.Toggle.Color();
-        P_Launch_Toggle.Color2 = P_Ambience_Toggle.Color2 = GravityType.Toggle.Color().Lighter(lightness);
         if (_rippleSprite != null) _rippleSprite.Color = GravityType.HighlightColor();
     }
 
@@ -163,29 +147,12 @@ public class GravityBumper : Bumper
             bloom.Visible = false;
 
             // effects
+            var colorScheme = GravityHelperModule.Settings.GetColorScheme();
             SceneAs<Level>().DirectionalShake(launchDirection, 0.15f);
             SceneAs<Level>().Displacement.AddBurst(Center, 0.3f, 8f, 32f, 0.8f);
-            SceneAs<Level>().Particles.Emit(GetLaunchParticleType(), 12, Center + launchDirection * 12f, Vector2.One * 3f, launchDirection.Angle());
+            SceneAs<Level>().Particles.Emit(colorScheme.GetBumperLaunchParticleType(GravityType), 12, Center + launchDirection * 12f, Vector2.One * 3f, launchDirection.Angle());
         }
     }
-
-    public ParticleType GetAmbientParticleType() =>
-        GravityType switch
-        {
-            GravityType.Normal => P_Ambience_Normal,
-            GravityType.Inverted => P_Ambience_Inverted,
-            GravityType.Toggle => P_Ambience_Toggle,
-            _ => P_Ambience,
-        };
-
-    public ParticleType GetLaunchParticleType() =>
-        GravityType switch
-        {
-            GravityType.Normal => P_Launch_Normal,
-            GravityType.Inverted => P_Launch_Inverted,
-            GravityType.Toggle => P_Launch_Toggle,
-            _ => P_Launch,
-        };
 
     public override void Added(Scene scene)
     {

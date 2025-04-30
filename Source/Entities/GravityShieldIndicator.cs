@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using Celeste.Mod.GravityHelper.Components;
+using Celeste.Mod.GravityHelper.Extensions;
 using Microsoft.Xna.Framework;
 using Monocle;
 
@@ -22,13 +24,7 @@ public class GravityShieldIndicator : Entity
     private readonly List<Vector2> _particles = [];
     private readonly float[] _speeds = [1.5f, 2f, 2.5f];
 
-    private readonly Color[] _particleColors =
-    [
-        Color.Blue,
-        Color.BlueViolet,
-        Color.Red,
-        Color.MediumVioletRed
-    ];
+    private Color[] _particleColors = [];
 
     private readonly BloomPoint _bloom;
     private readonly VertexLight _light;
@@ -53,6 +49,26 @@ public class GravityShieldIndicator : Entity
             float length = (radius - 1) * (float)Math.Sqrt(Calc.Random.NextFloat());
             _particles.Add(new Vector2((float)Math.Cos(angle) * length, (float)Math.Sin(angle) * length));
         }
+
+        Add(new AccessibilityListener(onAccessibilityChange));
+        onAccessibilityChange();
+    }
+
+    private void onAccessibilityChange()
+    {
+        var colorScheme = GravityHelperModule.Settings.GetColorScheme();
+        colorScheme.NormalColor.ToHSV(out float normalHue, out float normalSaturation, out float normalValue);
+        colorScheme.InvertedColor.ToHSV(out float invertedHue, out float invertedSaturation, out float invertedValue);
+        var blueVioletFromNormal = ColorExtensions.FromHSV(normalHue + 31, normalSaturation * 0.81f, normalValue * 0.89f);
+        var mediumVioletRedFromInverted = ColorExtensions.FromHSV(invertedHue - 38, invertedSaturation * 0.89f, invertedValue * 0.78f);
+
+        _particleColors =
+        [
+            colorScheme.NormalColor,
+            blueVioletFromNormal,
+            colorScheme.InvertedColor,
+            mediumVioletRedFromInverted
+        ];
     }
 
     public override void Update()

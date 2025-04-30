@@ -21,26 +21,9 @@ public class InversionBlock : Solid
 
     private const int tile_size = 8;
 
-    private readonly ParticleType _normalInvertedParticleType = new ParticleType(Player.P_Split)
-    {
-        Color = GravityType.Normal.Color().Lighter(),
-        Color2 = GravityType.Inverted.Color().Lighter(),
-        DirectionRange = (float)Math.PI / 4f,
-    };
-
-    private readonly ParticleType _normalToggleParticleType = new ParticleType(Player.P_Split)
-    {
-        Color = GravityType.Normal.Color().Lighter(),
-        Color2 = GravityType.Toggle.Color().Lighter(),
-        DirectionRange = (float)Math.PI / 4f,
-    };
-
-    private readonly ParticleType _invertedToggleParticleType = new ParticleType(Player.P_Split)
-    {
-        Color = GravityType.Inverted.Color().Lighter(),
-        Color2 = GravityType.Toggle.Color().Lighter(),
-        DirectionRange = (float)Math.PI / 4f,
-    };
+    private ParticleType _normalInvertedParticleType;
+    private ParticleType _normalToggleParticleType;
+    private ParticleType _invertedToggleParticleType;
 
     private ParticleType particleTypeForGravity(GravityType inType, GravityType outType) => inType switch
     {
@@ -166,10 +149,6 @@ public class InversionBlock : Solid
 
         if (GiveGravityRefill)
         {
-            p_shatter = GravityRefill.P_Shatter;
-            p_regen = GravityRefill.P_Regen;
-            p_glow1 = GravityRefill.P_Glow_Normal;
-            p_glow2 = GravityRefill.P_Glow_Inverted;
             Add(_refillSprite = GFX.SpriteBank.Create("gravityRefill"));
             Add(_refillOutlineImage = new Image(GFX.Game["objects/GravityHelper/gravityRefill/outline"]));
         }
@@ -247,16 +226,24 @@ public class InversionBlock : Solid
         }
 
         Add(new AccessibilityListener(onAccessibilityChange));
+        onAccessibilityChange();
     }
 
     private void onAccessibilityChange()
     {
-        _normalInvertedParticleType.Color = GravityType.Normal.Color().Lighter();
-        _normalInvertedParticleType.Color2 = GravityType.Inverted.Color().Lighter();
-        _normalToggleParticleType.Color = GravityType.Normal.Color().Lighter();
-        _normalToggleParticleType.Color2 = GravityType.Toggle.Color().Lighter();
-        _invertedToggleParticleType.Color = GravityType.Inverted.Color().Lighter();
-        _invertedToggleParticleType.Color2 = GravityType.Toggle.Color().Lighter();
+        var colorScheme = GravityHelperModule.Settings.GetColorScheme();
+
+        if (GiveGravityRefill)
+        {
+            p_shatter = colorScheme.P_GravityRefill_Shatter;
+            p_regen = colorScheme.P_GravityRefill_Regen;
+            p_glow1 = colorScheme.P_GravityRefill_Glow_Normal;
+            p_glow2 = colorScheme.P_GravityRefill_Glow_Inverted;
+        }
+
+        _normalInvertedParticleType = colorScheme.P_InversionBlock_NormalInverted;
+        _normalToggleParticleType = colorScheme.P_InversionBlock_NormalToggle;
+        _invertedToggleParticleType = colorScheme.P_InversionBlock_InvertedToggle;
     }
 
     public override void Added(Scene scene)
