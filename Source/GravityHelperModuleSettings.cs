@@ -265,7 +265,7 @@ public class GravityHelperModuleSettings : EverestModuleSettings
         });
 
         // Field Opacity
-        menu.Add(new ColorChangePercent(Dialog.Clean("GRAVITYHELPER_MENU_ACCESS_FIELD_OPACITY"), true, FieldOpacity, -1)
+        menu.Add(new ColorChangePercent(Dialog.Clean("GRAVITYHELPER_MENU_ACCESS_FIELD_OPACITY"), Dialog.Clean("GRAVITYHELPER_ENUM_ACCESS_FIELD_OPACITY_DEFAULT"), FieldOpacity, -1)
         {
             OnValueChange = value =>
             {

@@ -605,6 +605,12 @@ public class GravityField : GravityTrigger, IConnectableField
                 field.configure(scene);
             CreateComponents(Fields, forceRebuild);
         }
+
+        protected override void OnRenderBloom()
+        {
+            if (GravityHelperModule.Settings.FieldOpacity >= 0) return;
+            base.OnRenderBloom();
+        }
     }
 
     // ReSharper disable UnusedMember.Global

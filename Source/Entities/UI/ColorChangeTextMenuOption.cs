@@ -45,9 +45,17 @@ internal class ColorChangeOnOff : ColorChangeTextMenuOption<bool>
 
 internal class ColorChangePercent : ColorChangeTextMenuOption<int>
 {
-    public ColorChangePercent(string label, bool includeDefault, int currentValue, int defaultValue = 50) : base(label, defaultValue)
+    public ColorChangePercent(string label, int currentValue, int defaultValue = 50) : base(label, defaultValue)
     {
-        if (includeDefault) Add("Default", -1, currentValue < 0);
+        for (int i = 0; i <= 100; i += 10)
+        {
+            Add($"{i}%", i, currentValue == i);
+        }
+    }
+
+    public ColorChangePercent(string label, string defaultLabel, int currentValue, int defaultValue = -1) : base(label, defaultValue)
+    {
+        Add(defaultLabel, -1, currentValue < 0);
         for (int i = 0; i <= 100; i += 10)
         {
             Add($"{i}%", i, currentValue == i);

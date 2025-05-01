@@ -24,10 +24,10 @@ public class ConnectedFieldRenderer<TEntity> : Entity
         Tag = Tags.TransitionUpdate;
         Depth = 1;
 
-        Add(new CustomBloom(onRenderBloom));
+        Add(new CustomBloom(OnRenderBloom));
     }
 
-    private void onRenderBloom()
+    protected virtual void OnRenderBloom()
     {
         foreach (var fieldGroup in Components.GetAll<FieldGroupRenderer>())
             fieldGroup.OnRenderBloom();
