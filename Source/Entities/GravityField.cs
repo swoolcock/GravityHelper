@@ -342,10 +342,14 @@ public class GravityField : GravityTrigger, IConnectableField
             _particleDensity = visualController.FieldParticleDensity;
         }
 
-        if (GravityHelperModule.Settings.ForceColorScheme)
-            FieldColor = GravityType.Color() * _fieldOpacity;
+        var opacity = (GravityHelperModule.Settings.FieldOpacity < 0
+            ? _fieldOpacity
+            : GravityHelperModule.Settings.FieldOpacity / 100f).Clamp01();
+
+        if (GravityHelperModule.Settings.ColorSchemeType is not GravityHelperModuleSettings.ColorSchemeSetting.Default)
+            FieldColor = GravityType.Color() * opacity;
         else
-            FieldColor = (string.IsNullOrWhiteSpace(_fieldColor) ? GravityType.Color() : Calc.HexToColor(_fieldColor)) * _fieldOpacity;
+            FieldColor = (string.IsNullOrWhiteSpace(_fieldColor) ? GravityType.Color() : Calc.HexToColor(_fieldColor)) * opacity;
 
         ArrowColor = Calc.HexToColor(!string.IsNullOrWhiteSpace(_arrowColor) ? _arrowColor : DEFAULT_ARROW_COLOR);
         ParticleColor = Calc.HexToColor(!string.IsNullOrWhiteSpace(_particleColor) ? _particleColor : DEFAULT_PARTICLE_COLOR);

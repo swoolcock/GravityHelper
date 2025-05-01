@@ -36,9 +36,8 @@ public class GravityHelperModuleSettings : EverestModuleSettings
     public bool FieldParticles { get; set; }
     public int FieldOpacity { get; set; } = -1;
     public bool HighVisibilityLines { get; set; }
-    public bool ForceColorScheme { get; set; }
     public ColorSchemeSetting ColorSchemeType { get; set; }
-    public GravityColorScheme CustomColorScheme { get; set; }
+    // public GravityColorScheme CustomColorScheme { get; set; }
 
     // default to zero to indicate this is the first execution since versioning was introduced
     public int SettingsVersion { get; set; }
@@ -93,16 +92,19 @@ public class GravityHelperModuleSettings : EverestModuleSettings
 
     public enum ColorSchemeSetting
     {
+        [SettingsEnumCase("GRAVITYHELPER_ENUM_COLORSCHEMESETTING_DEFAULT")]
+        Default,
         Classic,
         Colorblind,
-        Custom,
+        // Custom,
     }
 
     internal GravityColorScheme GetColorScheme() => ColorSchemeType switch
     {
+        ColorSchemeSetting.Default => GravityColorScheme.Classic,
         ColorSchemeSetting.Classic => GravityColorScheme.Classic,
         ColorSchemeSetting.Colorblind => GravityColorScheme.Colorblind,
-        ColorSchemeSetting.Custom => CustomColorScheme,
+        // ColorSchemeSetting.Custom => CustomColorScheme,
         _ => throw new ArgumentOutOfRangeException()
     };
 
@@ -263,6 +265,14 @@ public class GravityHelperModuleSettings : EverestModuleSettings
         });
 
         // Field Opacity
+        menu.Add(new ColorChangePercent(Dialog.Clean("GRAVITYHELPER_MENU_ACCESS_FIELD_OPACITY"), true, FieldOpacity, -1)
+        {
+            OnValueChange = value =>
+            {
+                FieldOpacity = value;
+                NotifyAccessibilityChange();
+            }
+        });
 
         // High Vis Lines
         menu.Add(new ColorChangeOnOff(Dialog.Clean("GRAVITYHELPER_MENU_ACCESS_HIGH_VIS_LINES"), HighVisibilityLines, false)

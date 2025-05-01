@@ -42,3 +42,15 @@ internal class ColorChangeOnOff : ColorChangeTextMenuOption<bool>
         Add(Dialog.Clean("options_on"), true, on);
     }
 }
+
+internal class ColorChangePercent : ColorChangeTextMenuOption<int>
+{
+    public ColorChangePercent(string label, bool includeDefault, int currentValue, int defaultValue = 50) : base(label, defaultValue)
+    {
+        if (includeDefault) Add("Default", -1, currentValue < 0);
+        for (int i = 0; i <= 100; i += 10)
+        {
+            Add($"{i}%", i, currentValue == i);
+        }
+    }
+}
