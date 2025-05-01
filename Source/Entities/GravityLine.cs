@@ -58,8 +58,6 @@ public class GravityLine : Entity
     private float _flashTimeRemaining;
     private float _audioMuffleSecondsRemaining;
 
-    private bool _highVisibilityLines;
-
     public GravityLine(EntityData data, Vector2 offset)
         : base(data.Position + offset)
     {
@@ -89,14 +87,6 @@ public class GravityLine : Entity
         EntityTypes = affectsPlayer ? TriggeredEntityTypes.Player : TriggeredEntityTypes.None;
         if (affectsHoldableActors) EntityTypes |= TriggeredEntityTypes.HoldableActors;
         if (affectsOtherActors) EntityTypes |= TriggeredEntityTypes.NonHoldableActors;
-
-        Add(new AccessibilityListener(onAccessibilityChange));
-        onAccessibilityChange();
-    }
-
-    private void onAccessibilityChange()
-    {
-        _highVisibilityLines = GravityHelperModule.Settings.HighVisibilityLines;
     }
 
     public override void Update()
@@ -244,9 +234,15 @@ public class GravityLine : Entity
     {
         base.Render();
 
-        var alpha = FlashTime == 0 ? MaxAlpha : Calc.LerpClamp(MinAlpha, MaxAlpha, _flashTimeRemaining / FlashTime);
-        var lineColor = _highVisibilityLines ? Color.White : LineColor * alpha;
-        var lineThickness = _highVisibilityLines ? (DEFAULT_LINE_THICKNESS + 1) : LineThickness;
+        var highVis = GravityHelperModule.Settings.HighVisibilityLines;
+        var defaultScheme = GravityHelperModule.Settings.ColorSchemeType is GravityHelperModuleSettings.ColorSchemeSetting.Default;
+
+        var alpha = 1f;
+        if (!highVis) alpha = FlashTime == 0 ? MaxAlpha : Calc.LerpClamp(MinAlpha, MaxAlpha, _flashTimeRemaining / FlashTime);
+
+        var lineColor = defaultScheme ? LineColor * alpha : GravityType.Color();
+
+        var lineThickness = highVis ? (DEFAULT_LINE_THICKNESS + 1) : LineThickness;
         Draw.Line(Position.Round(), (Position + TargetOffset).Round(), lineColor, lineThickness);
     }
 
