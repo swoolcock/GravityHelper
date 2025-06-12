@@ -175,6 +175,7 @@ public class GravityHelperModule : EverestModule
             SpringHooks.Unload();
             StarJumpBlockHooks.Unload();
             TheoCrystalHooks.Unload();
+            TriggerSpikesHooks.Unload();
         }
 
         CurrentHookLevel = requiredHookLevel;
@@ -233,6 +234,7 @@ public class GravityHelperModule : EverestModule
             SpringHooks.Load();
             StarJumpBlockHooks.Load();
             TheoCrystalHooks.Load();
+            TriggerSpikesHooks.Load();
         }
     }
 
