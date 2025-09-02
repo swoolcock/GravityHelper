@@ -110,6 +110,9 @@ public static class GravityHelperExports
         }
     }
 
+    public static Component CreateAccessibilityListener(Action onAccessibilityChange) =>
+        new AccessibilityListener(onAccessibilityChange);
+
     public static Color GetColor(int gravityType) =>
         (GravityHelperModule.Settings.GetColorScheme() ?? GravityColorScheme.Classic)[(GravityType)gravityType];
 
