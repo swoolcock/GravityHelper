@@ -45,6 +45,7 @@ public class GravityRefill : Entity
     private bool _emitNormal;
     private bool _isWall;
     private float _wallAlpha = 0.8f;
+    private float _spriteAlpha = 1f;
     private WallRenderMode _wallRenderMode;
 
     // if set to true, dashing over the top of a gravity refill
@@ -203,82 +204,98 @@ public class GravityRefill : Entity
 
     public override void Render()
     {
-        if (!_isWall)
+        if (_isWall)
+        {
+            Camera camera = SceneAs<Level>().Camera;
+            if (Right < (double)camera.Left || Left > (double)camera.Right || Bottom < (double)camera.Top ||
+                Top > (double)camera.Bottom)
+                return;
+
+            getColors(out var fillColor, out var borderColor);
+
+            _spriteAlpha = 1f;
+
+            switch (_wallRenderMode)
+            {
+                case WallRenderMode.Flash when !OneUse:
+                case WallRenderMode.Filled when !OneUse:
+                    // draw outline 1 pixel out
+                    Draw.HollowRect(X - 1f, Y - 1f, Width + 2f, Height + 2f, borderColor);
+
+                    // draw filled rectangle 1 pixel in
+                    Draw.Rect(X + 1f, Y + 1f, Width - 2f, Height - 2f, fillColor);
+
+                    break;
+
+                case WallRenderMode.Flash when OneUse:
+                case WallRenderMode.Filled when OneUse:
+                    // draw a translucent outline 1 pixel out
+                    Draw.HollowRect(X - 1f, Y - 1f, Width + 2f, Height + 2f, borderColor * 0.6f);
+
+                    // draw horizontal segments 1 pixel out
+                    for (int index = 0; index < (double)Width; index += 8)
+                    {
+                        Draw.Line(TopLeft - Vector2.UnitY + Vector2.UnitX * (index + 2),
+                            TopLeft - Vector2.UnitY + Vector2.UnitX * (index + 6), borderColor);
+                        Draw.Line(BottomLeft + Vector2.UnitX * (index + 2), BottomLeft + Vector2.UnitX * (index + 6),
+                            borderColor);
+                    }
+
+                    // draw vertical segments 1 pixel out
+                    for (int index = 0; index < (double)Height; index += 8)
+                    {
+                        Draw.Line(TopLeft + Vector2.UnitY * (index + 2), TopLeft + Vector2.UnitY * (index + 6),
+                            borderColor);
+                        Draw.Line(TopRight + Vector2.UnitX + Vector2.UnitY * (index + 2),
+                            TopRight + Vector2.UnitX + Vector2.UnitY * (index + 6), borderColor);
+                    }
+
+                    // draw filled rectangle 1 pixel in
+                    Draw.Rect(X + 1f, Y + 1f, Width - 2f, Height - 2f, fillColor);
+
+                    break;
+
+                case WallRenderMode.Returning:
+                    // draw horizontal segments
+                    for (int index = 0; index < (double)Width; index += 8)
+                    {
+                        Draw.Line(TopLeft + Vector2.UnitX * (index + 2), TopLeft + Vector2.UnitX * (index + 6),
+                            borderColor);
+                        Draw.Line(BottomLeft - Vector2.UnitY + Vector2.UnitX * (index + 2),
+                            BottomLeft - Vector2.UnitY + Vector2.UnitX * (index + 6), borderColor);
+                    }
+
+                    // draw vertical segments
+                    for (int index = 0; index < (double)Height; index += 8)
+                    {
+                        Draw.Line(TopLeft + Vector2.UnitX + Vector2.UnitY * (index + 2),
+                            TopLeft + Vector2.UnitX + Vector2.UnitY * (index + 6), borderColor);
+                        Draw.Line(TopRight + Vector2.UnitY * (index + 2), TopRight + Vector2.UnitY * (index + 6),
+                            borderColor);
+                    }
+
+                    // set alpha on the sprites
+                    _spriteAlpha = 0.25f;
+
+                    break;
+            }
+        }
+
+        using (GravityHelperAPI.Exports.WithCustomTintShader())
         {
             if (_sprite.Visible)
+            {
+                var opaqueColor = GravityHelperModule.Settings.ColorSchemeType ==
+                                  GravityHelperModuleSettings.ColorSchemeSetting.Default
+                    ? Color.White
+                    : GravityHelperAPI.Exports.GetToggleColor();
+
+                _arrows.Color = _sprite.Color = opaqueColor * _spriteAlpha;
                 _sprite.DrawOutline();
+            }
+
             base.Render();
-            return;
         }
-
-        Camera camera = SceneAs<Level>().Camera;
-        if (Right < (double)camera.Left || Left > (double)camera.Right || Bottom < (double)camera.Top ||
-            Top > (double)camera.Bottom)
-            return;
-
-        getColors(out var fillColor, out var borderColor);
-
-        // make sure the sprites are opaque
-        _arrows.Color = _sprite.Color = Color.White;
-
-        switch (_wallRenderMode)
-        {
-            case WallRenderMode.Flash when !OneUse:
-            case WallRenderMode.Filled when !OneUse:
-                // draw outline 1 pixel out
-                Draw.HollowRect(X - 1f, Y - 1f, Width + 2f, Height + 2f, borderColor);
-
-                // draw filled rectangle 1 pixel in
-                Draw.Rect(X + 1f, Y + 1f, Width - 2f, Height - 2f, fillColor);
-
-                break;
-
-            case WallRenderMode.Flash when OneUse:
-            case WallRenderMode.Filled when OneUse:
-                // draw a translucent outline 1 pixel out
-                Draw.HollowRect(X - 1f, Y - 1f, Width + 2f, Height + 2f, borderColor * 0.6f);
-
-                // draw horizontal segments 1 pixel out
-                for (int index = 0; index < (double)Width; index += 8)
-                {
-                    Draw.Line(TopLeft - Vector2.UnitY + Vector2.UnitX * (index + 2), TopLeft - Vector2.UnitY + Vector2.UnitX * (index + 6), borderColor);
-                    Draw.Line(BottomLeft + Vector2.UnitX * (index + 2), BottomLeft + Vector2.UnitX * (index + 6), borderColor);
-                }
-
-                // draw vertical segments 1 pixel out
-                for (int index = 0; index < (double)Height; index += 8)
-                {
-                    Draw.Line(TopLeft + Vector2.UnitY * (index + 2), TopLeft + Vector2.UnitY * (index + 6), borderColor);
-                    Draw.Line(TopRight + Vector2.UnitX + Vector2.UnitY * (index + 2), TopRight + Vector2.UnitX + Vector2.UnitY * (index + 6), borderColor);
-                }
-
-                // draw filled rectangle 1 pixel in
-                Draw.Rect(X + 1f, Y + 1f, Width - 2f, Height - 2f, fillColor);
-
-                break;
-
-            case WallRenderMode.Returning:
-                // draw horizontal segments
-                for (int index = 0; index < (double)Width; index += 8)
-                {
-                    Draw.Line(TopLeft + Vector2.UnitX * (index + 2), TopLeft + Vector2.UnitX * (index + 6), borderColor);
-                    Draw.Line(BottomLeft - Vector2.UnitY + Vector2.UnitX * (index + 2), BottomLeft - Vector2.UnitY + Vector2.UnitX * (index + 6), borderColor);
-                }
-
-                // draw vertical segments
-                for (int index = 0; index < (double)Height; index += 8)
-                {
-                    Draw.Line(TopLeft + Vector2.UnitX + Vector2.UnitY * (index + 2), TopLeft + Vector2.UnitX + Vector2.UnitY * (index + 6), borderColor);
-                    Draw.Line(TopRight + Vector2.UnitY * (index + 2), TopRight + Vector2.UnitY * (index + 6), borderColor);
-                }
-
-                // set alpha on the sprites
-                _arrows.Color = _sprite.Color = Color.White * 0.25f;
-
-                break;
-        }
-
-        base.Render();
     }
 
     private void OnPlayer(Player player)
