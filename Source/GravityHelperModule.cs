@@ -80,7 +80,7 @@ public class GravityHelperModule : EverestModule
     {
         Settings.MigrateIfRequired();
 
-        typeof(GravityHelperExports).ModInterop();
+        typeof(GravityHelperAPI.Exports).ModInterop();
         typeof(SpeedrunToolImports).ModInterop();
 
         registerSpeedrunTool();
@@ -92,6 +92,8 @@ public class GravityHelperModule : EverestModule
 
         // always try CelesteNet
         ThirdPartyHooks.ForceLoadType(typeof(CelesteNetModSupport), HookLevel.Forced);
+
+        Everest.Events.AssetReload.OnAfterReload += AssetReload_OnAfterReload;
     }
 
     public override void Unload()
@@ -107,6 +109,8 @@ public class GravityHelperModule : EverestModule
         ThirdPartyHooks.ForceUnloadType(typeof(CelesteNetModSupport));
 
         unregisterSpeedrunTool();
+
+        Everest.Events.AssetReload.OnAfterReload -= AssetReload_OnAfterReload;
     }
 
     internal static HookLevel CurrentHookLevel = HookLevel.None;
@@ -301,6 +305,11 @@ public class GravityHelperModule : EverestModule
         Logger.Log(LogLevel.Info, nameof(GravityHelperModule), "Unregistering Speedrun Tool actions");
 
         SpeedrunToolImports.Unregister?.Invoke(_speedrunToolSaveLoadAction);
+    }
+
+    private void AssetReload_OnAfterReload(bool silent)
+    {
+        GravityHelperAPI.ClearTintEffect();
     }
 
     internal static void SaveState(Dictionary<Type, Dictionary<string, object>> dictionary, Level level)
