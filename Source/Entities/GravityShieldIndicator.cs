@@ -32,6 +32,8 @@ public class GravityShieldIndicator : Entity
     private const float bloom_alpha = 0.8f;
     private const float light_alpha = 1f;
 
+    private readonly Random _particleRandom = new();
+
     public GravityShieldIndicator()
     {
         Depth = Depths.Top;
@@ -42,7 +44,7 @@ public class GravityShieldIndicator : Entity
         Add(_bloom = new BloomPoint(0f, 16f),
             _light = new VertexLight(Color.White, 0f, 16, 48));
 
-        using var _ = new PushRandomDisposable(null);
+        using var _ = new PushRandomDisposable(_particleRandom);
         for (int index = 0; index < particle_count; ++index)
         {
             float angle = Calc.Random.NextAngle();
@@ -75,20 +77,18 @@ public class GravityShieldIndicator : Entity
     {
         base.Update();
 
-        if (Scene?.Tracker.GetEntity<Player>() is not { } player) return;
-        var offset = GravityHelperModule.ShouldInvertPlayer ? 4f : -4f;
-        Position = player.Center + Vector2.UnitY * offset;
+        using var _ = new PushRandomDisposable(_particleRandom);
 
         if (ShieldTimeRemaining > 0)
         {
-            using var _ = new PushRandomDisposable(Scene);
             for (int i = 0; i < _particles.Count; i++)
             {
+                // need to take a random sample every time
+                float angle = Calc.Random.NextAngle();
                 float maxMove = radius * _speeds[i % _speeds.Length];
                 _particles[i] = Calc.Approach(_particles[i], Vector2.Zero, maxMove * Engine.DeltaTime);
                 if (_particles[i].LengthSquared() < 8 * 8)
                 {
-                    float angle = Calc.Random.NextAngle();
                     const float length = radius - 1;
                     _particles[i] = new Vector2(length * (float)Math.Cos(angle), length * (float)Math.Sin(angle));
                 }
@@ -116,6 +116,8 @@ public class GravityShieldIndicator : Entity
         {
             var offset = GravityHelperModule.ShouldInvertPlayer ? 4f : -4f;
             var origin = player.Center + Vector2.UnitY * offset;
+
+            Position = player.Center + Vector2.UnitY * offset;
 
             for (var i = 0; i < _particles.Count; i++)
             {

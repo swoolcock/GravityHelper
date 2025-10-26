@@ -240,10 +240,9 @@ public class GravityLine : Entity
         var alpha = 1f;
         if (!highVis) alpha = FlashTime == 0 ? MaxAlpha : Calc.LerpClamp(MinAlpha, MaxAlpha, _flashTimeRemaining / FlashTime);
 
-        var lineColor = defaultScheme ? LineColor * alpha : GravityType.Color();
+        var lineColor = defaultScheme ? LineColor : GravityType.Color();
 
-        var lineThickness = highVis ? (DEFAULT_LINE_THICKNESS + 1) : LineThickness;
-        Draw.Line(Position.Round(), (Position + TargetOffset).Round(), lineColor, lineThickness);
+        Draw.Line(Position.Round(), (Position + TargetOffset).Round(), lineColor * alpha, LineThickness);
     }
 
     public override void DebugRender(Camera camera)

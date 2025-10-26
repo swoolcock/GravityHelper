@@ -13,6 +13,11 @@ internal struct PushRandomDisposable : IDisposable
         Calc.PushRandom(seed);
     }
 
+    public PushRandomDisposable(Random random)
+    {
+        Calc.PushRandom(random);
+    }
+
     public PushRandomDisposable(Scene scene)
     {
         Calc.PushRandom(AreaData.Get(scene ?? Engine.Scene)?.ID ?? 0);

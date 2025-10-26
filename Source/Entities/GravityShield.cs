@@ -99,9 +99,18 @@ public class GravityShield : Entity
 
     public override void Render()
     {
-        if (_sprite.Visible)
-            _sprite.DrawOutline();
-        base.Render();
+        var isDefault = GravityHelperModule.Settings.ColorSchemeType ==
+                        GravityHelperModuleSettings.ColorSchemeSetting.Default;
+
+        using (GravityHelperAPI.Exports.WithCustomTintShader())
+        {
+            if (_sprite.Visible)
+            {
+                _sprite.Color = isDefault ? Color.White : GravityType.Toggle.Color();
+                _sprite.DrawOutline();
+            }
+            base.Render();
+        }
     }
 
     private void updateY() => _sprite.Y = _bloom.Y = _sine.Value * 2f;
