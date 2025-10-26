@@ -288,7 +288,7 @@ public class GravityRefill : Entity
                 var opaqueColor = GravityHelperModule.Settings.ColorSchemeType ==
                                   GravityHelperModuleSettings.ColorSchemeSetting.Default
                     ? Color.White
-                    : GravityHelperAPI.Exports.GetToggleColor();
+                    : GravityType.Toggle.Color();
 
                 _arrows.Color = _sprite.Color = opaqueColor * _spriteAlpha;
                 _sprite.DrawOutline();
@@ -355,39 +355,50 @@ public class GravityRefill : Entity
 
     private void getColors(out Color fillColor, out Color borderColor)
     {
+        bool isDefault =
+            GravityHelperModule.Settings.ColorSchemeType is GravityHelperModuleSettings.ColorSchemeSetting.Default;
+
         switch (_wallRenderMode)
         {
             case WallRenderMode.Filled:
                 if (Dashes == 2)
                 {
-                    borderColor = Color.Orchid * _wallAlpha;
-                    fillColor = Color.DarkOrchid * _wallAlpha;
+                    borderColor = Color.Orchid;
+                    fillColor = Color.DarkOrchid;
                 }
                 else if (!RefillsDash)
                 {
-                    borderColor = Color.LightSkyBlue * _wallAlpha;
-                    fillColor = Color.CornflowerBlue * _wallAlpha;
+                    borderColor = Color.LightSkyBlue;
+                    fillColor = Color.CornflowerBlue;
+                }
+                else if (isDefault)
+                {
+                    borderColor = Color.BlueViolet;
+                    fillColor = Color.Indigo;
                 }
                 else
                 {
-                    borderColor = Color.BlueViolet * _wallAlpha;
-                    fillColor = Color.Indigo * _wallAlpha;
+                    borderColor = GravityType.Toggle.Color();
+                    fillColor = borderColor.Darker();
                 }
 
                 break;
 
             case WallRenderMode.Flash:
-                fillColor = borderColor = Color.White * _wallAlpha;
+                fillColor = borderColor = Color.White;
                 break;
 
             case WallRenderMode.Returning:
-                borderColor = Color.Gray * (_wallAlpha * 0.25f);
+                borderColor = Color.Gray * 0.25f;
                 fillColor = Color.Transparent;
                 break;
 
             default:
                 throw new ArgumentOutOfRangeException();
         }
+
+        borderColor *= _wallAlpha;
+        fillColor *= _wallAlpha;
     }
 
     private enum WallRenderMode
