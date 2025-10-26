@@ -106,7 +106,8 @@ public class GravityBumper : Bumper
 
     private void onAccessibilityChange()
     {
-        if (_rippleSprite != null) _rippleSprite.Color = GravityType.HighlightColor();
+        if (_rippleSprite != null)
+            _rippleSprite.Color = GravityType.RippleColor();
     }
 
     private new void OnPlayer(Player player)
@@ -195,16 +196,22 @@ public class GravityBumper : Bumper
 
     public override void Render()
     {
-        if (!spriteEvil.Visible && GravityHelperAPI.Exports.BeginCustomTintShader())
+        var scheme = GravityHelperModule.Settings.GetColorScheme();
+
+        if (!spriteEvil.Visible && GravityType != GravityType.None && scheme.NeedsShader)
         {
-            var oldSpriteColor = sprite.Color;
-            sprite.Color = GravityHelperAPI.Exports.GetColor((int)GravityType);
+            using (GravityHelperAPI.Exports.WithCustomTintShader())
+            {
+                if (_rippleSprite != null) _rippleSprite.Visible = false;
+                sprite.Color = GravityType.Color(scheme);
 
-            base.Render();
+                base.Render();
 
-            sprite.Color = oldSpriteColor;
+                sprite.Color = Color.White;
+                if (_rippleSprite != null) _rippleSprite.Visible = true;
+            }
 
-            GravityHelperAPI.Exports.EndCustomTintShader();
+            _rippleSprite?.Render();
         }
         else
             base.Render();

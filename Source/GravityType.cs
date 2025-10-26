@@ -54,4 +54,7 @@ internal static class GravityTypeExtensions
             _ => Microsoft.Xna.Framework.Color.White,
         };
     }
+
+    public static Color RippleColor(this GravityType type, GravityColorScheme scheme = null)
+        => type.Color(scheme).Saturation(2f);
 }

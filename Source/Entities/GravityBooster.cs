@@ -51,7 +51,8 @@ public class GravityBooster : Booster
 
     private void onAccessibilityChange()
     {
-        if (_rippleSprite != null) _rippleSprite.Color = GravityType.HighlightColor();
+        if (_rippleSprite != null)
+            _rippleSprite.Color = GravityType.RippleColor();
     }
 
     public override void Awake(Scene scene)
@@ -98,18 +99,20 @@ public class GravityBooster : Booster
 
     public override void Render()
     {
-        if (GravityHelperAPI.Exports.BeginCustomTintShader())
+        var scheme = GravityHelperModule.Settings.GetColorScheme();
+
+        if (scheme.NeedsShader)
         {
-            var oldSpriteColor = sprite.Color;
-            var oldOverlayColor = _overlaySprite.Color;
-            sprite.Color = _overlaySprite.Color = GravityHelperAPI.Exports.GetColor((int)GravityType);
-
+            _overlaySprite.Visible = false;
             base.Render();
+            _overlaySprite.Visible = true;
 
-            sprite.Color = oldSpriteColor;
-            _overlaySprite.Color = oldOverlayColor;
-
-            GravityHelperAPI.Exports.EndCustomTintShader();
+            using (GravityHelperAPI.Exports.WithCustomTintShader())
+            {
+                _overlaySprite.Color = GravityType.Color(scheme).Saturation(2f);
+                _overlaySprite.Render();
+                _overlaySprite.Color = Color.White;
+            }
         }
         else
             base.Render();

@@ -19,6 +19,12 @@ internal static class ColorExtensions
     // ReSharper disable once UnusedMember.Global
     public static Color Darker(this Color color, float amount = 0.1f) => color.Lighter(-amount);
 
+    public static Color Saturation(this Color color, float saturationMultiplier = 1f)
+    {
+        ToHSV(color, out float hue, out float saturation, out var value);
+        return FromHSV(hue, Calc.Clamp(saturation * saturationMultiplier, 0f, 1f), value);
+    }
+
     public static void ToHSV(this Color color, out float hue, out float saturation, out float value)
     {
         float r = color.R / 255f;

@@ -37,7 +37,6 @@ public class GravityHelperModuleSettings : EverestModuleSettings
     public int FieldOpacity { get; set; } = -1;
     public bool HighVisibilityLines { get; set; }
     public ColorSchemeSetting ColorSchemeType { get; set; }
-    // public GravityColorScheme CustomColorScheme { get; set; }
 
     // default to zero to indicate this is the first execution since versioning was introduced
     public int SettingsVersion { get; set; }
@@ -94,17 +93,13 @@ public class GravityHelperModuleSettings : EverestModuleSettings
     {
         [SettingsEnumCase("GRAVITYHELPER_ENUM_COLORSCHEMESETTING_DEFAULT")]
         Default,
-        Classic,
         Colorblind,
-        // Custom,
     }
 
     internal GravityColorScheme GetColorScheme() => ColorSchemeType switch
     {
         ColorSchemeSetting.Default => GravityColorScheme.Classic,
-        ColorSchemeSetting.Classic => GravityColorScheme.Classic,
         ColorSchemeSetting.Colorblind => GravityColorScheme.Colorblind,
-        // ColorSchemeSetting.Custom => CustomColorScheme,
         _ => throw new ArgumentOutOfRangeException()
     };
 

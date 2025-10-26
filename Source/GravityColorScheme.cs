@@ -42,6 +42,8 @@ public class GravityColorScheme
 
     #endregion
 
+    public bool NeedsShader;
+
     public Color this[GravityType type] =>
         type switch
         {
@@ -54,7 +56,7 @@ public class GravityColorScheme
     public static readonly GravityColorScheme Classic;
     public static readonly GravityColorScheme Colorblind;
 
-    private static GravityColorScheme CreateColorScheme(Color normalColor, Color invertedColor, Color toggleColor)
+    private static GravityColorScheme CreateColorScheme(Color normalColor, Color invertedColor, Color toggleColor, bool needsShader = true)
     {
         const float bumper_lightness = 0.5f;
 
@@ -72,6 +74,7 @@ public class GravityColorScheme
 
         return new()
         {
+            NeedsShader = needsShader,
             NormalColor = normalColor,
             InvertedColor = invertedColor,
             ToggleColor = toggleColor,
@@ -104,7 +107,7 @@ public class GravityColorScheme
     }
     static GravityColorScheme()
     {
-        Classic = CreateColorScheme(Color.Blue, Color.Red, Color.Purple);
+        Classic = CreateColorScheme(Color.Blue, Color.Red, Color.Purple, false);
 
         // Based on a colorblind friendly palette I was given, these shades of blue/red/yellow
         // appear to be a good compromise for visibility across different types of colorblindness.
@@ -130,4 +133,6 @@ public class GravityColorScheme
             GravityType.Toggle => P_GravityBumper_Launch_Toggle,
             _ => Bumper.P_Launch,
         };
+
+    public Color GetRippleColor(GravityType gravityType) => gravityType.Color(this).Saturation(2f);
 }
