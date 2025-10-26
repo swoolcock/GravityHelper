@@ -90,17 +90,17 @@ public class GravityColorScheme
             P_GravityRefill_Glow_Inverted = { Color = invertedColor, Color2 = mediumVioletRedFromInverted },
             P_InversionBlock_NormalInverted =
             {
-                Color = normalColor.Lighter(), Color2 = invertedColor.Lighter(),
+                Color = normalColor, Color2 = invertedColor,
                 DirectionRange = MathF.PI / 4f
             },
             P_InversionBlock_NormalToggle =
             {
-                Color = normalColor.Lighter(), Color2 = toggleColor.Lighter(),
+                Color = normalColor, Color2 = toggleColor,
                 DirectionRange = MathF.PI / 4f
             },
             P_InversionBlock_InvertedToggle =
             {
-                Color = invertedColor.Lighter(), Color2 = toggleColor.Lighter(),
+                Color = invertedColor, Color2 = toggleColor,
                 DirectionRange = MathF.PI / 4f
             },
         };

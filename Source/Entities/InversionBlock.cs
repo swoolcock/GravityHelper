@@ -321,6 +321,8 @@ public class InversionBlock : Solid
     {
         Position += _shakeOffset;
 
+        var scheme = GravityHelperModule.Settings.GetColorScheme();
+        var isDefault = GravityHelperModule.Settings.ColorSchemeType is GravityHelperModuleSettings.ColorSchemeSetting.Default;
         var leftTexture = !Edges.HasFlag(Edges.Left) ? null : textureForGravityType(LeftGravityType);
         var rightTexture = !Edges.HasFlag(Edges.Right) ? null : textureForGravityType(RightGravityType);
         var topTexture = !Edges.HasFlag(Edges.Top) ? null : _normalEdgeTexture;
@@ -331,12 +333,18 @@ public class InversionBlock : Solid
         var inactiveColor = new Color(0.5f, 0.5f, 0.5f);
         var expired = _blockUsed && BlockOneUse;
         var centreColor = expired ? inactiveColor : Color.White;
-        var leftColor = activeEdges.HasFlag(Edges.Left) ? activeColor : inactiveColor;
-        var rightColor = activeEdges.HasFlag(Edges.Right) ? activeColor : inactiveColor;
-        var topColor = activeEdges.HasFlag(Edges.Top) ? activeColor : inactiveColor;
-        var bottomColor = activeEdges.HasFlag(Edges.Bottom) ? activeColor : inactiveColor;
         int widthInTiles = (int) (Width / tile_size);
         int heightInTiles = (int) (Height / tile_size);
+
+        var leftColor = isDefault ? activeColor : LeftGravityType.Color(scheme);
+        var rightColor = isDefault ? activeColor : RightGravityType.Color(scheme);
+        var topColor = isDefault ? activeColor : GravityType.Normal.Color(scheme);
+        var bottomColor = isDefault ? activeColor : GravityType.Inverted.Color(scheme);
+
+        if (!activeEdges.HasFlag(Edges.Left)) leftColor = leftColor.MultiplyNoAlpha(0.5f);
+        if (!activeEdges.HasFlag(Edges.Right)) rightColor = rightColor.MultiplyNoAlpha(0.5f);
+        if (!activeEdges.HasFlag(Edges.Top)) topColor = topColor.MultiplyNoAlpha(0.5f);
+        if (!activeEdges.HasFlag(Edges.Bottom)) bottomColor = bottomColor.MultiplyNoAlpha(0.5f);
 
         // draw 9-patch if we don't have an autotile
         if (_tiles == null)
@@ -370,49 +378,63 @@ public class InversionBlock : Solid
             }
         }
 
-        // draw refill crystal if we have it
-        if (_refillSprite?.Visible == true) _refillSprite.Render();
-        if (_refillOutlineImage?.Visible == true) _refillOutlineImage.Render();
-
-        // only draw the edges if requested and if it's not expired
-        if (ShowEdgeIndicators && !expired)
+        if (_refillSprite?.Visible == true && !GiveGravityRefill)
         {
-            // top left corner
-            var position = TopLeft;
-            leftTexture?.Draw(position + origin, origin, leftColor, Vector2.One, (float)-Math.PI / 2, new Rectangle(2 * tile_size, 0, tile_size, tile_size));
-            topTexture?.Draw(position, Vector2.Zero, topColor, Vector2.One, 0f, new Rectangle(0, 0, tile_size, tile_size));
+            _refillSprite.Color = Color.White;
+            _refillSprite.Render();
+        }
 
-            // top right corner
-            position = TopRight - Vector2.UnitX * tile_size;
-            rightTexture?.Draw(position + origin, origin, rightColor, Vector2.One, (float)Math.PI / 2, new Rectangle(0, 0, tile_size, tile_size));
-            topTexture?.Draw(position, Vector2.Zero, topColor, Vector2.One, 0f, new Rectangle(2 * tile_size, 0, tile_size, tile_size));
-
-            // bottom left corner
-            position = BottomLeft - Vector2.UnitY * tile_size;
-            leftTexture?.Draw(position + origin, origin, leftColor, Vector2.One, (float)-Math.PI / 2, new Rectangle(0, 0, tile_size, tile_size));
-            bottomTexture?.Draw(position + origin, origin, bottomColor, Vector2.One, (float)Math.PI, new Rectangle(2 * tile_size, 0, tile_size, tile_size));
-
-            // bottom right corner
-            position = BottomRight - Vector2.One * tile_size;
-            rightTexture?.Draw(position + origin, origin, rightColor, Vector2.One, (float)Math.PI / 2, new Rectangle(2 * tile_size, 0, tile_size, tile_size));
-            bottomTexture?.Draw(position + origin, origin, bottomColor, Vector2.One, (float)Math.PI, new Rectangle(0, 0, tile_size, tile_size));
-
-            // horizontal edges
-            for (int y = tile_size; y < Height - tile_size; y += tile_size)
+        using (GravityHelperAPI.Exports.WithCustomTintShader())
+        {
+            // draw refill crystal if we have it
+            if (_refillSprite?.Visible == true && GiveGravityRefill)
             {
-                var leftPos = new Vector2(Left, Top + y);
-                var rightPos = new Vector2(Right - tile_size, Top + y);
-                leftTexture?.Draw(leftPos + origin, origin, leftColor, Vector2.One, (float)-Math.PI / 2, new Rectangle(tile_size, 0, tile_size, tile_size));
-                rightTexture?.Draw(rightPos + origin, origin, rightColor, Vector2.One, (float)Math.PI / 2, new Rectangle(tile_size, 0, tile_size, tile_size));
+                _refillSprite.Color = isDefault ? Color.White : GravityType.Toggle.Color();
+                _refillSprite.Render();
             }
 
-            // vertical edges
-            for (int x = tile_size; x < Width - tile_size; x += tile_size)
+            if (_refillOutlineImage?.Visible == true) _refillOutlineImage.Render();
+
+            // only draw the edges if requested and if it's not expired
+            if (ShowEdgeIndicators && !expired)
             {
-                var topPos = new Vector2(Left + x, Top);
-                var bottomPos = new Vector2(Left + x, Bottom - tile_size);
-                topTexture?.Draw(topPos, Vector2.Zero, topColor, Vector2.One, 0f, new Rectangle(tile_size, 0, tile_size, tile_size));
-                bottomTexture?.Draw(bottomPos + origin, origin, bottomColor, Vector2.One, (float)Math.PI, new Rectangle(tile_size, 0, tile_size, tile_size));
+                // top left corner
+                var position = TopLeft;
+                leftTexture?.Draw(position + origin, origin, leftColor, Vector2.One, (float)-Math.PI / 2, new Rectangle(2 * tile_size, 0, tile_size, tile_size));
+                topTexture?.Draw(position, Vector2.Zero, topColor, Vector2.One, 0f, new Rectangle(0, 0, tile_size, tile_size));
+
+                // top right corner
+                position = TopRight - Vector2.UnitX * tile_size;
+                rightTexture?.Draw(position + origin, origin, rightColor, Vector2.One, (float)Math.PI / 2, new Rectangle(0, 0, tile_size, tile_size));
+                topTexture?.Draw(position, Vector2.Zero, topColor, Vector2.One, 0f, new Rectangle(2 * tile_size, 0, tile_size, tile_size));
+
+                // bottom left corner
+                position = BottomLeft - Vector2.UnitY * tile_size;
+                leftTexture?.Draw(position + origin, origin, leftColor, Vector2.One, (float)-Math.PI / 2, new Rectangle(0, 0, tile_size, tile_size));
+                bottomTexture?.Draw(position + origin, origin, bottomColor, Vector2.One, (float)Math.PI, new Rectangle(2 * tile_size, 0, tile_size, tile_size));
+
+                // bottom right corner
+                position = BottomRight - Vector2.One * tile_size;
+                rightTexture?.Draw(position + origin, origin, rightColor, Vector2.One, (float)Math.PI / 2, new Rectangle(2 * tile_size, 0, tile_size, tile_size));
+                bottomTexture?.Draw(position + origin, origin, bottomColor, Vector2.One, (float)Math.PI, new Rectangle(0, 0, tile_size, tile_size));
+
+                // horizontal edges
+                for (int y = tile_size; y < Height - tile_size; y += tile_size)
+                {
+                    var leftPos = new Vector2(Left, Top + y);
+                    var rightPos = new Vector2(Right - tile_size, Top + y);
+                    leftTexture?.Draw(leftPos + origin, origin, leftColor, Vector2.One, (float)-Math.PI / 2, new Rectangle(tile_size, 0, tile_size, tile_size));
+                    rightTexture?.Draw(rightPos + origin, origin, rightColor, Vector2.One, (float)Math.PI / 2, new Rectangle(tile_size, 0, tile_size, tile_size));
+                }
+
+                // vertical edges
+                for (int x = tile_size; x < Width - tile_size; x += tile_size)
+                {
+                    var topPos = new Vector2(Left + x, Top);
+                    var bottomPos = new Vector2(Left + x, Bottom - tile_size);
+                    topTexture?.Draw(topPos, Vector2.Zero, topColor, Vector2.One, 0f, new Rectangle(tile_size, 0, tile_size, tile_size));
+                    bottomTexture?.Draw(bottomPos + origin, origin, bottomColor, Vector2.One, (float)Math.PI, new Rectangle(tile_size, 0, tile_size, tile_size));
+                }
             }
         }
 

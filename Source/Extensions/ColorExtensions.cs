@@ -25,6 +25,13 @@ internal static class ColorExtensions
         return FromHSV(hue, Calc.Clamp(saturation * saturationMultiplier, 0f, 1f), value);
     }
 
+    public static Color MultiplyNoAlpha(this Color color, float amount)
+    {
+        var newColor = color * amount;
+        newColor.A = color.A;
+        return newColor;
+    }
+
     public static void ToHSV(this Color color, out float hue, out float saturation, out float value)
     {
         float r = color.R / 255f;
