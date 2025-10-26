@@ -95,4 +95,23 @@ public class GravityBooster : Booster
 
         _rippleSprite.Visible = _overlaySprite.Visible = sprite.CurrentAnimationID.StartsWith("loop");
     }
+
+    public override void Render()
+    {
+        if (GravityHelperAPI.Exports.BeginCustomTintShader())
+        {
+            var oldSpriteColor = sprite.Color;
+            var oldOverlayColor = _overlaySprite.Color;
+            sprite.Color = _overlaySprite.Color = GravityHelperAPI.Exports.GetColor((int)GravityType);
+
+            base.Render();
+
+            sprite.Color = oldSpriteColor;
+            _overlaySprite.Color = oldOverlayColor;
+
+            GravityHelperAPI.Exports.EndCustomTintShader();
+        }
+        else
+            base.Render();
+    }
 }

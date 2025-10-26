@@ -192,4 +192,21 @@ public class GravityBumper : Bumper
             _rippleSprite.Visible = respawnTimer <= 0 && !fireMode;
         }
     }
+
+    public override void Render()
+    {
+        if (!spriteEvil.Visible && GravityHelperAPI.Exports.BeginCustomTintShader())
+        {
+            var oldSpriteColor = sprite.Color;
+            sprite.Color = GravityHelperAPI.Exports.GetColor((int)GravityType);
+
+            base.Render();
+
+            sprite.Color = oldSpriteColor;
+
+            GravityHelperAPI.Exports.EndCustomTintShader();
+        }
+        else
+            base.Render();
+    }
 }
