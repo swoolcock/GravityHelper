@@ -57,7 +57,7 @@ public class GravityBadelineBoost : BadelineBoost
 
     private void onAccessibilityChange()
     {
-        if (_rippleSprite != null) _rippleSprite.Color = GravityType.HighlightColor();
+        if (_rippleSprite != null) _rippleSprite.Color = currentNodeGravityType.RippleColor();
     }
 
     public override void Update()
@@ -75,7 +75,7 @@ public class GravityBadelineBoost : BadelineBoost
             var currentNodeGravity = currentNodeGravityType;
 
             if (_gravityTypes != null)
-                _rippleSprite.Color = currentNodeGravity.HighlightColor();
+                _rippleSprite.Color = currentNodeGravity.RippleColor();
 
             if (currentNodeGravity == GravityType.Normal ||
                 currentNodeGravity == GravityType.Toggle && currentPlayerGravity == GravityType.Inverted ||

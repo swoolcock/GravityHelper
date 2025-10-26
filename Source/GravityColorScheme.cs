@@ -105,6 +105,7 @@ public class GravityColorScheme
             },
         };
     }
+
     static GravityColorScheme()
     {
         Classic = CreateColorScheme(Color.Blue, Color.Red, Color.Purple, false);
