@@ -30,5 +30,6 @@ jobs:
           Ahorn/**/*
           Audio/**/*
           Dialog/**/*
+          Effects/**/*
           Graphics/**/*
           Loenn/**/*
