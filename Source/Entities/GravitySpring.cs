@@ -254,7 +254,7 @@ public class GravitySpring : Spring
         }
 
         var overlayAnimId = getOverlayAnimId("idle");
-        _overlaySprite.Visible = (_showOverlay || !isDefault) && _overlaySprite.Has(overlayAnimId);
+        _overlaySprite.Visible = (_showOverlay || !isDefault) && _overlaySprite.Has(overlayAnimId) && GravityType is not GravityType.None;
         _overlaySprite.Color = isDefault ? Color.White : colorScheme[GravityType];
         if (_overlaySprite.Visible) _overlaySprite.PlayIfAvailable(overlayAnimId);
 
