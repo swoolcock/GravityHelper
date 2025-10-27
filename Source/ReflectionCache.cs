@@ -16,8 +16,8 @@ internal static class ReflectionCache
     public static IEnumerable<Type> LoadableTypes => _loadableTypes ??= typeof(ReflectionCache).Assembly.GetTypesSafe().ToList();
 
     // ReSharper disable once UnusedMember.Global
-    public static Type GetTypeByName(string name) =>
-        AppDomain.CurrentDomain.GetAssemblies().Reverse().Select(a => a.GetType(name)).FirstOrDefault(t => t != null);
+    // public static Type GetTypeByName(string name) =>
+    //     AppDomain.CurrentDomain.GetAssemblies().Reverse().Select(a => a.GetType(name)).FirstOrDefault(t => t != null);
 
     public static Type GetModdedTypeByName(string module, string name)
     {
