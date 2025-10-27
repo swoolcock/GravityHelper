@@ -115,4 +115,16 @@ public class GravitySwitch : Entity
         if (_cooldownRemaining > 0)
             _cooldownRemaining -= Engine.DeltaTime;
     }
+
+    public override void Render()
+    {
+        using (GravityHelperAPI.Exports.WithCustomTintShader())
+        {
+            _sprite.Color =
+                GravityHelperModule.Settings.ColorSchemeType is GravityHelperModuleSettings.ColorSchemeSetting.Default
+                    ? Color.White
+                    : GravityType.Color();
+            base.Render();
+        }
+    }
 }

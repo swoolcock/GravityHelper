@@ -4,7 +4,6 @@
 using System;
 using System.Linq;
 using Celeste.Mod.Entities;
-using Celeste.Mod.GravityHelper.Components;
 using Celeste.Mod.GravityHelper.Extensions;
 using Microsoft.Xna.Framework;
 using Monocle;
@@ -26,7 +25,7 @@ public class CassetteGravityController : BaseGravityController<CassetteGravityCo
     public CassetteGravityController()
     {
         // ephemeral controller
-        CassetteSequence = Array.Empty<GravityType>();
+        CassetteSequence = [];
         MomentumMultiplier = 1f;
     }
 

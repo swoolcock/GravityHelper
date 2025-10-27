@@ -2,6 +2,7 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using Celeste.Mod.Entities;
+using Celeste.Mod.GravityHelper.Components;
 using Celeste.Mod.GravityHelper.Extensions;
 using Microsoft.Xna.Framework;
 using Monocle;
@@ -42,8 +43,16 @@ public class GravityBooster : Booster
         _overlaySprite.Play(overlayId);
 
         Add(_rippleSprite = GFX.SpriteBank.Create("gravityRipple"));
-        _rippleSprite.Color = GravityType.HighlightColor();
         _rippleSprite.Play("loop");
+
+        Add(new AccessibilityListener(onAccessibilityChange));
+        onAccessibilityChange();
+    }
+
+    private void onAccessibilityChange()
+    {
+        if (_rippleSprite != null)
+            _rippleSprite.Color = GravityType.RippleColor();
     }
 
     public override void Awake(Scene scene)
@@ -86,5 +95,26 @@ public class GravityBooster : Booster
         }
 
         _rippleSprite.Visible = _overlaySprite.Visible = sprite.CurrentAnimationID.StartsWith("loop");
+    }
+
+    public override void Render()
+    {
+        var scheme = GravityHelperModule.Settings.GetColorScheme();
+
+        if (scheme.NeedsShader)
+        {
+            _overlaySprite.Visible = false;
+            base.Render();
+            _overlaySprite.Visible = true;
+
+            using (GravityHelperAPI.Exports.WithCustomTintShader())
+            {
+                _overlaySprite.Color = GravityType.Color(scheme).Saturation(2f);
+                _overlaySprite.Render();
+                _overlaySprite.Color = Color.White;
+            }
+        }
+        else
+            base.Render();
     }
 }

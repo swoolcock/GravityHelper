@@ -33,30 +33,6 @@ public class GravityShield : Entity
     private readonly VertexLight _light;
     private readonly SineWave _sine;
 
-    private readonly ParticleType p_shatter = new ParticleType(Refill.P_Shatter)
-    {
-        Color = Color.Purple,
-        Color2 = Color.MediumPurple,
-    };
-
-    private readonly ParticleType p_regen = new ParticleType(Refill.P_Regen)
-    {
-        Color = Color.BlueViolet,
-        Color2 = Color.Violet,
-    };
-
-    private readonly ParticleType p_glow_normal = new ParticleType(Refill.P_Glow)
-    {
-        Color = Color.Blue,
-        Color2 = Color.BlueViolet,
-    };
-
-    private readonly ParticleType p_glow_inverted = new ParticleType(Refill.P_Glow)
-    {
-        Color = Color.Red,
-        Color2 = Color.MediumVioletRed,
-    };
-
     public GravityShield(EntityData data, Vector2 offset)
         : base(data.Position + offset)
     {
@@ -109,7 +85,8 @@ public class GravityShield : Entity
             var offset = Vector2.UnitX * (_emitNormal ? 5f : -5f);
             var range = Vector2.One * 4f;
             var direction = _emitNormal ? Vector2.UnitX.Angle() : -Vector2.UnitX.Angle();
-            var p_glow = _emitNormal ? p_glow_normal : p_glow_inverted;
+            var colorScheme = GravityHelperModule.Settings.GetColorScheme();
+            var p_glow = _emitNormal ? colorScheme.P_GravityRefill_Glow_Normal : colorScheme.P_GravityRefill_Glow_Inverted;
             _level.ParticlesFG.Emit(p_glow, 1, Position + offset, range, direction);
             _emitNormal = !_emitNormal;
         }
@@ -122,9 +99,18 @@ public class GravityShield : Entity
 
     public override void Render()
     {
-        if (_sprite.Visible)
-            _sprite.DrawOutline();
-        base.Render();
+        var isDefault = GravityHelperModule.Settings.ColorSchemeType ==
+                        GravityHelperModuleSettings.ColorSchemeSetting.Default;
+
+        using (GravityHelperAPI.Exports.WithCustomTintShader())
+        {
+            if (_sprite.Visible)
+            {
+                _sprite.Color = isDefault ? Color.White : GravityType.Toggle.Color();
+                _sprite.DrawOutline();
+            }
+            base.Render();
+        }
     }
 
     private void updateY() => _sprite.Y = _bloom.Y = _sine.Value * 2f;
@@ -139,7 +125,8 @@ public class GravityShield : Entity
         Depth = Depths.Pickups;
         _wiggler.Start();
         Audio.Play(SFX.game_gen_diamond_return, Position);
-        _level.ParticlesFG.Emit(p_regen, 16, Position, Vector2.One * 2f);
+        var colorScheme = GravityHelperModule.Settings.GetColorScheme();
+        _level.ParticlesFG.Emit(colorScheme.P_GravityRefill_Regen, 16, Position, Vector2.One * 2f);
     }
 
     private void onPlayer(Player player)
@@ -171,8 +158,9 @@ public class GravityShield : Entity
         yield return 0.05f;
 
         float direction = player.Speed.Angle();
-        shield._level.ParticlesFG.Emit(shield.p_shatter, 5, shield.Position, Vector2.One * 4f, direction - (float)Math.PI / 2f);
-        shield._level.ParticlesFG.Emit(shield.p_shatter, 5, shield.Position, Vector2.One * 4f, direction + (float)Math.PI / 2f);
+        var colorScheme = GravityHelperModule.Settings.GetColorScheme();
+        shield._level.ParticlesFG.Emit(colorScheme.P_GravityRefill_Shatter, 5, shield.Position, Vector2.One * 4f, direction - (float)Math.PI / 2f);
+        shield._level.ParticlesFG.Emit(colorScheme.P_GravityRefill_Shatter, 5, shield.Position, Vector2.One * 4f, direction + (float)Math.PI / 2f);
         SlashFx.Burst(shield.Position, direction);
 
         if (shield.OneUse)

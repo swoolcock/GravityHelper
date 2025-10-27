@@ -11,7 +11,7 @@ internal class ColorChangeTextMenuOption<T> : TextMenu.Option<T> where T : struc
     public T DefaultValue;
     public Color ChangedUnselectedColor = Color.Goldenrod;
 
-    private int _lastFrameIndex;
+    private int _lastFrameIndex = int.MinValue;
 
     public ColorChangeTextMenuOption(string label, T defaultValue = default) : base(label)
     {
@@ -20,7 +20,7 @@ internal class ColorChangeTextMenuOption<T> : TextMenu.Option<T> where T : struc
 
     public override void Render(Vector2 position, bool highlighted)
     {
-        if (_lastFrameIndex != Index)
+        if (_lastFrameIndex == int.MinValue || _lastFrameIndex != Index)
         {
             _lastFrameIndex = Index;
             UpdateUnselectedColor();
@@ -40,5 +40,25 @@ internal class ColorChangeOnOff : ColorChangeTextMenuOption<bool>
     {
         Add(Dialog.Clean("options_off"), false, !on);
         Add(Dialog.Clean("options_on"), true, on);
+    }
+}
+
+internal class ColorChangePercent : ColorChangeTextMenuOption<int>
+{
+    public ColorChangePercent(string label, int currentValue, int defaultValue = 50) : base(label, defaultValue)
+    {
+        for (int i = 0; i <= 100; i += 10)
+        {
+            Add($"{i}%", i, currentValue == i);
+        }
+    }
+
+    public ColorChangePercent(string label, string defaultLabel, int currentValue, int defaultValue = -1) : base(label, defaultValue)
+    {
+        Add(defaultLabel, -1, currentValue < 0);
+        for (int i = 0; i <= 100; i += 10)
+        {
+            Add($"{i}%", i, currentValue == i);
+        }
     }
 }

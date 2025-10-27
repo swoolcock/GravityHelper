@@ -43,25 +43,8 @@ public class GravityIndicator : Entity
     private readonly Sprite _rippleSprite;
     private readonly VertexLight _vertexLight;
 
-    private readonly Color _normalLightColor = new Color(0.3f, 0.3f, 1f);
-    private readonly Color _invertedLightColor = new Color(1f, 0.3f, 0.3f);
-
     private const int up_arrow_frame = 0;
     private const int down_arrow_frame = 8;
-
-    private readonly ParticleType p_glow_normal = new ParticleType(Refill.P_Glow)
-    {
-        Color = Color.Blue,
-        Color2 = Color.BlueViolet,
-        DirectionRange = (float)(Math.PI / 2),
-    };
-
-    private readonly ParticleType p_glow_inverted = new ParticleType(Refill.P_Glow)
-    {
-        Color = Color.Red,
-        Color2 = Color.MediumVioletRed,
-        DirectionRange = (float)(Math.PI / 2),
-    };
 
     public GravityIndicator(EntityData data, Vector2 offset)
         : base(data.Position + offset)
@@ -158,15 +141,16 @@ public class GravityIndicator : Entity
 
         if (_arrowSprite.CurrentAnimationFrame == up_arrow_frame || _arrowSprite.CurrentAnimationFrame == down_arrow_frame)
         {
+            var scheme = GravityHelperModule.Settings.GetColorScheme();
             var emitNormal = _arrowSprite.CurrentAnimationFrame == down_arrow_frame;
-            _vertexLight.Color = (emitNormal ? _normalLightColor : _invertedLightColor) * IdleAlpha;
+            _vertexLight.Color = (emitNormal ? scheme.NormalColor : scheme.InvertedColor).Lighter() * IdleAlpha;
 
             if (Scene is Level level && level.OnInterval(0.1f))
             {
                 var offset = Vector2.UnitY * (emitNormal ? 5f : -5f);
                 var range = Vector2.One * 6f;
                 var direction = Vector2.UnitY.Angle() * (emitNormal ? 1 : -1);
-                var particleType = emitNormal ? p_glow_normal : p_glow_inverted;
+                var particleType = emitNormal ? scheme.P_GravityRefill_Glow_Normal : scheme.P_GravityRefill_Glow_Inverted;
                 level.ParticlesBG.Emit(particleType, 2, Position + offset, range, direction);
             }
         }

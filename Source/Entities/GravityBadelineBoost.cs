@@ -4,6 +4,7 @@
 using System;
 using System.Linq;
 using Celeste.Mod.Entities;
+using Celeste.Mod.GravityHelper.Components;
 using Celeste.Mod.GravityHelper.Extensions;
 using Microsoft.Xna.Framework;
 using Monocle;
@@ -46,10 +47,17 @@ public class GravityBadelineBoost : BadelineBoost
 
         Add(_rippleSprite = GFX.SpriteBank.Create("gravityRipple"));
         _rippleSprite.Play("loop");
-        _rippleSprite.Color = GravityType.HighlightColor();
 
         _maskSprite = GFX.SpriteBank.Create("gravityBadelineBoost");
         _maskSprite.Play("mask");
+
+        Add(new AccessibilityListener(onAccessibilityChange));
+        onAccessibilityChange();
+    }
+
+    private void onAccessibilityChange()
+    {
+        if (_rippleSprite != null) _rippleSprite.Color = currentNodeGravityType.RippleColor();
     }
 
     public override void Update()
@@ -67,7 +75,7 @@ public class GravityBadelineBoost : BadelineBoost
             var currentNodeGravity = currentNodeGravityType;
 
             if (_gravityTypes != null)
-                _rippleSprite.Color = currentNodeGravity.Color();
+                _rippleSprite.Color = currentNodeGravity.RippleColor();
 
             if (currentNodeGravity == GravityType.Normal ||
                 currentNodeGravity == GravityType.Toggle && currentPlayerGravity == GravityType.Inverted ||

@@ -94,7 +94,7 @@ public class VvvvvvGravityController : BaseGravityController<VvvvvvGravityContro
         // see if we have any Extended Variant Jumps(TM)
         int extVarJumps = 0;
         if (ReflectionCache.ExtendedVariantsJumpCountGetJumpBufferMethodInfo != null)
-            extVarJumps = (int)ReflectionCache.ExtendedVariantsJumpCountGetJumpBufferMethodInfo.Invoke(null, Array.Empty<object>());
+            extVarJumps = (int)ReflectionCache.ExtendedVariantsJumpCountGetJumpBufferMethodInfo.Invoke(null, []);
 
         // on ground or within coyote frames
         var onGroundChecked = player.OnGround();

@@ -108,7 +108,7 @@ internal static class ReflectionCache
     public static int CallFancyFallingBlockSurfaceSoundIndexAt(this FallingBlock fallingBlock, Vector2 readPosition)
     {
         if (FancyFallingBlock_SurfaceSoundIndexAt == null) return -1;
-        return (int) FancyFallingBlock_SurfaceSoundIndexAt.Invoke(fallingBlock, new object[] {readPosition});
+        return (int) FancyFallingBlock_SurfaceSoundIndexAt.Invoke(fallingBlock, [readPosition]);
     }
 
     #endregion
