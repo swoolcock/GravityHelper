@@ -18,28 +18,30 @@ namespace Celeste.Mod.GravityHelper;
 
 public class GravityHelperModuleSettings : EverestModuleSettings
 {
-    public bool AllowInAllMaps { get; set; }
+    public bool AllowInAllMaps { get; set; } = false;
     public ControlSchemeSetting ControlScheme { get; set; } = ControlSchemeSetting.Absolute;
     public ControlSchemeSetting FeatherControlScheme { get; set; } = ControlSchemeSetting.Absolute;
-    public VvvvvvSetting VvvvvvMode { get; set; }
-    public VvvvvvSetting VvvvvvFlipSound { get; set; }
-    public VvvvvvSetting VvvvvvAllowGrabbing { get; set; }
-    public VvvvvvSetting VvvvvvAllowDashing { get; set; }
-    public bool ReplaceRefills { get; set; }
+    public VvvvvvSetting VvvvvvMode { get; set; } = VvvvvvSetting.Default;
+    public VvvvvvSetting VvvvvvFlipSound { get; set; } = VvvvvvSetting.Default;
+    public VvvvvvSetting VvvvvvAllowGrabbing { get; set; } = VvvvvvSetting.Default;
+    public VvvvvvSetting VvvvvvAllowDashing { get; set; } = VvvvvvSetting.Default;
+    public bool ReplaceRefills { get; set; } = false;
     public bool MHHUDJTCornerCorrection { get; set; } = true;
     public ButtonBinding ToggleInvertGravity { get; set; }
 
     // accessibility
-    public ArrowSetting SpringArrowType { get; set; }
-    public ArrowSetting FieldArrowType { get; set; }
-    public bool FieldEdges { get; set; }
-    public bool FieldParticles { get; set; }
+    public ArrowSetting SpringArrowType { get; set; } = ArrowSetting.Default;
+    public ArrowSetting FieldArrowType { get; set; } = ArrowSetting.Default;
+    public bool FieldEdges { get; set; } = true;
+    public bool FieldParticles { get; set; } = true;
     public int FieldOpacity { get; set; } = -1;
-    public bool HighVisibilityLines { get; set; }
-    public ColorSchemeSetting ColorSchemeType { get; set; }
+    public bool FieldBloom { get; set; } = true;
+    public bool RefillBloom { get; set; } = true;
+    public bool HighVisibilityLines { get; set; } = false;
+    public ColorSchemeSetting ColorSchemeType { get; set; } = ColorSchemeSetting.Default;
 
     // default to zero to indicate this is the first execution since versioning was introduced
-    public int SettingsVersion { get; set; }
+    public int SettingsVersion { get; set; } = 0;
     public const int LatestSettingsVersion = 2;
 
     private static IEnumerable<Tuple<string, TEnum>> getEnumOptions<TEnum>() where TEnum : Enum =>
@@ -271,6 +273,26 @@ public class GravityHelperModuleSettings : EverestModuleSettings
                 FieldOpacity = value;
                 NotifyAccessibilityChange();
             }
+        });
+
+        // Field Bloom
+        menu.Add(new ColorChangeOnOff(Dialog.Clean("GRAVITYHELPER_MENU_ACCESS_FIELD_BLOOM"), FieldBloom, true)
+        {
+            OnValueChange = value =>
+            {
+                FieldBloom = value;
+                NotifyAccessibilityChange();
+            },
+        });
+
+        // Refill Bloom
+        menu.Add(new ColorChangeOnOff(Dialog.Clean("GRAVITYHELPER_MENU_ACCESS_REFILL_BLOOM"), RefillBloom, true)
+        {
+            OnValueChange = value =>
+            {
+                RefillBloom = value;
+                NotifyAccessibilityChange();
+            },
         });
 
         // High Vis Lines

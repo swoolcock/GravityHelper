@@ -3,6 +3,7 @@
 
 using System;
 using Celeste.Mod.Entities;
+using Celeste.Mod.GravityHelper.Components;
 using Celeste.Mod.GravityHelper.Extensions;
 using Microsoft.Xna.Framework;
 using Monocle;
@@ -42,6 +43,7 @@ public class GravityIndicator : Entity
     private readonly Sprite _arrowSprite;
     private readonly Sprite _rippleSprite;
     private readonly VertexLight _vertexLight;
+    private readonly BloomPoint _bloomPoint;
 
     private const int up_arrow_frame = 0;
     private const int down_arrow_frame = 8;
@@ -73,9 +75,17 @@ public class GravityIndicator : Entity
 
         if (BloomAlpha > 0 && BloomRadius > 0)
         {
-            Add(new BloomPoint(BloomAlpha, BloomRadius));
+            Add(_bloomPoint = new BloomPoint(BloomAlpha, BloomRadius));
             Add(_vertexLight = new VertexLight(Color.Red, 1f, (int)BloomRadius, (int)BloomRadius));
         }
+
+        Add(new AccessibilityListener(onAccessibilityChange));
+        onAccessibilityChange();
+    }
+
+    private void onAccessibilityChange()
+    {
+         _bloomPoint.Alpha = GravityHelperModule.Settings.RefillBloom ? BloomAlpha : 0f;
     }
 
     public override void Added(Scene scene)

@@ -608,7 +608,7 @@ public class GravityField : GravityTrigger, IConnectableField
 
         protected override void OnRenderBloom()
         {
-            if (GravityHelperModule.Settings.FieldOpacity >= 0) return;
+            if (!GravityHelperModule.Settings.FieldBloom) return;
             base.OnRenderBloom();
         }
     }

@@ -48,6 +48,9 @@ public class GravityRefill : Entity
     private float _spriteAlpha = 1f;
     private WallRenderMode _wallRenderMode;
 
+    private const float bloom_alpha = 0.8f;
+    private float bloomAlpha => GravityHelperModule.Settings.RefillBloom ? bloom_alpha : 0f;
+
     // if set to true, dashing over the top of a gravity refill
     // while Madeline already has a charge will not refund it
     private bool _legacyRefillBehavior;
@@ -110,7 +113,7 @@ public class GravityRefill : Entity
 
         if (!_isWall)
         {
-            Add(_bloom = new BloomPoint(0.8f, 16f),
+            Add(_bloom = new BloomPoint(bloom_alpha, 16f),
                 _light = new VertexLight(Color.White, 1f, 16, 48),
                 _sine = new SineWave(0.6f, 0.0f),
                 _outline = new Image(GFX.Game[$"{path}/{outlineName}"]) { Visible = false });
@@ -126,8 +129,11 @@ public class GravityRefill : Entity
         _arrows.OnFinish = _ => _arrows.Visible = false;
         _arrowIntervalOffset = Calc.Random.NextFloat(2f);
 
-        updateSpritePos();
+        Add(new AccessibilityListener(onAccessibilityChange));
+        onAccessibilityChange();
     }
+
+    private void onAccessibilityChange() => updateVisuals();
 
     public override void Added(Scene scene)
     {
@@ -156,15 +162,23 @@ public class GravityRefill : Entity
             _emitNormal = !_emitNormal;
         }
 
-        updateSpritePos();
+        updateVisuals();
+    }
+
+    private void updateVisuals()
+    {
+        if (_isWall)
+            _arrows.Position = _sprite.Position = Collider.Center;
+        else
+            _arrows.Y = _sprite.Y = _bloom.Y = _sine.Value * 2f;
 
         if (_light != null && _bloom != null)
         {
             _light.Alpha = Calc.Approach(_light.Alpha, _sprite.Visible ? 1f : 0.0f, 4f * Engine.DeltaTime);
-            _bloom.Alpha = _light.Alpha * 0.8f;
+            _bloom.Alpha = _light.Alpha * bloomAlpha;
         }
 
-        if (Scene.OnInterval(2f, _arrowIntervalOffset) && _sprite.Visible && (!_isWall || _wallRenderMode == WallRenderMode.Filled))
+        if (Scene != null && Scene.OnInterval(2f, _arrowIntervalOffset) && _sprite.Visible && (!_isWall || _wallRenderMode == WallRenderMode.Filled))
         {
             var arrowName = Dashes == 2 ? "arrows_two_dash" : "arrows";
             _arrows.Play(arrowName, true);
@@ -196,10 +210,7 @@ public class GravityRefill : Entity
 
     private void updateSpritePos()
     {
-        if (_isWall)
-            _arrows.Position = _sprite.Position = Collider.Center;
-        else
-            _arrows.Y = _sprite.Y = _bloom.Y = _sine.Value * 2f;
+
     }
 
     public override void Render()

@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using Celeste.Mod.Entities;
+using Celeste.Mod.GravityHelper.Components;
 using Celeste.Mod.GravityHelper.Extensions;
 using Microsoft.Xna.Framework;
 using Monocle;
@@ -33,6 +34,9 @@ public class GravityShield : Entity
     private readonly VertexLight _light;
     private readonly SineWave _sine;
 
+    private const float bloom_alpha = 0.8f;
+    private float bloomAlpha => GravityHelperModule.Settings.RefillBloom ? bloom_alpha : 0f;
+
     public GravityShield(EntityData data, Vector2 offset)
         : base(data.Position + offset)
     {
@@ -53,7 +57,7 @@ public class GravityShield : Entity
             _sprite = GFX.SpriteBank.Create("gravityShield"),
             _wiggler = Wiggler.Create(1f, 4f, v => _sprite.Scale = Vector2.One * (float) (1.0 + (double) v * 0.2)),
             new MirrorReflection(),
-            _bloom = new BloomPoint(0.8f, 16f),
+            _bloom = new BloomPoint(bloom_alpha, 16f),
             _light = new VertexLight(Color.White, 1f, 16, 48),
             _sine = new SineWave(0.6f, 0.0f));
 
@@ -61,8 +65,11 @@ public class GravityShield : Entity
         _sprite.Play("idle", true, true);
         using (new PushRandomDisposable(data.ID)) _sine.Randomize();
 
-        updateY();
+        Add(new AccessibilityListener(onAccessibilityChange));
+        onAccessibilityChange();
     }
+
+    private void onAccessibilityChange() => updateVisuals();
 
     public override void Added(Scene scene)
     {
@@ -91,10 +98,7 @@ public class GravityShield : Entity
             _emitNormal = !_emitNormal;
         }
 
-        updateY();
-
-        _light.Alpha = Calc.Approach(_light.Alpha, _sprite.Visible ? 1f : 0.0f, 4f * Engine.DeltaTime);
-        _bloom.Alpha = _light.Alpha * 0.8f;
+        updateVisuals();
     }
 
     public override void Render()
@@ -113,7 +117,12 @@ public class GravityShield : Entity
         }
     }
 
-    private void updateY() => _sprite.Y = _bloom.Y = _sine.Value * 2f;
+    private void updateVisuals()
+    {
+        _sprite.Y = _bloom.Y = _sine.Value * 2f;
+        _light.Alpha = Calc.Approach(_light.Alpha, _sprite.Visible ? 1f : 0.0f, 4f * Engine.DeltaTime);
+        _bloom.Alpha = _light.Alpha * bloomAlpha;
+    }
 
     private void respawn()
     {
