@@ -16,7 +16,7 @@ Implementing floor and corner correction were tricky, since it needs to check co
 and nudge Madeline in the opposite direction she would normally go.
 
 The biggest hurdle by far was implementing dash correction on upside-down jumpthrus
-(both MaxHelpingHand's and GravityHelper's own).  It's possible that there are still slight inconsistencies with it,
+(both MaddieHelpingHand's and GravityHelper's own).  It's possible that there are still slight inconsistencies with it,
 and I welcome any TASers to submit issues to GitHub.
 
 ### What happens when gravity flips?
