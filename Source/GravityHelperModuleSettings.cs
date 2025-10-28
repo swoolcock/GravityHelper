@@ -84,8 +84,11 @@ public class GravityHelperModuleSettings : EverestModuleSettings
     {
         [SettingsEnumCase("GRAVITYHELPER_ENUM_ARROWSETTING_DEFAULT")]
         Default,
+        [SettingsEnumCase("GRAVITYHELPER_ENUM_ARROWSETTING_SMALL")]
         Small,
+        [SettingsEnumCase("GRAVITYHELPER_ENUM_ARROWSETTING_LARGE")]
         Large,
+        [SettingsEnumCase("GRAVITYHELPER_ENUM_ARROWSETTING_NONE")]
         None,
     }
 
@@ -93,6 +96,7 @@ public class GravityHelperModuleSettings : EverestModuleSettings
     {
         [SettingsEnumCase("GRAVITYHELPER_ENUM_COLORSCHEMESETTING_DEFAULT")]
         Default,
+        [SettingsEnumCase("GRAVITYHELPER_ENUM_COLORSCHEMESETTING_COLORBLIND")]
         Colorblind,
     }
 
