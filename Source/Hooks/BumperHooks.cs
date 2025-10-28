@@ -33,6 +33,10 @@ internal static class BumperHooks
 
         cursor.Emit(OpCodes.Ldarg_0);
         cursor.EmitDelegate<Func<ParticleType, Bumper, ParticleType>>((pt, self) =>
-            self is GravityBumper gravityBumper ? gravityBumper.GetAmbientParticleType() : pt);
+        {
+            if (self is not GravityBumper gravityBumper) return pt;
+            var colorScheme = GravityHelperModule.Settings.GetColorScheme();
+            return colorScheme.GetBumperAmbienceParticleType(gravityBumper.GravityType);
+        });
     });
 }

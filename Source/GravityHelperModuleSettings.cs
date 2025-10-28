@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Celeste.Mod.GravityHelper.Components;
 using Celeste.Mod.GravityHelper.Entities.Controllers;
 using Celeste.Mod.GravityHelper.Entities.UI;
 using Celeste.Mod.GravityHelper.Extensions;
@@ -17,20 +18,31 @@ namespace Celeste.Mod.GravityHelper;
 
 public class GravityHelperModuleSettings : EverestModuleSettings
 {
-    public bool AllowInAllMaps { get; set; }
+    public bool AllowInAllMaps { get; set; } = false;
     public ControlSchemeSetting ControlScheme { get; set; } = ControlSchemeSetting.Absolute;
     public ControlSchemeSetting FeatherControlScheme { get; set; } = ControlSchemeSetting.Absolute;
-    public VvvvvvSetting VvvvvvMode { get; set; }
-    public VvvvvvSetting VvvvvvFlipSound { get; set; }
-    public VvvvvvSetting VvvvvvAllowGrabbing { get; set; }
-    public VvvvvvSetting VvvvvvAllowDashing { get; set; }
-    public bool ReplaceRefills { get; set; }
+    public VvvvvvSetting VvvvvvMode { get; set; } = VvvvvvSetting.Default;
+    public VvvvvvSetting VvvvvvFlipSound { get; set; } = VvvvvvSetting.Default;
+    public VvvvvvSetting VvvvvvAllowGrabbing { get; set; } = VvvvvvSetting.Default;
+    public VvvvvvSetting VvvvvvAllowDashing { get; set; } = VvvvvvSetting.Default;
+    public bool ReplaceRefills { get; set; } = false;
     public bool MHHUDJTCornerCorrection { get; set; } = true;
     public ButtonBinding ToggleInvertGravity { get; set; }
 
+    // accessibility
+    public ArrowSetting SpringArrowType { get; set; } = ArrowSetting.Default;
+    public ArrowSetting FieldArrowType { get; set; } = ArrowSetting.Default;
+    public bool FieldEdges { get; set; } = true;
+    public bool FieldParticles { get; set; } = true;
+    public int FieldOpacity { get; set; } = -1;
+    public bool FieldBloom { get; set; } = true;
+    public bool RefillBloom { get; set; } = true;
+    public bool HighVisibilityLines { get; set; } = false;
+    public ColorSchemeSetting ColorSchemeType { get; set; } = ColorSchemeSetting.Default;
+
     // default to zero to indicate this is the first execution since versioning was introduced
-    public int SettingsVersion { get; set; }
-    public const int LatestSettingsVersion = 1;
+    public int SettingsVersion { get; set; } = 0;
+    public const int LatestSettingsVersion = 2;
 
     private static IEnumerable<Tuple<string, TEnum>> getEnumOptions<TEnum>() where TEnum : Enum =>
         Enum.GetValues(typeof(TEnum))
@@ -49,6 +61,18 @@ public class GravityHelperModuleSettings : EverestModuleSettings
         Enabled,
     }
 
+    public enum ForceBoolSetting
+    {
+        [SettingsEnumCase("GRAVITYHELPER_ENUM_FORCEBOOL_DEFAULT")]
+        Default,
+
+        [SettingsEnumCase("GRAVITYHELPER_ENUM_FORCEBOOL_DISABLED")]
+        Disabled,
+
+        [SettingsEnumCase("GRAVITYHELPER_ENUM_FORCEBOOL_ENABLED")]
+        Enabled,
+    }
+
     public enum ControlSchemeSetting
     {
         [SettingsEnumCase("GRAVITYHELPER_ENUM_CONTROL_SCHEME_ABSOLUTE")]
@@ -57,6 +81,33 @@ public class GravityHelperModuleSettings : EverestModuleSettings
         [SettingsEnumCase("GRAVITYHELPER_ENUM_CONTROL_SCHEME_RELATIVE")]
         Relative,
     }
+
+    public enum ArrowSetting
+    {
+        [SettingsEnumCase("GRAVITYHELPER_ENUM_ARROWSETTING_DEFAULT")]
+        Default,
+        [SettingsEnumCase("GRAVITYHELPER_ENUM_ARROWSETTING_SMALL")]
+        Small,
+        [SettingsEnumCase("GRAVITYHELPER_ENUM_ARROWSETTING_LARGE")]
+        Large,
+        [SettingsEnumCase("GRAVITYHELPER_ENUM_ARROWSETTING_NONE")]
+        None,
+    }
+
+    public enum ColorSchemeSetting
+    {
+        [SettingsEnumCase("GRAVITYHELPER_ENUM_COLORSCHEMESETTING_DEFAULT")]
+        Default,
+        [SettingsEnumCase("GRAVITYHELPER_ENUM_COLORSCHEMESETTING_COLORBLIND")]
+        Colorblind,
+    }
+
+    internal GravityColorScheme GetColorScheme() => ColorSchemeType switch
+    {
+        ColorSchemeSetting.Default => GravityColorScheme.Classic,
+        ColorSchemeSetting.Colorblind => GravityColorScheme.Colorblind,
+        _ => throw new ArgumentOutOfRangeException()
+    };
 
     public void CreateModMenuSection(TextMenu menu, bool inGame, EventInstance snapshot)
     {
@@ -166,6 +217,105 @@ public class GravityHelperModuleSettings : EverestModuleSettings
             Index = (int)FeatherControlScheme,
             OnValueChange = value => FeatherControlScheme = value,
         }, Dialog.Clean("GRAVITYHELPER_MENU_FEATHER_CONTROL_SCHEME_SUBTEXT"));
+
+        // Accessibility Subheader
+        menu.AddSubHeader("GRAVITYHELPER_MENU_SUBHEADER_ACCESSIBILITY");
+
+        // Spring Arrows
+        menu.Add(new ColorChangeTextMenuOption<ArrowSetting>(Dialog.Clean("GRAVITYHELPER_MENU_ACCESS_SPRING_ARROWS"))
+        {
+            Values = getEnumOptions<ArrowSetting>().ToList(),
+            Index = (int)SpringArrowType,
+            OnValueChange = value =>
+            {
+                SpringArrowType = value;
+                NotifyAccessibilityChange();
+            },
+        });
+
+        // Field Arrows
+        menu.Add(new ColorChangeTextMenuOption<ArrowSetting>(Dialog.Clean("GRAVITYHELPER_MENU_ACCESS_FIELD_ARROWS"))
+        {
+            Values = getEnumOptions<ArrowSetting>().ToList(),
+            Index = (int)FieldArrowType,
+            OnValueChange = value =>
+            {
+                FieldArrowType = value;
+                NotifyAccessibilityChange();
+            },
+        });
+
+        // Field Edges
+        menu.Add(new ColorChangeOnOff(Dialog.Clean("GRAVITYHELPER_MENU_ACCESS_FIELD_EDGES"), FieldEdges, true)
+        {
+            OnValueChange = value =>
+            {
+                FieldEdges = value;
+                NotifyAccessibilityChange();
+            },
+        });
+
+        // Field Particles
+        menu.Add(new ColorChangeOnOff(Dialog.Clean("GRAVITYHELPER_MENU_ACCESS_FIELD_PARTICLES"), FieldParticles, true)
+        {
+            OnValueChange = value =>
+            {
+                FieldParticles = value;
+                NotifyAccessibilityChange();
+            },
+        });
+
+        // Field Opacity
+        menu.Add(new ColorChangePercent(Dialog.Clean("GRAVITYHELPER_MENU_ACCESS_FIELD_OPACITY"), Dialog.Clean("GRAVITYHELPER_ENUM_ACCESS_FIELD_OPACITY_DEFAULT"), FieldOpacity, -1)
+        {
+            OnValueChange = value =>
+            {
+                FieldOpacity = value;
+                NotifyAccessibilityChange();
+            }
+        });
+
+        // Field Bloom
+        menu.Add(new ColorChangeOnOff(Dialog.Clean("GRAVITYHELPER_MENU_ACCESS_FIELD_BLOOM"), FieldBloom, true)
+        {
+            OnValueChange = value =>
+            {
+                FieldBloom = value;
+                NotifyAccessibilityChange();
+            },
+        });
+
+        // Refill Bloom
+        menu.Add(new ColorChangeOnOff(Dialog.Clean("GRAVITYHELPER_MENU_ACCESS_REFILL_BLOOM"), RefillBloom, true)
+        {
+            OnValueChange = value =>
+            {
+                RefillBloom = value;
+                NotifyAccessibilityChange();
+            },
+        });
+
+        // High Vis Lines
+        menu.Add(new ColorChangeOnOff(Dialog.Clean("GRAVITYHELPER_MENU_ACCESS_HIGH_VIS_LINES"), HighVisibilityLines, false)
+        {
+            OnValueChange = value =>
+            {
+                HighVisibilityLines = value;
+                NotifyAccessibilityChange();
+            }
+        });
+
+        // Colour Scheme
+        menu.Add(new ColorChangeTextMenuOption<ColorSchemeSetting>(Dialog.Clean("GRAVITYHELPER_MENU_ACCESS_COLOR_SCHEME"))
+        {
+            Values = getEnumOptions<ColorSchemeSetting>().ToList(),
+            Index = (int)ColorSchemeType,
+            OnValueChange = value =>
+            {
+                ColorSchemeType = value;
+                NotifyAccessibilityChange();
+            },
+        });
     }
 
     public void MigrateIfRequired()
@@ -176,5 +326,13 @@ public class GravityHelperModuleSettings : EverestModuleSettings
         // TODO: any required migration
 
         SettingsVersion = LatestSettingsVersion;
+    }
+
+    private static void NotifyAccessibilityChange()
+    {
+        foreach (AccessibilityListener listener in Engine.Scene.Tracker.GetComponents<AccessibilityListener>())
+        {
+            listener.OnAccessibilityChange?.Invoke();
+        }
     }
 }

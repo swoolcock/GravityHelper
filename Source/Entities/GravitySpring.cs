@@ -2,8 +2,6 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System;
-using System.Linq;
-using System.Reflection;
 using Celeste.Mod.Entities;
 using Celeste.Mod.GravityHelper.Components;
 using Celeste.Mod.GravityHelper.Entities.Controllers;
@@ -39,8 +37,10 @@ public class GravitySpring : Spring
         _ => id,
     };
 
-    private string getOverlayAnimId(string id)
+    private string getOverlayAnimId(string id, bool checkAccessibility = true)
     {
+        if (checkAccessibility && GravityHelperModule.Settings.ColorSchemeType is not GravityHelperModuleSettings.ColorSchemeSetting.Default)
+            return $"white_{id}";
         if (!RefillStamina)
             return $"no_stamina_{id}";
         return RefillDashCount switch
@@ -72,6 +72,8 @@ public class GravitySpring : Spring
     private string _refillSound;
 
     private Sprite _overlaySprite;
+
+    private readonly int[] _accessibilityOffsets = [0, -6, -8, -6, -4, -1];
 
     [UsedImplicitly]
     public static Entity LoadSpring(Level level, LevelData levelData, Vector2 offset, EntityData entityData)
@@ -146,15 +148,10 @@ public class GravitySpring : Spring
         sprite.Play(getAnimId("idle"));
 
         // create overlay sprite
-        if (_showOverlay)
-        {
-            var anim = getOverlayAnimId("idle");
-            if (!string.IsNullOrWhiteSpace(anim))
-            {
-                Add(_overlaySprite = GFX.SpriteBank.Create(_overlaySpriteName));
-                _overlaySprite.Play(anim);
-            }
-        }
+        var overlayAnimId = getOverlayAnimId("idle");
+        Add(_overlaySprite = GFX.SpriteBank.Create(_overlaySpriteName));
+        _overlaySprite.Visible = _showOverlay && string.IsNullOrWhiteSpace(overlayAnimId);
+        if (_overlaySprite.Visible) _overlaySprite.PlayIfAvailable(overlayAnimId);
 
         // update callbacks
         staticMover.OnEnable = OnEnable;
@@ -188,13 +185,16 @@ public class GravitySpring : Spring
                 break;
         }
 
-        if (_overlaySprite != null)
-            _overlaySprite.Rotation = sprite.Rotation;
+        _overlaySprite.Rotation = sprite.Rotation;
+
+        Add(new AccessibilityListener(onAccessibilityChange));
     }
 
     public override void Added(Scene scene)
     {
         base.Added(scene);
+
+        onAccessibilityChange();
 
         if (_defaultToController && Scene.GetActiveController<BehaviorGravityController>() is { } behaviorController)
         {
@@ -222,11 +222,8 @@ public class GravitySpring : Spring
         sprite.Color = Color.White;
         sprite.Play(getAnimId("idle"));
 
-        if (_overlaySprite != null)
-        {
-            _overlaySprite.Color = Color.White;
-            _overlaySprite.Play(getOverlayAnimId("idle"));
-        }
+        // easier to just let the accessibility handler update the overlay
+        onAccessibilityChange();
     }
 
     private new void OnDisable()
@@ -237,11 +234,8 @@ public class GravitySpring : Spring
             sprite.Play("disabled");
             sprite.Color = DisabledColor;
 
-            if (_overlaySprite != null)
-            {
-                _overlaySprite.Color = Color.White;
-                _overlaySprite.Play(getOverlayAnimId("idle"));
-            }
+            _overlaySprite.Color = Color.White;
+            _overlaySprite.PlayIfAvailable(getOverlayAnimId("idle"));
         }
         else
             Visible = false;
@@ -249,12 +243,29 @@ public class GravitySpring : Spring
 
     private void OnShake(Vector2 amount) => _indicatorShakeOffset += amount;
 
+    private void onAccessibilityChange()
+    {
+        var colorScheme = GravityHelperModule.Settings.GetColorScheme();
+        var isDefault = GravityHelperModule.Settings.ColorSchemeType is GravityHelperModuleSettings.ColorSchemeSetting.Default;
+
+        if (Scene != null && _indicatorRenderer == null && GravityType is GravityType.Normal or GravityType.Inverted or GravityType.Toggle)
+        {
+            Scene.Add(_indicatorRenderer = new IndicatorRenderer(this));
+        }
+
+        var overlayAnimId = getOverlayAnimId("idle");
+        _overlaySprite.Visible = (_showOverlay || !isDefault) && _overlaySprite.Has(overlayAnimId) && GravityType is not GravityType.None;
+        _overlaySprite.Color = isDefault ? Color.White : colorScheme[GravityType];
+        if (_overlaySprite.Visible) _overlaySprite.PlayIfAvailable(overlayAnimId);
+
+        _indicatorRenderer?.UpdateIndicator();
+    }
+
     public override void Update()
     {
         base.Update();
 
-        if (_overlaySprite != null)
-            _overlaySprite.Scale = sprite.Scale;
+        _overlaySprite.Scale = sprite.Scale;
 
         if (_indicatorRenderer != null)
             _indicatorRenderer.Visible = Visible;
@@ -416,10 +427,10 @@ public class GravitySpring : Spring
 
     private void bounceAnimate()
     {
-        Audio.Play("event:/game/general/spring", Position);
+        Audio.Play(SFX.game_gen_spring, Position);
         staticMover.TriggerPlatform();
         sprite.Play(getAnimId("bounce"), true);
-        _overlaySprite?.Play(getOverlayAnimId("bounce"), true);
+        _overlaySprite.PlayIfAvailable(getOverlayAnimId("bounce"), true);
         wiggler.Start();
     }
 
@@ -471,28 +482,14 @@ public class GravitySpring : Spring
     public class IndicatorRenderer : Entity
     {
         private readonly GravitySpring _spring;
-        private readonly MTexture _arrowTexture;
-        private readonly Vector2 _arrowOrigin;
+        private MTexture _arrowTexture;
+        private Vector2 _arrowOrigin;
 
         public IndicatorRenderer(GravitySpring spring)
         {
             _spring = spring;
 
-            var prefix = _spring.GravityType switch
-            {
-                GravityType.Normal => "down",
-                GravityType.Inverted => "up",
-                _ => "double",
-            };
-
-            var size = _spring._largeIndicator ? string.Empty : "Small";
-
-            if (!string.IsNullOrWhiteSpace(spring._indicatorTexture))
-                _arrowTexture = GFX.Game[spring._indicatorTexture];
-            else
-                _arrowTexture = GFX.Game[$"objects/GravityHelper/gravityField/{prefix}Arrow{size}"];
-
-            _arrowOrigin = new Vector2(_arrowTexture.Width / 2f, _arrowTexture.Height / 2f);
+            UpdateIndicator();
 
             Depth = Depths.FGDecals - 1;
 
@@ -500,8 +497,45 @@ public class GravitySpring : Spring
             Collidable = false;
         }
 
+        public void UpdateIndicator()
+        {
+            var prefix = _spring.GravityType switch
+            {
+                GravityType.Normal => "down",
+                GravityType.Inverted => "up",
+                _ => "double",
+            };
+
+            var arrowType = GravityHelperModule.Settings.SpringArrowType;
+            if (arrowType is GravityHelperModuleSettings.ArrowSetting.Default)
+            {
+                arrowType = !_spring._showIndicator ? GravityHelperModuleSettings.ArrowSetting.None :
+                    _spring._largeIndicator ? GravityHelperModuleSettings.ArrowSetting.Large :
+                    GravityHelperModuleSettings.ArrowSetting.Small;
+            }
+
+            if (arrowType == GravityHelperModuleSettings.ArrowSetting.None)
+            {
+                Visible = false;
+            }
+            else
+            {
+                Visible = true;
+                var size = arrowType is GravityHelperModuleSettings.ArrowSetting.Large ? string.Empty : "Small";
+
+                if (!string.IsNullOrWhiteSpace(_spring._indicatorTexture))
+                    _arrowTexture = GFX.Game[_spring._indicatorTexture];
+                else
+                    _arrowTexture = GFX.Game[$"objects/GravityHelper/gravityField/{prefix}Arrow{size}"];
+
+                _arrowOrigin = new Vector2(_arrowTexture.Width / 2f, _arrowTexture.Height / 2f);
+            }
+        }
+
         public override void Render()
         {
+            if (_arrowTexture == null) return;
+
             var offset = _spring._indicatorOffset;
 
             var position = _spring.Position + _spring.Orientation switch

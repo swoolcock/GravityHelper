@@ -1,6 +1,9 @@
 # GravityHelper
 A Celeste mod for controlling gravity in realtime (yes, actually real GravityHelper).
 
+### Contributions
+Note that I am not currently accepting blind pull requests.  If you want to fix a bug or add a new feature, please make an issue first for discussion so that we can determine the best way to do it.
+
 ### How does it work?
 Madeline's `Speed` vector always represents the direction to the floor, regardless of gravity.
 This means that while inverted, her `Speed.Y` will be the opposite sign of her actual velocity as displayed in CelesteTAS.
@@ -13,7 +16,7 @@ Implementing floor and corner correction were tricky, since it needs to check co
 and nudge Madeline in the opposite direction she would normally go.
 
 The biggest hurdle by far was implementing dash correction on upside-down jumpthrus
-(both MaxHelpingHand's and GravityHelper's own).  It's possible that there are still slight inconsistencies with it,
+(both MaddieHelpingHand's and GravityHelper's own).  It's possible that there are still slight inconsistencies with it,
 and I welcome any TASers to submit issues to GitHub.
 
 ### What happens when gravity flips?

@@ -1,6 +1,8 @@
 // Copyright (c) Shane Woolcock. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+using System;
+using Celeste.Mod.GravityHelper.Extensions;
 using Microsoft.Xna.Framework;
 using Monocle;
 
@@ -26,19 +28,33 @@ internal static class GravityTypeExtensions
     public static bool RequiresHooks(this GravityType type) =>
         type == GravityType.Inverted || type == GravityType.Toggle;
 
-    public static Color Color(this GravityType type) => type switch
+    public static Color Color(this GravityType type, GravityColorScheme scheme = null)
     {
-        GravityType.Normal => Microsoft.Xna.Framework.Color.Blue,
-        GravityType.Inverted => Microsoft.Xna.Framework.Color.Red,
-        GravityType.Toggle => Microsoft.Xna.Framework.Color.Purple,
-        _ => Microsoft.Xna.Framework.Color.White,
-    };
+        scheme ??= GravityHelperModule.Settings.GetColorScheme();
+        return type switch
+        {
+            GravityType.Normal => scheme.NormalColor,
+            GravityType.Inverted => scheme.InvertedColor,
+            GravityType.Toggle => scheme.ToggleColor,
+            _ => Microsoft.Xna.Framework.Color.White,
+        };
+    }
 
-    public static Color HighlightColor(this GravityType type) => type switch
+    public static Color HighlightColor(this GravityType type, GravityColorScheme scheme = null)
     {
-        GravityType.Normal => Calc.HexToColor("007cff"),
-        GravityType.Inverted => Calc.HexToColor("dc1828"),
-        GravityType.Toggle => Calc.HexToColor("ca41f5"),
-        _ => Microsoft.Xna.Framework.Color.White,
-    };
+        var color = type.Color(scheme);
+        color.ToHSV(out var hue, out float saturation, out var value);
+        // these calculations should return colours of the old hex codes if the colour scheme is classic
+        // if it's a different colour scheme, hopefully it should be the same "vibe"
+        return type switch
+        {
+            GravityType.Normal => ColorExtensions.FromHSV(hue - 29.2f, saturation, value),
+            GravityType.Inverted => ColorExtensions.FromHSV(hue - 4.9f, saturation * 0.891f, value * 0.863f),
+            GravityType.Toggle => ColorExtensions.FromHSV(hue - 14.3f, saturation * 0.735f, value * 0.961f),
+            _ => Microsoft.Xna.Framework.Color.White,
+        };
+    }
+
+    public static Color RippleColor(this GravityType type, GravityColorScheme scheme = null)
+        => type.Color(scheme).Saturation(2f);
 }

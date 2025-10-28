@@ -34,7 +34,7 @@ public class VvvvvvGravityController : BaseGravityController<VvvvvvGravityContro
     private float _bufferTimeRemaining;
 
     private const float flip_buffer_seconds = 0.1f;
-    private const string default_flip_sound = "event:/gravityhelper/toggle";
+    private const string default_flip_sound = GravityHelperSFX.gh_toggle;
     private VvvvvvJumpBehavior _lastJumpBehavior = VvvvvvJumpBehavior.Flip;
 
     // ReSharper disable once UnusedMember.Global
@@ -94,7 +94,7 @@ public class VvvvvvGravityController : BaseGravityController<VvvvvvGravityContro
         // see if we have any Extended Variant Jumps(TM)
         int extVarJumps = 0;
         if (ReflectionCache.ExtendedVariantsJumpCountGetJumpBufferMethodInfo != null)
-            extVarJumps = (int)ReflectionCache.ExtendedVariantsJumpCountGetJumpBufferMethodInfo.Invoke(null, Array.Empty<object>());
+            extVarJumps = (int)ReflectionCache.ExtendedVariantsJumpCountGetJumpBufferMethodInfo.Invoke(null, []);
 
         // on ground or within coyote frames
         var onGroundChecked = player.OnGround();

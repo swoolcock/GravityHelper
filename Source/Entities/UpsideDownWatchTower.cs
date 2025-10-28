@@ -15,14 +15,14 @@ namespace Celeste.Mod.GravityHelper.Entities;
 [UsedImplicitly]
 public class UpsideDownWatchTower : Lookout
 {
-    private static readonly string[] prefixes = {"", "badeline_", "nobackpack_"};
+    private static readonly string[] prefixes = ["", "badeline_", "nobackpack_"];
 
     private static readonly string[][] pairs =
-    {
-        new[] {"lookingUp", "lookingDown"},
-        new[] {"lookingUpRight", "lookingDownRight"},
-        new[] {"lookingUpLeft", "lookingDownLeft"},
-    };
+    [
+        ["lookingUp", "lookingDown"],
+        ["lookingUpRight", "lookingDownRight"],
+        ["lookingUpLeft", "lookingDownLeft"]
+    ];
 
     // ReSharper disable NotAccessedField.Local
     private readonly VersionInfo _modVersion;

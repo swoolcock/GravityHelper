@@ -15,8 +15,8 @@ namespace Celeste.Mod.GravityHelper.Components;
 internal class TriggerComponent<TComponent> : Component
     where TComponent : Component
 {
-    private readonly List<TComponent> _trackedComponents = new();
-    private readonly List<TComponent> _toRemove = new();
+    private readonly List<TComponent> _trackedComponents = [];
+    private readonly List<TComponent> _toRemove = [];
 
     public TriggeredEntityTypes TriggeredTypes { get; set; }
     public Action<TComponent> OnEnter { get; set; }

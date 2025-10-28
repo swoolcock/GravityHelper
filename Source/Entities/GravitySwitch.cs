@@ -67,13 +67,13 @@ public class GravitySwitch : Entity
         if (animate)
         {
             if (_playSounds)
-                Audio.Play(up ? "event:/game/09_core/switch_to_cold" : "event:/game/09_core/switch_to_hot", Position);
+                Audio.Play(up ? SFX.game_09_switch_to_cold : SFX.game_09_switch_to_hot, Position);
             if (usable)
                 _sprite.Play(key);
             else
             {
                 if (_playSounds)
-                    Audio.Play("event:/game/09_core/switch_dies", Position);
+                    Audio.Play(SFX.game_09_switch_shutdown, Position);
                 _sprite.Play($"{key}Off");
             }
         }
@@ -114,5 +114,17 @@ public class GravitySwitch : Entity
         base.Update();
         if (_cooldownRemaining > 0)
             _cooldownRemaining -= Engine.DeltaTime;
+    }
+
+    public override void Render()
+    {
+        using (GravityHelperAPI.Exports.WithCustomTintShader())
+        {
+            _sprite.Color =
+                GravityHelperModule.Settings.ColorSchemeType is GravityHelperModuleSettings.ColorSchemeSetting.Default
+                    ? Color.White
+                    : GravityType.Color();
+            base.Render();
+        }
     }
 }

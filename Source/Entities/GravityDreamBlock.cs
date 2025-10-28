@@ -74,19 +74,32 @@ public class GravityDreamBlock : DreamBlock
         Depth--;
     }
 
+    public override void Added(Scene scene)
+    {
+        base.Added(scene);
+        // we need to add the accessibility listener in Added to ensure that the Scene is always set
+        if (Get<AccessibilityListener>() == null)
+            Add(new AccessibilityListener(InitialiseParticleColors));
+    }
+
     public void InitialiseParticleColors()
     {
         using var _ = new PushRandomDisposable(Scene);
         var baseColor = ParticleColor ?? GravityType.Color();
-        if (particles is Array particlesArray)
+        var defaultScheme = GravityHelperModule.Settings.ColorSchemeType ==
+                            GravityHelperModuleSettings.ColorSchemeSetting.Default;
+
+        for (int i = 0; i < particles.Length; i++)
         {
-            for (int i = 0; i < particlesArray.Length; i++)
-            {
-                var particle = (DreamParticle)particlesArray.GetValue(i);
-                var lightness = -0.25f + Calc.Random.NextFloat();
+            var particle = particles[i];
+            var lightness = -0.25f + Calc.Random.NextFloat();
+
+            if (defaultScheme)
                 particle.Color = baseColor.Lighter(lightness);
-                particlesArray.SetValue(particle, i);
-            }
+            else
+                particle.Color = baseColor.Saturation(1.5f);
+
+            particles[i] = particle;
         }
     }
 
@@ -118,5 +131,28 @@ public class GravityDreamBlock : DreamBlock
     {
         if (_fallingComponent != null)
             _fallingComponent.Triggered = true;
+    }
+
+    public Color GetActiveLineColor()
+    {
+        if (GravityHelperModule.Settings.ColorSchemeType is not GravityHelperModuleSettings.ColorSchemeSetting.Default)
+            return GravityType.Color();
+        if (LineColor.HasValue)
+            return LineColor.Value.Lighter(WasEntered ? 0.2f : 0f);
+        return GravityType.Color().Lighter(WasEntered ? 0.6f : 0.4f);
+    }
+
+    public Color GetActiveBackColor()
+    {
+        Color baseColor = GravityType.Color();
+
+        if (GravityHelperModule.Settings.ColorSchemeType is not GravityHelperModuleSettings.ColorSchemeSetting.Default)
+            baseColor = GravityType.Color();
+
+        if (BackColor.HasValue)
+            baseColor = BackColor.Value;
+
+        var color = baseColor * (WasEntered ? 0.6f : 0.15f);
+        return new Color(color.R, color.G, color.B, 255);
     }
 }

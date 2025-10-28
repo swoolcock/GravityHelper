@@ -9,7 +9,6 @@ using Celeste.Mod.GravityHelper.Components;
 using Celeste.Mod.GravityHelper.Entities.Controllers;
 using Celeste.Mod.GravityHelper.Extensions;
 using Celeste.Mod.GravityHelper.Triggers;
-using Celeste.Mod.Helpers;
 using Microsoft.Xna.Framework;
 using Monocle;
 using CassetteListener = Celeste.Mod.GravityHelper.Components.CassetteListener;
@@ -27,7 +26,7 @@ public class GravityField : GravityTrigger, IConnectableField
     public const float DEFAULT_PARTICLE_OPACITY = 0.5f;
     public const string DEFAULT_ARROW_COLOR = "FFFFFF";
     public const string DEFAULT_PARTICLE_COLOR = "FFFFFF";
-    public const string DEFAULT_SINGLE_USE_SOUND = "event:/new_content/game/10_farewell/glider_emancipate";
+    public const string DEFAULT_SINGLE_USE_SOUND = SFX.game_10_glider_emancipate;
     public const int DEFAULT_PARTICLE_DENSITY = 4;
 
     private const float audio_muffle_seconds = 0.2f;
@@ -97,8 +96,8 @@ public class GravityField : GravityTrigger, IConnectableField
     private readonly Hitbox _normalHitbox;
     private readonly Hitbox _staticMoverHitbox;
 
-    private Vector2[] _particles = Array.Empty<Vector2>();
-    private readonly float[] _speeds = { 12f, 20f, 40f };
+    private Vector2[] _particles = [];
+    private readonly float[] _speeds = [12f, 20f, 40f];
     private GravityFieldGroup _fieldGroup;
     private Vector2 _staticMoverOffset;
     private readonly CassetteComponent _cassetteComponent;
@@ -316,17 +315,14 @@ public class GravityField : GravityTrigger, IConnectableField
         if (_fieldGroup == null)
         {
             scene.Add(buildFieldGroup(scene));
-            if (_fieldGroup != null)
-            {
-                foreach (var field in _fieldGroup.Fields)
-                    field.configure(scene);
-                _fieldGroup.CreateComponents(_fieldGroup.Fields);
-            }
+            _fieldGroup?.RebuildComponents(scene);
         }
     }
 
     private void configure(Scene scene)
     {
+        if (scene == null) return;
+
         if (_defaultToController && scene.GetActiveController<VisualGravityController>() is { } visualController)
         {
             _arrowOpacity = visualController.FieldArrowOpacity.Clamp(0f, 1f);
@@ -346,11 +342,19 @@ public class GravityField : GravityTrigger, IConnectableField
             _particleDensity = visualController.FieldParticleDensity;
         }
 
-        FieldColor = (string.IsNullOrWhiteSpace(_fieldColor) ? GravityType.Color() : Calc.HexToColor(_fieldColor)) * _fieldOpacity;
+        var opacity = (GravityHelperModule.Settings.FieldOpacity < 0
+            ? _fieldOpacity
+            : GravityHelperModule.Settings.FieldOpacity / 100f).Clamp01();
+
+        if (GravityHelperModule.Settings.ColorSchemeType is not GravityHelperModuleSettings.ColorSchemeSetting.Default)
+            FieldColor = GravityType.Color() * opacity;
+        else
+            FieldColor = (string.IsNullOrWhiteSpace(_fieldColor) ? GravityType.Color() : Calc.HexToColor(_fieldColor)) * opacity;
+
         ArrowColor = Calc.HexToColor(!string.IsNullOrWhiteSpace(_arrowColor) ? _arrowColor : DEFAULT_ARROW_COLOR);
         ParticleColor = Calc.HexToColor(!string.IsNullOrWhiteSpace(_particleColor) ? _particleColor : DEFAULT_PARTICLE_COLOR);
         FlashOnTrigger = _flashOnTrigger;
-        ShowParticles = _showParticles;
+        ShowParticles = _showParticles && GravityHelperModule.Settings.FieldParticles;
         ParticleDensity = Math.Clamp(_particleDensity, 0, 8);
 
         if (_defaultToController && scene.GetActiveController<SoundGravityController>() is { } soundController)
@@ -382,7 +386,7 @@ public class GravityField : GravityTrigger, IConnectableField
         }
         else
         {
-            _particles = Array.Empty<Vector2>();
+            _particles = [];
         }
     }
 
@@ -455,7 +459,9 @@ public class GravityField : GravityTrigger, IConnectableField
         var top = level.Camera.Top;
         var bottom = level.Camera.Bottom;
 
-        if (Collidable && shouldDrawField && (cassetteIndex < 0 || cassetteState >= CassetteStates.On))
+        var shouldDrawParticles = GravityHelperModule.Settings.FieldParticles && shouldDrawField;
+
+        if (Collidable && shouldDrawParticles && (cassetteIndex < 0 || cassetteState >= CassetteStates.On))
         {
             var color = ParticleColor * _particleOpacity * opacity;
             foreach (Vector2 particle in _particles)
@@ -469,7 +475,29 @@ public class GravityField : GravityTrigger, IConnectableField
             }
         }
 
-        if (shouldDrawArrows)
+        // calculate arrow rendering info based on accessibility settings
+        MTexture smallTexture = _arrowSmallTexture;
+        MTexture largeTexture = _arrowTexture;
+        Vector2 smallOrigin = _arrowSmallOrigin;
+        Vector2 largeOrigin = _arrowOrigin;
+
+        var fieldArrowType = GravityHelperModule.Settings.FieldArrowType;
+        switch (fieldArrowType)
+        {
+            case GravityHelperModuleSettings.ArrowSetting.Default when !shouldDrawArrows:
+                fieldArrowType = GravityHelperModuleSettings.ArrowSetting.None;
+                break;
+            case GravityHelperModuleSettings.ArrowSetting.Small:
+                largeTexture = smallTexture;
+                largeOrigin = smallOrigin;
+                break;
+            case GravityHelperModuleSettings.ArrowSetting.Large:
+                smallTexture = largeTexture;
+                smallOrigin = largeOrigin;
+                break;
+        }
+
+        if (fieldArrowType != GravityHelperModuleSettings.ArrowSetting.None)
         {
             int widthInTiles = (int)(Width / 8);
             int heightInTiles = (int)(Height / 8);
@@ -479,8 +507,8 @@ public class GravityField : GravityTrigger, IConnectableField
             int arrowsY = Math.Max(heightInTiles / 2, 1);
 
             // if width or height is 1, scale down the arrows
-            var texture = widthInTiles == 1 || heightInTiles == 1 ? _arrowSmallTexture : _arrowTexture;
-            var origin = widthInTiles == 1 || heightInTiles == 1 ? _arrowSmallOrigin : _arrowOrigin;
+            var texture = widthInTiles == 1 || heightInTiles == 1 ? smallTexture : largeTexture;
+            var origin = widthInTiles == 1 || heightInTiles == 1 ? smallOrigin : largeOrigin;
             var color = ArrowColor * _arrowOpacity * opacity * (Collidable ? 1 : 0.5f);
             const int padding = 32;
 
@@ -530,7 +558,7 @@ public class GravityField : GravityTrigger, IConnectableField
     {
         var allFields = scene.Entities.ToAdd.Concat(scene.Entities).OfType<GravityField>().ToArray();
         if (allFields.Length == 0)
-            return Enumerable.Empty<GravityField>();
+            return [];
 
         var tallRect = new Rectangle((int)X, (int)Y - 2, (int)Width, (int)Height + 4);
         var wideRect = new Rectangle((int)X - 2, (int)Y, (int)Width + 4, (int)Height);
@@ -562,12 +590,26 @@ public class GravityField : GravityTrigger, IConnectableField
     [Tracked]
     internal class GravityFieldGroup : ConnectedFieldRenderer<GravityField>
     {
-        public readonly List<GravityField> Fields = new();
+        public readonly List<GravityField> Fields = [];
         public readonly GravityField Owner;
 
         public GravityFieldGroup(GravityField owner)
         {
             Owner = owner;
+            Add(new AccessibilityListener(() => RebuildComponents(Scene, true)));
+        }
+
+        public void RebuildComponents(Scene scene, bool forceRebuild = false)
+        {
+            foreach (var field in Fields)
+                field.configure(scene);
+            CreateComponents(Fields, forceRebuild);
+        }
+
+        protected override void OnRenderBloom()
+        {
+            if (!GravityHelperModule.Settings.FieldBloom) return;
+            base.OnRenderBloom();
         }
     }
 

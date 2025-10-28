@@ -66,7 +66,7 @@ public class UpsideDownJumpThru : JumpThru
     {
         if (_attached)
         {
-            List<Actor> sharedRiders = new();
+            List<Actor> sharedRiders = [];
             Add(_staticMover = new StaticMover
             {
                 SolidChecker = solid =>

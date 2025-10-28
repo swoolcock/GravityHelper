@@ -22,11 +22,11 @@ internal class DataPlayerGravity : DataType<DataPlayerGravity>
     // Can be RECEIVED BY CLIENT TOO EARLY because UDP is UDP.
     public override bool FilterHandle(DataContext ctx) => Player != null;
 
-    public override MetaType[] GenerateMeta(DataContext ctx) => new MetaType[]
-    {
+    public override MetaType[] GenerateMeta(DataContext ctx) =>
+    [
         new MetaPlayerPrivateState(Player),
-        new MetaBoundRef(DataType<DataPlayerInfo>.DataID, Player?.ID ?? uint.MaxValue, true),
-    };
+        new MetaBoundRef(DataType<DataPlayerInfo>.DataID, Player?.ID ?? uint.MaxValue, true)
+    ];
 
     public override void FixupMeta(DataContext ctx)
     {

@@ -18,7 +18,7 @@ public class GravityLine : Entity
     public const float DEFAULT_MIN_ALPHA = 0.45f;
     public const float DEFAULT_MAX_ALPHA = 0.95f;
     public const float DEFAULT_FLASH_TIME = 0.35f;
-    public const string DEFAULT_SOUND = "event:/gravityhelper/gravity_line";
+    public const string DEFAULT_SOUND = GravityHelperSFX.gh_gravity_line;
     public const string DEFAULT_LINE_COLOR = "FFFFFF";
     public const float DEFAULT_LINE_THICKNESS = 2f;
 
@@ -234,8 +234,15 @@ public class GravityLine : Entity
     {
         base.Render();
 
-        var alpha = FlashTime == 0 ? MaxAlpha : Calc.LerpClamp(MinAlpha, MaxAlpha, _flashTimeRemaining / FlashTime);
-        Draw.Line(Position.Round(), (Position + TargetOffset).Round(), LineColor * alpha, LineThickness);
+        var highVis = GravityHelperModule.Settings.HighVisibilityLines;
+        var defaultScheme = GravityHelperModule.Settings.ColorSchemeType is GravityHelperModuleSettings.ColorSchemeSetting.Default;
+
+        var alpha = 1f;
+        if (!highVis) alpha = FlashTime == 0 ? MaxAlpha : Calc.LerpClamp(MinAlpha, MaxAlpha, _flashTimeRemaining / FlashTime);
+
+        var lineColor = defaultScheme ? LineColor : GravityType.Color();
+
+        Draw.Line(Position.Round(), (Position + TargetOffset).Round(), lineColor * alpha, LineThickness);
     }
 
     public override void DebugRender(Camera camera)

@@ -74,7 +74,7 @@ internal static class AngryOshiroHooks
 
         var prechargeSfx = self.prechargeSfx;
         var chargeSfx = self.chargeSfx;
-        Audio.Play("event:/game/general/thing_booped", self.Position);
+        Audio.Play(SFX.game_gen_thing_booped, self.Position);
         Celeste.Freeze(0.2f);
         player.Bounce(self.Bottom - 2f);
         state.State = StHurt;

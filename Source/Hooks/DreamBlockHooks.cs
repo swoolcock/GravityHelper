@@ -65,9 +65,7 @@ internal static class DreamBlockHooks
         cursor.EmitDelegate<Func<Color, DreamBlock, Color>>((color, self) =>
         {
             if (self is not GravityDreamBlock gravityDreamBlock) return color;
-            return
-                gravityDreamBlock.LineColor?.Lighter(gravityDreamBlock.WasEntered ? 0.2f : 0f) ??
-                gravityDreamBlock.GravityType.Color().Lighter(gravityDreamBlock.WasEntered ? 0.6f : 0.4f);
+            return gravityDreamBlock.GetActiveLineColor();
         });
     }
 
@@ -80,9 +78,7 @@ internal static class DreamBlockHooks
         cursor.EmitDelegate<Func<Color, DreamBlock, Color>>((oldColor, self) =>
         {
             if (self is not GravityDreamBlock gravityDreamBlock) return oldColor;
-            var baseColor = gravityDreamBlock.BackColor ?? gravityDreamBlock.GravityType.Color();
-            var color = baseColor * (gravityDreamBlock.WasEntered ? 0.6f : 0.15f);
-            return new Color(color.R, color.G, color.B, 255);
+            return gravityDreamBlock.GetActiveBackColor();
         });
     }
 }
