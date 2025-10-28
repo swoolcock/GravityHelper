@@ -40,7 +40,7 @@ public class GravityHelperModuleSettings : EverestModuleSettings
 
     // default to zero to indicate this is the first execution since versioning was introduced
     public int SettingsVersion { get; set; }
-    public const int LatestSettingsVersion = 1;
+    public const int LatestSettingsVersion = 2;
 
     private static IEnumerable<Tuple<string, TEnum>> getEnumOptions<TEnum>() where TEnum : Enum =>
         Enum.GetValues(typeof(TEnum))
