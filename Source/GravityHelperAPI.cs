@@ -68,6 +68,32 @@ internal static class GravityHelperAPI
         public static Vector2 GetBottomRight(Actor actor) =>
             actor?.ShouldInvert() == true ? actor.TopRight : actor?.BottomRight ?? Vector2.Zero;
 
+        public static Vector2 TransformVector(Vector2 vec)
+        {
+            if (!GravityHelperModule.ShouldInvertPlayer || IsControlSchemeRelative())
+                return vec;
+            return new Vector2(vec.X, -vec.Y);
+        }
+
+        public static Vector2 TransformFeatherVector(Vector2 vec)
+        {
+            if (!GravityHelperModule.ShouldInvertPlayer || IsFeatherControlSchemeRelative())
+                return vec;
+            return new Vector2(vec.X, -vec.Y);
+        }
+
+        public static Vector2 TransformVectorForActor(Vector2 vec, Actor actor)
+        {
+            if (actor is Player) return TransformVector(vec);
+            return new Vector2(vec.X, actor.ShouldInvert() ? -vec.Y : vec.Y);
+        }
+
+        public static bool IsControlSchemeRelative() => GravityHelperModule.Settings.ControlScheme ==
+                                                        GravityHelperModuleSettings.ControlSchemeSetting.Relative;
+
+        public static bool IsFeatherControlSchemeRelative() => GravityHelperModule.Settings.FeatherControlScheme ==
+                                                               GravityHelperModuleSettings.ControlSchemeSetting.Relative;
+
         public static TalkComponent.TalkComponentUI CreateUpsideDownTalkComponentUI(TalkComponent talkComponent) =>
             new UpsideDownTalkComponentUI(talkComponent);
 
