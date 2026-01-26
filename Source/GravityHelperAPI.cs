@@ -107,6 +107,9 @@ internal static class GravityHelperAPI
             new PlayerGravityListener((e, a) =>
                 gravityChanged(e as Player, (int)a.NewValue, a.MomentumMultiplier));
 
+        public static void BeginForceInvertPlayerRender() => GravityHelperModule.ForceInvertPlayerRenderSemaphore++;
+        public static void EndForceInvertPlayerRender() => GravityHelperModule.ForceInvertPlayerRenderSemaphore--;
+
         public static void BeginOverride() => GravityHelperModule.OverrideSemaphore++;
 
         public static void EndOverride() => GravityHelperModule.OverrideSemaphore--;
