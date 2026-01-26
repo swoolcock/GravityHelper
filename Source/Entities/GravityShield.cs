@@ -106,7 +106,7 @@ public class GravityShield : Entity
         var isDefault = GravityHelperModule.Settings.ColorSchemeType ==
                         GravityHelperModuleSettings.ColorSchemeSetting.Default;
 
-        using (GravityHelperAPI.Exports.WithCustomTintShader())
+        using (GravityHelperAPI.InternalCustomTintShader())
         {
             if (_sprite.Visible)
             {

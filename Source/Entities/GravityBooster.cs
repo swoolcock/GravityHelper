@@ -107,7 +107,7 @@ public class GravityBooster : Booster
             base.Render();
             _overlaySprite.Visible = true;
 
-            using (GravityHelperAPI.Exports.WithCustomTintShader())
+            using (GravityHelperAPI.InternalCustomTintShader())
             {
                 _overlaySprite.Color = GravityType.Color(scheme).Saturation(2f);
                 _overlaySprite.Render();

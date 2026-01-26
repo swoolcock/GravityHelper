@@ -118,7 +118,7 @@ public class GravitySwitch : Entity
 
     public override void Render()
     {
-        using (GravityHelperAPI.Exports.WithCustomTintShader())
+        using (GravityHelperAPI.InternalCustomTintShader())
         {
             _sprite.Color =
                 GravityHelperModule.Settings.ColorSchemeType is GravityHelperModuleSettings.ColorSchemeSetting.Default

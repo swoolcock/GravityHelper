@@ -200,7 +200,7 @@ public class GravityBumper : Bumper
 
         if (!spriteEvil.Visible && GravityType != GravityType.None && scheme.NeedsShader)
         {
-            using (GravityHelperAPI.Exports.WithCustomTintShader())
+            using (GravityHelperAPI.InternalCustomTintShader())
             {
                 if (_rippleSprite != null) _rippleSprite.Visible = false;
                 sprite.Color = GravityType.Color(scheme);

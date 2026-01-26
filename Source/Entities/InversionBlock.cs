@@ -384,7 +384,7 @@ public class InversionBlock : Solid
             _refillSprite.Render();
         }
 
-        using (GravityHelperAPI.Exports.WithCustomTintShader())
+        using (GravityHelperAPI.InternalCustomTintShader())
         {
             // draw refill crystal if we have it
             if (_refillSprite?.Visible == true && GiveGravityRefill)

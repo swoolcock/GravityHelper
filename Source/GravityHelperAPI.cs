@@ -194,9 +194,7 @@ internal static class GravityHelperAPI
         }
 
         public static IDisposable WithCustomTintShader(bool onlyForAccessibility = true) =>
-            BeginCustomTintShader(onlyForAccessibility)
-                ? new InvokeOnDispose(EndCustomTintShader)
-                : new InvokeOnDispose();
+            InternalCustomTintShader(onlyForAccessibility);
     }
 
     internal static void ClearTintEffect()
@@ -233,4 +231,9 @@ internal static class GravityHelperAPI
 
         return effect;
     }
+
+    internal static InvokeOnDispose InternalCustomTintShader(bool onlyForAccessibility = true) =>
+        Exports.BeginCustomTintShader(onlyForAccessibility)
+            ? new InvokeOnDispose(Exports.EndCustomTintShader)
+            : new InvokeOnDispose();
 }

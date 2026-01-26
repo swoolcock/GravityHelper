@@ -292,7 +292,7 @@ public class GravityRefill : Entity
             }
         }
 
-        using (GravityHelperAPI.Exports.WithCustomTintShader())
+        using (GravityHelperAPI.InternalCustomTintShader())
         {
             if (_sprite.Visible)
             {
