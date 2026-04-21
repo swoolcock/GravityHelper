@@ -27,6 +27,8 @@ public class GravityBumper : Bumper
     internal readonly float _respawnTime;
     private readonly string _spriteName;
     private readonly string _evilSpriteName;
+    private readonly string _textureDirectory;
+    private readonly bool _showRipple;
 
     public GravityBumper(EntityData data, Vector2 offset)
         : base(data, offset)
@@ -49,6 +51,8 @@ public class GravityBumper : Bumper
         _respawnTime = data.Float("respawnTime", 0.6f);
         _spriteName = data.Attr("spriteName");
         _evilSpriteName = data.Attr("evilSpriteName");
+        _textureDirectory = data.Attr("textureDirectory");
+        _showRipple = data.Bool("showRipple", true);
 
         if (_respawnTime <= 0)
             _respawnTime = float.MaxValue / 2f;
@@ -82,12 +86,36 @@ public class GravityBumper : Bumper
         }
 
         if (!string.IsNullOrWhiteSpace(spriteName))
-            GFX.SpriteBank.CreateOn(sprite, spriteName);
+        {
+            if (GFX.SpriteBank.Has(spriteName))
+            {
+                if (string.IsNullOrWhiteSpace(_textureDirectory))
+                    GFX.SpriteBank.CreateOn(sprite, spriteName);
+                else
+                    GFX.SpriteBank.CreateOnWithPath(sprite, spriteName, _textureDirectory);
+            }
+            else
+            {
+                Logger.Log(nameof(GravityHelperModule), $"GravityBumper: Couldn't find sprite with name: {spriteName}");
+            }
+        }
 
         if (!string.IsNullOrWhiteSpace(_evilSpriteName))
-            GFX.SpriteBank.CreateOn(spriteEvil, _evilSpriteName);
+        {
+            if (GFX.SpriteBank.Has(_evilSpriteName))
+            {
+                if (string.IsNullOrWhiteSpace(_textureDirectory))
+                    GFX.SpriteBank.CreateOn(spriteEvil, _evilSpriteName);
+                else
+                    GFX.SpriteBank.CreateOnWithPath(spriteEvil, _evilSpriteName, _textureDirectory);
+            }
+            else
+            {
+                Logger.Log(nameof(GravityHelperModule), $"GravityBumper: Couldn't find evil sprite with name: {_evilSpriteName}");
+            }
+        }
 
-        if (GravityType != GravityType.None)
+        if (_showRipple && GravityType != GravityType.None)
         {
             Add(_rippleSprite = GFX.SpriteBank.Create("gravityRipple"));
             _rippleSprite.Color = GravityType.HighlightColor();
@@ -106,8 +134,7 @@ public class GravityBumper : Bumper
 
     private void onAccessibilityChange()
     {
-        if (_rippleSprite != null)
-            _rippleSprite.Color = GravityType.RippleColor();
+        _rippleSprite?.Color = GravityType.RippleColor();
     }
 
     private new void OnPlayer(Player player)
@@ -202,13 +229,13 @@ public class GravityBumper : Bumper
         {
             using (GravityHelperAPI.InternalCustomTintShader())
             {
-                if (_rippleSprite != null) _rippleSprite.Visible = false;
+                _rippleSprite?.Visible = false;
                 sprite.Color = GravityType.Color(scheme);
 
                 base.Render();
 
                 sprite.Color = Color.White;
-                if (_rippleSprite != null) _rippleSprite.Visible = true;
+                _rippleSprite?.Visible = true;
             }
 
             _rippleSprite?.Render();
