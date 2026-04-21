@@ -67,6 +67,7 @@ public class GravitySpring : Spring
     private IndicatorRenderer _indicatorRenderer;
     private Vector2 _indicatorShakeOffset;
     private string _spriteName;
+    private string _textureDirectory;
     private string _overlaySpriteName;
     private bool _showOverlay;
     private string _refillSound;
@@ -118,9 +119,10 @@ public class GravitySpring : Spring
         _showIndicator = data.Bool("showIndicator");
         _largeIndicator = data.Bool("largeIndicator");
         _indicatorOffset = data.Int("indicatorOffset", 8);
-        _indicatorTexture = data.Attr("indicatorTexture");
-        _spriteName = data.Attr("spriteName");
-        _overlaySpriteName = data.Attr("overlaySpriteName");
+        _indicatorTexture = data.Attr("indicatorTexture").Trim();
+        _spriteName = data.Attr("spriteName").Trim();
+        _textureDirectory = data.Attr("textureDirectory").Trim();
+        _overlaySpriteName = data.Attr("overlaySpriteName").Trim();
         _refillSound = data.Attr("refillSound");
 
         if (string.IsNullOrWhiteSpace(_spriteName))
@@ -144,8 +146,21 @@ public class GravitySpring : Spring
         var pufferCollider = Get<PufferCollider>();
 
         // update sprite
-        GFX.SpriteBank.CreateOn(sprite, _spriteName);
-        sprite.Play(getAnimId("idle"));
+        if (!string.IsNullOrWhiteSpace(_spriteName))
+        {
+            if (GFX.SpriteBank.Has(_spriteName))
+            {
+                if (!string.IsNullOrWhiteSpace(_textureDirectory))
+                    GFX.SpriteBank.CreateOnWithPath(sprite, _spriteName, _textureDirectory);
+                else
+                    GFX.SpriteBank.CreateOn(sprite, _spriteName);
+                sprite.Play(getAnimId("idle"));
+            }
+            else
+            {
+                Logger.Log(nameof(GravityHelperModule), $"GravitySpring: Invalid sprite name: {_spriteName}");
+            }
+        }
 
         // create overlay sprite
         var overlayAnimId = getOverlayAnimId("idle");

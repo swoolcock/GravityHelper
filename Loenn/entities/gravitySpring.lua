@@ -18,6 +18,7 @@ local placementData = helpers.createPlacementData('3', {
     indicatorTexture = "",
     spriteName = "",
     overlaySpriteName = "",
+    textureDirectory = "",
     refillDashCount = -1,
     refillStamina = true,
     showOverlay = true,
@@ -117,6 +118,10 @@ end
 function gravitySpring.sprite(room, entity)
     local sprites = { }
     local spritePath = "objects/GravityHelper/gravitySpring/"
+    if entity.textureDirectory and entity.textureDirectory ~= "" then
+        spritePath = entity.textureDirectory
+    end
+
     local textureName = "none00"
 
     if entity.gravityType == consts.gravityTypes.normal.index then
