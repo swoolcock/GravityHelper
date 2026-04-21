@@ -51,6 +51,13 @@ public class GravityDreamBlock : DreamBlock
             });
         }
 
+        var swapType = (SwapComponent.SwapType)data.Int("swapType", (int)SwapComponent.SwapType.None);
+        if (swapType != SwapComponent.SwapType.None && node.HasValue)
+        {
+            Add(new SwapComponent(swapType, node.Value));
+            node = null;
+        }
+
         GravityType = (GravityType)data.Int("gravityType");
         var lineColorString = data.Attr("lineColor");
         var backColorString = data.Attr("backColor");

@@ -30,6 +30,7 @@ local placementData = helpers.createPlacementData('1', {
     climbFall = true,
     endFallOnSolidTiles = true,
     invertFallingDirFlag = "",
+    swapType = 0,
 })
 
 local gravityDreamBlock = {
@@ -38,6 +39,7 @@ local gravityDreamBlock = {
     fieldInformation = {
         gravityType = consts.fieldInformation.gravityType(),
         fallType = consts.fieldInformation.fallType,
+        swapType = consts.fieldInformation.swapType,
     },
     placements = {
         {
@@ -58,6 +60,27 @@ local gravityDreamBlock = {
                 gravityType = consts.gravityTypes.toggle.index,
             }),
         },
+        {
+            name = "normal_swap",
+            data = helpers.union(placementData, {
+                gravityType = consts.gravityTypes.normal.index,
+                swapType = 1,
+            }),
+        },
+        {
+            name = "inverted_swap",
+            data = helpers.union(placementData, {
+                gravityType = consts.gravityTypes.inverted.index,
+                swapType = 1,
+            }),
+        },
+        {
+            name = "toggle_swap",
+            data = helpers.union(placementData, {
+                gravityType = consts.gravityTypes.toggle.index,
+                swapType = 1,
+            }),
+        },
     },
 }
 
@@ -70,48 +93,36 @@ local function lightened(color, lightness, alpha)
     }
 end
 
---[[
-function gravityDreamBlock.borderColor(room, entity)
-    local gravityColor = consts.gravityTypeForIndex(entity.gravityType).color
-    local parsed, r, g, b = utils.parseHexColor(entity.lineColor or "")
-    return parsed and {r, g, b, 1} or lightened(gravityColor, 0.4)
-end
-
-function gravityDreamBlock.fillColor(room, entity)
-    local gravityColor = consts.gravityTypeForIndex(entity.gravityType).color
-    local parsed, r, g, b = utils.parseHexColor(entity.backColor or "")
-    local color = parsed and {r, g, b, 1} or lightened(gravityColor, 0.4)
-    return {color[1] * 0.12, color[2] * 0.12, color[3] * 0.12, 1}
-end
-]]
-
 function gravityDreamBlock.depth(room, entity)
     return entity.below and 4999 or -11001
 end
 
-local function putInside(entity, x, y)
-    local right, bottom = entity.x + entity.width, entity.y + entity.height
+local function putInside(entity, x, y, node)
+    local ex = node and node.x or entity.x
+    local ey = node and node.y or entity.y
+
+    local right, bottom = ex + entity.width, ey + entity.height
     if x > right then
         x = x - math.ceil((x - right) / entity.width) * entity.width
-    elseif x < entity.x then
-        x = x + math.ceil((entity.x - x) / entity.width) * entity.width
+    elseif x < ex then
+        x = x + math.ceil((ex - x) / entity.width) * entity.width
     end
     if y > bottom then
         y = y - math.ceil((y - bottom) / entity.height) * entity.height
-    elseif y < entity.y then
-        y = y + math.ceil((entity.y - y) / entity.height) * entity.height
+    elseif y < ey then
+        y = y + math.ceil((ey - y) / entity.height) * entity.height
     end
     return x, y
 end
 
-function gravityDreamBlock.sprite(room, entity)
+local function mainSprite(room, entity, node)
     -- find sprites
     local largeSprite =
-            entity.gravityType == 0 and drawableSprite.fromTexture(downArrowTexture) or
+    entity.gravityType == 0 and drawableSprite.fromTexture(downArrowTexture) or
             entity.gravityType == 1 and drawableSprite.fromTexture(upArrowTexture) or
             drawableSprite.fromTexture(doubleArrowTexture)
     local smallSprite =
-            entity.gravityType == 0 and drawableSprite.fromTexture(downArrowSmallTexture) or
+    entity.gravityType == 0 and drawableSprite.fromTexture(downArrowSmallTexture) or
             entity.gravityType == 1 and drawableSprite.fromTexture(upArrowSmallTexture) or
             drawableSprite.fromTexture(doubleArrowSmallTexture)
 
@@ -125,10 +136,11 @@ function gravityDreamBlock.sprite(room, entity)
         return seed / m
     end
 
-    return drawableFunction.fromFunction(function()
+    local spr = drawableFunction.fromFunction(function()
         local gravityColor = consts.gravityTypeForIndex(entity.gravityType).color
         local lineColor, backColor, particleColor = lightened(gravityColor, 0.4), lightened(gravityColor, 0.4), gravityColor
-        local parsed, r, g, b, a
+        local parsed, r, g, b, a, oldAlpha
+        local ex,ey = node and node.x or entity.x, node and node.y or entity.y
 
         parsed, r, g, b = utils.parseHexColor(entity.lineColor or "")
         if parsed then lineColor = {r, g, b} end
@@ -140,16 +152,18 @@ function gravityDreamBlock.sprite(room, entity)
         if parsed then particleColor = {r, g, b} end
 
         -- fill
-        r, g, b, a = love.graphics.getColor()
-        love.graphics.setColor(0, 0, 0, 1)
-        love.graphics.rectangle("fill", entity.x, entity.y, entity.width, entity.height)
-        love.graphics.setColor(backColor[1], backColor[2], backColor[3], 0.12)
-        love.graphics.rectangle("fill", entity.x, entity.y, entity.width, entity.height)
+        r, g, b, oldAlpha = love.graphics.getColor()
+        a = oldAlpha * (node and 0.75 or 1)
+
+        love.graphics.setColor(0, 0, 0, a)
+        love.graphics.rectangle("fill", ex, ey, entity.width, entity.height)
+        love.graphics.setColor(backColor[1], backColor[2], backColor[3], a * 0.12)
+        love.graphics.rectangle("fill", ex, ey, entity.width, entity.height)
 
         -- set scissor for particles
         local sx, sy, sw, sh = love.graphics.getScissor()
-        local x1, y1 = love.graphics.transformPoint(entity.x, entity.y)
-        local x2, y2 = love.graphics.transformPoint(entity.x + entity.width, entity.y + entity.height)
+        local x1, y1 = love.graphics.transformPoint(ex, ey)
+        local x2, y2 = love.graphics.transformPoint(ex + entity.width, ey + entity.height)
         love.graphics.setScissor(x1, y1, x2 - x1, y2 - y1)
 
         -- set seed
@@ -164,8 +178,9 @@ function gravityDreamBlock.sprite(room, entity)
             local layer = math.floor(rand() * 6)
             -- calculate visuals
             local adjusted = lightened(particleColor, lightness, 0.8)
+            adjusted[4] *= a
 
-            px, py = putInside(entity, px, py)
+            px, py = putInside(entity, px, py, node)
 
             if layer < 3 then
                 local particleSprite = layer < 1 and largeSprite or smallSprite
@@ -183,12 +198,47 @@ function gravityDreamBlock.sprite(room, entity)
         love.graphics.setScissor(sx, sy, sw, sh)
 
         -- line
-        love.graphics.setColor(lineColor[1], lineColor[2], lineColor[3], 1)
-        love.graphics.rectangle("line", entity.x + 0.5, entity.y + 0.5, entity.width - 1, entity.height - 1)
+        love.graphics.setColor(lineColor[1], lineColor[2], lineColor[3], a)
+        love.graphics.rectangle("line", ex + 0.5, ey + 0.5, entity.width - 1, entity.height - 1)
 
         -- reset color
-        love.graphics.setColor(r, g, b, a)
+        love.graphics.setColor(r, g, b, oldAlpha)
     end)
+    return spr
+end
+
+function gravityDreamBlock.sprite(room, entity)
+    local sprites = {}
+    local spr = mainSprite(room, entity, nil)
+    table.insert(sprites, spr)
+    if entity.swapType and entity.swapType > 0 then
+        helpers.addSwapTrailSprites(sprites, entity)
+    end
+    return sprites
+end
+
+function gravityDreamBlock.nodeSprite(room, entity, node, nodeIndex)
+    local sprites = {}
+    local spr = mainSprite(room, entity, node)
+    table.insert(sprites, spr)
+    return sprites
+end
+
+function gravityDreamBlock.nodeLimits(room, entity)
+    if entity.swapType and entity.swapType > 0 then
+        return {1, 1}
+    else
+        return {0, 0}
+    end
+end
+
+function gravityDreamBlock.selection(room, entity)
+    local nodes = entity.nodes
+    local x, y = entity.x or 0, entity.y or 0
+    local nodeX, nodeY = nodes and nodes[1].x or x, nodes and nodes[1].y or y
+    local width, height = entity.width or 8, entity.height or 8
+
+    return utils.rectangle(x, y, width, height), {utils.rectangle(nodeX, nodeY, width, height)}
 end
 
 return gravityDreamBlock

@@ -4,6 +4,8 @@
 local consts = require("mods").requireFromPlugin("consts")
 local utils = require("utils")
 
+local drawableNinePatch = require("structs.drawable_nine_patch")
+
 local helpers = {}
 
 function helpers.union(...)
@@ -29,6 +31,33 @@ function helpers.createPlacementData(pluginVersion, data)
         modVersion = consts.modVersion,
         pluginVersion = pluginVersion,
     }, data)
+end
+
+function helpers.addSwapTrailSprites(sprites, entity)
+    local nodes = entity.nodes or {}
+    local x, y = entity.x or 0, entity.y or 0
+    local nodeX, nodeY = nodes[1].x or x, nodes[1].y or y
+    local width, height = entity.width or 8, entity.height or 8
+    local drawWidth, drawHeight = math.abs(x - nodeX) + width, math.abs(y - nodeY) + height
+
+    x, y = math.min(x, nodeX), math.min(y, nodeY)
+
+    local trailNinePatchOptions = {
+        mode = "fill",
+        borderMode = "repeat",
+        useRealSize = true
+    }
+
+    local trailDepth = 8999
+
+    local trailTexture = "objects/swapblock/target"
+    local frameNinePatch = drawableNinePatch.fromTexture(trailTexture, trailNinePatchOptions, x, y, drawWidth, drawHeight)
+    local frameSprites = frameNinePatch:getDrawableSprite()
+
+    for _, sprite in ipairs(frameSprites) do
+        sprite.depth = trailDepth
+        table.insert(sprites, sprite)
+    end
 end
 
 return helpers

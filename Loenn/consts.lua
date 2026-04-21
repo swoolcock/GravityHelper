@@ -54,6 +54,14 @@ local consts = {
                 {"Opposite Player", 4},
             },
         },
+        swapType = {
+            editable = false,
+            options = {
+                {"None", 0},
+                {"Return", 1},
+                {"Toggle", 2},
+            },
+        },
         orientation = {
             fieldType = "string",
             editable = false,
