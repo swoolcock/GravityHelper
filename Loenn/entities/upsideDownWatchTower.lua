@@ -8,6 +8,7 @@ local consts = require("mods").requireFromPlugin("consts")
 local placementData = helpers.createPlacementData('1', {
     summit = false,
     onlyY = false,
+    textureDirectory = "",
 })
 
 local upsideDownWatchTower = {
@@ -26,10 +27,22 @@ local upsideDownWatchTower = {
 }
 
 function upsideDownWatchTower.sprite(room, entity)
-    local sprite = drawableSprite.fromTexture("objects/lookout/lookout05", entity)
-    sprite:setScale(1, -1)
-    sprite:addPosition(0, 16)
+    local basePath = "objects/lookout/"
+    if entity.textureDirectory and entity.textureDirectory ~= "" then
+        basePath = entity.textureDirectory
+    end
+
+    local sprite = drawableSprite.fromTexture(basePath.."lookout05", entity)
+    if sprite then
+        sprite:setScale(1, -1)
+        sprite:addPosition(0, 16)
+    end
     return sprite
+end
+
+function upsideDownWatchTower.selection(room, entity)
+    local w,h = 13,16
+    return utils.rectangle(entity.x - math.ceil(w/2), entity.y, w, h)
 end
 
 return upsideDownWatchTower

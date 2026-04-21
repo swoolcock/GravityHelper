@@ -29,6 +29,7 @@ public class UpsideDownWatchTower : Lookout
     private readonly VersionInfo _pluginVersion;
     // ReSharper restore NotAccessedField.Local
 
+    private readonly string _textureDirectory;
     private bool _addedUI;
 
     public UpsideDownWatchTower(EntityData data, Vector2 offset)
@@ -36,6 +37,7 @@ public class UpsideDownWatchTower : Lookout
     {
         _modVersion = data.ModVersion();
         _pluginVersion = data.PluginVersion();
+        _textureDirectory = data.Attr("textureDirectory");
 
         Collider.TopCenter = -Collider.BottomCenter;
 
@@ -46,7 +48,12 @@ public class UpsideDownWatchTower : Lookout
         var vertexLight = Get<VertexLight>();
         vertexLight.Y *= -1;
 
-        var sprite = Get<Sprite>();
+        if (!string.IsNullOrWhiteSpace(_textureDirectory))
+        {
+            var onFrameChange = sprite.OnFrameChange;
+            GFX.SpriteBank.CreateOnWithPath(sprite, "lookout", _textureDirectory);
+            sprite.OnFrameChange = onFrameChange;
+        }
         sprite.Position.Y *= -1;
         sprite.Scale.Y *= -1;
 
