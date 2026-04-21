@@ -2,6 +2,9 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System;
+using System.Linq;
+using System.Xml;
+using Microsoft.Xna.Framework;
 using Monocle;
 
 // ReSharper disable UnusedMember.Global
@@ -35,5 +38,67 @@ internal static class BasicExtensions
     public static void PlayIfAvailable(this Sprite self, string id, bool restart = false, bool randomizeFrame = false)
     {
         if (self.Has(id)) self.Play(id, restart, randomizeFrame);
+    }
+
+    public static Sprite CreateWithPath(this SpriteBank self, string id, string overridePath)
+    {
+        return self.SpriteData.ContainsKey(id) ? self.SpriteData[id].CreateWithPath(overridePath) : throw new Exception($"Missing animation name in SpriteData: '{id}'!");
+    }
+
+    public static Sprite CreateOnWithPath(this SpriteBank self, Sprite sprite, string id, string overridePath)
+    {
+        if (self.SpriteData.ContainsKey(id))
+            return self.SpriteData[id].CreateOnWithPath(sprite, overridePath);
+        throw new Exception($"Missing animation name in SpriteData: '{id}'!");
+    }
+
+    public static Sprite CreateWithPath(this SpriteData self, string overridePath) =>
+        self.CreateOnWithPath(new Sprite(), overridePath);
+
+    public static Sprite CreateOnWithPath(this SpriteData self, Sprite sprite, string overridePath)
+    {
+        if (self.Sources.FirstOrDefault() is not { } spriteDataSource)
+        {
+            Logger.Log(nameof(GravityHelperModule), "CreateOnWithPath: Couldn't get sprite source.");
+            return null;
+        }
+
+        sprite.Reset(sprite.atlas, overridePath);
+        float defaultDelay = spriteDataSource.XML.AttrFloat("delay", 0f);
+
+        foreach (XmlElement animXml in spriteDataSource.XML.GetElementsByTagName("Anim"))
+        {
+            Chooser<string> into = !animXml.HasAttr("goto") ? null : Chooser<string>.FromString<string>(animXml.Attr("goto"));
+            string id = animXml.Attr("id");
+            string pathAttr = animXml.Attr("path", "");
+            int[] frames = Calc.ReadCSVIntWithTricks(animXml.Attr("frames", ""));
+            sprite.Add(id, pathAttr, animXml.AttrFloat("delay", defaultDelay), into, frames);
+        }
+
+        foreach (XmlElement loopXml in spriteDataSource.XML.GetElementsByTagName("Loop"))
+        {
+            string id = loopXml.Attr("id");
+            string pathAttr = loopXml.Attr("path", "");
+            int[] frames = Calc.ReadCSVIntWithTricks(loopXml.Attr("frames", ""));
+            sprite.AddLoop(id, pathAttr, loopXml.AttrFloat("delay", defaultDelay), frames);
+        }
+
+        if (spriteDataSource.XML.HasChild("Center"))
+        {
+            sprite.CenterOrigin();
+            sprite.Justify = new Vector2(0.5f, 0.5f);
+        }
+        else if (spriteDataSource.XML.HasChild("Justify"))
+        {
+            sprite.JustifyOrigin(spriteDataSource.XML.ChildPosition("Justify"));
+            sprite.Justify = spriteDataSource.XML.ChildPosition("Justify");
+        }
+        else if (spriteDataSource.XML.HasChild("Origin"))
+            sprite.Origin = spriteDataSource.XML.ChildPosition("Origin");
+        if (spriteDataSource.XML.HasChild("Position"))
+            sprite.Position = spriteDataSource.XML.ChildPosition("Position");
+        if (spriteDataSource.XML.HasAttr("start"))
+            sprite.Play(spriteDataSource.XML.Attr("start"));
+        return sprite;
     }
 }
