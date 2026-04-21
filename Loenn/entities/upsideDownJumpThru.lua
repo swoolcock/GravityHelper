@@ -6,7 +6,6 @@ local helpers = require("mods").requireFromPlugin("helpers")
 local consts = require("mods").requireFromPlugin("consts")
 local utils = require("utils")
 
--- For future use I guess?
 local textures = {"wood", "dream", "temple", "templeB", "cliffside", "reflection", "core", "moon"}
 
 local function getTexture(entity)
@@ -20,6 +19,7 @@ local placementData = helpers.createPlacementData('1', {
     triggerStaticMovers = true,
     invisible = false,
     surfaceIndex = -1,
+    textureDirectory = "",
 })
 
 local upsideDownJumpThru = {
@@ -47,8 +47,13 @@ for i, texture in ipairs(textures) do
 end
 
 function upsideDownJumpThru.sprite(room, entity)
+    local basePath = "objects/jumpthru/"
+    if entity.textureDirectory and entity.textureDirectory ~= "" then
+        basePath = entity.textureDirectory
+    end
+
     local textureRaw = getTexture(entity)
-    local texture = "objects/jumpthru/" .. textureRaw
+    local texture = basePath .. textureRaw
 
     local x, y = entity.x or 0, entity.y or 0
     local width = entity.width or 8
