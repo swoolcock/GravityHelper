@@ -6,13 +6,12 @@ local utils = require("utils")
 local consts = require("mods").requireFromPlugin("consts")
 
 local placementData = helpers.createPlacementData('1', {
-    sprite = "objects/GravityHelper/springGreen",
+    sprite = "objects/GravityHelper/springGreen/",
     orientation = "Floor",
 })
 
 local momentumSpring = {
     name = "GravityHelper/MomentumSpring",
-    texture = "objects/GravityHelper/springGreen/00",
     justification = { 0.5, 1.0 },
     depth = -8501,
     ignoredFields = consts.ignoredFields,
@@ -46,6 +45,15 @@ local momentumSpring = {
         }
     }
 }
+
+function momentumSpring.texture(room, entity)
+    local basePath = "objects/GravityHelper/springGreen/"
+    if entity.sprite and entity.sprite ~= "" then
+        basePath = entity.sprite
+    end
+    basePath = basePath:gsub("/+$", "").."/"
+    return basePath.."00"
+end
 
 local orientations = {
     "Floor",

@@ -8,15 +8,12 @@ local placementData = helpers.createPlacementData('1', {
     defaultToController = true,
     gravityType = consts.gravityTypes.toggle.index,
     cooldown = 1.0,
+    textureDirectory = "",
 })
 
 local gravitySwitch = {
     name = "GravityHelper/GravitySwitch",
     depth = 2000,
-    texture = function(room, entity)
-        local type = consts.gravityTypeForIndex(entity.gravityType)
-        return type.switchTexture
-    end,
     ignoredFields = consts.ignoredFields,
     fieldInformation = {
         gravityType = consts.fieldInformation.gravityType(0,1,2),
@@ -42,5 +39,14 @@ local gravitySwitch = {
         },
     },
 }
+
+function gravitySwitch.texture(room, entity)
+    local basePath = "objects/GravityHelper/gravitySwitch/"
+    if entity.textureDirectory and entity.textureDirectory ~= "" then
+        basePath = entity.textureDirectory
+    end
+    local type = consts.gravityTypeForIndex(entity.gravityType)
+    return basePath..(type.switchTexture)
+end
 
 return gravitySwitch

@@ -24,6 +24,7 @@ public class GravitySwitch : Entity
 
     private float _cooldownRemaining;
     private bool _playSounds;
+    private readonly string _textureDirectory;
 
     private bool usable => GravityType != (GravityHelperModule.PlayerComponent?.CurrentGravity ?? GravityType.Normal);
 
@@ -34,13 +35,19 @@ public class GravitySwitch : Entity
         SwitchOnHoldables = data.Bool("switchOnHoldables", true);
 
         _defaultToController = data.Bool("defaultToController", true);
+        _textureDirectory = data.Attr("textureDirectory").Trim();
 
         Collider = new Hitbox(16f, 24f, -8f, -12f);
 
         Add(new HoldableCollider(OnHoldable));
         Add(new PlayerCollider(OnPlayer));
         Add(new PlayerGravityListener(OnGravityChanged));
-        Add(_sprite = GFX.SpriteBank.Create(GravityType == GravityType.Toggle ? "gravitySwitchToggle" : "gravitySwitch"));
+
+        var spriteName = GravityType == GravityType.Toggle ? "gravitySwitchToggle" : "gravitySwitch";
+        if (!string.IsNullOrWhiteSpace(_textureDirectory))
+            Add(_sprite = GFX.SpriteBank.CreateWithPath(spriteName, _textureDirectory));
+        else
+            Add(_sprite = GFX.SpriteBank.Create(spriteName));
 
         Depth = Depths.Below;
     }

@@ -60,7 +60,7 @@ public class UpsideDownJumpThru : JumpThru
         _attached = data.Bool("attached", false);
         _triggerStaticMovers = data.Bool("triggerStaticMovers", true);
         _invisible = data.Bool("invisible", false);
-        _textureDirectory = data.Attr("textureDirectory");
+        _textureDirectory = data.Attr("textureDirectory").Trim();
 
         init();
     }

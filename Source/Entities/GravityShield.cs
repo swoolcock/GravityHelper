@@ -49,7 +49,7 @@ public class GravityShield : Entity
         OneUse = data.Bool("oneUse");
         RespawnTime = data.Float("respawnTime", 2.5f);
         ShieldTime = data.Float("shieldTime", 3f);
-        _textureDirectory = data.Attr("textureDirectory");
+        _textureDirectory = data.Attr("textureDirectory").Trim();
 
         Collider = new Hitbox(16f, 16f, -8f, -8f);
         Depth = Depths.Pickups;

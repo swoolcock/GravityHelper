@@ -51,7 +51,7 @@ public class GravityBumper : Bumper
         _respawnTime = data.Float("respawnTime", 0.6f);
         _spriteName = data.Attr("spriteName");
         _evilSpriteName = data.Attr("evilSpriteName");
-        _textureDirectory = data.Attr("textureDirectory");
+        _textureDirectory = data.Attr("textureDirectory").Trim();
         _showRipple = data.Bool("showRipple", true);
 
         if (_respawnTime <= 0)

@@ -32,6 +32,8 @@ local placementData = helpers.createPlacementData('2', {
     blockOneUse = false,
     showEdgeIndicators = true,
     legacyFallBehavior = false,
+    textureDirectory = "",
+    gravityRefillTextureDirectory = "",
 })
 
 local inversionBlock = {
@@ -48,6 +50,7 @@ local inversionBlock = {
         "fallType", "climbFall", "endFallOnSolidTiles",
         "tiletype", "sound",
         "autotile", "showEdgeIndicators", "defaultToController", "legacyFallBehavior",
+        "textureDirectory", "gravityRefillTextureDirectory",
     },
     fieldInformation = function() return {
         leftGravityType = consts.fieldInformation.gravityType(0,1,2),
@@ -135,7 +138,11 @@ local ninePatchOptions = {
 }
 
 local function getEdgeSprite(entity, drawX, drawY, row, column, rotation)
-    local edgeTexture = "objects/GravityHelper/inversionBlock/edges"
+    local basePath = "objects/GravityHelper/inversionBlock/"
+    if entity.textureDirectory and entity.textureDirectory ~= "" then
+        basePath = entity.textureDirectory
+    end
+    local edgeTexture = basePath.."edges"
     local sprite = drawableSprite.fromTexture(edgeTexture, entity)
     sprite:addPosition(drawX, drawY)
     if rotation ~= 0 then
@@ -148,7 +155,11 @@ local function getEdgeSprite(entity, drawX, drawY, row, column, rotation)
 end
 
 function inversionBlock.sprite(room, entity, node)
-    local blockTexture = "objects/GravityHelper/inversionBlock/block"
+    local basePath = "objects/GravityHelper/inversionBlock/"
+    if entity.textureDirectory and entity.textureDirectory ~= "" then
+        basePath = entity.textureDirectory
+    end
+    local blockTexture = basePath.."block"
     local topGravityType, bottomGravityType = 0, 1
     local x, y = entity.x or 0, entity.y or 0
     local width, height = entity.width or 24, entity.height or 24
@@ -196,7 +207,11 @@ function inversionBlock.sprite(room, entity, node)
 
     local refillSprite
     if entity.giveGravityRefill then
-        refillSprite = drawableSprite.fromTexture("objects/GravityHelper/gravityRefill/idle00", entity)
+        local refillPath = "objects/GravityHelper/gravityRefill/"
+        if entity.gravityRefillTextureDirectory and entity.gravityRefillTextureDirectory ~= "" then
+            refillPath = entity.gravityRefillTextureDirectory
+        end
+        refillSprite = drawableSprite.fromTexture(refillPath.."idle00", entity)
     elseif entity.refillDashCount == 2 then
         refillSprite = drawableSprite.fromTexture("objects/refillTwo/idle00", entity)
     elseif entity.refillDashCount > 0 then

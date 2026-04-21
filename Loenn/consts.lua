@@ -74,7 +74,7 @@ local consts = {
             highlightColor = "007cff",
             sound = "event:/ui/game/lookout_off",
             springTexture = "objects/GravityHelper/gravitySpring/normal00",
-            switchTexture = "objects/GravityHelper/gravitySwitch/switch12",
+            switchTexture = "switch12",
         },
         -- inverted gravity
         inverted = {
@@ -84,7 +84,7 @@ local consts = {
             highlightColor = "dc1828",
             sound = "event:/ui/game/lookout_on",
             springTexture = "objects/GravityHelper/gravitySpring/invert00",
-            switchTexture = "objects/GravityHelper/gravitySwitch/switch01",
+            switchTexture = "switch01",
         },
         -- toggle gravity
         toggle = {
@@ -94,7 +94,7 @@ local consts = {
             highlightColor = "ca41f5",
             sound = "",
             springTexture = "objects/GravityHelper/gravitySpring/toggle00",
-            switchTexture = "objects/GravityHelper/gravitySwitch/toggle01",
+            switchTexture = "toggle01",
         },
         -- do not affect gravity
         none = {

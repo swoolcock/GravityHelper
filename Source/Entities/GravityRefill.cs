@@ -41,6 +41,8 @@ public class GravityRefill : Entity
     private Level _level;
     private float _respawnTimeRemaining;
     private float _arrowIntervalOffset;
+    private readonly string _textureDirectory;
+    private readonly bool _showRipple;
 
     private bool _emitNormal;
     private bool _isWall;
@@ -63,6 +65,8 @@ public class GravityRefill : Entity
         RefillsDash = true;
         RefillsStamina = true;
         RespawnTime = 2.5f;
+        _textureDirectory = "";
+        _showRipple = true;
 
         init((int)(position.X + position.Y));
     }
@@ -91,6 +95,8 @@ public class GravityRefill : Entity
         RespawnTime = data.Float("respawnTime", 2.5f);
         _wallAlpha = data.Float("wallAlpha", 0.8f);
         _legacyRefillBehavior = data.Bool("legacyRefillBehavior", true);
+        _textureDirectory = data.Attr("textureDirectory").Trim();
+        _showRipple = data.Bool("showRipple", true);
 
         init(data.ID, data.Width, data.Height);
     }
@@ -100,15 +106,25 @@ public class GravityRefill : Entity
         Collider = _isWall ? new Hitbox(width, height) : new Hitbox(16f, 16f, -8f, -8f);
         Depth = _isWall ? Depths.TheoCrystal : Depths.Pickups;
 
-        var path = "objects/GravityHelper/gravityRefill";
+        var path = "objects/GravityHelper/gravityRefill/";
         var outlineName = Dashes == 2 ? "outline_two_dash" : "outline";
         var animationName = !RefillsDash ? "idle_no_dash" : Dashes == 2 ? "idle_two_dash" : "idle";
 
-        // add components
-        Add(new PlayerCollider(OnPlayer),
-            _sprite = GFX.SpriteBank.Create("gravityRefill"),
-            _arrows = GFX.SpriteBank.Create("gravityRefillArrows"),
-            _wiggler = Wiggler.Create(1f, 4f, v => _sprite.Scale = Vector2.One * (float)(1.0 + v * 0.2)),
+        Add(new PlayerCollider(OnPlayer));
+
+        if (!string.IsNullOrWhiteSpace(_textureDirectory))
+        {
+            path = _textureDirectory;
+            Add(_sprite = GFX.SpriteBank.CreateWithPath("gravityRefill", path));
+            if (_showRipple) Add(_arrows = GFX.SpriteBank.CreateWithPath("gravityRefillArrows", path));
+        }
+        else
+        {
+            Add(_sprite = GFX.SpriteBank.Create("gravityRefill"));
+            if (_showRipple) Add(_arrows = GFX.SpriteBank.Create("gravityRefillArrows"));
+        }
+
+        Add(_wiggler = Wiggler.Create(1f, 4f, v => _sprite.Scale = Vector2.One * (float)(1.0 + v * 0.2)),
             new MirrorReflection());
 
         if (!_isWall)
@@ -116,7 +132,7 @@ public class GravityRefill : Entity
             Add(_bloom = new BloomPoint(bloom_alpha, 16f),
                 _light = new VertexLight(Color.White, 1f, 16, 48),
                 _sine = new SineWave(0.6f, 0.0f),
-                _outline = new Image(GFX.Game[$"{path}/{outlineName}"]) { Visible = false });
+                _outline = new Image(GFX.Game[path + outlineName]) { Visible = false });
 
             _outline.CenterOrigin();
         }
@@ -126,7 +142,7 @@ public class GravityRefill : Entity
 
         using var _ = new PushRandomDisposable(randomSeed);
         _sine?.Randomize();
-        _arrows.OnFinish = _ => _arrows.Visible = false;
+        _arrows?.OnFinish = _ => _arrows.Visible = false;
         _arrowIntervalOffset = Calc.Random.NextFloat(2f);
 
         Add(new AccessibilityListener(onAccessibilityChange));
@@ -168,9 +184,15 @@ public class GravityRefill : Entity
     private void updateVisuals()
     {
         if (_isWall)
-            _arrows.Position = _sprite.Position = Collider.Center;
+        {
+            _sprite.Position = Collider.Center;
+            _arrows?.Position = _sprite.Position;
+        }
         else
-            _arrows.Y = _sprite.Y = _bloom.Y = _sine.Value * 2f;
+        {
+            _sprite.Y = _bloom.Y = _sine.Value * 2f;
+            _arrows?.Y = _sprite.Y;
+        }
 
         if (_light != null && _bloom != null)
         {
@@ -178,7 +200,7 @@ public class GravityRefill : Entity
             _bloom.Alpha = _light.Alpha * bloomAlpha;
         }
 
-        if (Scene != null && Scene.OnInterval(2f, _arrowIntervalOffset) && _sprite.Visible && (!_isWall || _wallRenderMode == WallRenderMode.Filled))
+        if (_arrows != null && Scene != null && Scene.OnInterval(2f, _arrowIntervalOffset) && _sprite.Visible && (!_isWall || _wallRenderMode == WallRenderMode.Filled))
         {
             var arrowName = Dashes == 2 ? "arrows_two_dash" : "arrows";
             _arrows.Play(arrowName, true);
@@ -194,7 +216,7 @@ public class GravityRefill : Entity
         _wallRenderMode = WallRenderMode.Filled;
 
         _sprite.Visible = true;
-        _arrows.Stop();
+        _arrows?.Stop();
 
         if (_outline != null)
             _outline.Visible = false;
@@ -206,11 +228,6 @@ public class GravityRefill : Entity
 
         var colorScheme = GravityHelperModule.Settings.GetColorScheme();
         _level.ParticlesFG.Emit(colorScheme.P_GravityRefill_Regen, 16, Center, Vector2.One * 2f);
-    }
-
-    private void updateSpritePos()
-    {
-
     }
 
     public override void Render()
@@ -301,7 +318,8 @@ public class GravityRefill : Entity
                     ? Color.White
                     : GravityType.Toggle.Color();
 
-                _arrows.Color = _sprite.Color = opaqueColor * _spriteAlpha;
+                _sprite.Color = opaqueColor * _spriteAlpha;
+                _arrows?.Color = _sprite.Color;
                 _sprite.DrawOutline();
             }
 
@@ -344,7 +362,7 @@ public class GravityRefill : Entity
 
         _wallRenderMode = WallRenderMode.Returning;
         refill._level.Shake();
-        refill._arrows.Visible = false;
+        refill._arrows?.Visible = false;
         refill._sprite.Visible = _isWall;
         if (!refill.OneUse && refill._outline != null)
             refill._outline.Visible = true;

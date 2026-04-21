@@ -37,7 +37,7 @@ public class UpsideDownWatchTower : Lookout
     {
         _modVersion = data.ModVersion();
         _pluginVersion = data.PluginVersion();
-        _textureDirectory = data.Attr("textureDirectory");
+        _textureDirectory = data.Attr("textureDirectory").Trim();
 
         Collider.TopCenter = -Collider.BottomCenter;
 

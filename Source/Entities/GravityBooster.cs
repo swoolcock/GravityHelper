@@ -39,7 +39,7 @@ public class GravityBooster : Booster
         _modVersion = data.ModVersion();
         _pluginVersion = data.PluginVersion();
 
-        _textureDirectory = data.Attr("textureDirectory");
+        _textureDirectory = data.Attr("textureDirectory").Trim();
         _showOverlay = data.Bool("showOverlay", true);
         _showRipple = data.Bool("showRipple", true);
 
