@@ -63,7 +63,7 @@ internal static class BasicExtensions
             return null;
         }
 
-        sprite.Reset(sprite.atlas, overridePath);
+        sprite.Reset(self.Atlas, overridePath);
         float defaultDelay = spriteDataSource.XML.AttrFloat("delay", 0f);
 
         foreach (XmlElement animXml in spriteDataSource.XML.GetElementsByTagName("Anim"))
