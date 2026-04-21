@@ -8,6 +8,9 @@ local drawableSprite = require("structs.drawable_sprite")
 local placementData = helpers.createPlacementData('1', {
     gravityType = consts.gravityTypes.normal.index,
     red = false,
+    textureDirectory = "",
+    showOverlay = true,
+    showRipple = true,
 })
 
 local gravityBooster = {
@@ -45,15 +48,24 @@ end
 
 function gravityBooster.sprite(room, entity)
     local gravityType = entity.gravityType
-    local spriteTexture = entity.red and "objects/GravityHelper/gravityBooster/boosterRedUp00" or "objects/GravityHelper/gravityBooster/boosterUp00"
-    local overlayTexture = "objects/GravityHelper/gravityBooster/" ..
+    local basePath = "objects/GravityHelper/gravityBooster/"
+    if entity.textureDirectory and entity.textureDirectory ~= "" then
+        basePath = entity.textureDirectory
+    end
+
+    local spriteTexture = entity.red and basePath.."boosterRedUp00" or basePath.."boosterUp00"
+    local overlayTexture = basePath ..
             (gravityType == 2 and "overlayToggle01" or gravityType == 1 and "overlayInvert00" or "overlayNormal00")
-    
-    local overlaySprite = drawableSprite.fromTexture(overlayTexture, entity)
+
     local boosterSprite = drawableSprite.fromTexture(spriteTexture, entity)
     local gravityInfo = consts.gravityTypeForIndex(gravityType)
+    local sprites = {}
+    if boosterSprite then table.insert(sprites, boosterSprite) end
 
-    local sprites = {boosterSprite, overlaySprite}
+    if entity.showOverlay ~= false then
+        local overlaySprite = drawableSprite.fromTexture(overlayTexture, entity)
+        if overlaySprite then table.insert(sprites, overlaySprite) end
+    end
 
     local function createRippleSprite(scaleY)
         local rippleSprite = drawableSprite.fromTexture("objects/GravityHelper/ripple03", entity)
@@ -64,11 +76,13 @@ function gravityBooster.sprite(room, entity)
         return rippleSprite
     end
 
-    if gravityType == 0 or gravityType == 2 then
-        table.insert(sprites, createRippleSprite(-1))
-    end
-    if gravityType == 1 or gravityType == 2 then
-        table.insert(sprites, createRippleSprite(1))
+    if entity.showRipple ~= false then
+        if gravityType == 0 or gravityType == 2 then
+            table.insert(sprites, createRippleSprite(-1))
+        end
+        if gravityType == 1 or gravityType == 2 then
+            table.insert(sprites, createRippleSprite(1))
+        end
     end
 
     return sprites
