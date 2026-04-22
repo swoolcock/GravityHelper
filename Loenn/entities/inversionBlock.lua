@@ -40,9 +40,7 @@ local inversionBlock = {
     minimumSize = {16, 16},
     ignoredFields = function(entity)
         local tbl = helpers.union({}, consts.ignoredFields)
-        if entity and entity.swapType == 0 then
-            table.insert(tbl, "swapType")
-        end
+        helpers.addIgnoreComponents(entity, tbl)
         return tbl
     end,
     fieldOrder = {

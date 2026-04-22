@@ -46,6 +46,25 @@ function helpers.addSwapData(tbl, defaults)
     if defaults then helpers.union(tbl, defaults) end
 end
 
+function helpers.addIgnoreComponents(entity, tbl)
+    if entity and entity.swapType == 0 then
+        helpers.addIgnoreSwap(tbl)
+    else
+        helpers.addIgnoreFalling(tbl)
+    end
+end
+
+function helpers.addIgnoreFalling(tbl)
+    table.insert(tbl, "fallType")
+    table.insert(tbl, "climbFall")
+    table.insert(tbl, "endFallOnSolidTiles")
+    table.insert(tbl, "invertFallingDirFlag")
+end
+
+function helpers.addIgnoreSwap(tbl)
+    table.insert(tbl, "swapType")
+end
+
 function helpers.tryAddSwapTrailSprites(sprites, entity)
     if helpers.isSwapEnabled(entity) then
         helpers.addSwapTrailSprites(sprites, entity)

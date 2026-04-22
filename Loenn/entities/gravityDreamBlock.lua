@@ -35,9 +35,7 @@ local gravityDreamBlock = {
     name = "GravityHelper/GravityDreamBlock",
     ignoredFields = function(entity)
         local tbl = helpers.union({}, consts.ignoredFields)
-        if entity and entity.swapType == 0 then
-            table.insert(tbl, "swapType")
-        end
+        helpers.addIgnoreComponents(entity, tbl)
         return tbl
     end,
     fieldInformation = {
