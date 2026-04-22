@@ -17,10 +17,6 @@ local placementData = helpers.createPlacementData('2', {
     bottomEnabled = true,
     leftEnabled = false,
     rightEnabled = false,
-    fallType = 0,
-    climbFall = true,
-    endFallOnSolidTiles = true,
-    invertFallingDirFlag = "",
     sound = "event:/char/badeline/disappear",
     autotile = false,
     tiletype = fakeTilesHelper.getPlacementMaterial(),
@@ -36,10 +32,19 @@ local placementData = helpers.createPlacementData('2', {
     gravityRefillTextureDirectory = "",
 })
 
+helpers.addFallingData(placementData)
+helpers.addSwapData(placementData)
+
 local inversionBlock = {
     name = "GravityHelper/InversionBlock",
     minimumSize = {16, 16},
-    ignoredFields = consts.ignoredFields,
+    ignoredFields = function(entity)
+        local tbl = helpers.union({}, consts.ignoredFields)
+        if entity and entity.swapType == 0 then
+            table.insert(tbl, "swapType")
+        end
+        return tbl
+    end,
     fieldOrder = {
         "x", "y",
         "width", "height",
@@ -51,6 +56,7 @@ local inversionBlock = {
         "tiletype", "sound",
         "autotile", "showEdgeIndicators", "defaultToController", "legacyFallBehavior",
         "textureDirectory", "gravityRefillTextureDirectory",
+        "swapType"
     },
     fieldInformation = function() return {
         leftGravityType = consts.fieldInformation.gravityType(0,1,2),
@@ -65,7 +71,9 @@ local inversionBlock = {
         },
         refillRespawnTime = {
             fieldType = "number",
-        }
+        },
+        fallType = consts.fieldInformation.fallType,
+        swapType = consts.fieldInformation.swapType,
     } end,
     placements = {
         {
@@ -126,6 +134,26 @@ local inversionBlock = {
                 fallType = 2,
             }),
         },
+        {
+            name = "normal_swap",
+            data = helpers.union(placementData, {
+                topEnabled = true,
+                bottomEnabled = true,
+                leftEnabled = false,
+                rightEnabled = false,
+                swapType = 1,
+            }),
+        },
+        {
+            name = "sides_swap",
+            data = helpers.union(placementData, {
+                topEnabled = false,
+                bottomEnabled = false,
+                leftEnabled = true,
+                rightEnabled = true,
+                swapType = 1,
+            }),
+        },
     },
 }
 
@@ -137,13 +165,17 @@ local ninePatchOptions = {
     fillMode = "repeat"
 }
 
-local function getEdgeSprite(entity, drawX, drawY, row, column, rotation)
+local function getEdgeSprite(entity, node, drawX, drawY, row, column, rotation)
     local basePath = "objects/GravityHelper/inversionBlock/"
     if entity.textureDirectory and entity.textureDirectory ~= "" then
         basePath = entity.textureDirectory
     end
     local edgeTexture = basePath.."edges"
     local sprite = drawableSprite.fromTexture(edgeTexture, entity)
+    if node then
+        drawX += node.x - entity.x
+        drawY += node.y - entity.y
+    end
     sprite:addPosition(drawX, drawY)
     if rotation ~= 0 then
         sprite:addPosition(4, 4)
@@ -154,14 +186,14 @@ local function getEdgeSprite(entity, drawX, drawY, row, column, rotation)
     return sprite
 end
 
-function inversionBlock.sprite(room, entity, node)
+local function mainSprites(room, entity, node)
     local basePath = "objects/GravityHelper/inversionBlock/"
     if entity.textureDirectory and entity.textureDirectory ~= "" then
         basePath = entity.textureDirectory
     end
     local blockTexture = basePath.."block"
     local topGravityType, bottomGravityType = 0, 1
-    local x, y = entity.x or 0, entity.y or 0
+    local x, y = node and node.x or entity.x or 0, node and node.y or entity.y or 0
     local width, height = entity.width or 24, entity.height or 24
     local widthInTiles, heightInTiles = width / 8, height / 8
 
@@ -174,34 +206,34 @@ function inversionBlock.sprite(room, entity, node)
     end
 
     if entity.showEdgeIndicators and entity.leftEnabled then
-        table.insert(sprites, getEdgeSprite(entity, 0, 0, entity.leftGravityType, 2, -math.pi / 2))
-        table.insert(sprites, getEdgeSprite(entity, 0, height - 8, entity.leftGravityType, 0, -math.pi / 2))
+        table.insert(sprites, getEdgeSprite(entity, node, 0, 0, entity.leftGravityType, 2, -math.pi / 2))
+        table.insert(sprites, getEdgeSprite(entity, node, 0, height - 8, entity.leftGravityType, 0, -math.pi / 2))
         for i = 1,heightInTiles-2 do
-            table.insert(sprites, getEdgeSprite(entity, 0, i * 8, entity.leftGravityType, 1, -math.pi / 2))
+            table.insert(sprites, getEdgeSprite(entity, node, 0, i * 8, entity.leftGravityType, 1, -math.pi / 2))
         end
     end
 
     if entity.showEdgeIndicators and entity.rightEnabled then
-        table.insert(sprites, getEdgeSprite(entity, width - 8, 0, entity.rightGravityType, 0, math.pi / 2))
-        table.insert(sprites, getEdgeSprite(entity, width - 8, height - 8, entity.rightGravityType, 2, math.pi / 2))
+        table.insert(sprites, getEdgeSprite(entity, node, width - 8, 0, entity.rightGravityType, 0, math.pi / 2))
+        table.insert(sprites, getEdgeSprite(entity, node, width - 8, height - 8, entity.rightGravityType, 2, math.pi / 2))
         for i = 1,heightInTiles-2 do
-            table.insert(sprites, getEdgeSprite(entity, width - 8, i * 8, entity.rightGravityType, 1, math.pi / 2))
+            table.insert(sprites, getEdgeSprite(entity, node, width - 8, i * 8, entity.rightGravityType, 1, math.pi / 2))
         end
     end
 
     if entity.showEdgeIndicators and entity.topEnabled then
-        table.insert(sprites, getEdgeSprite(entity, 0, 0, topGravityType, 0, 0))
-        table.insert(sprites, getEdgeSprite(entity, width - 8, 0, topGravityType, 2, 0))
+        table.insert(sprites, getEdgeSprite(entity, node, 0, 0, topGravityType, 0, 0))
+        table.insert(sprites, getEdgeSprite(entity, node, width - 8, 0, topGravityType, 2, 0))
         for i = 1,widthInTiles-2 do
-            table.insert(sprites, getEdgeSprite(entity, i * 8, 0, topGravityType, 1, 0))
+            table.insert(sprites, getEdgeSprite(entity, node, i * 8, 0, topGravityType, 1, 0))
         end
     end
 
     if entity.showEdgeIndicators and entity.bottomEnabled then
-        table.insert(sprites, getEdgeSprite(entity, 0, height - 8, bottomGravityType, 2, math.pi))
-        table.insert(sprites, getEdgeSprite(entity, width - 8, height - 8, bottomGravityType, 0, math.pi))
+        table.insert(sprites, getEdgeSprite(entity, node, 0, height - 8, bottomGravityType, 2, math.pi))
+        table.insert(sprites, getEdgeSprite(entity, node, width - 8, height - 8, bottomGravityType, 0, math.pi))
         for i = 1,widthInTiles-2 do
-            table.insert(sprites, getEdgeSprite(entity, i * 8, height - 8, bottomGravityType, 1, math.pi))
+            table.insert(sprites, getEdgeSprite(entity, node, i * 8, height - 8, bottomGravityType, 1, math.pi))
         end
     end
 
@@ -219,11 +251,42 @@ function inversionBlock.sprite(room, entity, node)
     end
 
     if refillSprite ~= nil then
-        refillSprite:addPosition(entity.width / 2, entity.height / 2)
+        local dx,dy = node and (node.x - entity.x) or 0, node and (node.y - entity.y) or 0
+        refillSprite:addPosition(dx + entity.width / 2, dy + entity.height / 2)
         table.insert(sprites, refillSprite)
     end
 
     return sprites
+end
+
+function inversionBlock.sprite(room, entity, node)
+    local sprites = mainSprites(room, entity, nil)
+    if entity.swapType and entity.swapType > 0 then
+        helpers.addSwapTrailSprites(sprites, entity)
+    end
+    return sprites
+end
+
+function inversionBlock.nodeSprite(room, entity, node, nodeIndex)
+    local sprites = mainSprites(room, entity, node)
+    return sprites
+end
+
+function inversionBlock.nodeLimits(room, entity)
+    if helpers.isSwapEnabled(entity) then
+        return {1, 1}
+    else
+        return {0, 0}
+    end
+end
+
+function inversionBlock.selection(room, entity)
+    local nodes = entity.nodes
+    local x, y = entity.x or 0, entity.y or 0
+    local nodeX, nodeY = nodes and nodes[1].x or x, nodes and nodes[1].y or y
+    local width, height = entity.width or 8, entity.height or 8
+
+    return utils.rectangle(x, y, width, height), {utils.rectangle(nodeX, nodeY, width, height)}
 end
 
 return inversionBlock

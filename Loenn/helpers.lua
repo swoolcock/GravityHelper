@@ -33,6 +33,35 @@ function helpers.createPlacementData(pluginVersion, data)
     }, data)
 end
 
+function helpers.addFallingData(tbl, defaults)
+    tbl.fallType = 0
+    tbl.climbFall = true
+    tbl.endFallOnSolidTiles = true
+    tbl.invertFallingDirFlag = ""
+    if defaults then helpers.union(tbl, defaults) end
+end
+
+function helpers.addSwapData(tbl, defaults)
+    tbl.swapType = 0
+    if defaults then helpers.union(tbl, defaults) end
+end
+
+function helpers.tryAddSwapTrailSprites(sprites, entity)
+    if helpers.isSwapEnabled(entity) then
+        helpers.addSwapTrailSprites(sprites, entity)
+    end
+end
+
+function helpers.isSwapEnabled(entity)
+    return entity.swapType ~= nil and entity.swapType > 0
+end
+
+function helpers.isFallingEnabled(entity)
+    return
+        entity.fallType ~= nil and entity.fallType > 0 or
+        entity.fall == true -- will be nil if not legacy entity
+end
+
 function helpers.addSwapTrailSprites(sprites, entity)
     local nodes = entity.nodes or {}
     local x, y = entity.x or 0, entity.y or 0

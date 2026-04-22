@@ -57,7 +57,7 @@ local consts = {
         swapType = {
             editable = false,
             options = {
-                {"None", 0},
+                --{"None", 0},
                 {"Return", 1},
                 {"Toggle", 2},
             },

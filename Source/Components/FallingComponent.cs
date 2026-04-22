@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using Microsoft.Xna.Framework;
 using Monocle;
+// ReSharper disable RedundantArgumentDefaultValue
 
 namespace Celeste.Mod.GravityHelper.Components;
 
@@ -43,6 +44,29 @@ internal class FallingComponent : Component
     private bool shouldFallUp() => _fallingUp ^ (!string.IsNullOrWhiteSpace(InvertFallingDirFlag) && Entity.SceneAs<Level>().Session.GetFlag(InvertFallingDirFlag));
 
     public new Solid Entity => base.Entity as Solid;
+
+    public static bool TryCreate(EntityData data, Vector2 offset, out FallingComponent component)
+    {
+        var fallType = (FallingType)data.Int("fallType", (int)FallingType.None);
+        // support legacy properties
+        if (data.Bool("fall", false)) fallType = data.Bool("fallUp", false) ? FallingType.Up : FallingType.Down;
+
+        if (fallType == FallingType.None)
+        {
+            component = null;
+            return false;
+        }
+
+        component = new FallingComponent
+        {
+            FallType = fallType,
+            ClimbFall = data.Bool("climbFall", true),
+            EndOnSolidTiles = data.Bool("endFallOnSolidTiles", true),
+            InvertFallingDirFlag = data.Attr("invertFallingDirFlag", ""),
+        };
+
+        return true;
+    }
 
     public FallingComponent() : base(false, false)
     {

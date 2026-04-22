@@ -22,6 +22,7 @@ public class GravityDreamBlock : DreamBlock
     // ReSharper restore NotAccessedField.Local
 
     private readonly FallingComponent _fallingComponent;
+    private readonly SwapComponent _swapComponent;
 
     private Vector2 _shakeOffset;
 
@@ -37,24 +38,10 @@ public class GravityDreamBlock : DreamBlock
         _modVersion = data.ModVersion();
         _pluginVersion = data.PluginVersion();
 
-        var fallType = (FallingComponent.FallingType)data.Int("fallType", (int)FallingComponent.FallingType.None);
-        if (data.Bool("fall", false)) fallType = data.Bool("fallUp", false) ? FallingComponent.FallingType.Up : FallingComponent.FallingType.Down;
-
-        if (fallType != FallingComponent.FallingType.None)
+        if (FallingComponent.TryCreate(data, offset, out _fallingComponent)) Add(_fallingComponent);
+        if (node.HasValue && SwapComponent.TryCreate(data, offset, out _swapComponent))
         {
-            Add(_fallingComponent = new FallingComponent
-            {
-                ClimbFall = data.Bool("climbFall", true),
-                FallType = fallType,
-                EndOnSolidTiles = data.Bool("endFallOnSolidTiles", true),
-                InvertFallingDirFlag = data.Attr("invertFallingDirFlag", ""),
-            });
-        }
-
-        var swapType = (SwapComponent.SwapType)data.Int("swapType", (int)SwapComponent.SwapType.None);
-        if (swapType != SwapComponent.SwapType.None && node.HasValue)
-        {
-            Add(new SwapComponent(swapType, node.Value));
+            Add(_swapComponent);
             node = null;
         }
 

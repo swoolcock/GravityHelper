@@ -55,6 +55,7 @@ public class InversionBlock : Solid
     private readonly MTexture _invertedEdgeTexture;
     private readonly MTexture _toggleEdgeTexture;
     private readonly FallingComponent _fallingComponent;
+    private readonly SwapComponent _swapComponent;
     private readonly TileGrid _tiles;
     private readonly Sprite _refillSprite;
     private readonly Image _refillOutlineImage;
@@ -225,21 +226,9 @@ public class InversionBlock : Solid
         Edges |= data.Bool("topEnabled", true) ? Edges.Top : Edges.None;
         Edges |= data.Bool("bottomEnabled", true) ? Edges.Bottom : Edges.None;
 
-        var fallType = (FallingComponent.FallingType)data.Int("fallType", (int)FallingComponent.FallingType.None);
         _legacyFallBehavior = data.Bool("legacyFallBehavior", true);
-
-        if (data.Bool("fall", false)) fallType = data.Bool("fallUp", false) ? FallingComponent.FallingType.Up : FallingComponent.FallingType.Down;
-
-        if (fallType != FallingComponent.FallingType.None)
-        {
-            Add(_fallingComponent = new FallingComponent
-            {
-                ClimbFall = data.Bool("climbFall", true),
-                FallType = fallType,
-                EndOnSolidTiles = data.Bool("endFallOnSolidTiles", true),
-                InvertFallingDirFlag = data.Attr("invertFallingDirFlag", ""),
-            });
-        }
+        if (FallingComponent.TryCreate(data, offset, out _fallingComponent)) Add(_fallingComponent);
+        if (SwapComponent.TryCreate(data, offset, out _swapComponent)) Add(_swapComponent);
 
         Add(new AccessibilityListener(onAccessibilityChange));
         onAccessibilityChange();
@@ -310,7 +299,8 @@ public class InversionBlock : Solid
 
     private void emitParticles()
     {
-        if (_refillSprite?.Visible == true && particles.Length > 0 && particlesRandom != null && Scene.OnInterval(0.2f))
+        if (Scene == null || _refillSprite == null || particles == null || particlesRandom == null || particles.Length <= 0) return;
+        if (_refillSprite.Visible && Scene.OnInterval(0.2f))
         {
             foreach (var particle in particles)
             {

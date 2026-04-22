@@ -5,6 +5,7 @@ using System;
 using FMOD.Studio;
 using Microsoft.Xna.Framework;
 using Monocle;
+// ReSharper disable RedundantArgumentDefaultValue
 
 namespace Celeste.Mod.GravityHelper.Components;
 
@@ -12,7 +13,9 @@ public class SwapComponent : Component
 {
     public SwapType Type;
     public Vector2 Direction;
+    public Vector2 Target;
     public bool Swapping;
+    public ParticleType ParticleType = SwapBlock.P_Move;
 
     private Vector2 start;
     private Vector2 end;
@@ -32,10 +35,30 @@ public class SwapComponent : Component
 
     public new Platform Entity => base.Entity as Platform;
 
-    public SwapComponent(SwapType type, Vector2 target) : base(true, false)
+    public static bool TryCreate(EntityData data, Vector2 offset, out SwapComponent component) =>
+        TryCreate(data, offset, data.FirstNodeNullable(offset), out component);
+
+    public static bool TryCreate(EntityData data, Vector2 offset, Vector2? target, out SwapComponent component)
     {
-        Type = type;
-        end = target;
+        var swapType = (SwapType)data.Int("swapType", (int)SwapType.None);
+
+        if (swapType == SwapType.None)
+        {
+            component = null;
+            return false;
+        }
+
+        component = new SwapComponent
+        {
+            Type = swapType,
+            Target = target ?? Vector2.Zero,
+        };
+
+        return true;
+    }
+
+    public SwapComponent() : base(true, false)
+    {
     }
 
     public override void Added(Entity entity)
@@ -46,6 +69,7 @@ public class SwapComponent : Component
         base.Added(entity);
 
         start = entity.Position;
+        end = Target;
 
         maxForwardSpeed = 360f / Vector2.Distance(start, end);
         maxBackwardSpeed = maxForwardSpeed * 0.4f;
@@ -212,7 +236,7 @@ public class SwapComponent : Component
         int particlesRemainder = (int) this.particlesRemainder;
         this.particlesRemainder -= particlesRemainder;
         Vector2 positionRange = vector2 * 0.5f;
-        SceneAs<Level>().Particles.Emit(SwapBlock.P_Move, particlesRemainder, position, positionRange, direction);
+        SceneAs<Level>().Particles.Emit(ParticleType, particlesRemainder, position, positionRange, direction);
     }
 
     private void DrawBlockStyle(

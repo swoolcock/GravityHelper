@@ -26,16 +26,20 @@ local placementData = helpers.createPlacementData('1', {
     lineColor = "",
     backColor = "",
     particleColor = "",
-    fallType = 0,
-    climbFall = true,
-    endFallOnSolidTiles = true,
-    invertFallingDirFlag = "",
-    swapType = 0,
 })
+
+helpers.addFallingData(placementData)
+helpers.addSwapData(placementData)
 
 local gravityDreamBlock = {
     name = "GravityHelper/GravityDreamBlock",
-    ignoredFields = consts.ignoredFields,
+    ignoredFields = function(entity)
+        local tbl = helpers.union({}, consts.ignoredFields)
+        if entity and entity.swapType == 0 then
+            table.insert(tbl, "swapType")
+        end
+        return tbl
+    end,
     fieldInformation = {
         gravityType = consts.fieldInformation.gravityType(),
         fallType = consts.fieldInformation.fallType,
@@ -225,7 +229,7 @@ function gravityDreamBlock.nodeSprite(room, entity, node, nodeIndex)
 end
 
 function gravityDreamBlock.nodeLimits(room, entity)
-    if entity.swapType and entity.swapType > 0 then
+    if helpers.isSwapEnabled(entity) then
         return {1, 1}
     else
         return {0, 0}
