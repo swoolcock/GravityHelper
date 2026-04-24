@@ -30,6 +30,7 @@ local placementData = helpers.createPlacementData('1', {
 
 helpers.addFallingData(placementData)
 helpers.addSwapData(placementData)
+helpers.addZipData(placementData)
 
 local gravityDreamBlock = {
     name = "GravityHelper/GravityDreamBlock",
@@ -42,6 +43,7 @@ local gravityDreamBlock = {
         gravityType = consts.fieldInformation.gravityType(),
         fallType = consts.fieldInformation.fallType,
         swapType = consts.fieldInformation.swapType,
+        zipType = consts.fieldInformation.zipType,
     },
     placements = {
         {
@@ -81,6 +83,27 @@ local gravityDreamBlock = {
             data = helpers.union(placementData, {
                 gravityType = consts.gravityTypes.toggle.index,
                 swapType = 1,
+            }),
+        },
+        {
+            name = "normal_zip",
+            data = helpers.union(placementData, {
+                gravityType = consts.gravityTypes.normal.index,
+                zipType = 1,
+            }),
+        },
+        {
+            name = "inverted_zip",
+            data = helpers.union(placementData, {
+                gravityType = consts.gravityTypes.inverted.index,
+                zipType = 1,
+            }),
+        },
+        {
+            name = "toggle_zip",
+            data = helpers.union(placementData, {
+                gravityType = consts.gravityTypes.toggle.index,
+                zipType = 1,
             }),
         },
     },
@@ -213,21 +236,23 @@ function gravityDreamBlock.sprite(room, entity)
     local sprites = {}
     local spr = mainSprite(room, entity, nil)
     table.insert(sprites, spr)
-    if entity.swapType and entity.swapType > 0 then
+    if helpers.isSwapEnabled(entity) then
         helpers.addSwapTrailSprites(sprites, entity)
+    elseif helpers.isZipEnabled(entity) then
+        helpers.addZipSprites(sprites, entity)
     end
     return sprites
 end
 
 function gravityDreamBlock.nodeSprite(room, entity, node, nodeIndex)
+    if helpers.isZipEnabled(entity) then return nil end
     local sprites = {}
-    local spr = mainSprite(room, entity, node)
-    table.insert(sprites, spr)
+    table.insert(sprites, mainSprite(room, entity, node))
     return sprites
 end
 
 function gravityDreamBlock.nodeLimits(room, entity)
-    if helpers.isSwapEnabled(entity) then
+    if helpers.isSwapEnabled(entity) or helpers.isZipEnabled(entity) then
         return {1, 1}
     else
         return {0, 0}
@@ -235,12 +260,17 @@ function gravityDreamBlock.nodeLimits(room, entity)
 end
 
 function gravityDreamBlock.selection(room, entity)
-    local nodes = entity.nodes
     local x, y = entity.x or 0, entity.y or 0
-    local nodeX, nodeY = nodes and nodes[1].x or x, nodes and nodes[1].y or y
     local width, height = entity.width or 8, entity.height or 8
+    local nodeRects = {}
 
-    return utils.rectangle(x, y, width, height), {utils.rectangle(nodeX, nodeY, width, height)}
+    if helpers.isSwapEnabled(entity) then
+        helpers.addSwapNodeSelection(nodeRects, entity)
+    elseif helpers.isZipEnabled(entity) then
+        helpers.addZipNodeSelection(nodeRects, entity)
+    end
+
+    return utils.rectangle(x, y, width, height), nodeRects
 end
 
 return gravityDreamBlock

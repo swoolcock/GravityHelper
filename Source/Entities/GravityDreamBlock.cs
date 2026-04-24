@@ -23,6 +23,7 @@ public class GravityDreamBlock : DreamBlock
 
     private readonly FallingComponent _fallingComponent;
     private readonly SwapComponent _swapComponent;
+    private readonly ZipComponent _zipComponent;
 
     private Vector2 _shakeOffset;
 
@@ -39,10 +40,18 @@ public class GravityDreamBlock : DreamBlock
         _pluginVersion = data.PluginVersion();
 
         if (FallingComponent.TryCreate(data, offset, out _fallingComponent)) Add(_fallingComponent);
-        if (node.HasValue && SwapComponent.TryCreate(data, offset, out _swapComponent))
+        if (node.HasValue)
         {
-            Add(_swapComponent);
-            node = null;
+            if (SwapComponent.TryCreate(data, offset, out _swapComponent))
+            {
+                Add(_swapComponent);
+                node = null;
+            }
+            else if (ZipComponent.TryCreate(data, offset, out _zipComponent))
+            {
+                Add(_zipComponent);
+                node = null;
+            }
         }
 
         GravityType = (GravityType)data.Int("gravityType");

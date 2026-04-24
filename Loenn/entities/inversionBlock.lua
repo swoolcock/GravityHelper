@@ -34,6 +34,7 @@ local placementData = helpers.createPlacementData('2', {
 
 helpers.addFallingData(placementData)
 helpers.addSwapData(placementData)
+helpers.addZipData(placementData)
 
 local inversionBlock = {
     name = "GravityHelper/InversionBlock",
@@ -72,6 +73,7 @@ local inversionBlock = {
         },
         fallType = consts.fieldInformation.fallType,
         swapType = consts.fieldInformation.swapType,
+        zipType = consts.fieldInformation.zipType,
     } end,
     placements = {
         {
@@ -150,6 +152,26 @@ local inversionBlock = {
                 leftEnabled = true,
                 rightEnabled = true,
                 swapType = 1,
+            }),
+        },
+        {
+            name = "normal_zip",
+            data = helpers.union(placementData, {
+                topEnabled = true,
+                bottomEnabled = true,
+                leftEnabled = false,
+                rightEnabled = false,
+                zipType = 1,
+            }),
+        },
+        {
+            name = "sides_zip",
+            data = helpers.union(placementData, {
+                topEnabled = false,
+                bottomEnabled = false,
+                leftEnabled = true,
+                rightEnabled = true,
+                zipType = 1,
             }),
         },
     },
@@ -259,19 +281,21 @@ end
 
 function inversionBlock.sprite(room, entity, node)
     local sprites = mainSprites(room, entity, nil)
-    if entity.swapType and entity.swapType > 0 then
+    if helpers.isSwapEnabled(entity) then
         helpers.addSwapTrailSprites(sprites, entity)
+    elseif helpers.isZipEnabled(entity) then
+        helpers.addZipSprites(sprites, entity)
     end
     return sprites
 end
 
 function inversionBlock.nodeSprite(room, entity, node, nodeIndex)
-    local sprites = mainSprites(room, entity, node)
-    return sprites
+    if helpers.isZipEnabled(entity) then return nil end
+    return mainSprites(room, entity, node)
 end
 
 function inversionBlock.nodeLimits(room, entity)
-    if helpers.isSwapEnabled(entity) then
+    if helpers.isSwapEnabled(entity) or helpers.isZipEnabled(entity) then
         return {1, 1}
     else
         return {0, 0}
@@ -279,12 +303,17 @@ function inversionBlock.nodeLimits(room, entity)
 end
 
 function inversionBlock.selection(room, entity)
-    local nodes = entity.nodes
     local x, y = entity.x or 0, entity.y or 0
-    local nodeX, nodeY = nodes and nodes[1].x or x, nodes and nodes[1].y or y
     local width, height = entity.width or 8, entity.height or 8
+    local nodeRects = {}
 
-    return utils.rectangle(x, y, width, height), {utils.rectangle(nodeX, nodeY, width, height)}
+    if helpers.isSwapEnabled(entity) then
+        helpers.addSwapNodeSelection(nodeRects, entity)
+    elseif helpers.isZipEnabled(entity) then
+        helpers.addZipNodeSelection(nodeRects, entity)
+    end
+
+    return utils.rectangle(x, y, width, height), nodeRects
 end
 
 return inversionBlock

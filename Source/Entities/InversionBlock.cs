@@ -56,6 +56,7 @@ public class InversionBlock : Solid
     private readonly MTexture _toggleEdgeTexture;
     private readonly FallingComponent _fallingComponent;
     private readonly SwapComponent _swapComponent;
+    private readonly ZipComponent _zipComponent;
     private readonly TileGrid _tiles;
     private readonly Sprite _refillSprite;
     private readonly Image _refillOutlineImage;
@@ -229,6 +230,7 @@ public class InversionBlock : Solid
         _legacyFallBehavior = data.Bool("legacyFallBehavior", true);
         if (FallingComponent.TryCreate(data, offset, out _fallingComponent)) Add(_fallingComponent);
         if (SwapComponent.TryCreate(data, offset, out _swapComponent)) Add(_swapComponent);
+        if (ZipComponent.TryCreate(data, offset, out _zipComponent)) Add(_zipComponent);
 
         Add(new AccessibilityListener(onAccessibilityChange));
         onAccessibilityChange();

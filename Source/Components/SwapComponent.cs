@@ -11,11 +11,14 @@ namespace Celeste.Mod.GravityHelper.Components;
 
 public class SwapComponent : Component
 {
+    public delegate void OnMoveDelegate(Vector2 delta, Vector2 liftSpeed);
+
     public SwapType Type;
     public Vector2 Direction;
     public Vector2 Target;
     public bool Swapping;
     public ParticleType ParticleType = SwapBlock.P_Move;
+    public OnMoveDelegate OnMove;
 
     private Vector2 start;
     private Vector2 end;
@@ -32,6 +35,7 @@ public class SwapComponent : Component
     private EventInstance returnSfx;
     private DisplacementRenderer.Burst burst;
     private float particlesRemainder;
+    private DashListener dashListener;
 
     public new Platform Entity => base.Entity as Platform;
 
@@ -76,7 +80,7 @@ public class SwapComponent : Component
         Direction.X = Math.Sign(end.X - start.X);
         Direction.Y = Math.Sign(end.Y - start.Y);
 
-        entity.Add(new DashListener
+        entity.Add(dashListener = new DashListener
         {
             OnDash = onDash
         });
@@ -125,9 +129,22 @@ public class SwapComponent : Component
         Scene.Add(path = new PathRenderer(this, Entity.Position));
     }
 
+    public override void Removed(Entity entity)
+    {
+        base.Removed(entity);
+        path?.RemoveSelf();
+        path = null;
+        dashListener?.RemoveSelf();
+        dashListener = null;
+    }
+
     public override void EntityRemoved(Scene scene)
     {
         base.EntityRemoved(scene);
+
+        path?.RemoveSelf();
+        path = null;
+
         Audio.Stop(moveSfx);
         Audio.Stop(returnSfx);
     }
@@ -175,7 +192,10 @@ public class SwapComponent : Component
                 liftSpeed *= -1f;
             if (target == 1 && Scene.OnInterval(0.02f))
                 MoveParticles(end - start);
+            var preExact = Entity.ExactPosition;
             Entity.MoveTo(Vector2.Lerp(start, end, this.lerp), liftSpeed);
+            var postExact = Entity.ExactPosition;
+            OnMove?.Invoke(postExact - preExact, liftSpeed);
             Vector2 position2 = Entity.Position;
             if (position1 != position2)
             {
@@ -280,6 +300,7 @@ public class SwapComponent : Component
         None,
         Return,
         Toggle,
+        Stay,
     }
 
     private class PathRenderer : Entity

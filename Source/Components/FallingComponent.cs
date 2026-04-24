@@ -11,6 +11,8 @@ namespace Celeste.Mod.GravityHelper.Components;
 
 internal class FallingComponent : Component
 {
+    public delegate void OnMoveDelegate(Vector2 delta, Vector2 liftSpeed);
+
     // actions
     public Func<bool> PlayerFallCheck;
     public Func<bool> PlayerWaitCheck;
@@ -18,6 +20,7 @@ internal class FallingComponent : Component
     public Action ImpactSfx;
     public Action LandParticles;
     public Action FallParticles;
+    public OnMoveDelegate OnMove;
 
     // config
 #pragma warning disable CS0649
@@ -218,7 +221,12 @@ internal class FallingComponent : Component
                 // update the velocity
                 vel = Calc.Approach(vel, maxSpeed * (fallingUp ? -1 : 1), 500f * Engine.DeltaTime);
                 // try to move
-                if (!entity.MoveVCollideSolids(vel * Engine.DeltaTime, true))
+                var preExact = Entity.ExactPosition;
+                var didCollide = entity.MoveVCollideSolids(vel * Engine.DeltaTime, true);
+                var postExact = Entity.ExactPosition;
+                OnMove?.Invoke(postExact - preExact, Entity.LiftSpeed);
+
+                if (!didCollide)
                 {
                     // if we've fallen out the bottom of the screen, we should remove the entity
                     // otherwise yield for a frame and loop

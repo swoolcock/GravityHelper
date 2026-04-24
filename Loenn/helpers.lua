@@ -4,6 +4,8 @@
 local consts = require("mods").requireFromPlugin("consts")
 local utils = require("utils")
 
+local drawableSprite = require("structs.drawable_sprite")
+local drawableLine = require("structs.drawable_line")
 local drawableNinePatch = require("structs.drawable_nine_patch")
 
 local helpers = {}
@@ -21,9 +23,9 @@ function helpers.colorWithAlpha(color, alpha)
     return { color[1], color[2], color[3], alpha }
 end
 
-function helpers.parseHexColor(str, alpha)
+function helpers.parseHexColor(str, alpha, def)
     local parsed, r, g, b = utils.parseHexColor(str)
-    return parsed and { r, g, b, alpha or 1 } or { 0, 0, 0, 0 }
+    return parsed and { r, g, b, alpha or 1 } or def or { 0, 0, 0, 0 }
 end
 
 function helpers.createPlacementData(pluginVersion, data)
@@ -46,11 +48,21 @@ function helpers.addSwapData(tbl, defaults)
     if defaults then helpers.union(tbl, defaults) end
 end
 
+function helpers.addZipData(tbl, defaults)
+    tbl.zipType = 0
+    if defaults then helpers.union(tbl, defaults) end
+end
+
 function helpers.addIgnoreComponents(entity, tbl)
-    if entity and entity.swapType == 0 then
+    if helpers.isSwapEnabled(entity) then
+        helpers.addIgnoreZip(tbl)
+        helpers.addIgnoreFalling(tbl)
+    elseif helpers.isZipEnabled(entity) then
+        helpers.addIgnoreFalling(tbl)
         helpers.addIgnoreSwap(tbl)
     else
-        helpers.addIgnoreFalling(tbl)
+        helpers.addIgnoreZip(tbl)
+        helpers.addIgnoreSwap(tbl)
     end
 end
 
@@ -65,6 +77,10 @@ function helpers.addIgnoreSwap(tbl)
     table.insert(tbl, "swapType")
 end
 
+function helpers.addIgnoreZip(tbl)
+    table.insert(tbl, "zipType")
+end
+
 function helpers.tryAddSwapTrailSprites(sprites, entity)
     if helpers.isSwapEnabled(entity) then
         helpers.addSwapTrailSprites(sprites, entity)
@@ -73,6 +89,10 @@ end
 
 function helpers.isSwapEnabled(entity)
     return entity.swapType ~= nil and entity.swapType > 0
+end
+
+function helpers.isZipEnabled(entity)
+    return entity.zipType ~= nil and entity.zipType > 0
 end
 
 function helpers.isFallingEnabled(entity)
@@ -106,6 +126,65 @@ function helpers.addSwapTrailSprites(sprites, entity)
         sprite.depth = trailDepth
         table.insert(sprites, sprite)
     end
+end
+
+function helpers.addZipSprites(sprites, entity)
+    local x, y = entity.x or 0, entity.y or 0
+    local halfWidth, halfHeight = math.floor(entity.width / 2), math.floor(entity.height / 2)
+    local nodes = entity.nodes or {{x = 0, y = 0}}
+    local nodeX, nodeY = nodes[1].x, nodes[1].y
+    local centerX, centerY = x + halfWidth, y + halfHeight
+    local centerNodeX, centerNodeY = nodeX + halfWidth, nodeY + halfHeight
+
+    local cogTexture = "objects/zipmover/cog"
+    local nodeCogSprite = drawableSprite.fromTexture(cogTexture, entity)
+
+    nodeCogSprite:setPosition(centerNodeX, centerNodeY)
+    nodeCogSprite:setJustification(0.5, 0.5)
+
+    local points = {centerX, centerY, centerNodeX, centerNodeY}
+    local ropeColor = helpers.parseHexColor(entity.zipRopeColor or "663931", nil, {102 / 255, 57 / 255, 49 / 255})
+    local leftLine = drawableLine.fromPoints(points, ropeColor, 1)
+    local rightLine = drawableLine.fromPoints(points, ropeColor, 1)
+
+    leftLine:setOffset(0, 4.5)
+    rightLine:setOffset(0, -4.5)
+
+    leftLine.depth = 5000
+    rightLine.depth = 5000
+
+    for _, sprite in ipairs(leftLine:getDrawableSprite()) do
+        table.insert(sprites, sprite)
+    end
+
+    for _, sprite in ipairs(rightLine:getDrawableSprite()) do
+        table.insert(sprites, sprite)
+    end
+
+    table.insert(sprites, nodeCogSprite)
+end
+
+function helpers.addSwapNodeSelection(rects, entity)
+    local nodes = entity.nodes
+    local x, y = entity.x or 0, entity.y or 0
+    local nodeX, nodeY = nodes and nodes[1].x or x, nodes and nodes[1].y or y
+    local width, height = entity.width or 8, entity.height or 8
+    table.insert(rects, utils.rectangle(nodeX, nodeY, width, height))
+end
+
+function helpers.addZipNodeSelection(rects, entity)
+    local halfWidth, halfHeight = math.floor(entity.width / 2), math.floor(entity.height / 2)
+
+    local nodes = entity.nodes or {{x = 0, y = 0}}
+    local nodeX, nodeY = nodes[1].x, nodes[1].y
+    local centerNodeX, centerNodeY = nodeX + halfWidth, nodeY + halfHeight
+
+    local cogSprite = drawableSprite.fromTexture("objects/zipmover/cog", entity)
+    local cogWidth, cogHeight = cogSprite.meta.width, cogSprite.meta.height
+
+    local nodeRectangle = utils.rectangle(centerNodeX - math.floor(cogWidth / 2), centerNodeY - math.floor(cogHeight / 2), cogWidth, cogHeight)
+
+    table.insert(rects, nodeRectangle)
 end
 
 return helpers
