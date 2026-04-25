@@ -115,9 +115,9 @@ public class GravityShieldIndicator : Entity
         if (!_flash)
         {
             var offset = GravityHelperModule.ShouldInvertPlayer ? 4f : -4f;
-            var origin = player.Center + Vector2.UnitY * offset;
+            var origin = (player.Center + Vector2.UnitY * offset).Round();
 
-            Position = player.Center + Vector2.UnitY * offset;
+            Position = (player.Center + Vector2.UnitY * offset).Round();
 
             for (var i = 0; i < _particles.Count; i++)
             {
