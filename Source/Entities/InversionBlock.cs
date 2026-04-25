@@ -45,6 +45,8 @@ public class InversionBlock : Solid
 
     private readonly bool _defaultToController;
     private string _sound;
+    private readonly string _textureDirectory;
+    private readonly string _gravityRefillTextureDirectory;
 
     private readonly Sprite _sprite;
     private readonly MTexture _blockTexture;
@@ -122,7 +124,14 @@ public class InversionBlock : Solid
 
         Depth = Depths.Above;
 
-        _sprite = GFX.SpriteBank.Create("inversionBlock");
+        _textureDirectory = data.Attr("textureDirectory").Trim();
+        _gravityRefillTextureDirectory = data.Attr("gravityRefillTextureDirectory").Trim();
+
+        if (!string.IsNullOrWhiteSpace(_textureDirectory))
+            _sprite = GFX.SpriteBank.CreateWithPath("inversionBlock", _textureDirectory);
+        else
+            _sprite = GFX.SpriteBank.Create("inversionBlock");
+
         _blockTexture = _sprite.Animations["block"].Frames[0];
         _edgeTexture = _sprite.Animations["edges"].Frames[0];
         _normalEdgeTexture = _edgeTexture.GetSubtexture(0, 0, 3 * tile_size, tile_size);
@@ -149,8 +158,15 @@ public class InversionBlock : Solid
 
         if (GiveGravityRefill)
         {
-            Add(_refillSprite = GFX.SpriteBank.Create("gravityRefill"));
-            Add(_refillOutlineImage = new Image(GFX.Game["objects/GravityHelper/gravityRefill/outline"]));
+            var hasRefillTexDir = !string.IsNullOrWhiteSpace(_gravityRefillTextureDirectory);
+            var refillPath = hasRefillTexDir ? _gravityRefillTextureDirectory : "objects/GravityHelper/gravityRefill/";
+
+            if (hasRefillTexDir)
+                Add(_refillSprite = GFX.SpriteBank.CreateWithPath("gravityRefill", refillPath));
+            else
+                Add(_refillSprite = GFX.SpriteBank.Create("gravityRefill"));
+
+            Add(_refillOutlineImage = new Image(GFX.Game[refillPath + "outline"]));
         }
         else if (RefillDashCount > 0)
         {
@@ -384,7 +400,7 @@ public class InversionBlock : Solid
             _refillSprite.Render();
         }
 
-        using (GravityHelperAPI.Exports.WithCustomTintShader())
+        using (GravityHelperAPI.InternalCustomTintShader())
         {
             // draw refill crystal if we have it
             if (_refillSprite?.Visible == true && GiveGravityRefill)

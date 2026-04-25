@@ -30,8 +30,11 @@ public class GravityHelperModule : EverestModule
 
     internal static PlayerGravityComponent PlayerComponent { get; set; }
     public static bool ShouldInvertPlayer => PlayerComponent?.ShouldInvert ?? false;
+    public static bool ShouldInvertPlayerRender => PlayerComponent is not null &&
+                                                   PlayerComponent.ShouldInvert ^ (ForceInvertPlayerRenderSemaphore > 0);
     internal static bool ShouldInvertPlayerChecked => PlayerComponent?.ShouldInvertChecked ?? false;
     internal static int OverrideSemaphore;
+    internal static int ForceInvertPlayerRenderSemaphore;
 
     private static object _speedrunToolSaveLoadAction;
 

@@ -19,6 +19,8 @@ local placementData = helpers.createPlacementData('2', {
     respawnTime = 2.5,
     wallAlpha = 0.8,
     legacyRefillBehavior = false,
+    showRipple = true,
+    textureDirectory = "",
 })
 
 local gravityRefillWall = {
@@ -43,8 +45,10 @@ local gravityRefillWall = {
         "x", "y",
         "width", "height",
         "charges", "respawnTime",
-        "dashes", "refillsDash", "refillsStamina",
-        "wallAlpha", "oneUse", "legacyRefillBehavior",
+        "dashes", "textureDirectory",
+        "refillsDash", "refillsStamina",
+        "wallAlpha", "oneUse",
+        "showRipple", "legacyRefillBehavior",
     },
     placements = {
         {
@@ -125,13 +129,20 @@ function gravityRefillWall.sprite(room, entity)
     elseif not entity.refillsDash then
         suffix = "_no_dash"
     end
-    local refillTexture = "objects/GravityHelper/gravityRefill/idle"..suffix.."00"
+
+    local basePath = "objects/GravityHelper/gravityRefill/"
+    if entity.textureDirectory and entity.textureDirectory ~= "" then
+        basePath = entity.textureDirectory
+    end
+    basePath = helpers.ensureSingleTrailingSlash(basePath)
+    local refillTexture = basePath.."idle"..suffix.."00"
 
     -- get refillSprite
-    local refillSprite = drawableSprite.fromTexture(refillTexture, entity)
-    refillSprite:addPosition(entity.width / 2, entity.height / 2)
-
-    table.insert(rectSprites, refillSprite)
+    local refillSprite = helpers.fromTexture(refillTexture, entity)
+    if refillSprite then
+        refillSprite:addPosition(entity.width / 2, entity.height / 2)
+        table.insert(rectSprites, refillSprite)
+    end
     return rectSprites
 end
 

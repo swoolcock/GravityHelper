@@ -22,6 +22,10 @@ public class GravityBooster : Booster
     private readonly Sprite _rippleSprite;
     private readonly Sprite _overlaySprite;
 
+    private readonly string _textureDirectory;
+    private readonly bool _showOverlay;
+    private readonly bool _showRipple;
+
     private string overlayId => GravityType switch
     {
         GravityType.Inverted => "overlay_invert",
@@ -35,15 +39,29 @@ public class GravityBooster : Booster
         _modVersion = data.ModVersion();
         _pluginVersion = data.PluginVersion();
 
+        _textureDirectory = data.Attr("textureDirectory").Trim();
+        _showOverlay = data.Bool("showOverlay", true);
+        _showRipple = data.Bool("showRipple", true);
+
         GravityType = (GravityType)data.Int("gravityType");
 
-        GFX.SpriteBank.CreateOn(sprite, red ? "gravityBoosterRed" : "gravityBooster");
+        var spriteName = red ? "gravityBoosterRed" : "gravityBooster";
+        if (string.IsNullOrWhiteSpace(_textureDirectory))
+            GFX.SpriteBank.CreateOn(sprite, spriteName);
+        else
+            GFX.SpriteBank.CreateOnWithPath(sprite, spriteName, _textureDirectory);
 
-        Add(_overlaySprite = sprite.CreateClone());
-        _overlaySprite.Play(overlayId);
+        if (_showOverlay)
+        {
+            Add(_overlaySprite = sprite.CreateClone());
+            _overlaySprite.Play(overlayId);
+        }
 
-        Add(_rippleSprite = GFX.SpriteBank.Create("gravityRipple"));
-        _rippleSprite.Play("loop");
+        if (_showRipple)
+        {
+            Add(_rippleSprite = GFX.SpriteBank.Create("gravityRipple"));
+            _rippleSprite.Play("loop");
+        }
 
         Add(new AccessibilityListener(onAccessibilityChange));
         onAccessibilityChange();
@@ -51,8 +69,7 @@ public class GravityBooster : Booster
 
     private void onAccessibilityChange()
     {
-        if (_rippleSprite != null)
-            _rippleSprite.Color = GravityType.RippleColor();
+        _rippleSprite?.Color = GravityType.RippleColor();
     }
 
     public override void Awake(Scene scene)
@@ -74,16 +91,16 @@ public class GravityBooster : Booster
 
         if (GravityType == GravityType.Inverted || GravityType == GravityType.Toggle && currentGravity == GravityType.Normal)
         {
-            _rippleSprite.Y = -ripple_offset;
-            _rippleSprite.Scale.Y = 1f;
+            _rippleSprite?.Y = -ripple_offset;
+            _rippleSprite?.Scale.Y = 1f;
             // change to the correct loop if we need to
             if (sprite.CurrentAnimationID == "loop_down")
                 sprite.Play("loop");
         }
         else if (GravityType == GravityType.Normal || GravityType == GravityType.Toggle && currentGravity == GravityType.Inverted)
         {
-            _rippleSprite.Y = ripple_offset;
-            _rippleSprite.Scale.Y = -1f;
+            _rippleSprite?.Y = ripple_offset;
+            _rippleSprite?.Scale.Y = -1f;
             // change to the correct loop if we need to
             if (sprite.CurrentAnimationID == "loop")
                 sprite.Play("loop_down");
@@ -91,23 +108,25 @@ public class GravityBooster : Booster
 
         if (GravityType == GravityType.Toggle)
         {
-            _overlaySprite.Scale.Y = currentGravity == GravityType.Normal ? -1 : 1;
+            _overlaySprite?.Scale.Y = currentGravity == GravityType.Normal ? -1 : 1;
         }
 
-        _rippleSprite.Visible = _overlaySprite.Visible = sprite.CurrentAnimationID.StartsWith("loop");
+        var isVisible = sprite.CurrentAnimationID.StartsWith("loop");
+        _rippleSprite?.Visible = isVisible;
+        _overlaySprite?.Visible = isVisible;
     }
 
     public override void Render()
     {
         var scheme = GravityHelperModule.Settings.GetColorScheme();
 
-        if (scheme.NeedsShader)
+        if (scheme.NeedsShader && _overlaySprite != null)
         {
             _overlaySprite.Visible = false;
             base.Render();
             _overlaySprite.Visible = true;
 
-            using (GravityHelperAPI.Exports.WithCustomTintShader())
+            using (GravityHelperAPI.InternalCustomTintShader())
             {
                 _overlaySprite.Color = GravityType.Color(scheme).Saturation(2f);
                 _overlaySprite.Render();

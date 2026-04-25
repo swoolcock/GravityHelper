@@ -24,13 +24,14 @@ public class UpsideDownJumpThru : JumpThru
     private readonly bool _attached;
     private readonly bool _triggerStaticMovers;
     private readonly bool _invisible;
+    private readonly string _textureDirectory;
 
     private Vector2 _shakeOffset;
     private Platform _attachedPlatform;
     private StaticMover _staticMover;
 
     public UpsideDownJumpThru(Vector2 position, int width, string overrideTexture, int overrideSoundIndex = -1,
-        bool safe = true, bool attached = false, bool triggerStaticMovers = true, bool invisible = false)
+        bool safe = true, bool attached = false, bool triggerStaticMovers = true, bool invisible = false, string textureDirectory = null)
         : base(position, width, safe)
     {
         _modVersion = default;
@@ -42,6 +43,7 @@ public class UpsideDownJumpThru : JumpThru
         _attached = attached;
         _triggerStaticMovers = triggerStaticMovers;
         _invisible = invisible;
+        _textureDirectory = textureDirectory;
 
         init();
     }
@@ -58,6 +60,7 @@ public class UpsideDownJumpThru : JumpThru
         _attached = data.Bool("attached", false);
         _triggerStaticMovers = data.Bool("triggerStaticMovers", true);
         _invisible = data.Bool("invisible", false);
+        _textureDirectory = data.Attr("textureDirectory").Trim();
 
         init();
     }
@@ -172,7 +175,11 @@ public class UpsideDownJumpThru : JumpThru
         // this allows us to leave Visible = true so that subclasses can inherit the shake offset functionality
         if (!_invisible)
         {
-            var mtexture = GFX.Game[$"objects/jumpthru/{str}"];
+            var basePath = "objects/jumpthru/";
+            if (!string.IsNullOrWhiteSpace(_textureDirectory))
+                basePath = _textureDirectory.EnsureExactlyOneTrailingSlash();
+
+            var mtexture = GFX.Game[basePath + str];
             int textureWidthInTiles = mtexture.Width / 8;
             for (int i = 0; i < _columns; ++i)
             {

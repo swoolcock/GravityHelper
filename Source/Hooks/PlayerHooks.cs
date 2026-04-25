@@ -1469,7 +1469,7 @@ internal static class PlayerHooks
     private static void Player_Render(On.Celeste.Player.orig_Render orig, Player self)
     {
         var scaleY = self.Sprite.Scale.Y;
-        var invert = GravityHelperModule.ShouldInvertPlayer;
+        var invert = GravityHelperModule.ShouldInvertPlayerRender;
 
         if (invert) self.Sprite.Scale.Y = -scaleY;
         orig(self);

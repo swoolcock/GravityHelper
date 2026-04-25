@@ -23,9 +23,12 @@ public class GravityShield : Entity
     private readonly VersionInfo _pluginVersion;
     // ReSharper restore NotAccessedField.Local
 
+    private const string sprite_name = "gravityShield";
+
     private Level _level;
     private float _respawnTimeRemaining;
     private bool _emitNormal;
+    private readonly string _textureDirectory;
 
     private readonly Image _outline;
     private readonly Sprite _sprite;
@@ -46,15 +49,17 @@ public class GravityShield : Entity
         OneUse = data.Bool("oneUse");
         RespawnTime = data.Float("respawnTime", 2.5f);
         ShieldTime = data.Float("shieldTime", 3f);
+        _textureDirectory = data.Attr("textureDirectory").Trim();
 
         Collider = new Hitbox(16f, 16f, -8f, -8f);
         Depth = Depths.Pickups;
 
-        var path = "objects/GravityHelper/gravityShield";
+        var hasTexDir = !string.IsNullOrWhiteSpace(_textureDirectory);
+        var path = hasTexDir ? _textureDirectory : "objects/GravityHelper/gravityShield/";
 
         Add(new PlayerCollider(onPlayer),
-            _outline = new Image(GFX.Game[$"{path}/outline"]) {Visible = false},
-            _sprite = GFX.SpriteBank.Create("gravityShield"),
+            _outline = new Image(GFX.Game[path + "outline"]) {Visible = false},
+            _sprite = !hasTexDir ? GFX.SpriteBank.Create(sprite_name) : GFX.SpriteBank.CreateWithPath(sprite_name, path),
             _wiggler = Wiggler.Create(1f, 4f, v => _sprite.Scale = Vector2.One * (float) (1.0 + (double) v * 0.2)),
             new MirrorReflection(),
             _bloom = new BloomPoint(bloom_alpha, 16f),
@@ -106,7 +111,7 @@ public class GravityShield : Entity
         var isDefault = GravityHelperModule.Settings.ColorSchemeType ==
                         GravityHelperModuleSettings.ColorSchemeSetting.Default;
 
-        using (GravityHelperAPI.Exports.WithCustomTintShader())
+        using (GravityHelperAPI.InternalCustomTintShader())
         {
             if (_sprite.Visible)
             {

@@ -14,6 +14,9 @@ entities.GravityHelper/GravityBooster.placements.name.inverted=Gravity Booster (
 entities.GravityHelper/GravityBooster.placements.name.toggle=Gravity Booster (Toggle)
 entities.GravityHelper/GravityBooster.attributes.description.gravityType=The gravity type to set when Madeline leaves the booster (bubble). Defaults to Normal.
 entities.GravityHelper/GravityBooster.attributes.description.red=Whether to act the same as a Mirror Temple bubble, where travel ends upon hitting a solid. Defaults to false.
+entities.GravityHelper/GravityBooster.attributes.description.textureDirectory=The full texture path to use for reskinning. The path should be in the format: "objects/.../". Leaving this empty will use the default visuals.
+entities.GravityHelper/GravityBooster.attributes.description.showOverlay=Whether to show the cycling arrows overlay. Defaults to true.
+entities.GravityHelper/GravityBooster.attributes.description.showRipple=Whether to show the ripple effect. Defaults to true.
 
 # Gravity Bumper
 entities.GravityHelper/GravityBumper.placements.name.normal=Gravity Bumper (Normal)
@@ -33,6 +36,8 @@ entities.GravityHelper/GravityBumper.attributes.description.randomizeFrame=Wheth
 entities.GravityHelper/GravityBumper.attributes.description.respawnTime=The number of seconds after touching a bumper that it will respawn.  Defaults to 0.6 (vanilla).  Setting <= 0 will disable respawning.
 entities.GravityHelper/GravityBumper.attributes.description.spriteName=Sets a custom sprite name to use for the bumper.  Leaving this field empty will use the default for the gravity type.
 entities.GravityHelper/GravityBumper.attributes.description.evilSpriteName=Sets a custom sprite name to use for the bumper when in fire mode.  Leaving this field empty will use the vanilla sprite.
+entities.GravityHelper/GravityBumper.attributes.description.textureDirectory=The full texture path to use for reskinning. The path should be in the format: "objects/.../". Leaving this empty will use the default visuals.
+entities.GravityHelper/GravityBumper.attributes.description.showRipple=Whether to show the ripple effect. Defaults to true.
 
 # Gravity Dream Block
 entities.GravityHelper/GravityDreamBlock.placements.name.normal=Gravity Dream Block (Normal)
@@ -108,6 +113,8 @@ entities.GravityHelper/GravityRefill.attributes.description.refillsDash=Whether 
 entities.GravityHelper/GravityRefill.attributes.description.refillsStamina=Whether collecting the crystal will also refill Madeline's stamina. Defaults to true.
 entities.GravityHelper/GravityRefill.attributes.description.respawnTime=How long in seconds it will take for the crystal to respawn if enabled. Defaults to 2.5.
 entities.GravityHelper/GravityRefill.attributes.description.legacyRefillBehavior=If true, consuming a gravity charge on the same frame as picking up this refill will not refund the charge(s). Defaults to false, and you probably never want to enable this.
+entities.GravityHelper/GravityRefill.attributes.description.textureDirectory=The full texture path to use for reskinning. The path should be in the format: "objects/.../". Leaving this empty will use the default visuals.
+entities.GravityHelper/GravityRefill.attributes.description.showRipple=Whether to show the ripple effect. Defaults to true.
 
 # Gravity Refill Wall
 entities.GravityHelper/GravityRefillWall.placements.name.normal=Gravity Refill Wall
@@ -124,6 +131,8 @@ entities.GravityHelper/GravityRefillWall.attributes.description.refillsStamina=W
 entities.GravityHelper/GravityRefillWall.attributes.description.respawnTime=How long in seconds it will take for the wall to respawn if enabled. Defaults to 2.5.
 entities.GravityHelper/GravityRefillWall.attributes.description.wallAlpha=The opacity of the wall. Defaults to 0.8.
 entities.GravityHelper/GravityRefillWall.attributes.description.legacyRefillBehavior=If true, consuming a gravity charge on the same frame as picking up this refill will not refund the charge(s). Defaults to false, and you probably never want to enable this.
+entities.GravityHelper/GravityRefillWall.attributes.description.textureDirectory=The full texture path to use for reskinning. The path should be in the format: "objects/.../". Leaving this empty will use the default visuals.
+entities.GravityHelper/GravityRefillWall.attributes.description.showRipple=Whether to show the ripple effect. Defaults to true.
 
 # Gravity Spring (Legacy)
 entities.GravityHelper/GravitySpringFloor.attributes.description.defaultToController=If true (default), supported properties for this entity will use the value from the active controller.
@@ -190,13 +199,14 @@ entities.GravityHelper/GravitySpring.attributes.description.overlaySpriteName=Th
 entities.GravityHelper/GravitySpring.attributes.description.indicatorTexture=The full name of the texture to use for the wall indicator. Defaults to empty string, which uses the standard arrow textures.
 entities.GravityHelper/GravitySpring.attributes.description.showOverlay=Whether to show the refill/stamina type overlay if applicable. Defaults to true.
 entities.GravityHelper/GravitySpring.attributes.description.refillSound=The sound to play when the spring gives Madeline more dashes than MaxDashes.
+entities.GravityHelper/GravitySpring.attributes.description.textureDirectory=The full texture path to use for reskinning. The path should be in the format: "objects/.../". Leaving this empty will use the default visuals.
 
 # Momentum Spring
 entities.GravityHelper/MomentumSpring.placements.name.floor=Momentum Spring (Up)
 entities.GravityHelper/MomentumSpring.placements.name.ceiling=Momentum Spring (Down)
 entities.GravityHelper/MomentumSpring.placements.name.wallleft=Momentum Spring (Right)
 entities.GravityHelper/MomentumSpring.placements.name.wallright=Momentum Spring (Left)
-entities.GravityHelper/MomentumSpring.attributes.description.sprite=The path to use for the sprite visuals.
+entities.GravityHelper/MomentumSpring.attributes.description.sprite=The full texture path to use for reskinning. The path should be in the format: "objects/.../". Leaving this empty will use the default visuals.
 entities.GravityHelper/MomentumSpring.attributes.description.orientation=The orientation of the spring.
 
 # Upside Down Jump Thru
@@ -221,11 +231,13 @@ entities.GravityHelper/UpsideDownJumpThru.attributes.description.surfaceIndex=Th
 entities.GravityHelper/UpsideDownJumpThru.attributes.description.attached=Whether the upside down jump through should attach to solids. Defaults to false.
 entities.GravityHelper/UpsideDownJumpThru.attributes.description.triggerStaticMovers=Whether an attached upside down jump through should trigger static movers. Defaults to true.
 entities.GravityHelper/UpsideDownJumpThru.attributes.description.invisible=Whether the upside down jump through should be hidden. Defaults to false.
+entities.GravityHelper/UpsideDownJumpThru.attributes.description.textureDirectory=The full texture path to use for reskinning. The path should be in the format: "objects/.../". Leaving this empty will use the default visuals.
 
 # Upside Down Watch Tower
 entities.GravityHelper/UpsideDownWatchTower.placements.name.normal=Upside Down Watch Tower
 entities.GravityHelper/UpsideDownWatchTower.attributes.description.summit=Whether the watch tower should zoom on the final node or not. Requires nodes to function, otherwise the game will crash.
 entities.GravityHelper/UpsideDownWatchTower.attributes.description.onlyY=Whether the watch tower can only move vertically. If the watch tower has nodes it will still follow them.
+entities.GravityHelper/UpsideDownWatchTower.attributes.description.textureDirectory=The full texture path to use for reskinning. The path should be in the format: "objects/.../". Leaving this empty will use the default visuals.
 
 # Gravity Trigger
 triggers.GravityHelper/GravityTrigger.placements.name.normal=Gravity Trigger (Normal)
@@ -312,12 +324,14 @@ entities.GravityHelper/GravitySwitch.attributes.description.defaultToController=
 entities.GravityHelper/GravitySwitch.attributes.description.gravityType=The gravity type to set when Madeline touches the switch. Defaults to Toggle.
 entities.GravityHelper/GravitySwitch.attributes.description.cooldown=The number of seconds after activation that this switch will be disabled for. Defaults to 1 second.
 entities.GravityHelper/GravitySwitch.attributes.description.switchOnHoldables=Whether or not unheld holdables will trigger the switch. Defaults to true.
+entities.GravityHelper/GravitySwitch.attributes.description.textureDirectory=The full texture path to use for reskinning. The path should be in the format: "objects/.../". Leaving this empty will use the default visuals.
 
 # Gravity Shield
 entities.GravityHelper/GravityShield.placements.name.normal=Gravity Shield
 entities.GravityHelper/GravityShield.attributes.description.oneUse=If true, the crystal will not respawn after it has been collected. Defaults to false.
 entities.GravityHelper/GravityShield.attributes.description.shieldTime=How long in seconds until the shield will expire once collected. Defaults to 3.
 entities.GravityHelper/GravityShield.attributes.description.respawnTime=How long in seconds it will take for the crystal to respawn if enabled. Defaults to 2.5.
+entities.GravityHelper/GravityShield.attributes.description.textureDirectory=The full texture path to use for reskinning. The path should be in the format: "objects/.../". Leaving this empty will use the default visuals.
 
 # Cassette Gravity Controller
 entities.GravityHelper/CassetteGravityController.placements.name.single_room=Cassette Gravity Controller (Single Room)
@@ -369,6 +383,8 @@ entities.GravityHelper/InversionBlock.attributes.description.refillOneUse=Whethe
 entities.GravityHelper/InversionBlock.attributes.description.blockOneUse=Whether the block has a single use and will be disabled once triggered. Defaults to false.
 entities.GravityHelper/InversionBlock.attributes.description.showEdgeIndicators=Whether to show the coloured edge indicators. Defaults to true.
 entities.GravityHelper/InversionBlock.attributes.description.legacyFallBehavior=Prior to Gravity Helper 1.2.17, jumping on an inversion block about to fall\nwould cause it to shake for the maximum amount of time rather than honouring the\n"player has jumped therefore immediately fall" behaviour with regular falling blocks.\n\nEnabling this reverts to the old behaviour, and is not recommended.
+entities.GravityHelper/InversionBlock.attributes.description.textureDirectory=The full texture path to use for reskinning. The path should be in the format: "objects/.../". Leaving this empty will use the default visuals.
+entities.GravityHelper/InversionBlock.attributes.description.gravityRefillTextureDirectory=The full texture path to use for reskinning the gravity refill overlay. The path should be in the format: "objects/.../". Leaving this empty will use the default visuals.
 
 # Force Load Gravity Controller
 entities.GravityHelper/ForceLoadGravityController.placements.name.normal=Force Load Gravity Controller

@@ -3,6 +3,7 @@
 
 local consts = require("mods").requireFromPlugin("consts")
 local utils = require("utils")
+local drawableSprite = require("structs.drawable_sprite")
 
 local helpers = {}
 
@@ -29,6 +30,19 @@ function helpers.createPlacementData(pluginVersion, data)
         modVersion = consts.modVersion,
         pluginVersion = pluginVersion,
     }, data)
+end
+
+function helpers.ensureSingleTrailingSlash(path)
+    path = path:gsub("/+$", "")
+    return path.."/"
+end
+
+function helpers.missingImage(entity)
+    return drawableSprite.fromTexture("@Internal@/missing_image", entity)
+end
+
+function helpers.fromTexture(texture, entity)
+    return texture and drawableSprite.fromTexture(texture, entity) or helpers.missingImage(entity)
 end
 
 return helpers

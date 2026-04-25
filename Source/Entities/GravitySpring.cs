@@ -67,6 +67,7 @@ public class GravitySpring : Spring
     private IndicatorRenderer _indicatorRenderer;
     private Vector2 _indicatorShakeOffset;
     private string _spriteName;
+    private string _textureDirectory;
     private string _overlaySpriteName;
     private bool _showOverlay;
     private string _refillSound;
@@ -118,9 +119,10 @@ public class GravitySpring : Spring
         _showIndicator = data.Bool("showIndicator");
         _largeIndicator = data.Bool("largeIndicator");
         _indicatorOffset = data.Int("indicatorOffset", 8);
-        _indicatorTexture = data.Attr("indicatorTexture");
-        _spriteName = data.Attr("spriteName");
-        _overlaySpriteName = data.Attr("overlaySpriteName");
+        _indicatorTexture = data.Attr("indicatorTexture").Trim();
+        _spriteName = data.Attr("spriteName").Trim();
+        _textureDirectory = data.Attr("textureDirectory").Trim();
+        _overlaySpriteName = data.Attr("overlaySpriteName").Trim();
         _refillSound = data.Attr("refillSound");
 
         if (string.IsNullOrWhiteSpace(_spriteName))
@@ -144,14 +146,42 @@ public class GravitySpring : Spring
         var pufferCollider = Get<PufferCollider>();
 
         // update sprite
-        GFX.SpriteBank.CreateOn(sprite, _spriteName);
-        sprite.Play(getAnimId("idle"));
+        if (!string.IsNullOrWhiteSpace(_spriteName))
+        {
+            if (GFX.SpriteBank.Has(_spriteName))
+            {
+                if (!string.IsNullOrWhiteSpace(_textureDirectory))
+                    GFX.SpriteBank.CreateOnWithPath(sprite, _spriteName, _textureDirectory);
+                else
+                    GFX.SpriteBank.CreateOn(sprite, _spriteName);
+                sprite.Play(getAnimId("idle"));
+            }
+            else
+            {
+                Logger.Log(nameof(GravityHelperModule), $"GravitySpring: Invalid sprite name: {_spriteName}");
+            }
+        }
 
         // create overlay sprite
         var overlayAnimId = getOverlayAnimId("idle");
-        Add(_overlaySprite = GFX.SpriteBank.Create(_overlaySpriteName));
-        _overlaySprite.Visible = _showOverlay && string.IsNullOrWhiteSpace(overlayAnimId);
-        if (_overlaySprite.Visible) _overlaySprite.PlayIfAvailable(overlayAnimId);
+        if (!string.IsNullOrWhiteSpace(_overlaySpriteName))
+        {
+            if (GFX.SpriteBank.Has(_overlaySpriteName))
+            {
+                if (!string.IsNullOrWhiteSpace(_textureDirectory))
+                    _overlaySprite = GFX.SpriteBank.CreateWithPath(_overlaySpriteName, _textureDirectory);
+                else
+                    _overlaySprite = GFX.SpriteBank.Create(_overlaySpriteName);
+                Add(_overlaySprite);
+            }
+            else
+            {
+                Logger.Log(nameof(GravityHelperModule), $"GravitySpring: Invalid overlay sprite name: {_overlaySpriteName}");
+            }
+        }
+
+        _overlaySprite?.Visible = _showOverlay && string.IsNullOrWhiteSpace(overlayAnimId);
+        if (_overlaySprite?.Visible ?? false) _overlaySprite.PlayIfAvailable(overlayAnimId);
 
         // update callbacks
         staticMover.OnEnable = OnEnable;
@@ -185,7 +215,7 @@ public class GravitySpring : Spring
                 break;
         }
 
-        _overlaySprite.Rotation = sprite.Rotation;
+        _overlaySprite?.Rotation = sprite.Rotation;
 
         Add(new AccessibilityListener(onAccessibilityChange));
     }
@@ -234,8 +264,8 @@ public class GravitySpring : Spring
             sprite.Play("disabled");
             sprite.Color = DisabledColor;
 
-            _overlaySprite.Color = Color.White;
-            _overlaySprite.PlayIfAvailable(getOverlayAnimId("idle"));
+            _overlaySprite?.Color = Color.White;
+            _overlaySprite?.PlayIfAvailable(getOverlayAnimId("idle"));
         }
         else
             Visible = false;
@@ -254,9 +284,9 @@ public class GravitySpring : Spring
         }
 
         var overlayAnimId = getOverlayAnimId("idle");
-        _overlaySprite.Visible = (_showOverlay || !isDefault) && _overlaySprite.Has(overlayAnimId) && GravityType is not GravityType.None;
-        _overlaySprite.Color = isDefault ? Color.White : colorScheme[GravityType];
-        if (_overlaySprite.Visible) _overlaySprite.PlayIfAvailable(overlayAnimId);
+        _overlaySprite?.Visible = (_showOverlay || !isDefault) && _overlaySprite.Has(overlayAnimId) && GravityType is not GravityType.None;
+        _overlaySprite?.Color = isDefault ? Color.White : colorScheme[GravityType];
+        if (_overlaySprite?.Visible ?? false) _overlaySprite.PlayIfAvailable(overlayAnimId);
 
         _indicatorRenderer?.UpdateIndicator();
     }
@@ -265,7 +295,7 @@ public class GravitySpring : Spring
     {
         base.Update();
 
-        _overlaySprite.Scale = sprite.Scale;
+        _overlaySprite?.Scale = sprite.Scale;
 
         if (_indicatorRenderer != null)
             _indicatorRenderer.Visible = Visible;
@@ -430,7 +460,7 @@ public class GravitySpring : Spring
         Audio.Play(SFX.game_gen_spring, Position);
         staticMover.TriggerPlatform();
         sprite.Play(getAnimId("bounce"), true);
-        _overlaySprite.PlayIfAvailable(getOverlayAnimId("bounce"), true);
+        _overlaySprite?.PlayIfAvailable(getOverlayAnimId("bounce"), true);
         wiggler.Start();
     }
 

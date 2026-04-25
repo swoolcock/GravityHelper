@@ -13,6 +13,8 @@ local placementData = helpers.createPlacementData('2', {
     refillsStamina = true,
     respawnTime = 2.5,
     legacyRefillBehavior = false,
+    showRipple = true,
+    textureDirectory = "",
 })
 
 local gravityRefill = {
@@ -33,8 +35,10 @@ local gravityRefill = {
     fieldOrder = {
         "x", "y",
         "charges", "respawnTime",
-        "dashes", "refillsDash", "refillsStamina",
+        "dashes", "textureDirectory",
+        "refillsDash", "refillsStamina",
         "oneUse", "legacyRefillBehavior",
+        "showRipple"
     },
     placements = {
         {
@@ -94,7 +98,12 @@ function gravityRefill.texture(room, entity)
         suffix = "_no_dash"
     end
 
-    return "objects/GravityHelper/gravityRefill/idle"..suffix.."00"
+    local basePath = "objects/GravityHelper/gravityRefill/"
+    if entity.textureDirectory and entity.textureDirectory ~= "" then
+        basePath = entity.textureDirectory
+    end
+    basePath = helpers.ensureSingleTrailingSlash(basePath)
+    return basePath.."idle"..suffix.."00"
 end
 
 function gravityRefill.selection(room, entity)

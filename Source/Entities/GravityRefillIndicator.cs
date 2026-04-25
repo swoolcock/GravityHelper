@@ -71,7 +71,7 @@ public class GravityRefillIndicator : Entity
         if (!GravityHelperModule.ShouldInvertPlayer)
             yOffset = -yOffset;
 
-        using var _ = GravityHelperAPI.Exports.WithCustomTintShader();
+        using var _ = GravityHelperAPI.InternalCustomTintShader();
         _sprite.Color =
             GravityHelperModule.Settings.ColorSchemeType == GravityHelperModuleSettings.ColorSchemeSetting.Default
                 ? Color.White

@@ -7,6 +7,7 @@ local utils = require("utils")
 --local colors = require("consts.xna_colors")
 
 local drawableSprite = require("structs.drawable_sprite")
+local drawableFunction = require("structs.drawable_function")
 
 local doubleArrowTexture = "objects/GravityHelper/gravityDreamBlock/doubleArrow"
 local doubleArrowSmallTexture = "objects/GravityHelper/gravityDreamBlock/doubleArrowSmall"
@@ -14,13 +15,6 @@ local upArrowTexture = "objects/GravityHelper/gravityDreamBlock/upArrow"
 local upArrowSmallTexture = "objects/GravityHelper/gravityDreamBlock/upArrowSmall"
 local downArrowTexture = "objects/GravityHelper/gravityDreamBlock/downArrow"
 local downArrowSmallTexture = "objects/GravityHelper/gravityDreamBlock/downArrowSmall"
-
-local doubleArrowSprite = drawableSprite.fromTexture(doubleArrowTexture)
-local doubleArrowSmallSprite = drawableSprite.fromTexture(doubleArrowSmallTexture)
-local upArrowSprite = drawableSprite.fromTexture(upArrowTexture)
-local upArrowSmallSprite = drawableSprite.fromTexture(upArrowSmallTexture)
-local downArrowSprite = drawableSprite.fromTexture(downArrowTexture)
-local downArrowSmallSprite = drawableSprite.fromTexture(downArrowSmallTexture)
 
 local placementData = helpers.createPlacementData('1', {
     width = 8,
@@ -110,73 +104,91 @@ local function putInside(entity, x, y)
     return x, y
 end
 
-function gravityDreamBlock.draw(room, entity)
-    local gravityColor = consts.gravityTypeForIndex(entity.gravityType).color
-    local lineColor, backColor, particleColor = lightened(gravityColor, 0.4), lightened(gravityColor, 0.4), gravityColor
-    local parsed, r, g, b, a
-
-    parsed, r, g, b = utils.parseHexColor(entity.lineColor or "")
-    if parsed then lineColor = {r, g, b} end
-
-    parsed, r, g, b = utils.parseHexColor(entity.backColor or "")
-    if parsed then backColor = {r, g, b} end
-
-    parsed, r, g, b = utils.parseHexColor(entity.particleColor or "")
-    if parsed then particleColor = {r, g, b} end
-
-    -- fill
-    r, g, b, a = love.graphics.getColor()
-    love.graphics.setColor(0, 0, 0, 1)
-    love.graphics.rectangle("fill", entity.x, entity.y, entity.width, entity.height)
-    love.graphics.setColor(backColor[1], backColor[2], backColor[3], 0.12)
-    love.graphics.rectangle("fill", entity.x, entity.y, entity.width, entity.height)
-
-    -- set scissor for particles
-    local sx, sy, sw, sh = love.graphics.getScissor()
-    local x1, y1 = love.graphics.transformPoint(entity.x, entity.y)
-    local x2, y2 = love.graphics.transformPoint(entity.x + entity.width, entity.y + entity.height)
-    love.graphics.setScissor(x1, y1, x2 - x1, y2 - y1)
-
+function gravityDreamBlock.sprite(room, entity)
     -- find sprites
-    local largeSprite = entity.gravityType == 0 and downArrowSprite or entity.gravityType == 1 and upArrowSprite or doubleArrowSprite
-    local smallSprite = entity.gravityType == 0 and downArrowSmallSprite or entity.gravityType == 1 and upArrowSmallSprite or doubleArrowSmallSprite
+    local largeSprite =
+            entity.gravityType == 0 and drawableSprite.fromTexture(downArrowTexture) or
+            entity.gravityType == 1 and drawableSprite.fromTexture(upArrowTexture) or
+            helpers.fromTexture(doubleArrowTexture)
+    local smallSprite =
+            entity.gravityType == 0 and drawableSprite.fromTexture(downArrowSmallTexture) or
+            entity.gravityType == 1 and drawableSprite.fromTexture(upArrowSmallTexture) or
+            helpers.fromTexture(doubleArrowSmallTexture)
 
-    -- set seed
-    math.randomseed(entity._id or 1)
-    
-    -- render particles
-    local particleCount = math.floor((entity.width / 8) * (entity.height / 8) * 0.7)
-    for _ = 1,particleCount do
-        -- get random values
-        local px,py = math.random(0, entity.width), math.random(0, entity.height)
-        local lightness = math.random() - 0.25
-        local layer = math.random(0, 6)
-        -- calculate visuals
-        local adjusted = lightened(particleColor, lightness, 0.8)
-
-        px, py = putInside(entity, px, py)
-
-        if layer < 3 then
-            local particleSprite = layer < 1 and largeSprite or smallSprite
-            particleSprite.x = px
-            particleSprite.y = py
-            particleSprite.color = adjusted
-            particleSprite:draw()
-        else
-            love.graphics.setColor(adjusted)
-            love.graphics.rectangle("fill", px, py, 1, 1)
-        end
+    -- custom random so we don't poison the global seed
+    local seed = 0
+    local function rand()
+        local a = 1664525
+        local c = 1013904223
+        local m = 2^32
+        seed = (a * seed + c) % m
+        return seed / m
     end
 
-    -- reset scissor
-    love.graphics.setScissor(sx, sy, sw, sh)
+    return drawableFunction.fromFunction(function()
+        local gravityColor = consts.gravityTypeForIndex(entity.gravityType).color
+        local lineColor, backColor, particleColor = lightened(gravityColor, 0.4), lightened(gravityColor, 0.4), gravityColor
+        local parsed, r, g, b, a
 
-    -- line
-    love.graphics.setColor(lineColor[1], lineColor[2], lineColor[3], 1)
-    love.graphics.rectangle("line", entity.x + 0.5, entity.y + 0.5, entity.width - 1, entity.height - 1)
+        parsed, r, g, b = utils.parseHexColor(entity.lineColor or "")
+        if parsed then lineColor = {r, g, b} end
 
-    -- reset color
-    love.graphics.setColor(r, g, b, a)
+        parsed, r, g, b = utils.parseHexColor(entity.backColor or "")
+        if parsed then backColor = {r, g, b} end
+
+        parsed, r, g, b = utils.parseHexColor(entity.particleColor or "")
+        if parsed then particleColor = {r, g, b} end
+
+        -- fill
+        r, g, b, a = love.graphics.getColor()
+        love.graphics.setColor(0, 0, 0, 1)
+        love.graphics.rectangle("fill", entity.x, entity.y, entity.width, entity.height)
+        love.graphics.setColor(backColor[1], backColor[2], backColor[3], 0.12)
+        love.graphics.rectangle("fill", entity.x, entity.y, entity.width, entity.height)
+
+        -- set scissor for particles
+        local sx, sy, sw, sh = love.graphics.getScissor()
+        local x1, y1 = love.graphics.transformPoint(entity.x, entity.y)
+        local x2, y2 = love.graphics.transformPoint(entity.x + entity.width, entity.y + entity.height)
+        love.graphics.setScissor(x1, y1, x2 - x1, y2 - y1)
+
+        -- set seed
+        seed = entity._id or 1
+
+        -- render particles
+        local particleCount = math.floor((entity.width / 8) * (entity.height / 8) * 0.7)
+        for _ = 1,particleCount do
+            -- get random values
+            local px,py = math.floor(rand() * entity.width), math.floor(rand() * entity.height)
+            local lightness = rand() - 0.25
+            local layer = math.floor(rand() * 6)
+            -- calculate visuals
+            local adjusted = lightened(particleColor, lightness, 0.8)
+
+            px, py = putInside(entity, px, py)
+
+            if layer < 3 then
+                local particleSprite = layer < 1 and largeSprite or smallSprite
+                particleSprite.x = px
+                particleSprite.y = py
+                particleSprite.color = adjusted
+                particleSprite:draw()
+            else
+                love.graphics.setColor(adjusted)
+                love.graphics.rectangle("fill", px, py, 1, 1)
+            end
+        end
+
+        -- reset scissor
+        love.graphics.setScissor(sx, sy, sw, sh)
+
+        -- line
+        love.graphics.setColor(lineColor[1], lineColor[2], lineColor[3], 1)
+        love.graphics.rectangle("line", entity.x + 0.5, entity.y + 0.5, entity.width - 1, entity.height - 1)
+
+        -- reset color
+        love.graphics.setColor(r, g, b, a)
+    end)
 end
 
 return gravityDreamBlock
