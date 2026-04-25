@@ -24,6 +24,9 @@ internal static class BasicExtensions
     public static float Clamp01(this float self) => Calc.Clamp(self, 0f, 1f);
     public static float Mod(this float self, float divisor) => ((self % divisor) + divisor) % divisor;
 
+    private static readonly char[] trim_separators = ['/', ' '];
+    public static string EnsureExactlyOneTrailingSlash(this string str) => str.TrimEnd(trim_separators) + "/";
+
     public static TItem AddWithDescription<TItem>(this TextMenu self, TItem item, string description)
         where TItem : TextMenu.Item
     {
@@ -62,6 +65,8 @@ internal static class BasicExtensions
             Logger.Log(nameof(GravityHelperModule), "CreateOnWithPath: Couldn't get sprite source.");
             return null;
         }
+
+        overridePath = overridePath.EnsureExactlyOneTrailingSlash();
 
         sprite.Reset(self.Atlas, overridePath);
         float defaultDelay = spriteDataSource.XML.AttrFloat("delay", 0f);

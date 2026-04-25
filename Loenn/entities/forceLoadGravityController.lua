@@ -22,8 +22,8 @@ local forceLoadGravityController = {
 
 function forceLoadGravityController.sprite(room, entity)
     local spriteName = "objects/GravityHelper/gravityController/circle_dot"
-    local iconSprite = drawableSprite.fromTexture(spriteName, entity)
-    local typeSprite = drawableSprite.fromTexture("objects/GravityHelper/gravityController/bang", entity)
+    local iconSprite = helpers.fromTexture(spriteName, entity)
+    local typeSprite = helpers.fromTexture("objects/GravityHelper/gravityController/bang", entity)
     return {iconSprite, typeSprite}
 end
 

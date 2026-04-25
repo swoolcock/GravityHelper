@@ -113,27 +113,28 @@ function gravityBumper.sprite(room, entity)
     local gravityType = entity.gravityType
 
     if gravityType == consts.gravityTypes.none.index then
-        return drawableSprite.fromTexture("objects/Bumper/Idle22", entity)
+        return helpers.fromTexture("objects/Bumper/Idle22", entity)
     end
 
     local basePath = "objects/GravityHelper/gravityBumper/"
     if entity.textureDirectory and entity.textureDirectory ~= "" then
         basePath = entity.textureDirectory
     end
+    basePath = helpers.ensureSingleTrailingSlash(basePath)
 
     local bumperSpriteTexture =
             gravityType == consts.gravityTypes.normal.index and basePath.."normal00" or
             gravityType == consts.gravityTypes.inverted.index and basePath.."invert00" or
             gravityType == consts.gravityTypes.toggle.index and basePath.."toggle00" or nil
 
-    local bumperSprite = drawableSprite.fromTexture(bumperSpriteTexture, entity)
+    local bumperSprite = helpers.fromTexture(bumperSpriteTexture, entity)
     local sprites = {}
     if bumperSprite then table.insert(sprites, bumperSprite) end
 
     local gravityInfo = consts.gravityTypeForIndex(gravityType)
 
     local function createRippleSprite(scaleY)
-        local rippleSprite = drawableSprite.fromTexture("objects/GravityHelper/ripple03", entity)
+        local rippleSprite = helpers.fromTexture("objects/GravityHelper/ripple03", entity)
         local offset = scaleY < 0 and 8 or -8
         rippleSprite:addPosition(0, offset)
         rippleSprite:setColor(helpers.parseHexColor(gravityInfo.highlightColor))

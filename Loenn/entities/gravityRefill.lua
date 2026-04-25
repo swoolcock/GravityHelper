@@ -102,6 +102,7 @@ function gravityRefill.texture(room, entity)
     if entity.textureDirectory and entity.textureDirectory ~= "" then
         basePath = entity.textureDirectory
     end
+    basePath = helpers.ensureSingleTrailingSlash(basePath)
     return basePath.."idle"..suffix.."00"
 end
 

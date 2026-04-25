@@ -52,12 +52,13 @@ function gravityBooster.sprite(room, entity)
     if entity.textureDirectory and entity.textureDirectory ~= "" then
         basePath = entity.textureDirectory
     end
+    basePath = helpers.ensureSingleTrailingSlash(basePath)
 
     local spriteTexture = entity.red and basePath.."boosterRedUp00" or basePath.."boosterUp00"
     local overlayTexture = basePath ..
             (gravityType == 2 and "overlayToggle01" or gravityType == 1 and "overlayInvert00" or "overlayNormal00")
 
-    local boosterSprite = drawableSprite.fromTexture(spriteTexture, entity)
+    local boosterSprite = helpers.fromTexture(spriteTexture, entity)
     local gravityInfo = consts.gravityTypeForIndex(gravityType)
     local sprites = {}
     if boosterSprite then table.insert(sprites, boosterSprite) end
@@ -68,7 +69,7 @@ function gravityBooster.sprite(room, entity)
     end
 
     local function createRippleSprite(scaleY)
-        local rippleSprite = drawableSprite.fromTexture("objects/GravityHelper/ripple03", entity)
+        local rippleSprite = helpers.fromTexture("objects/GravityHelper/ripple03", entity)
         local offset = scaleY < 0 and 5 or -5
         rippleSprite:addPosition(0, offset)
         rippleSprite:setColor(helpers.parseHexColor(gravityInfo.highlightColor))

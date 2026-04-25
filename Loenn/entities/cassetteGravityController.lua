@@ -32,8 +32,8 @@ local cassetteGravityController = {
 
 function cassetteGravityController.sprite(room, entity)
     local spriteName = entity.persistent and "objects/GravityHelper/gravityController/circle_dot" or "objects/GravityHelper/gravityController/circle"
-    local iconSprite = drawableSprite.fromTexture(spriteName, entity)
-    local typeSprite = drawableSprite.fromTexture("objects/GravityHelper/gravityController/cassette", entity)
+    local iconSprite = helpers.fromTexture(spriteName, entity)
+    local typeSprite = helpers.fromTexture("objects/GravityHelper/gravityController/cassette", entity)
     return {iconSprite, typeSprite}
 end
 

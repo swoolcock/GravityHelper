@@ -134,13 +134,15 @@ function gravityRefillWall.sprite(room, entity)
     if entity.textureDirectory and entity.textureDirectory ~= "" then
         basePath = entity.textureDirectory
     end
+    basePath = helpers.ensureSingleTrailingSlash(basePath)
     local refillTexture = basePath.."idle"..suffix.."00"
 
     -- get refillSprite
-    local refillSprite = drawableSprite.fromTexture(refillTexture, entity)
-    refillSprite:addPosition(entity.width / 2, entity.height / 2)
-
-    table.insert(rectSprites, refillSprite)
+    local refillSprite = helpers.fromTexture(refillTexture, entity)
+    if refillSprite then
+        refillSprite:addPosition(entity.width / 2, entity.height / 2)
+        table.insert(rectSprites, refillSprite)
+    end
     return rectSprites
 end
 
