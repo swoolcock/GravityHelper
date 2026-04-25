@@ -133,8 +133,12 @@ public class GravityShieldIndicator : Entity
     public void Activate(float time)
     {
         ShieldTimeRemaining = ShieldTotalTime = time;
+
+        // only lock if we weren't already active to prevent
+        // multiple shields getting us in a bad semaphore state
+        if (!Active) GravityHelperModule.PlayerComponent?.Lock();
+
         Active = Visible = true;
-        GravityHelperModule.PlayerComponent?.Lock();
         _flash = false;
 
         _bloom.Alpha = bloom_alpha;
