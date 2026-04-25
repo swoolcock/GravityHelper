@@ -50,4 +50,9 @@ function gravitySwitch.texture(room, entity)
     return basePath..(type.switchTexture)
 end
 
+function gravitySwitch.selection(room, entity)
+    local w,h = 16,16
+    return utils.rectangle(entity.x - w/2, entity.y - h/2 + 1, w, h)
+end
+
 return gravitySwitch
