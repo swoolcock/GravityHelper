@@ -34,6 +34,7 @@ function gravityShield.texture(room, entity)
     if entity.textureDirectory and entity.textureDirectory ~= "" then
         basePath = entity.textureDirectory
     end
+    basePath = helpers.ensureSingleTrailingSlash(basePath)
     return basePath.."idle00"
 end
 

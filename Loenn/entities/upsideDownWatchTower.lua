@@ -31,8 +31,9 @@ function upsideDownWatchTower.sprite(room, entity)
     if entity.textureDirectory and entity.textureDirectory ~= "" then
         basePath = entity.textureDirectory
     end
+    basePath = helpers.ensureSingleTrailingSlash(basePath)
 
-    local sprite = drawableSprite.fromTexture(basePath.."lookout05", entity)
+    local sprite = helpers.fromTexture(basePath.."lookout05", entity)
     if sprite then
         sprite:setScale(1, -1)
         sprite:addPosition(0, 16)

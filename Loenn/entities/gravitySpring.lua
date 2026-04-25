@@ -121,6 +121,7 @@ function gravitySpring.sprite(room, entity)
     if entity.textureDirectory and entity.textureDirectory ~= "" then
         spritePath = entity.textureDirectory
     end
+    spritePath = helpers.ensureSingleTrailingSlash(spritePath)
 
     local textureName = "none00"
 
@@ -133,7 +134,7 @@ function gravitySpring.sprite(room, entity)
     end
 
     local rotation = transformsForOrientation(entity.orientation)
-    local mainSprite = drawableSprite.fromTexture(spritePath .. textureName, entity)
+    local mainSprite = helpers.fromTexture(spritePath .. textureName, entity)
     mainSprite:setJustification(0.5, 1.0)
     mainSprite.rotation = rotation
     table.insert(sprites, mainSprite)
@@ -150,7 +151,7 @@ function gravitySpring.sprite(room, entity)
     end
 
     if overlayTextureName ~= "" then
-        local overlaySprite = drawableSprite.fromTexture(spritePath .. overlayTextureName, entity)
+        local overlaySprite = helpers.fromTexture(spritePath .. overlayTextureName, entity)
         overlaySprite:setJustification(0.5, 1.0)
         overlaySprite.rotation = rotation
         table.insert(sprites, overlaySprite)

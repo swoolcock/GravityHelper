@@ -51,7 +51,7 @@ function momentumSpring.texture(room, entity)
     if entity.sprite and entity.sprite ~= "" then
         basePath = entity.sprite
     end
-    basePath = basePath:gsub("/+$", "").."/"
+    basePath = helpers.ensureSingleTrailingSlash(basePath)
     return basePath.."00"
 end
 

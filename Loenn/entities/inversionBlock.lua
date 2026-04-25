@@ -190,6 +190,7 @@ local function getEdgeSprite(entity, node, drawX, drawY, row, column, rotation)
     if entity.textureDirectory and entity.textureDirectory ~= "" then
         basePath = entity.textureDirectory
     end
+    basePath = helpers.ensureSingleTrailingSlash(basePath)
     local edgeTexture = basePath.."edges"
     local sprite = drawableSprite.fromTexture(edgeTexture, entity)
     if node then
@@ -211,6 +212,7 @@ local function mainSprites(room, entity, node)
     if entity.textureDirectory and entity.textureDirectory ~= "" then
         basePath = entity.textureDirectory
     end
+    basePath = helpers.ensureSingleTrailingSlash(basePath)
     local blockTexture = basePath.."block"
     local topGravityType, bottomGravityType = 0, 1
     local x, y = node and node.x or entity.x or 0, node and node.y or entity.y or 0
@@ -263,11 +265,12 @@ local function mainSprites(room, entity, node)
         if entity.gravityRefillTextureDirectory and entity.gravityRefillTextureDirectory ~= "" then
             refillPath = entity.gravityRefillTextureDirectory
         end
-        refillSprite = drawableSprite.fromTexture(refillPath.."idle00", entity)
+        refillPath = helpers.ensureSingleTrailingSlash(refillPath)
+        refillSprite = helpers.fromTexture(refillPath.."idle00", entity)
     elseif entity.refillDashCount == 2 then
-        refillSprite = drawableSprite.fromTexture("objects/refillTwo/idle00", entity)
+        refillSprite = helpers.fromTexture("objects/refillTwo/idle00", entity)
     elseif entity.refillDashCount > 0 then
-        refillSprite = drawableSprite.fromTexture("objects/refill/idle00", entity)
+        refillSprite = helpers.fromTexture("objects/refill/idle00", entity)
     end
 
     if refillSprite ~= nil then

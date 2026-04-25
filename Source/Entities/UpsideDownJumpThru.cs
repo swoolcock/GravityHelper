@@ -177,7 +177,7 @@ public class UpsideDownJumpThru : JumpThru
         {
             var basePath = "objects/jumpthru/";
             if (!string.IsNullOrWhiteSpace(_textureDirectory))
-                basePath = _textureDirectory;
+                basePath = _textureDirectory.EnsureExactlyOneTrailingSlash();
 
             var mtexture = GFX.Game[basePath + str];
             int textureWidthInTiles = mtexture.Width / 8;

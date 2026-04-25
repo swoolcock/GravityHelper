@@ -51,6 +51,7 @@ function upsideDownJumpThru.sprite(room, entity)
     if entity.textureDirectory and entity.textureDirectory ~= "" then
         basePath = entity.textureDirectory
     end
+    basePath = helpers.ensureSingleTrailingSlash(basePath)
 
     local textureRaw = getTexture(entity)
     local texture = basePath .. textureRaw
@@ -77,7 +78,7 @@ function upsideDownJumpThru.sprite(room, entity)
             quadX = 16
         end
 
-        local sprite = drawableSpriteStruct.fromTexture(texture, entity)
+        local sprite = helpers.fromTexture(texture, entity)
 
         sprite:setJustification(0, 0)
         sprite:setScale(1, -1)

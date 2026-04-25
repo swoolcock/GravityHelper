@@ -145,11 +145,11 @@ local function mainSprite(room, entity, node)
     local largeSprite =
     entity.gravityType == 0 and drawableSprite.fromTexture(downArrowTexture) or
             entity.gravityType == 1 and drawableSprite.fromTexture(upArrowTexture) or
-            drawableSprite.fromTexture(doubleArrowTexture)
+            helpers.fromTexture(doubleArrowTexture)
     local smallSprite =
     entity.gravityType == 0 and drawableSprite.fromTexture(downArrowSmallTexture) or
             entity.gravityType == 1 and drawableSprite.fromTexture(upArrowSmallTexture) or
-            drawableSprite.fromTexture(doubleArrowSmallTexture)
+            helpers.fromTexture(doubleArrowSmallTexture)
 
     -- custom random so we don't poison the global seed
     local seed = 0

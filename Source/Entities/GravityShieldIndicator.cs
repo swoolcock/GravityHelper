@@ -115,9 +115,9 @@ public class GravityShieldIndicator : Entity
         if (!_flash)
         {
             var offset = GravityHelperModule.ShouldInvertPlayer ? 4f : -4f;
-            var origin = player.Center + Vector2.UnitY * offset;
+            var origin = (player.Center + Vector2.UnitY * offset).Round();
 
-            Position = player.Center + Vector2.UnitY * offset;
+            Position = (player.Center + Vector2.UnitY * offset).Round();
 
             for (var i = 0; i < _particles.Count; i++)
             {
@@ -133,8 +133,12 @@ public class GravityShieldIndicator : Entity
     public void Activate(float time)
     {
         ShieldTimeRemaining = ShieldTotalTime = time;
+
+        // only lock if we weren't already active to prevent
+        // multiple shields getting us in a bad semaphore state
+        if (!Active) GravityHelperModule.PlayerComponent?.Lock();
+
         Active = Visible = true;
-        GravityHelperModule.PlayerComponent?.Lock();
         _flash = false;
 
         _bloom.Alpha = bloom_alpha;
