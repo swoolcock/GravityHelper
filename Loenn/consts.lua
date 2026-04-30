@@ -59,8 +59,8 @@ local consts = {
             options = {
                 --{"None", 0},
                 {"Return", 1},
-                {"Toggle", 2},
-                {"Stay", 3},
+                --{"Toggle", 2},
+                --{"Stay", 3},
             },
         },
         zipType = {
@@ -68,8 +68,8 @@ local consts = {
             options = {
                 --{"None", 0},
                 {"Return", 1},
-                {"Toggle", 2},
-                {"Stay", 3},
+                --{"Toggle", 2},
+                --{"Stay", 3},
             },
         },
         orientation = {
