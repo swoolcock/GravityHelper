@@ -442,10 +442,8 @@ public class GravityField : GravityTrigger, IConnectableField
         base.Update();
     }
 
-    public override void Render()
+    private void renderParts(bool particles, bool arrows)
     {
-        base.Render();
-
         var level = SceneAs<Level>();
         var cassetteIndex = _cassetteComponent?.CassetteIndex ?? -1;
         var cassetteState = _cassetteComponent?.CassetteState ?? CassetteStates.On;
@@ -461,7 +459,7 @@ public class GravityField : GravityTrigger, IConnectableField
 
         var shouldDrawParticles = GravityHelperModule.Settings.FieldParticles && shouldDrawField;
 
-        if (Collidable && shouldDrawParticles && (cassetteIndex < 0 || cassetteState >= CassetteStates.On))
+        if (particles && Collidable && shouldDrawParticles && (cassetteIndex < 0 || cassetteState >= CassetteStates.On))
         {
             var color = ParticleColor * _particleOpacity * opacity;
             foreach (Vector2 particle in _particles)
@@ -475,63 +473,70 @@ public class GravityField : GravityTrigger, IConnectableField
             }
         }
 
-        // calculate arrow rendering info based on accessibility settings
-        MTexture smallTexture = _arrowSmallTexture;
-        MTexture largeTexture = _arrowTexture;
-        Vector2 smallOrigin = _arrowSmallOrigin;
-        Vector2 largeOrigin = _arrowOrigin;
-
-        var fieldArrowType = GravityHelperModule.Settings.FieldArrowType;
-        switch (fieldArrowType)
+        if (arrows)
         {
-            case GravityHelperModuleSettings.ArrowSetting.Default when !shouldDrawArrows:
-                fieldArrowType = GravityHelperModuleSettings.ArrowSetting.None;
-                break;
-            case GravityHelperModuleSettings.ArrowSetting.Small:
-                largeTexture = smallTexture;
-                largeOrigin = smallOrigin;
-                break;
-            case GravityHelperModuleSettings.ArrowSetting.Large:
-                smallTexture = largeTexture;
-                smallOrigin = largeOrigin;
-                break;
-        }
+            // calculate arrow rendering info based on accessibility settings
+            MTexture smallTexture = _arrowSmallTexture;
+            MTexture largeTexture = _arrowTexture;
+            Vector2 smallOrigin = _arrowSmallOrigin;
+            Vector2 largeOrigin = _arrowOrigin;
 
-        if (fieldArrowType != GravityHelperModuleSettings.ArrowSetting.None)
-        {
-            int widthInTiles = (int)(Width / 8);
-            int heightInTiles = (int)(Height / 8);
-
-            // one arrow every 2 tiles, rounded down, but at least one
-            int arrowsX = Math.Max(widthInTiles / 2, 1);
-            int arrowsY = Math.Max(heightInTiles / 2, 1);
-
-            // if width or height is 1, scale down the arrows
-            var texture = widthInTiles == 1 || heightInTiles == 1 ? smallTexture : largeTexture;
-            var origin = widthInTiles == 1 || heightInTiles == 1 ? smallOrigin : largeOrigin;
-            var color = ArrowColor * _arrowOpacity * opacity * (Collidable ? 1 : 0.5f);
-            const int padding = 32;
-
-            // arrows should be centre aligned in each 2x2 box
-            // offset by half a tile if the width or height is odd
-            for (int y = 0; y < arrowsY; y++)
+            var fieldArrowType = GravityHelperModule.Settings.FieldArrowType;
+            switch (fieldArrowType)
             {
-                int offsetY = y * 16 + 8 + heightInTiles % 2 * 4;
-                if (heightInTiles == 1) offsetY = 4;
+                case GravityHelperModuleSettings.ArrowSetting.Default when !shouldDrawArrows:
+                    fieldArrowType = GravityHelperModuleSettings.ArrowSetting.None;
+                    break;
+                case GravityHelperModuleSettings.ArrowSetting.Small:
+                    largeTexture = smallTexture;
+                    largeOrigin = smallOrigin;
+                    break;
+                case GravityHelperModuleSettings.ArrowSetting.Large:
+                    smallTexture = largeTexture;
+                    smallOrigin = largeOrigin;
+                    break;
+            }
 
-                if (Position.Y + offsetY < top - padding) continue;
-                if (Position.Y + offsetY > bottom + padding) break;
+            var fieldArrowOutline = GravityHelperModule.Settings.FieldArrowOutline;
 
-                for (int x = 0; x < arrowsX; x++)
+            if (fieldArrowType != GravityHelperModuleSettings.ArrowSetting.None)
+            {
+                int widthInTiles = (int)(Width / 8);
+                int heightInTiles = (int)(Height / 8);
+
+                // one arrow every 2 tiles, rounded down, but at least one
+                int arrowsX = Math.Max(widthInTiles / 2, 1);
+                int arrowsY = Math.Max(heightInTiles / 2, 1);
+
+                // if width or height is 1, scale down the arrows
+                var texture = widthInTiles == 1 || heightInTiles == 1 ? smallTexture : largeTexture;
+                var origin = widthInTiles == 1 || heightInTiles == 1 ? smallOrigin : largeOrigin;
+                var color = ArrowColor * _arrowOpacity * opacity * (Collidable ? 1 : 0.5f);
+                const int padding = 32;
+
+                // arrows should be centre aligned in each 2x2 box
+                // offset by half a tile if the width or height is odd
+                for (int y = 0; y < arrowsY; y++)
                 {
-                    int offsetX = x * 16 + 8 + widthInTiles % 2 * 4;
-                    if (widthInTiles == 1) offsetX = 4;
+                    int offsetY = y * 16 + 8 + heightInTiles % 2 * 4;
+                    if (heightInTiles == 1) offsetY = 4;
 
-                    if (Position.X + offsetX < left - padding) continue;
-                    if (Position.X + offsetX > right + padding) break;
+                    if (Position.Y + offsetY < top - padding) continue;
+                    if (Position.Y + offsetY > bottom + padding) break;
 
-                    var pos = Position + _arrowShakeOffset + new Vector2(offsetX, offsetY);
-                    texture.Draw(pos, origin, color, 1f, 0f);
+                    for (int x = 0; x < arrowsX; x++)
+                    {
+                        int offsetX = x * 16 + 8 + widthInTiles % 2 * 4;
+                        if (widthInTiles == 1) offsetX = 4;
+
+                        if (Position.X + offsetX < left - padding) continue;
+                        if (Position.X + offsetX > right + padding) break;
+
+                        var pos = Position + _arrowShakeOffset + new Vector2(offsetX, offsetY);
+                        if (fieldArrowOutline)
+                            texture.DrawOutline(pos, origin, Color.Black, 1f, 0f);
+                        texture.Draw(pos, origin, color, 1f, 0f);
+                    }
                 }
             }
         }
@@ -610,6 +615,14 @@ public class GravityField : GravityTrigger, IConnectableField
         {
             if (!GravityHelperModule.Settings.FieldBloom) return;
             base.OnRenderBloom();
+        }
+
+        public override void Render()
+        {
+            base.Render();
+            foreach (var field in Fields)
+                if (field.Visible)
+                    field.renderParts(true, true);
         }
     }
 

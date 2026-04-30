@@ -95,6 +95,14 @@ local function createAllPlacements()
     createPlacements("ceiling", 1, orientations[3])
     createPlacements("wallright", 2, orientations[4])
 
+    table.insert(allPlacements, {
+        name = "ceiling_none",
+        data = helpers.union(placementData, {
+            orientation = orientations[3],
+            gravityType = consts.gravityTypes.none.index,
+        })
+    })
+
     return allPlacements
 end
 
