@@ -36,6 +36,7 @@ public class GravityHelperModuleSettings : EverestModuleSettings
     public bool FieldParticles { get; set; } = true;
     public int FieldOpacity { get; set; } = -1;
     public bool FieldBloom { get; set; } = true;
+    public bool FieldArrowOutline { get; set; } = false;
     public bool RefillBloom { get; set; } = true;
     public bool HighVisibilityLines { get; set; } = false;
     public ColorSchemeSetting ColorSchemeType { get; set; } = ColorSchemeSetting.Default;
@@ -281,6 +282,16 @@ public class GravityHelperModuleSettings : EverestModuleSettings
             OnValueChange = value =>
             {
                 FieldBloom = value;
+                NotifyAccessibilityChange();
+            },
+        });
+
+        // Field Arrow Outline
+        menu.Add(new ColorChangeOnOff(Dialog.Clean("GRAVITYHELPER_MENU_ACCESS_FIELD_ARROW_OUTLINE"), FieldArrowOutline, false)
+        {
+            OnValueChange = value =>
+            {
+                FieldArrowOutline = value;
                 NotifyAccessibilityChange();
             },
         });
