@@ -175,6 +175,7 @@ entities.GravityHelper/GravitySpring.placements.name.ceiling_twoDash=Gravity Spr
 entities.GravityHelper/GravitySpring.placements.name.ceiling_noDash=Gravity Spring (Ceiling, No Dash)
 entities.GravityHelper/GravitySpring.placements.name.ceiling_noStamina=Gravity Spring (Ceiling, No Stamina)
 entities.GravityHelper/GravitySpring.placements.name.ceiling_withIndicator=Gravity Spring (Ceiling, with indicator)
+entities.GravityHelper/GravitySpring.placements.name.ceiling_none=Simple Ceiling Spring
 entities.GravityHelper/GravitySpring.placements.name.wallleft_normal=Gravity Spring (Wall Left)
 entities.GravityHelper/GravitySpring.placements.name.wallleft_twoDash=Gravity Spring (Wall Left, Two Dash)
 entities.GravityHelper/GravitySpring.placements.name.wallleft_noDash=Gravity Spring (Wall Left, No Dash)
