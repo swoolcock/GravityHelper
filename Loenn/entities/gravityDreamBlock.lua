@@ -4,7 +4,6 @@
 local consts = require("mods").requireFromPlugin("consts")
 local helpers = require("mods").requireFromPlugin("helpers")
 local utils = require("utils")
---local colors = require("consts.xna_colors")
 
 local drawableSprite = require("structs.drawable_sprite")
 local drawableFunction = require("structs.drawable_function")
@@ -21,6 +20,8 @@ local placementData = helpers.createPlacementData('1', {
     height = 8,
     fastMoving = false,
     oneUse = false,
+    destroyAttached = true,
+    destroyPlaySound = true,
     below = false,
     gravityType = consts.gravityTypes.normal.index,
     lineColor = "",
@@ -38,6 +39,15 @@ local gravityDreamBlock = {
     fieldInformation = {
         gravityType = consts.fieldInformation.gravityType(),
         fallType = consts.fieldInformation.fallType,
+    },
+    fieldOrder = {
+        "x", "y",
+        "width", "height",
+        "fastMoving", "oneUse", "destroyAttached", "destroyPlaySound",
+        "gravityType", "lineColor",
+        "backColor", "particleColor",
+        "fallType", "invertFallingDirFlag",
+        "climbFall", "endFallOnSolidTiles", "below",
     },
     placements = {
         {
@@ -69,21 +79,6 @@ local function lightened(color, lightness, alpha)
         alpha or color[4]
     }
 end
-
---[[
-function gravityDreamBlock.borderColor(room, entity)
-    local gravityColor = consts.gravityTypeForIndex(entity.gravityType).color
-    local parsed, r, g, b = utils.parseHexColor(entity.lineColor or "")
-    return parsed and {r, g, b, 1} or lightened(gravityColor, 0.4)
-end
-
-function gravityDreamBlock.fillColor(room, entity)
-    local gravityColor = consts.gravityTypeForIndex(entity.gravityType).color
-    local parsed, r, g, b = utils.parseHexColor(entity.backColor or "")
-    local color = parsed and {r, g, b, 1} or lightened(gravityColor, 0.4)
-    return {color[1] * 0.12, color[2] * 0.12, color[3] * 0.12, 1}
-end
-]]
 
 function gravityDreamBlock.depth(room, entity)
     return entity.below and 4999 or -11001

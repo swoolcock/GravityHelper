@@ -31,6 +31,9 @@ public class GravityDreamBlock : DreamBlock
     public Color? ParticleColor { get; }
     internal bool WasEntered;
 
+    private readonly bool _destroyAttached;
+    private readonly bool _destroyPlaySound;
+
     public GravityDreamBlock(EntityData data, Vector2 offset)
         : base(data, offset)
     {
@@ -50,6 +53,9 @@ public class GravityDreamBlock : DreamBlock
                 InvertFallingDirFlag = data.Attr("invertFallingDirFlag", ""),
             });
         }
+
+        _destroyAttached = data.Bool("destroyAttached", false); // default to false for backward compatibility
+        _destroyPlaySound = data.Bool("destroyPlaySound", true);
 
         GravityType = (GravityType)data.Int("gravityType");
         var lineColorString = data.Attr("lineColor");
@@ -101,6 +107,20 @@ public class GravityDreamBlock : DreamBlock
 
             particles[i] = particle;
         }
+    }
+
+    public void HandleOneUseDestroy()
+    {
+        DisableStaticMovers();
+
+        if (_destroyAttached)
+            DestroyStaticMovers();
+
+        if (_destroyPlaySound)
+            Audio.Play(SFX.char_bad_disappear);
+
+        Collidable = Visible = Active = false;
+        RemoveSelf();
     }
 
     public override void Update()

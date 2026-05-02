@@ -47,6 +47,11 @@ public class InversionBlock : Solid
     private string _sound;
     private readonly string _textureDirectory;
     private readonly string _gravityRefillTextureDirectory;
+    private readonly bool _destroyOnUse;
+    private readonly bool _destroyAttached;
+    private readonly bool _destroyPlaySound;
+    private readonly bool _destroyDebris;
+    private readonly char _tileType;
 
     private readonly Sprite _sprite;
     private readonly MTexture _blockTexture;
@@ -137,10 +142,11 @@ public class InversionBlock : Solid
         _normalEdgeTexture = _edgeTexture.GetSubtexture(0, 0, 3 * tile_size, tile_size);
         _invertedEdgeTexture = _edgeTexture.GetSubtexture(0, tile_size, 3 * tile_size, tile_size);
         _toggleEdgeTexture = _edgeTexture.GetSubtexture(0, 2 * tile_size, 3 * tile_size, tile_size);
+        _tileType = data.Char("tiletype", '3');
 
         if (data.Bool("autotile", true))
         {
-            Add(_tiles = GFX.FGAutotiler.GenerateBox(data.Char("tiletype", '3'), data.Width / 8, data.Height / 8).TileGrid);
+            Add(_tiles = GFX.FGAutotiler.GenerateBox(_tileType, data.Width / 8, data.Height / 8).TileGrid);
         }
 
         _defaultToController = data.Bool("defaultToController", true);
@@ -155,6 +161,10 @@ public class InversionBlock : Solid
         RefillOneUse = data.Bool("refillOneUse", false);
         BlockOneUse = data.Bool("blockOneUse", false);
         ShowEdgeIndicators = data.Bool("showEdgeIndicators", true);
+        _destroyOnUse = data.Bool("destroyOnUse", false);
+        _destroyAttached = data.Bool("destroyAttached", true);
+        _destroyPlaySound = data.Bool("destroyPlaySound", true);
+        _destroyDebris = data.Bool("destroyDebris", true);
 
         if (GiveGravityRefill)
         {
@@ -701,7 +711,44 @@ public class InversionBlock : Solid
             }
         }
 
+        // destroy on use
+        if (_destroyOnUse)
+            OneUseDestroy();
+
         // we handled it
         return true;
+    }
+
+    public void OneUseDestroy()
+    {
+        if (_destroyAttached)
+        {
+            DisableStaticMovers();
+            DestroyStaticMovers();
+        }
+
+        if (_destroyPlaySound)
+        {
+            if (_tileType == '1')
+                Audio.Play("event:/game/general/wall_break_dirt", Position);
+            else if (_tileType == '3')
+                Audio.Play("event:/game/general/wall_break_ice", Position);
+            else if (_tileType == '9')
+                Audio.Play("event:/game/general/wall_break_wood", Position);
+            else
+                Audio.Play("event:/game/general/wall_break_stone", Position);
+        }
+
+        if (_destroyDebris)
+        {
+            for (int index1 = 0; index1 < Width / 8.0; ++index1)
+            {
+                for (int index2 = 0; index2 < Height / 8.0; ++index2)
+                    Scene.Add(Engine.Pooler.Create<Debris>().Init(Position + new Vector2(4 + index1 * 8, 4 + index2 * 8), _tileType, true).BlastFrom(Center));
+            }
+        }
+
+        Collidable = Visible = Active = false;
+        RemoveSelf();
     }
 }
