@@ -16,6 +16,7 @@ internal static class DreamBlockHooks
     {
         Logger.Log(nameof(GravityHelperModule), $"Loading {nameof(DreamBlock)} hooks...");
         On.Celeste.DreamBlock.Setup += DreamBlock_Setup;
+        On.Celeste.DreamBlock.OneUseDestroy += DreamBlock_OneUseDestroy;
         IL.Celeste.DreamBlock.WobbleLine += DreamBlock_WobbleLine;
         IL.Celeste.DreamBlock.Render += DreamBlock_Render;
     }
@@ -24,6 +25,7 @@ internal static class DreamBlockHooks
     {
         Logger.Log(nameof(GravityHelperModule), $"Unloading {nameof(DreamBlock)} hooks...");
         On.Celeste.DreamBlock.Setup -= DreamBlock_Setup;
+        On.Celeste.DreamBlock.OneUseDestroy -= DreamBlock_OneUseDestroy;
         IL.Celeste.DreamBlock.WobbleLine -= DreamBlock_WobbleLine;
         IL.Celeste.DreamBlock.Render -= DreamBlock_Render;
     }
@@ -33,6 +35,14 @@ internal static class DreamBlockHooks
         orig(self);
         if (self is GravityDreamBlock gravityDreamBlock)
             gravityDreamBlock.InitialiseParticleColors();
+    }
+
+    private static void DreamBlock_OneUseDestroy(On.Celeste.DreamBlock.orig_OneUseDestroy orig, DreamBlock self)
+    {
+        if (self is GravityDreamBlock gravityDreamBlock)
+            gravityDreamBlock.HandleOneUseDestroy();
+        else
+            orig(self);
     }
 
     private static void DreamBlock_WobbleLine(ILContext il) => HookUtils.SafeHook(() =>

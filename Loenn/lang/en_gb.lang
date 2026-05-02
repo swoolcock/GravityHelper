@@ -51,6 +51,9 @@ entities.GravityHelper/GravityDreamBlock.attributes.description.fallType=The typ
 entities.GravityHelper/GravityDreamBlock.attributes.description.climbFall=Whether the dream block should fall if climbed. Requires "fallType" to be something other than None. Defaults to true.
 entities.GravityHelper/GravityDreamBlock.attributes.description.endFallOnSolidTiles=Whether the dream block should stop falling once it hits foreground tiles.\nDefaults to true, but you may want to set this to false if "fallType" is dependent on the player's gravity.
 entities.GravityHelper/GravityDreamBlock.attributes.description.invertFallingDirFlag=Flag which, when enabled, inverts the current falling direction. The original falling direction is restored when the flag is disabled.\nHas no effect if left empty or if "fallType" is set to None.
+entities.GravityHelper/GravityDreamBlock.attributes.description.oneUse=Whether the dream block should destroy itself once used. Defaults to false.
+entities.GravityHelper/GravityDreamBlock.attributes.description.destroyAttached=Whether the dream block should destroy any attached static movers when it destroys itself. Has no effect if oneUse is set to false. Defaults to true.\nIf this is set to false, the default functionality for dream blocks is to hide and disable attached entities, but not destroy them.
+entities.GravityHelper/GravityDreamBlock.attributes.description.destroyPlaySound=Whether the dream block should play a sound when when it destroys itself. Has no effect if oneUse is set to false. Defaults to true.
 
 # Gravity Field
 entities.GravityHelper/GravityField.placements.name.normal=Gravity Field (Normal)
@@ -175,6 +178,7 @@ entities.GravityHelper/GravitySpring.placements.name.ceiling_twoDash=Gravity Spr
 entities.GravityHelper/GravitySpring.placements.name.ceiling_noDash=Gravity Spring (Ceiling, No Dash)
 entities.GravityHelper/GravitySpring.placements.name.ceiling_noStamina=Gravity Spring (Ceiling, No Stamina)
 entities.GravityHelper/GravitySpring.placements.name.ceiling_withIndicator=Gravity Spring (Ceiling, with indicator)
+entities.GravityHelper/GravitySpring.placements.name.ceiling_none=Simple Ceiling Spring
 entities.GravityHelper/GravitySpring.placements.name.wallleft_normal=Gravity Spring (Wall Left)
 entities.GravityHelper/GravitySpring.placements.name.wallleft_twoDash=Gravity Spring (Wall Left, Two Dash)
 entities.GravityHelper/GravitySpring.placements.name.wallleft_noDash=Gravity Spring (Wall Left, No Dash)
@@ -385,6 +389,10 @@ entities.GravityHelper/InversionBlock.attributes.description.showEdgeIndicators=
 entities.GravityHelper/InversionBlock.attributes.description.legacyFallBehavior=Prior to Gravity Helper 1.2.17, jumping on an inversion block about to fall\nwould cause it to shake for the maximum amount of time rather than honouring the\n"player has jumped therefore immediately fall" behaviour with regular falling blocks.\n\nEnabling this reverts to the old behaviour, and is not recommended.
 entities.GravityHelper/InversionBlock.attributes.description.textureDirectory=The full texture path to use for reskinning. The path should be in the format: "objects/.../". Leaving this empty will use the default visuals.
 entities.GravityHelper/InversionBlock.attributes.description.gravityRefillTextureDirectory=The full texture path to use for reskinning the gravity refill overlay. The path should be in the format: "objects/.../". Leaving this empty will use the default visuals.
+entities.GravityHelper/InversionBlock.attributes.description.destroyOnUse=Whether the inversion block should destroy itself once used. Defaults to false.
+entities.GravityHelper/InversionBlock.attributes.description.destroyAttached=Whether the inversion block should destroy any attached static movers when it destroys itself. Has no effect if destroyOnUse is set to false. Defaults to true.
+entities.GravityHelper/InversionBlock.attributes.description.destroyPlaySound=Whether the inversion block should play a sound when when it destroys itself. Has no effect if destroyOnUse is set to false. Defaults to true.
+entities.GravityHelper/InversionBlock.attributes.description.destroyDebris=Whether the inversion block should drop debris when when it destroys itself. Has no effect if destroyOnUse is set to false. Defaults to true.
 
 # Force Load Gravity Controller
 entities.GravityHelper/ForceLoadGravityController.placements.name.normal=Force Load Gravity Controller
