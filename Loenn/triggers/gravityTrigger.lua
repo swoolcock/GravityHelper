@@ -16,6 +16,7 @@ local placementData = helpers.createPlacementData('1', {
     affectsHoldableActors = false,
     affectsOtherActors = false,
     enableFlag = "",
+    invertEnableFlag = false,
 })
 
 local gravityTrigger = {

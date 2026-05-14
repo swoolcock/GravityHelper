@@ -25,6 +25,10 @@ local placementData = helpers.createPlacementData('1', {
     flashTime = 0.35,
     lineColor = "FFFFFF",
     lineThickness = 2.0,
+    enableFlag = "",
+    invertEnableFlag = false,
+    visibleFlag = "",
+    invertVisibleFlag = false,
 })
 
 local gravityLine = {

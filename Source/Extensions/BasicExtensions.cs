@@ -106,4 +106,10 @@ internal static class BasicExtensions
             sprite.Play(spriteDataSource.XML.Attr("start"));
         return sprite;
     }
+
+    public static bool GetFlag(this Scene scene, string flag, bool defValue = false)
+    {
+        if (string.IsNullOrWhiteSpace(flag) || scene is not Level level) return defValue;
+        return level.Session.GetFlag(flag);
+    }
 }

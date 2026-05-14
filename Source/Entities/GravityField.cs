@@ -230,6 +230,8 @@ public class GravityField : GravityTrigger, IConnectableField
         }
     }
 
+    protected override bool CheckVisibleFlag() => Scene.GetFlag(VisibleFlag, true) ^ InvertVisibleFlag;
+
     protected override void HandleOnEnter(Player player)
     {
         // defer to the owner
