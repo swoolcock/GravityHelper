@@ -471,7 +471,7 @@ public class GravityField : GravityTrigger, IConnectableField
                 if (pos.X > right) break;
 
                 if (pos.Y >= top && pos.Y <= bottom)
-                    Draw.Pixel.Draw(pos, Vector2.Zero, color);
+                    Draw.Pixel.Draw(pos.Round(), Vector2.Zero, color);
             }
         }
 

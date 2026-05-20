@@ -121,7 +121,7 @@ public class GravityShieldIndicator : Entity
 
             for (var i = 0; i < _particles.Count; i++)
             {
-                var part = _particles[i];
+                var part = _particles[i].Round();
                 var color = _particleColors[i % _particleColors.Length];
                 Draw.Pixel.Draw(origin + part, Vector2.Zero, color * 0.7f);
             }

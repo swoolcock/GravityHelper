@@ -399,8 +399,8 @@ public class InversionBlock : Solid
             var beamStart = Calc.LerpSnap(_enterPosition, _exitPosition, Ease.QuintOut(1 - progress)).Round();
             if ((_exitPosition - beamStart).LengthSquared() > 2)
             {
-                Draw.Line(beamStart, _exitPosition, _flashColor * 0.3f, thick_line_thickness);
-                Draw.Line(beamStart, _exitPosition, _flashColor * 0.3f, thin_line_thickness);
+                Draw.Line(beamStart.Round(), _exitPosition.Round(), _flashColor * 0.3f, thick_line_thickness);
+                Draw.Line(beamStart.Round(), _exitPosition.Round(), _flashColor * 0.3f, thin_line_thickness);
             }
         }
 
