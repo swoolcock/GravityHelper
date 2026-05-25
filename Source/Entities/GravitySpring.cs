@@ -345,7 +345,7 @@ public class GravitySpring : Spring
         }
 
         // boing!
-        bounceAnimate();
+        CustomBounceAnimate();
 
         // cache stamina and inventory
         var oldStamina = player.Stamina;
@@ -400,7 +400,7 @@ public class GravitySpring : Spring
             !relativeCeiling && !h.HitSpring(this))
             return;
 
-        bounceAnimate();
+        CustomBounceAnimate();
 
         // try to flip gravity i guess?
         if (h.Entity.Get<GravityComponent>() is { } gravityComponent)
@@ -452,7 +452,7 @@ public class GravitySpring : Spring
             Orientation != Orientations.Ceiling && !p.HitSpring(this))
             return;
 
-        bounceAnimate();
+        CustomBounceAnimate();
     }
 
     private bool pufferHitCeilingSpring(Puffer p)
@@ -467,7 +467,7 @@ public class GravitySpring : Spring
         return true;
     }
 
-    private void bounceAnimate()
+    public void CustomBounceAnimate()
     {
         Audio.Play(SFX.game_gen_spring, Position);
         staticMover.TriggerPlatform();
