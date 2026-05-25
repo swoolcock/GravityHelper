@@ -16,6 +16,7 @@ local placementData = helpers.createPlacementData('3', {
     largeIndicator = false,
     indicatorOffset = 8,
     indicatorTexture = "",
+    drawOutline = true,
     spriteName = "",
     overlaySpriteName = "",
     textureDirectory = "",

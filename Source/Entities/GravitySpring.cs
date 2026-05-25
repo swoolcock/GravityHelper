@@ -9,6 +9,7 @@ using Celeste.Mod.GravityHelper.Extensions;
 using JetBrains.Annotations;
 using Microsoft.Xna.Framework;
 using Monocle;
+using MonoMod;
 
 namespace Celeste.Mod.GravityHelper.Entities;
 
@@ -64,6 +65,7 @@ public class GravitySpring : Spring
     private readonly int _indicatorOffset;
     private readonly string _indicatorTexture;
     private readonly bool _defaultToController;
+    private readonly bool _drawOutline;
     private IndicatorRenderer _indicatorRenderer;
     private Vector2 _indicatorShakeOffset;
     private string _spriteName;
@@ -124,6 +126,7 @@ public class GravitySpring : Spring
         _textureDirectory = data.Attr("textureDirectory").Trim();
         _overlaySpriteName = data.Attr("overlaySpriteName").Trim();
         _refillSound = data.Attr("refillSound");
+        _drawOutline = data.Bool("drawOutline", true);
 
         if (string.IsNullOrWhiteSpace(_spriteName))
             _spriteName = "gravitySpring";
@@ -305,6 +308,15 @@ public class GravitySpring : Spring
             _cooldownRemaining = Math.Max(0, _cooldownRemaining - Engine.DeltaTime);
             // TODO: update sprite to show cooldown
         }
+    }
+
+    [MonoModLinkTo("Monocle.Entity", "Render")]
+    private extern void Entity_Render();
+
+    public override void Render()
+    {
+        if (_drawOutline) sprite.DrawOutline();
+        Entity_Render();
     }
 
     private new void OnCollide(Player player)

@@ -201,6 +201,7 @@ entities.GravityHelper/GravitySpring.attributes.description.refillDashCount=The 
 entities.GravityHelper/GravitySpring.attributes.description.spriteName=The name of the sprite to use. Defaults to empty string, which uses the predefined sprites.
 entities.GravityHelper/GravitySpring.attributes.description.overlaySpriteName=The name of the overlay sprite to use. Defaults to empty string, which uses the predefined sprites.
 entities.GravityHelper/GravitySpring.attributes.description.indicatorTexture=The full name of the texture to use for the wall indicator. Defaults to empty string, which uses the standard arrow textures.
+entities.GravityHelper/GravitySpring.attributes.description.drawOutline=Whether to draw an outline around the base sprite. Defaults to true.
 entities.GravityHelper/GravitySpring.attributes.description.showOverlay=Whether to show the refill/stamina type overlay if applicable. Defaults to true.
 entities.GravityHelper/GravitySpring.attributes.description.refillSound=The sound to play when the spring gives Madeline more dashes than MaxDashes.
 entities.GravityHelper/GravitySpring.attributes.description.textureDirectory=The full texture path to use for reskinning. The path should be in the format: "objects/.../". Leaving this empty will use the default visuals.
