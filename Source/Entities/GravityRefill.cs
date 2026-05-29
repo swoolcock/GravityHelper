@@ -263,19 +263,27 @@ public class GravityRefill : Entity
                     // draw horizontal segments 1 pixel out
                     for (int index = 0; index < (double)Width; index += 8)
                     {
-                        Draw.Line(TopLeft - Vector2.UnitY + Vector2.UnitX * (index + 2),
-                            TopLeft - Vector2.UnitY + Vector2.UnitX * (index + 6), borderColor);
-                        Draw.Line(BottomLeft + Vector2.UnitX * (index + 2), BottomLeft + Vector2.UnitX * (index + 6),
+                        Draw.Line(
+                            (TopLeft - Vector2.UnitY + Vector2.UnitX * (index + 2)).Round(),
+                            (TopLeft - Vector2.UnitY + Vector2.UnitX * (index + 6)).Round(),
+                            borderColor);
+                        Draw.Line(
+                            (BottomLeft + Vector2.UnitX * (index + 2)).Round(),
+                            (BottomLeft + Vector2.UnitX * (index + 6)).Round(),
                             borderColor);
                     }
 
                     // draw vertical segments 1 pixel out
                     for (int index = 0; index < (double)Height; index += 8)
                     {
-                        Draw.Line(TopLeft + Vector2.UnitY * (index + 2), TopLeft + Vector2.UnitY * (index + 6),
+                        Draw.Line(
+                            (TopLeft + Vector2.UnitY * (index + 2)).Round(),
+                            (TopLeft + Vector2.UnitY * (index + 6)).Round(),
                             borderColor);
-                        Draw.Line(TopRight + Vector2.UnitX + Vector2.UnitY * (index + 2),
-                            TopRight + Vector2.UnitX + Vector2.UnitY * (index + 6), borderColor);
+                        Draw.Line(
+                            (TopRight + Vector2.UnitX + Vector2.UnitY * (index + 2)).Round(),
+                            (TopRight + Vector2.UnitX + Vector2.UnitY * (index + 6)).Round(),
+                            borderColor);
                     }
 
                     // draw filled rectangle 1 pixel in
@@ -287,18 +295,26 @@ public class GravityRefill : Entity
                     // draw horizontal segments
                     for (int index = 0; index < (double)Width; index += 8)
                     {
-                        Draw.Line(TopLeft + Vector2.UnitX * (index + 2), TopLeft + Vector2.UnitX * (index + 6),
+                        Draw.Line(
+                            (TopLeft + Vector2.UnitX * (index + 2)).Round(),
+                            (TopLeft + Vector2.UnitX * (index + 6)).Round(),
                             borderColor);
-                        Draw.Line(BottomLeft - Vector2.UnitY + Vector2.UnitX * (index + 2),
-                            BottomLeft - Vector2.UnitY + Vector2.UnitX * (index + 6), borderColor);
+                        Draw.Line(
+                            (BottomLeft - Vector2.UnitY + Vector2.UnitX * (index + 2)).Round(),
+                            (BottomLeft - Vector2.UnitY + Vector2.UnitX * (index + 6)).Round(),
+                            borderColor);
                     }
 
                     // draw vertical segments
                     for (int index = 0; index < (double)Height; index += 8)
                     {
-                        Draw.Line(TopLeft + Vector2.UnitX + Vector2.UnitY * (index + 2),
-                            TopLeft + Vector2.UnitX + Vector2.UnitY * (index + 6), borderColor);
-                        Draw.Line(TopRight + Vector2.UnitY * (index + 2), TopRight + Vector2.UnitY * (index + 6),
+                        Draw.Line(
+                            (TopLeft + Vector2.UnitX + Vector2.UnitY * (index + 2)).Round(),
+                            (TopLeft + Vector2.UnitX + Vector2.UnitY * (index + 6)).Round(),
+                            borderColor);
+                        Draw.Line(
+                            (TopRight + Vector2.UnitY * (index + 2)).Round(),
+                            (TopRight + Vector2.UnitY * (index + 6)).Round(),
                             borderColor);
                     }
 

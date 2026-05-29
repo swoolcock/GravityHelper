@@ -13,12 +13,14 @@ internal static class SpringHooks
     {
         Logger.Log(nameof(GravityHelperModule), $"Loading {nameof(Spring)} hooks...");
         On.Celeste.Spring.OnCollide += Spring_OnCollide;
+        On.Celeste.Spring.BounceAnimate += Spring_BounceAnimate;
     }
 
     public static void Unload()
     {
         Logger.Log(nameof(GravityHelperModule), $"Unloading {nameof(Spring)} hooks...");
         On.Celeste.Spring.OnCollide -= Spring_OnCollide;
+        On.Celeste.Spring.BounceAnimate -= Spring_BounceAnimate;
     }
 
     private static void Spring_OnCollide(On.Celeste.Spring.orig_OnCollide orig, Spring self, Player player)
@@ -39,5 +41,13 @@ internal static class SpringHooks
 
         self.BounceAnimate();
         GravitySpring.InvertedSuperBounce(player, self.Top);
+    }
+
+    private static void Spring_BounceAnimate(On.Celeste.Spring.orig_BounceAnimate orig, Spring self)
+    {
+        if (self is GravitySpring gravitySpring)
+            gravitySpring.CustomBounceAnimate();
+        else
+            orig(self);
     }
 }

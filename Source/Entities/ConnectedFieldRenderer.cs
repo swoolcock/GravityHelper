@@ -232,7 +232,7 @@ public class ConnectedFieldRenderer<TEntity> : Entity
                     for (int index = 0; index <= (double) edge.Length; ++index)
                     {
                         Vector2 start = vector2_1 + edge.Normal * index;
-                        Draw.Line(start, start + edge.Perpendicular * edge.Wave[index], Color.White);
+                        Draw.Line(start, Calc.Round(start + edge.Perpendicular * edge.Wave[index]), Color.White);
                     }
                 }
             }

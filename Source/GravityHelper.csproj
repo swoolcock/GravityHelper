@@ -28,6 +28,7 @@
         <Reference Include="$(CelestePrefix)\Celeste.dll" Publicize="True" Private="false" />
         <Reference Include="$(CelestePrefix)\MMHOOK_Celeste.dll" Private="false" />
         <Reference Include="$(CelestePrefix)\FNA.dll" Private="false" />
+        <Reference Include="$(CelestePrefix)\MonoMod.Patcher.dll" Private="false" />
         <Reference Include="CelesteNet">
             <HintPath>lib-stripped\CelesteNet.Client.CelesteNet.Shared.dll</HintPath>
             <Private>false</Private>

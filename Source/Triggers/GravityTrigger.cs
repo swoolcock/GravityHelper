@@ -20,6 +20,9 @@ public class GravityTrigger : Trigger
     public bool AffectsHoldableActors { get; }
     public bool AffectsOtherActors { get; }
     public string EnableFlag { get; }
+    public bool InvertEnableFlag { get; }
+    public string VisibleFlag { get; }
+    public bool InvertVisibleFlag { get; }
 
     public GravityType GravityType
     {
@@ -73,7 +76,10 @@ public class GravityTrigger : Trigger
         GravityType = (GravityType)data.Int("gravityType");
         ExitGravityType = (GravityType)data.Int("exitGravityType", (int)GravityType.None);
         MomentumMultiplier = data.Float("momentumMultiplier", 1f);
-        EnableFlag = data.Attr("enableFlag");
+        EnableFlag = data.Attr("enableFlag")?.Trim();
+        InvertEnableFlag = data.Bool("invertEnableFlag");
+        VisibleFlag = data.Attr("visibleFlag")?.Trim();
+        InvertVisibleFlag = data.Bool("invertVisibleFlag");
 
         _defaultToController = data.Bool("defaultToController", true);
         _forceSound = data.Attr("sound", string.Empty);
@@ -96,8 +102,7 @@ public class GravityTrigger : Trigger
     {
         base.Added(scene);
 
-        if (!string.IsNullOrWhiteSpace(EnableFlag))
-            Collidable = CheckFlag();
+        UpdateFlags(true);
 
         if (_defaultToController && Scene.GetActiveController<SoundGravityController>() is { } soundController)
         {
@@ -119,8 +124,7 @@ public class GravityTrigger : Trigger
 
     public override void Update()
     {
-        if (!string.IsNullOrWhiteSpace(EnableFlag))
-            Collidable = CheckFlag();
+        UpdateFlags();
 
         base.Update();
 
@@ -128,9 +132,36 @@ public class GravityTrigger : Trigger
             _audioMuffleSecondsRemaining -= Engine.DeltaTime;
     }
 
-    protected bool CheckFlag() =>
-        !string.IsNullOrWhiteSpace(EnableFlag) &&
-        SceneAs<Level>() is { } level && level.Session.GetFlag(EnableFlag);
+    protected bool CheckEnableFlag() => Scene.GetFlag(EnableFlag, true) ^ InvertEnableFlag;
+    protected virtual bool CheckVisibleFlag() => false;
+
+    protected void UpdateFlags(bool ignoreEvents = false)
+    {
+        var coll = CheckEnableFlag();
+        var vis = CheckVisibleFlag();
+
+        if (ignoreEvents)
+        {
+            Collidable = coll;
+            Visible = vis;
+            return;
+        }
+
+        if (Collidable != coll)
+        {
+            Collidable = coll;
+            EnabledChanged();
+        }
+
+        if (Visible != vis)
+        {
+            Visible = vis;
+            VisibilityChanged();
+        }
+    }
+
+    protected virtual void VisibilityChanged() { }
+    protected virtual void EnabledChanged() { }
 
     public override void OnEnter(Player player)
     {

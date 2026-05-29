@@ -33,6 +33,9 @@ local placementData = helpers.createPlacementData('1', {
     cassetteIndex = -1,
     cassetteSequence = "",
     enableFlag = "",
+    invertEnableFlag = false,
+    visibleFlag = "",
+    invertVisibleFlag = false,
 })
 
 local gravityField = {

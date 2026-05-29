@@ -39,6 +39,10 @@ public class GravityLine : Entity
     public string Sound { get; private set; }
     public Color LineColor { get; private set; }
     public float LineThickness { get; private set; }
+    public string EnableFlag { get; private set; }
+    public bool InvertEnableFlag { get; private set; }
+    public string VisibleFlag { get; private set; }
+    public bool InvertVisibleFlag { get; private set; }
 
     // ReSharper disable NotAccessedField.Local
     private readonly VersionInfo _modVersion;
@@ -58,6 +62,8 @@ public class GravityLine : Entity
     private float _flashTimeRemaining;
     private float _audioMuffleSecondsRemaining;
 
+    private bool _shouldFlip = true;
+
     public GravityLine(EntityData data, Vector2 offset)
         : base(data.Position + offset)
     {
@@ -72,6 +78,10 @@ public class GravityLine : Entity
         DisableUntilExit = data.Bool("disableUntilExit");
         OnlyWhileFalling = data.Bool("onlyWhileFalling");
         Depth = Depths.Above + 1; // make sure we're below spinners
+        EnableFlag = data.Attr("enableFlag")?.Trim();
+        InvertEnableFlag = data.Bool("invertEnableFlag");
+        VisibleFlag = data.Attr("visibleFlag")?.Trim();
+        InvertVisibleFlag = data.Bool("invertVisibleFlag");
 
         _defaultToController = data.Bool("defaultToController");
         _minAlpha = data.Float("minAlpha", DEFAULT_MIN_ALPHA);
@@ -89,9 +99,42 @@ public class GravityLine : Entity
         if (affectsOtherActors) EntityTypes |= TriggeredEntityTypes.NonHoldableActors;
     }
 
+    protected bool CheckEnableFlag() => Scene.GetFlag(EnableFlag, true) ^ InvertEnableFlag;
+    protected bool CheckVisibleFlag() => Scene.GetFlag(VisibleFlag, true) ^ InvertVisibleFlag;
+
+    protected void UpdateFlags(bool ignoreEvents = false)
+    {
+        var shouldFlip = CheckEnableFlag();
+        var vis = CheckVisibleFlag();
+
+        if (ignoreEvents)
+        {
+            _shouldFlip = shouldFlip;
+            Visible = vis;
+            return;
+        }
+
+        if (_shouldFlip != shouldFlip)
+        {
+            _shouldFlip = shouldFlip;
+            EnabledChanged();
+        }
+
+        if (Visible != vis)
+        {
+            Visible = vis;
+            VisibilityChanged();
+        }
+    }
+
+    protected void VisibilityChanged() { }
+    protected void EnabledChanged() { }
+
     public override void Update()
     {
         base.Update();
+
+        UpdateFlags();
 
         if (_flashTimeRemaining > 0)
             _flashTimeRemaining -= Engine.DeltaTime;
@@ -128,7 +171,7 @@ public class GravityLine : Entity
                 if (_trackedComponents.TryGetValue(gravityComponent.GlobalId, out var tracked))
                 {
                     // if we crossed the line and it's not on cooldown and we're collidable
-                    if (projectedScalar >= 0 && projectedScalar <= 1 && tracked.CooldownRemaining <= 0 && tracked.Collidable && angleSign != tracked.LastAngleSign)
+                    if (_shouldFlip && projectedScalar >= 0 && projectedScalar <= 1 && tracked.CooldownRemaining <= 0 && tracked.Collidable && angleSign != tracked.LastAngleSign)
                     {
                         // turn the line off until we leave it, if we must
                         if (DisableUntilExit)
@@ -206,6 +249,8 @@ public class GravityLine : Entity
             RemoveSelf();
             return;
         }
+
+        UpdateFlags(true);
 
         if (_defaultToController && Scene.GetActiveController<VisualGravityController>() is { } visualController)
         {

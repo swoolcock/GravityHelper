@@ -230,6 +230,8 @@ public class GravityField : GravityTrigger, IConnectableField
         }
     }
 
+    protected override bool CheckVisibleFlag() => Scene.GetFlag(VisibleFlag, true) ^ InvertVisibleFlag;
+
     protected override void HandleOnEnter(Player player)
     {
         // defer to the owner
@@ -469,7 +471,7 @@ public class GravityField : GravityTrigger, IConnectableField
                 if (pos.X > right) break;
 
                 if (pos.Y >= top && pos.Y <= bottom)
-                    Draw.Pixel.Draw(pos, Vector2.Zero, color);
+                    Draw.Pixel.Draw(pos.Round(), Vector2.Zero, color);
             }
         }
 
