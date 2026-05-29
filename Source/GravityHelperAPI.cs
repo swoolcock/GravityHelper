@@ -3,6 +3,7 @@
 
 using System;
 using Celeste.Mod.GravityHelper.Components;
+using Celeste.Mod.GravityHelper.Entities;
 using Celeste.Mod.GravityHelper.Extensions;
 using Celeste.Mod.GravityHelper.ThirdParty;
 using Microsoft.Xna.Framework;
@@ -142,6 +143,9 @@ internal static class GravityHelperAPI
                 gravityHoldable.ResetType = (GravityType)gravityType;
             }
         }
+
+        public static void InvertedSuperBounce(Player player, float fromY) =>
+            GravitySpring.InvertedSuperBounce(player, fromY);
 
         public static Component CreateAccessibilityListener(Action onAccessibilityChange) =>
             new AccessibilityListener(onAccessibilityChange);
