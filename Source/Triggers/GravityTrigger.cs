@@ -137,6 +137,10 @@ public class GravityTrigger : Trigger
 
     protected void UpdateFlags(bool ignoreEvents = false)
     {
+        // if we're not using flags at all, just bail, since apparently trigger triggers break it
+        if (string.IsNullOrWhiteSpace(EnableFlag) && string.IsNullOrWhiteSpace(VisibleFlag))
+            return;
+
         var coll = CheckEnableFlag();
         var vis = CheckVisibleFlag();
 
