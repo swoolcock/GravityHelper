@@ -20,14 +20,8 @@ public class GravityComponent : Component
     public GravityType CurrentGravity
     {
         get => _currentGravity;
-        private set
-        {
-            _currentGravity = value;
-            if (_data != null) _data.Data[INVERTED_KEY] = value == GravityType.Inverted;
-        }
+        private set => _currentGravity = value;
     }
-
-    private DynamicData _data;
 
     private int _lockSemaphore;
     /// <summary>
@@ -82,22 +76,11 @@ public class GravityComponent : Component
     {
     }
 
-    public override void Added(Entity entity)
-    {
-        base.Added(entity);
-
-        _data = DynamicData.For(entity);
-        _data.Data[INVERTED_KEY] = _currentGravity == GravityType.Inverted;
-    }
-
     public override void Removed(Entity entity)
     {
         base.Removed(entity);
 
         updateGravity(new GravityChangeArgs(GravityType.Normal, CurrentGravity));
-
-        _data.Data[INVERTED_KEY] = false;
-        _data = null;
     }
 
     public override void EntityAdded(Scene scene)
