@@ -95,6 +95,33 @@ internal static class GravityHelperAPI
         public static bool IsFeatherControlSchemeRelative() => GravityHelperModule.Settings.FeatherControlScheme ==
                                                                GravityHelperModuleSettings.ControlSchemeSetting.Relative;
 
+        /// <summary>
+        /// Returns the current number of GravityRefill charges.
+        /// </summary>
+        public static int GetGravityCharges() => GravityHelperModule.PlayerComponent?.GravityCharges ?? 0;
+
+        /// <summary>
+        /// Sets the GravityRefill charge count to the provided amount,
+        /// and prevents consuming charges for the rest of the frame.
+        /// This is so that dashing over the top of an entity that provides charges will refund the charge.
+        /// </summary>
+        public static void RefillGravityCharges(int charges) => GravityHelperModule.PlayerComponent?.RefillGravityCharges(charges);
+
+        /// <summary>
+        /// Adds the specified number of charges (or removes if negative value passed).
+        /// Clamped to [0, int.MaxValue] and ignores the "refilled this frame" check.
+        /// </summary>
+        public static void AdjustGravityCharges(int chargesToGive) =>
+            GravityHelperModule.PlayerComponent?.AdjustGravityCharges(chargesToGive);
+
+        /// <summary>
+        /// Decreases the GravityRefill charge count by the specified amount, to a minimum of 0.
+        /// Does nothing if <see cref="RefillGravityCharges"/> was called previously this frame
+        /// (either by the exported API, or internally in Gravity Helper).
+        /// </summary>
+        public static void ConsumeGravityCharges(int chargesToConsume) =>
+            GravityHelperModule.PlayerComponent?.ConsumeGravityCharges(chargesToConsume);
+
         public static TalkComponent.TalkComponentUI CreateUpsideDownTalkComponentUI(TalkComponent talkComponent) =>
             new UpsideDownTalkComponentUI(talkComponent);
 
