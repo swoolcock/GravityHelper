@@ -272,11 +272,20 @@ internal static class EntityExtensions
     public static Rectangle ToRectangle(this Collider collider) =>
         new Rectangle((int)collider.Left, (int)collider.Top, (int)collider.Width, (int)collider.Height);
 
-    public static void SetShouldInvert(this Entity entity, bool invert) =>
-        DynamicData.For(entity).Data[GravityComponent.INVERTED_KEY] = invert;
+    public static void SetShouldInvert(this Entity entity, bool invert)
+    {
+        if (entity.Get<GravityComponent>() is { } gravityComponent)
+            gravityComponent.SetGravity(GravityType.Inverted);
+        else
+            DynamicData.For(entity).Data[GravityComponent.INVERTED_KEY] = invert;
+    }
 
-    public static bool ShouldInvert(this Entity entity) =>
-        DynamicData.For(entity).Data.TryGetValue(GravityComponent.INVERTED_KEY, out var value) && (bool)value;
+    public static bool ShouldInvert(this Entity entity)
+    {
+        if (entity.Get<GravityComponent>() is { } gravityComponent)
+            return gravityComponent.CurrentGravity == GravityType.Inverted;
+        return DynamicData.For(entity).Data.TryGetValue(GravityComponent.INVERTED_KEY, out var value) && (bool)value;
+    }
 
     public static bool ShouldInvertChecked(this Entity entity)
     {

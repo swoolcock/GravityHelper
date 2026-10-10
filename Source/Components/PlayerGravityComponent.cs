@@ -190,8 +190,12 @@ internal class PlayerGravityComponent : GravityComponent
         _refilledThisFrame |= retainChargeThisFrame;
     }
 
-    public void ConsumeGravityCharge()
+    public void AdjustGravityCharges(int chargesToGive) =>
+        GravityCharges = Math.Clamp(GravityCharges + chargesToGive, 0, int.MaxValue);
+
+    public void ConsumeGravityCharges(int chargesToConsume = 1)
     {
-        if (!_refilledThisFrame) GravityCharges = Math.Max(GravityCharges - 1, 0);
+        if (chargesToConsume > 0 && !_refilledThisFrame)
+            AdjustGravityCharges(-chargesToConsume);
     }
 }

@@ -1326,7 +1326,7 @@ internal static class PlayerHooks
                     if (playerComponent.GravityCharges > 0 ||
                         (self.SceneAs<Level>()?.GetActiveController<BehaviorGravityController>()?.DashToToggle ?? false))
                     {
-                        playerComponent.ConsumeGravityCharge();
+                        playerComponent.ConsumeGravityCharges();
 
                         // abort the gravity change if currently in a field/trigger that's forcing us
                         // avoids the case of gravity being wrong for one frame
