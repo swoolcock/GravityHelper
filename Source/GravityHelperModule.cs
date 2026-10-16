@@ -85,6 +85,7 @@ public class GravityHelperModule : EverestModule
 
         typeof(GravityHelperAPI.Exports).ModInterop();
         typeof(SpeedrunToolImports).ModInterop();
+        typeof(MotionSmoothingImports).ModInterop();
 
         registerSpeedrunTool();
 
