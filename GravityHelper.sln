@@ -12,6 +12,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		log.txt = ..\..\log.txt
 		..\..\everest-env.txt = ..\..\everest-env.txt
 		..\..\everest-launch.txt = ..\..\everest-launch.txt
+		everest.yaml = everest.yaml
+		Loenn\consts.lua = Loenn\consts.lua
 	EndProjectSection
 EndProject
 Global
