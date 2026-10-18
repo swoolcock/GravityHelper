@@ -24,6 +24,7 @@ local placementData = helpers.createPlacementData('3', {
     refillDashCount = -1,
     refillStamina = true,
     showOverlay = true,
+    legacyHoldableBehavior = false,
     refillSound = "event:/new_content/game/10_farewell/pinkdiamond_touch",
 })
 

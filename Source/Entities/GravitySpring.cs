@@ -11,6 +11,7 @@ using JetBrains.Annotations;
 using Microsoft.Xna.Framework;
 using Monocle;
 using MonoMod;
+using MonoMod.Utils;
 
 namespace Celeste.Mod.GravityHelper.Entities;
 
@@ -25,7 +26,7 @@ public class GravitySpring : Spring
     public static bool RequiresHooks(EntityData data) => data.Enum<GravityType>("gravityType").RequiresHooks();
 
     public bool PlayerCanUse { get; }
-    public new Orientations Orientation { get; }
+    public new Orientations Orientation { get; private set; }
     public GravityType GravityType { get; }
     public int RefillDashCount { get; }
     public bool RefillStamina { get; }
@@ -76,6 +77,7 @@ public class GravitySpring : Spring
     private string _overlaySpriteName;
     private bool _showOverlay;
     private string _refillSound;
+    private bool _legacyHoldableBehavior;
 
     private Sprite _overlaySprite;
 
@@ -131,6 +133,7 @@ public class GravitySpring : Spring
         _overlaySpriteName = data.Attr("overlaySpriteName").Trim();
         _refillSound = data.Attr("refillSound");
         _drawOutline = data.Bool("drawOutline", true);
+        _legacyHoldableBehavior = data.Bool("legacyHoldableBehavior", true);
 
         if (string.IsNullOrWhiteSpace(_spriteName))
             _spriteName = "gravitySpring";
@@ -399,15 +402,56 @@ public class GravitySpring : Spring
         }
     }
 
+    private Vector2 getHoldableSpeed(Holdable h)
+    {
+        if (h.SpeedGetter != null) return h.GetSpeed();
+        var entity = h.Entity;
+        var data = DynamicData.For(entity);
+        if (data.TryGet("Speed", out var speed) && speed is Vector2 vec)
+            return vec;
+        return Vector2.Zero;
+    }
+
+    private void setHoldableSpeed(Holdable h, Vector2 speed)
+    {
+        if (h.SpeedSetter != null)
+        {
+            h.SetSpeed(speed);
+            return;
+        }
+
+        // assuming Speed variable exists here...
+        // if it doesn't then the modder should assign SpeedSetter like a good coder
+        var entity = h.Entity;
+        var data = DynamicData.For(entity);
+        data.Set("Speed", speed);
+    }
+
     private new void OnHoldable(Holdable h)
     {
-        var holdableGravity = h.Entity.GetGravity();
-        var relativeCeiling = holdableGravity == GravityType.Normal && Orientation == Orientations.Ceiling ||
-            holdableGravity == GravityType.Inverted && Orientation == Orientations.Floor;
-
-        if (relativeCeiling && !holdableHitCeilingSpring(h) ||
-            !relativeCeiling && !h.HitSpring(this))
-            return;
+        if (_legacyHoldableBehavior)
+        {
+            if (!legacyOnHoldable(h)) return;
+        }
+        else if (Orientation is Orientations.WallLeft or Orientations.WallRight)
+        {
+            if (!h.HitSpring(this)) return;
+        }
+        else if (Orientation is Orientations.Floor or Orientations.Ceiling)
+        {
+            // fake a floor spring at zero speed, then reset it
+            var wasCeiling = Orientation is Orientations.Ceiling;
+            Orientation = Orientations.Floor;
+            var oldSpeed = getHoldableSpeed(h);
+            setHoldableSpeed(h, new Vector2(oldSpeed.X, 0));
+            var wasHitSpring = h.HitSpring(this);
+            Orientation = wasCeiling ? Orientations.Ceiling : Orientations.Floor;
+            if (!wasHitSpring)
+            {
+                setHoldableSpeed(h, oldSpeed);
+                return;
+            }
+        }
 
         CustomBounceAnimate();
 
@@ -420,6 +464,35 @@ public class GravitySpring : Spring
             _holdableCooldownRemaining[gravityComponent.GlobalId] = _holdableGravityCooldown;
             gravityComponent.SetGravity(GravityType);
         }
+
+        if (!_legacyHoldableBehavior)
+        {
+            var inverted = h.Entity.GetGravity() is GravityType.Inverted;
+            if (inverted && Orientation is Orientations.Floor || !inverted && Orientation is Orientations.Ceiling)
+                setHoldableSpeed(h, getHoldableSpeed(h) * new Vector2(1, -1));
+            GravityHelperModule.OverrideSemaphore++;
+            var moveDir = Orientation is Orientations.Ceiling ? 1 : -1;
+            while(h.Entity.CollideCheck(this))
+            {
+                if (h.Entity is Actor actor)
+                    actor.MoveV(moveDir);
+                else
+                    h.Entity.Position += Vector2.UnitY * moveDir;
+            }
+            GravityHelperModule.OverrideSemaphore--;
+        }
+    }
+
+    private bool legacyOnHoldable(Holdable h)
+    {
+        var holdableGravity = h.Entity.GetGravity();
+        var relativeCeiling = holdableGravity == GravityType.Normal && Orientation == Orientations.Ceiling ||
+                              holdableGravity == GravityType.Inverted && Orientation == Orientations.Floor;
+
+        if (relativeCeiling && !holdableHitCeilingSpring(h) ||
+            !relativeCeiling && !h.HitSpring(this)) return false;
+
+        return true;
     }
 
     private bool holdableHitCeilingSpring(Holdable h)

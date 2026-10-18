@@ -194,6 +194,7 @@ entities.GravityHelper/GravitySpring.attributes.description.playerCanUse=Whether
 entities.GravityHelper/GravitySpring.attributes.description.gravityType=The gravity type to set when Madeline activates the spring. Defaults to Normal.
 entities.GravityHelper/GravitySpring.attributes.description.gravityCooldown=Time in seconds before the spring will change Madeline's gravity again (the bouncing component has no cooldown).\nIf set to 0 seconds, cooldown is disabled. Defaults to 0 seconds. Supports controllers.
 entities.GravityHelper/GravitySpring.attributes.description.holdableGravityCooldown=Time in seconds before the spring will change a holdable's gravity again (the bouncing component has no cooldown).\nIf set to 0 seconds, cooldown is disabled. Defaults to 0 seconds. Supports controllers.
+entities.GravityHelper/GravitySpring.attributes.description.legacyHoldableBehavior=Causes springs to use the old behavior when handling holdables.  The new behavior prevents multiple collisions and is more compatible with third party entities.
 entities.GravityHelper/GravitySpring.attributes.description.showIndicator=Whether an arrow indicator should be rendered, just below the FG decal layer. Defaults to false.
 entities.GravityHelper/GravitySpring.attributes.description.largeIndicator=Whether the indicator should be a larger arrow. Defaults to false.
 entities.GravityHelper/GravitySpring.attributes.description.indicatorOffset=The number of pixels away from the spring to render the indicator. Defaults to 8.
