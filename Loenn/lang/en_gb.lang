@@ -193,6 +193,7 @@ entities.GravityHelper/GravitySpring.attributes.description.defaultToController=
 entities.GravityHelper/GravitySpring.attributes.description.playerCanUse=Whether the spring will activate for the player.
 entities.GravityHelper/GravitySpring.attributes.description.gravityType=The gravity type to set when Madeline activates the spring. Defaults to Normal.
 entities.GravityHelper/GravitySpring.attributes.description.gravityCooldown=Time in seconds before the spring will change Madeline's gravity again (the bouncing component has no cooldown).\nIf set to 0 seconds, cooldown is disabled. Defaults to 0 seconds. Supports controllers.
+entities.GravityHelper/GravitySpring.attributes.description.holdableGravityCooldown=Time in seconds before the spring will change a holdable's gravity again (the bouncing component has no cooldown).\nIf set to 0 seconds, cooldown is disabled. Defaults to 0 seconds. Supports controllers.
 entities.GravityHelper/GravitySpring.attributes.description.showIndicator=Whether an arrow indicator should be rendered, just below the FG decal layer. Defaults to false.
 entities.GravityHelper/GravitySpring.attributes.description.largeIndicator=Whether the indicator should be a larger arrow. Defaults to false.
 entities.GravityHelper/GravitySpring.attributes.description.indicatorOffset=The number of pixels away from the spring to render the indicator. Defaults to 8.
@@ -271,6 +272,7 @@ entities.GravityHelper/BehaviorGravityController.placements.name.persistent=Beha
 entities.GravityHelper/BehaviorGravityController.attributes.description.persistent=Whether this controller should be considered the default for its type.\nThere should only ever be one persistent in your map, and not in a room with another controller of the same type.
 entities.GravityHelper/BehaviorGravityController.attributes.description.holdableResetTime=The amount of time in seconds a holdable will take to reset after being dropped.\nIf <= 0, the holdable will never reset. Defaults to 2.
 entities.GravityHelper/BehaviorGravityController.attributes.description.springCooldown=The global setting for GravitySpring gravityCooldown. Defaults to 0 seconds.
+entities.GravityHelper/BehaviorGravityController.attributes.description.springHoldableCooldown=The global setting for GravitySpring holdableGravityCooldown. Defaults to 0.5 seconds.
 entities.GravityHelper/BehaviorGravityController.attributes.description.switchCooldown=The global setting for GravitySwitch cooldown. Defaults to 1 second.
 entities.GravityHelper/BehaviorGravityController.attributes.description.switchOnHoldables=The global setting for GravitySwitch switchOnHoldables. Defaults to true.
 entities.GravityHelper/BehaviorGravityController.attributed.description.dashToToggle=Whether dashing should trigger a gravity toggle, always. Acts as if Madeline had a permanent GravityRefill charge. Defaults to false.

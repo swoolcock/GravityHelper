@@ -2,6 +2,7 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System;
+using System.Collections.Generic;
 using Celeste.Mod.Entities;
 using Celeste.Mod.GravityHelper.Components;
 using Celeste.Mod.GravityHelper.Entities.Controllers;
@@ -58,8 +59,10 @@ public class GravitySpring : Spring
     // ReSharper restore NotAccessedField.Local
 
     private float _cooldownRemaining;
+    private Dictionary<int, float> _holdableCooldownRemaining = [];
 
     private float _gravityCooldown;
+    private float _holdableGravityCooldown;
     private readonly bool _showIndicator;
     private readonly bool _largeIndicator;
     private readonly int _indicatorOffset;
@@ -118,6 +121,7 @@ public class GravitySpring : Spring
 
         _defaultToController = data.Bool("defaultToController");
         _gravityCooldown = data.Float("gravityCooldown", defaultCooldown);
+        _holdableGravityCooldown = data.Float("holdableGravityCooldown", BehaviorGravityController.DEFAULT_SPRING_HOLDABLE_COOLDOWN);
         _showIndicator = data.Bool("showIndicator");
         _largeIndicator = data.Bool("largeIndicator");
         _indicatorOffset = data.Int("indicatorOffset", 8);
@@ -232,6 +236,7 @@ public class GravitySpring : Spring
         if (_defaultToController && Scene.GetActiveController<BehaviorGravityController>() is { } behaviorController)
         {
             _gravityCooldown = behaviorController.SpringCooldown;
+            _holdableGravityCooldown = behaviorController.SpringHoldableCooldown;
         }
 
         if (_showIndicator && GravityType is GravityType.Normal or GravityType.Inverted or GravityType.Toggle)
@@ -308,6 +313,10 @@ public class GravitySpring : Spring
             _cooldownRemaining = Math.Max(0, _cooldownRemaining - Engine.DeltaTime);
             // TODO: update sprite to show cooldown
         }
+
+        foreach (var (k, v) in _holdableCooldownRemaining)
+            if (v > 0)
+                _holdableCooldownRemaining[k] -= Engine.DeltaTime;
     }
 
     [MonoModLinkTo("Monocle.Entity", "Render")]
@@ -402,9 +411,15 @@ public class GravitySpring : Spring
 
         CustomBounceAnimate();
 
-        // try to flip gravity i guess?
-        if (h.Entity.Get<GravityComponent>() is { } gravityComponent)
+        // try to flip gravity if not on cooldown
+        // note that due to the way holdables work in various mods, it's possible
+        // for them to collide on multiple frames, thus we need the cooldown
+        if (h.Entity.Get<GravityComponent>() is { } gravityComponent &&
+            _holdableCooldownRemaining.GetValueOrDefault(gravityComponent.GlobalId, 0f) <= 0)
+        {
+            _holdableCooldownRemaining[gravityComponent.GlobalId] = _holdableGravityCooldown;
             gravityComponent.SetGravity(GravityType);
+        }
     }
 
     private bool holdableHitCeilingSpring(Holdable h)

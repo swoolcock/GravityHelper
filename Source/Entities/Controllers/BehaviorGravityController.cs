@@ -15,10 +15,12 @@ public class BehaviorGravityController : BaseGravityController<BehaviorGravityCo
     public const float DEFAULT_HOLDABLE_RESET_TIME = 2f;
     public const float DEFAULT_SPRING_COOLDOWN_V1 = 0.1f;
     public const float DEFAULT_SPRING_COOLDOWN_V2 = 0f;
+    public const float DEFAULT_SPRING_HOLDABLE_COOLDOWN = 0.5f;
     public const float DEFAULT_SWITCH_COOLDOWN = 1f;
 
     public float HoldableResetTime { get; } = DEFAULT_HOLDABLE_RESET_TIME;
     public float SpringCooldown { get; } = DEFAULT_SPRING_COOLDOWN_V2;
+    public float SpringHoldableCooldown { get; } = DEFAULT_SPRING_HOLDABLE_COOLDOWN;
     public float SwitchCooldown { get; } = DEFAULT_SWITCH_COOLDOWN;
     public bool SwitchOnHoldables { get; } = true;
     public bool DashToToggle { get; }
@@ -46,6 +48,7 @@ public class BehaviorGravityController : BaseGravityController<BehaviorGravityCo
 
         HoldableResetTime = data.Float("holdableResetTime", DEFAULT_HOLDABLE_RESET_TIME).ClampLower(0f);
         SpringCooldown = data.Float("springCooldown", defaultSpringCooldown).ClampLower(0f);
+        SpringHoldableCooldown = data.Float("springHoldableCooldown", DEFAULT_SPRING_HOLDABLE_COOLDOWN).ClampLower(0f);
         SwitchCooldown = data.Float("switchCooldown", DEFAULT_SWITCH_COOLDOWN).ClampLower(0f);
         SwitchOnHoldables = data.Bool("switchOnHoldables", true);
         DashToToggle = data.Bool("dashToToggle");

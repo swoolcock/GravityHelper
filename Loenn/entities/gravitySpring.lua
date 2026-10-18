@@ -12,6 +12,7 @@ local placementData = helpers.createPlacementData('3', {
     playerCanUse = true,
     gravityType = consts.gravityTypes.normal.index,
     gravityCooldown = 0,
+    holdableGravityCooldown = 0.5,
     showIndicator = false,
     largeIndicator = false,
     indicatorOffset = 8,
