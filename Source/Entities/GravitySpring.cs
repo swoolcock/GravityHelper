@@ -26,7 +26,7 @@ public class GravitySpring : Spring
     public static bool RequiresHooks(EntityData data) => data.Enum<GravityType>("gravityType").RequiresHooks();
 
     public bool PlayerCanUse { get; }
-    public new Orientations Orientation { get; private set; }
+    public new Orientations Orientation { get; }
     public GravityType GravityType { get; }
     public int RefillDashCount { get; }
     public bool RefillStamina { get; }
@@ -439,13 +439,10 @@ public class GravitySpring : Spring
         }
         else if (Orientation is Orientations.Floor or Orientations.Ceiling)
         {
-            // fake a floor spring at zero speed, then reset it
-            var wasCeiling = Orientation is Orientations.Ceiling;
-            Orientation = Orientations.Floor;
+            // fake zero speed, then reset it
             var oldSpeed = getHoldableSpeed(h);
             setHoldableSpeed(h, new Vector2(oldSpeed.X, 0));
             var wasHitSpring = h.HitSpring(this);
-            Orientation = wasCeiling ? Orientations.Ceiling : Orientations.Floor;
             if (!wasHitSpring)
             {
                 setHoldableSpeed(h, oldSpeed);
