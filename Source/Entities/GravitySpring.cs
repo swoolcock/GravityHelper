@@ -59,11 +59,10 @@ public class GravitySpring : Spring
     private readonly VersionInfo _pluginVersion;
     // ReSharper restore NotAccessedField.Local
 
-    private float _cooldownRemaining;
-    private Dictionary<int, float> _holdableCooldownRemaining = [];
+    private Dictionary<int, float> _cooldownRemaining = [];
 
     private float _gravityCooldown;
-    private float _holdableGravityCooldown;
+    private float _actorGravityCooldown;
     private readonly bool _showIndicator;
     private readonly bool _largeIndicator;
     private readonly int _indicatorOffset;
@@ -77,7 +76,7 @@ public class GravitySpring : Spring
     private string _overlaySpriteName;
     private bool _showOverlay;
     private string _refillSound;
-    private bool _legacyHoldableBehavior;
+    private bool _legacyActorBehavior;
 
     private Sprite _overlaySprite;
 
@@ -123,7 +122,7 @@ public class GravitySpring : Spring
 
         _defaultToController = data.Bool("defaultToController");
         _gravityCooldown = data.Float("gravityCooldown", defaultCooldown);
-        _holdableGravityCooldown = data.Float("holdableGravityCooldown", BehaviorGravityController.DEFAULT_SPRING_HOLDABLE_COOLDOWN);
+        _actorGravityCooldown = data.Float("actorGravityCooldown", BehaviorGravityController.DEFAULT_SPRING_ACTOR_COOLDOWN);
         _showIndicator = data.Bool("showIndicator");
         _largeIndicator = data.Bool("largeIndicator");
         _indicatorOffset = data.Int("indicatorOffset", 8);
@@ -133,7 +132,7 @@ public class GravitySpring : Spring
         _overlaySpriteName = data.Attr("overlaySpriteName").Trim();
         _refillSound = data.Attr("refillSound");
         _drawOutline = data.Bool("drawOutline", true);
-        _legacyHoldableBehavior = data.Bool("legacyHoldableBehavior", true);
+        _legacyActorBehavior = data.Bool("legacyActorBehavior", true);
 
         if (string.IsNullOrWhiteSpace(_spriteName))
             _spriteName = "gravitySpring";
@@ -154,6 +153,7 @@ public class GravitySpring : Spring
         var playerCollider = Get<PlayerCollider>();
         var holdableCollider = Get<HoldableCollider>();
         var pufferCollider = Get<PufferCollider>();
+        var seekerCollider = Get<SeekerCollider>();
 
         // update sprite
         if (!string.IsNullOrWhiteSpace(_spriteName))
@@ -197,9 +197,10 @@ public class GravitySpring : Spring
         staticMover.OnEnable = OnEnable;
         staticMover.OnDisable = OnDisable;
         staticMover.OnShake = OnShake;
-        playerCollider.OnCollide = OnCollide;
-        holdableCollider.OnCollide = OnHoldable;
-        pufferCollider.OnCollide = OnPuffer;
+        playerCollider?.OnCollide = OnCollide;
+        holdableCollider?.OnCollide = OnHoldable;
+        pufferCollider?.OnCollide = OnPuffer;
+        seekerCollider?.OnCollide = OnSeeker;
 
         // update things by orientation
         switch (orientation)
@@ -219,7 +220,8 @@ public class GravitySpring : Spring
             case Orientations.Ceiling:
                 sprite.Rotation = (float)Math.PI;
                 Collider.Top += 6f;
-                pufferCollider.Collider.Top += 6;
+                pufferCollider?.Collider.Top += 6;
+                seekerCollider?.Collider.Top += 6;
                 staticMover.SolidChecker = s => CollideCheck(s, Position - Vector2.UnitY);
                 staticMover.JumpThruChecker = jt => CollideCheck(jt, Position - Vector2.UnitY);
                 break;
@@ -239,7 +241,7 @@ public class GravitySpring : Spring
         if (_defaultToController && Scene.GetActiveController<BehaviorGravityController>() is { } behaviorController)
         {
             _gravityCooldown = behaviorController.SpringCooldown;
-            _holdableGravityCooldown = behaviorController.SpringHoldableCooldown;
+            _actorGravityCooldown = behaviorController.SpringActorCooldown;
         }
 
         if (_showIndicator && GravityType is GravityType.Normal or GravityType.Inverted or GravityType.Toggle)
@@ -311,15 +313,9 @@ public class GravitySpring : Spring
         if (_indicatorRenderer != null)
             _indicatorRenderer.Visible = Visible;
 
-        if (_cooldownRemaining > 0)
-        {
-            _cooldownRemaining = Math.Max(0, _cooldownRemaining - Engine.DeltaTime);
-            // TODO: update sprite to show cooldown
-        }
-
-        foreach (var (k, v) in _holdableCooldownRemaining)
+        foreach (var (k, v) in _cooldownRemaining)
             if (v > 0)
-                _holdableCooldownRemaining[k] -= Engine.DeltaTime;
+                _cooldownRemaining[k] -= Engine.DeltaTime;
     }
 
     [MonoModLinkTo("Monocle.Entity", "Render")]
@@ -349,10 +345,12 @@ public class GravitySpring : Spring
         }
 
         // set gravity and cooldown if not on cooldown
-        if (GravityType != GravityType.None && (_cooldownRemaining <= 0f || _gravityCooldown <= 0f))
+        var playerId = GravityHelperModule.PlayerComponent?.GlobalId ?? -1;
+        if (playerId >= 0 &&
+            GravityType != GravityType.None && (_gravityCooldown <= 0f || _cooldownRemaining.GetValueOrDefault(playerId) <= 0f))
         {
             GravityHelperModule.PlayerComponent?.SetGravity(GravityType);
-            _cooldownRemaining = _gravityCooldown;
+            _cooldownRemaining[playerId] = _gravityCooldown;
             // TODO: update sprite to show cooldown
         }
 
@@ -402,83 +400,107 @@ public class GravitySpring : Spring
         }
     }
 
-    private Vector2 getHoldableSpeed(Holdable h)
-    {
-        if (h.SpeedGetter != null) return h.GetSpeed();
-        var entity = h.Entity;
-        var data = DynamicData.For(entity);
-        if (data.TryGet("Speed", out var speed) && speed is Vector2 vec)
-            return vec;
-        return Vector2.Zero;
-    }
+    #region Actor Behaviour
 
-    private void setHoldableSpeed(Holdable h, Vector2 speed)
+    private void onEntity(Entity entity, bool applyGravity)
     {
-        if (h.SpeedSetter != null)
-        {
-            h.SetSpeed(speed);
-            return;
-        }
+        var wasInverted = entity.GetGravity() == GravityType.Inverted;
+        var holdable = entity.Get<Holdable>();
 
-        // assuming Speed variable exists here...
-        // if it doesn't then the modder should assign SpeedSetter like a good coder
-        var entity = h.Entity;
-        var data = DynamicData.For(entity);
-        data.Set("Speed", speed);
-    }
+        // we only support holdables and puffers for now
+        if (holdable == null && entity is not Puffer) return;
 
-    private new void OnHoldable(Holdable h)
-    {
-        if (_legacyHoldableBehavior)
+        // seekers never use legacy since they weren't supported previously
+        if (_legacyActorBehavior)
         {
-            if (!legacyOnHoldable(h)) return;
+            if (holdable != null && !legacyOnHoldable(holdable)) return;
+            if (entity is Puffer puffer && !legacyOnPuffer(puffer)) return;
         }
-        else if (Orientation is Orientations.WallLeft or Orientations.WallRight)
+        // left, right, or relative floor spring
+        else if (Orientation is Orientations.WallLeft or Orientations.WallRight ||
+                 Orientation is Orientations.Floor && !wasInverted ||
+                 Orientation is Orientations.Ceiling && wasInverted)
         {
-            if (!h.HitSpring(this)) return;
+            if (holdable != null && !holdable.HitSpring(this)) return;
+            if (entity is Puffer puffer && !puffer.HitSpring(this)) return;
         }
-        else if (Orientation is Orientations.Floor or Orientations.Ceiling)
+        // relative ceiling spring
+        else if (Orientation is Orientations.Floor && wasInverted ||
+                 Orientation is Orientations.Ceiling && !wasInverted)
         {
-            // fake zero speed, then reset it
-            var oldSpeed = getHoldableSpeed(h);
-            setHoldableSpeed(h, new Vector2(oldSpeed.X, 0));
-            var wasHitSpring = h.HitSpring(this);
-            if (!wasHitSpring)
+            // entities think a ceiling spring is a floor spring
+            if (entity is Puffer puffer)
             {
-                setHoldableSpeed(h, oldSpeed);
-                return;
+                // puffers should forcefully have a positive Y speed both before and after hitting it
+                puffer.hitSpeed = new Vector2(puffer.hitSpeed.X, Math.Abs(puffer.hitSpeed.Y));
+                if (!puffer.HitSpring(this)) return;
+                puffer.hitSpeed = new Vector2(puffer.hitSpeed.X, Math.Abs(puffer.hitSpeed.Y));
+            }
+            // ReSharper disable once ConditionIsAlwaysTrueOrFalse
+            else if (holdable != null)
+            {
+                // holdables need to flip the Y speed component temporarily
+                // so that they'll consider themselves as moving into the spring
+                var oldSpeed = getHoldableSpeed(holdable);
+                setHoldableSpeed(holdable, oldSpeed * new Vector2(1, -1));
+                if (!holdable.HitSpring(this))
+                {
+                    setHoldableSpeed(holdable, oldSpeed);
+                    return;
+                }
+                setHoldableSpeed(holdable, getHoldableSpeed(holdable) * new Vector2(1, -1));
             }
         }
 
+        // if we got here, the spring hit successfully
         CustomBounceAnimate();
 
-        // try to flip gravity if not on cooldown
+        // for entities with a gravity component, try to flip gravity if not on cooldown
         // note that due to the way holdables work in various mods, it's possible
         // for them to collide on multiple frames, thus we need the cooldown
-        if (h.Entity.Get<GravityComponent>() is { } gravityComponent &&
-            _holdableCooldownRemaining.GetValueOrDefault(gravityComponent.GlobalId, 0f) <= 0)
+        if (applyGravity &&
+            entity.Get<GravityComponent>() is { } gravityComponent &&
+            (_actorGravityCooldown <= 0 ||
+            _cooldownRemaining.GetValueOrDefault(gravityComponent.GlobalId, 0f) <= 0))
         {
-            _holdableCooldownRemaining[gravityComponent.GlobalId] = _holdableGravityCooldown;
-            gravityComponent.SetGravity(GravityType);
+            _cooldownRemaining[gravityComponent.GlobalId] = _actorGravityCooldown;
+            // if not legacy behaviour, we'll force instant change
+            gravityComponent.SetGravity(GravityType, 1f, !_legacyActorBehavior);
         }
 
-        if (!_legacyHoldableBehavior)
+        // if not legacy behaviour, we need to bump it out of the collider
+        if (!_legacyActorBehavior)
         {
-            var inverted = h.Entity.GetGravity() is GravityType.Inverted;
-            if (inverted && Orientation is Orientations.Floor || !inverted && Orientation is Orientations.Ceiling)
-                setHoldableSpeed(h, getHoldableSpeed(h) * new Vector2(1, -1));
             GravityHelperModule.OverrideSemaphore++;
             var moveDir = Orientation is Orientations.Ceiling ? 1 : -1;
-            while(h.Entity.CollideCheck(this))
+            while(entity.CollideCheck(this))
             {
-                if (h.Entity is Actor actor)
+                if (entity is Actor actor)
                     actor.MoveV(moveDir);
                 else
-                    h.Entity.Position += Vector2.UnitY * moveDir;
+                    entity.Position += Vector2.UnitY * moveDir;
             }
             GravityHelperModule.OverrideSemaphore--;
         }
     }
+
+    private new void OnHoldable(Holdable h) => onEntity(h.Entity, true);
+
+    private new void OnPuffer(Puffer puffer) => onEntity(puffer, false);
+
+    private new void OnSeeker(Seeker seeker)
+    {
+        // no need for legacy check since we only now support seekers
+        if (Orientation is Orientations.Ceiling && seeker.Speed.Y > 120 ||
+            Orientation is not Orientations.Ceiling && seeker.Speed.Y < -120)
+            return;
+        CustomBounceAnimate();
+        seeker.HitSpring();
+    }
+
+    #endregion
+
+    #region Legacy Actor Behaviour
 
     private bool legacyOnHoldable(Holdable h)
     {
@@ -486,13 +508,13 @@ public class GravitySpring : Spring
         var relativeCeiling = holdableGravity == GravityType.Normal && Orientation == Orientations.Ceiling ||
                               holdableGravity == GravityType.Inverted && Orientation == Orientations.Floor;
 
-        if (relativeCeiling && !holdableHitCeilingSpring(h) ||
+        if (relativeCeiling && !legacyHoldableHitCeilingSpring(h) ||
             !relativeCeiling && !h.HitSpring(this)) return false;
 
         return true;
     }
 
-    private bool holdableHitCeilingSpring(Holdable h)
+    private bool legacyHoldableHitCeilingSpring(Holdable h)
     {
         if (h.IsHeld) return false;
 
@@ -530,17 +552,17 @@ public class GravitySpring : Spring
         return true;
     }
 
-    private new void OnPuffer(Puffer p)
+    private bool legacyOnPuffer(Puffer puffer)
     {
         // at the moment puffers don't support gravity, so just handle ceiling springs separately
-        if (Orientation == Orientations.Ceiling && !pufferHitCeilingSpring(p) ||
-            Orientation != Orientations.Ceiling && !p.HitSpring(this))
-            return;
+        if (Orientation == Orientations.Ceiling && !legacyPufferHitCeilingSpring(puffer) ||
+            Orientation != Orientations.Ceiling && !puffer.HitSpring(this))
+            return false;
 
-        CustomBounceAnimate();
+        return true;
     }
 
-    private bool pufferHitCeilingSpring(Puffer p)
+    private bool legacyPufferHitCeilingSpring(Puffer p)
     {
         if (p.hitSpeed.Y > 0)
             return false;
@@ -552,6 +574,36 @@ public class GravitySpring : Spring
         return true;
     }
 
+    #endregion
+
+    #region Helpers
+
+    private Vector2 getHoldableSpeed(Holdable holdable)
+    {
+        if (holdable.SpeedGetter != null)
+            return holdable.GetSpeed();
+        var entity = holdable.Entity;
+        var data = DynamicData.For(entity);
+        if (data.TryGet("Speed", out var speed) && speed is Vector2 vec)
+            return vec;
+        return Vector2.Zero;
+    }
+
+    private void setHoldableSpeed(Holdable holdable, Vector2 speed)
+    {
+        if (holdable.SpeedSetter != null)
+        {
+            holdable.SetSpeed(speed);
+            return;
+        }
+
+        // assuming Speed variable exists here...
+        // if it doesn't then the modder should assign SpeedSetter like a good coder
+        var entity = holdable.Entity;
+        var data = DynamicData.For(entity);
+        data.Set("Speed", speed);
+    }
+
     public void CustomBounceAnimate()
     {
         Audio.Play(SFX.game_gen_spring, Position);
@@ -560,6 +612,8 @@ public class GravitySpring : Spring
         _overlaySprite?.PlayIfAvailable(getOverlayAnimId("bounce"), true);
         wiggler.Start();
     }
+
+    #endregion
 
     public new enum Orientations
     {

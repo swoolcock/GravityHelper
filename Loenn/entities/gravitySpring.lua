@@ -12,7 +12,7 @@ local placementData = helpers.createPlacementData('3', {
     playerCanUse = true,
     gravityType = consts.gravityTypes.normal.index,
     gravityCooldown = 0,
-    holdableGravityCooldown = 0.5,
+    actorGravityCooldown = 0.5,
     showIndicator = false,
     largeIndicator = false,
     indicatorOffset = 8,
@@ -24,7 +24,7 @@ local placementData = helpers.createPlacementData('3', {
     refillDashCount = -1,
     refillStamina = true,
     showOverlay = true,
-    legacyHoldableBehavior = false,
+    legacyActorBehavior = false,
     refillSound = "event:/new_content/game/10_farewell/pinkdiamond_touch",
 })
 
