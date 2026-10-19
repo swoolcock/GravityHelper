@@ -9,6 +9,7 @@ local placementData = helpers.createPlacementData('2', {
     persistent = true,
     holdableResetTime = 2.0,
     springCooldown = 0,
+    springActorCooldown = 0.5,
     switchCooldown = 1.0,
     switchOnHoldables = true,
     dashToToggle = false,

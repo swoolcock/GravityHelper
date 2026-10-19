@@ -2,6 +2,7 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System;
+using Celeste.Mod.GravityHelper.ThirdParty;
 using Microsoft.Xna.Framework;
 using Monocle;
 
@@ -23,6 +24,10 @@ public class GravityRefillIndicator : Entity
         Tag = Tags.Persistent;
 
         Add(_sprite = GFX.SpriteBank.Create("gravityRefillIndicator"));
+
+        // the indicator is drawn relative to Madeline's update-time position,
+        // so Motion Smoothing needs to carry it along with her smoothed and subpixel one
+        MotionSmoothingImports.TieToPlayer?.Invoke(this);
     }
 
     public override void Update()

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using Celeste.Mod.GravityHelper.Components;
 using Celeste.Mod.GravityHelper.Extensions;
+using Celeste.Mod.GravityHelper.ThirdParty;
 using Microsoft.Xna.Framework;
 using Monocle;
 
@@ -54,6 +55,10 @@ public class GravityShieldIndicator : Entity
 
         Add(new AccessibilityListener(onAccessibilityChange));
         onAccessibilityChange();
+
+        // the indicator is drawn around Madeline's update-time position,
+        // so Motion Smoothing needs to carry it along with her smoothed one
+        MotionSmoothingImports.TieToPlayer?.Invoke(this);
     }
 
     private void onAccessibilityChange()
@@ -98,6 +103,9 @@ public class GravityShieldIndicator : Entity
                 Deactivate();
         }
 
+        // we're added after the player, so this sees where she ended up this frame
+        updatePosition();
+
         if (ShieldTimeRemaining <= flash_time)
         {
             if (Scene.OnInterval(0.1f)) _flash = !_flash;
@@ -108,16 +116,24 @@ public class GravityShieldIndicator : Entity
     }
 
 
-    public override void Render()
+    // Position is only set from Update and Activate, not Render: anything that smooths
+    // rendering like Motion Smoothing may have moved the player to a smoothed position by that point.
+    private void updatePosition()
     {
         if (Scene?.Tracker.GetEntity<Player>() is not { } player) return;
 
+        // floor rather than round: madeline's hitbox is an odd number of pixels tall, so her
+        // centre always sits on a half pixel, and Round's banker's rounding alternates the
+        // ring between moving 0 and 2 pixels as she moves vertically one pixel at a time
+        var offset = GravityHelperModule.ShouldInvertPlayer ? 4f : -4f;
+        Position = (player.Center + Vector2.UnitY * offset).Floor();
+    }
+
+    public override void Render()
+    {
         if (!_flash)
         {
-            var offset = GravityHelperModule.ShouldInvertPlayer ? 4f : -4f;
-            var origin = (player.Center + Vector2.UnitY * offset).Round();
-
-            Position = (player.Center + Vector2.UnitY * offset).Round();
+            var origin = Position;
 
             for (var i = 0; i < _particles.Count; i++)
             {
@@ -140,6 +156,7 @@ public class GravityShieldIndicator : Entity
 
         Active = Visible = true;
         _flash = false;
+        updatePosition();
 
         _bloom.Alpha = bloom_alpha;
         _light.Alpha = light_alpha;

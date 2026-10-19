@@ -1,5 +1,5 @@
 - Name: GravityHelper
-  Version: 1.2.29
+  Version: 1.2.30
   DLL: bin/GravityHelper.dll
   Dependencies:
     - Name: EverestCore
@@ -19,6 +19,8 @@
       Version: 1.0.1
     - Name: MaxHelpingHand
       Version: 1.18.9
+    - Name: MotionSmoothing
+      Version: 1.5.6
     - Name: OutbackHelper
       Version: 1.6.2
     - Name: SpeedrunTool
