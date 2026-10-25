@@ -30,36 +30,41 @@ internal static class BasicExtensions
     public static TItem AddWithDescription<TItem>(this TextMenu self, TItem item, string description)
         where TItem : TextMenu.Item
     {
+        if (self is null) return null;
         self.Add(item);
         item.AddDescription(self, description);
         return item;
     }
 
     public static void AddSubHeader(this TextMenu self, string subHeader)
-        => self.Add(new TextMenu.SubHeader(subHeader.DialogCleanOrNull() ?? subHeader, false));
+        => self?.Add(new TextMenu.SubHeader(subHeader.DialogCleanOrNull() ?? subHeader, false));
 
     public static void PlayIfAvailable(this Sprite self, string id, bool restart = false, bool randomizeFrame = false)
     {
+        if (self is null) return;
         if (self.Has(id)) self.Play(id, restart, randomizeFrame);
     }
 
     public static Sprite CreateWithPath(this SpriteBank self, string id, string overridePath)
     {
+        if (self is null) return null;
         return self.SpriteData.ContainsKey(id) ? self.SpriteData[id].CreateWithPath(overridePath) : throw new Exception($"Missing animation name in SpriteData: '{id}'!");
     }
 
     public static Sprite CreateOnWithPath(this SpriteBank self, Sprite sprite, string id, string overridePath)
     {
+        if (self is null) return null;
         if (self.SpriteData.ContainsKey(id))
             return self.SpriteData[id].CreateOnWithPath(sprite, overridePath);
         throw new Exception($"Missing animation name in SpriteData: '{id}'!");
     }
 
     public static Sprite CreateWithPath(this SpriteData self, string overridePath) =>
-        self.CreateOnWithPath(new Sprite(), overridePath);
+        self?.CreateOnWithPath(new Sprite(), overridePath);
 
     public static Sprite CreateOnWithPath(this SpriteData self, Sprite sprite, string overridePath)
     {
+        if (self is null || sprite is null) return null;
         if (self.Sources.FirstOrDefault() is not { } spriteDataSource)
         {
             Logger.Log(nameof(GravityHelperModule), "CreateOnWithPath: Couldn't get sprite source.");
@@ -109,6 +114,7 @@ internal static class BasicExtensions
 
     public static bool GetFlag(this Scene scene, string flag, bool defValue = false)
     {
+        if (scene is null) return false;
         if (string.IsNullOrWhiteSpace(flag) || scene is not Level level) return defValue;
         return level.Session.GetFlag(flag);
     }

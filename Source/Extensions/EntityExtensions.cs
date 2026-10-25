@@ -155,6 +155,7 @@ internal static class EntityExtensions
 
     public static bool CollideCheckUpsideDownJumpThru(this Entity entity)
     {
+        if (entity is null) return false;
         if (entity.CollideCheck<UpsideDownJumpThru>())
             return true;
         if (ReflectionCache.MaddieHelpingHandUpsideDownJumpThruType != null && entity.CollideCheck(ReflectionCache.MaddieHelpingHandUpsideDownJumpThruType))
@@ -164,6 +165,7 @@ internal static class EntityExtensions
 
     public static bool CollideCheckNotUpsideDownJumpThru(this Entity entity)
     {
+        if (entity is null) return false;
         if (!entity.Scene.Tracker.Entities.TryGetValue(typeof(JumpThru), out var entities))
             return false;
 
@@ -177,6 +179,7 @@ internal static class EntityExtensions
 
     public static bool CollideCheckUpsideDownJumpThru(this Entity entity, Vector2 at)
     {
+        if (entity is null) return false;
         if (entity.CollideCheck<UpsideDownJumpThru>(at))
             return true;
         if (ReflectionCache.MaddieHelpingHandUpsideDownJumpThruType != null && entity.CollideCheck(ReflectionCache.MaddieHelpingHandUpsideDownJumpThruType, at))
@@ -186,6 +189,7 @@ internal static class EntityExtensions
 
     public static bool CollideCheckNotUpsideDownJumpThru(this Entity entity, Vector2 at)
     {
+        if (entity is null) return false;
         if (!entity.Scene.Tracker.Entities.TryGetValue(typeof(JumpThru), out var entities))
             return false;
 
@@ -199,6 +203,7 @@ internal static class EntityExtensions
 
     public static bool CollideCheckOutsideUpsideDownJumpThru(this Entity entity, Vector2 at)
     {
+        if (entity is null) return false;
         if (entity.CollideCheckOutside<UpsideDownJumpThru>(at))
             return true;
         if (ReflectionCache.MaddieHelpingHandUpsideDownJumpThruType != null && entity.CollideCheckOutside(ReflectionCache.MaddieHelpingHandUpsideDownJumpThruType, at))
@@ -208,6 +213,7 @@ internal static class EntityExtensions
 
     public static bool CollideCheckOutsideNotUpsideDownJumpThru(this Entity entity, Vector2 at)
     {
+        if (entity is null) return false;
         foreach (Entity b in entity.Scene.Tracker.Entities[typeof(JumpThru)])
         {
             if (b is UpsideDownJumpThru || b.GetType() == ReflectionCache.MaddieHelpingHandUpsideDownJumpThruType)
@@ -221,6 +227,7 @@ internal static class EntityExtensions
 
     public static JumpThru CollideFirstOutsideUpsideDownJumpThru(this Entity entity, Vector2 at)
     {
+        if (entity is null) return null;
         JumpThru collide = entity.CollideFirstOutside<UpsideDownJumpThru>(at);
 
         if (collide == null && ReflectionCache.MaddieHelpingHandUpsideDownJumpThruType != null)
@@ -231,6 +238,7 @@ internal static class EntityExtensions
 
     public static JumpThru CollideFirstOutsideNotUpsideDownJumpThru(this Entity entity, Vector2 at)
     {
+        if (entity is null) return null;
         foreach (Entity b in entity.Scene.Tracker.Entities[typeof(JumpThru)])
         {
             if (b is UpsideDownJumpThru || b.GetType() == ReflectionCache.MaddieHelpingHandUpsideDownJumpThruType)
@@ -244,6 +252,7 @@ internal static class EntityExtensions
 
     public static bool IsUpsideDownJumpThru(this JumpThru jumpThru)
     {
+        if (jumpThru is null) return false;
         if (jumpThru is UpsideDownJumpThru) return true;
         if (jumpThru.GetType() == ReflectionCache.MaddieHelpingHandUpsideDownJumpThruType) return true;
         return false;
@@ -270,10 +279,13 @@ internal static class EntityExtensions
     }
 
     public static Rectangle ToRectangle(this Collider collider) =>
-        new Rectangle((int)collider.Left, (int)collider.Top, (int)collider.Width, (int)collider.Height);
+        collider is null
+            ? Rectangle.Empty
+            : new Rectangle((int)collider.Left, (int)collider.Top, (int)collider.Width, (int)collider.Height);
 
     public static void SetShouldInvert(this Entity entity, bool invert)
     {
+        if (entity is null) return;
         if (entity.Get<GravityComponent>() is { } gravityComponent)
             gravityComponent.SetGravity(GravityType.Inverted);
         else
@@ -282,6 +294,7 @@ internal static class EntityExtensions
 
     public static bool ShouldInvert(this Entity entity)
     {
+        if (entity is null) return false;
         if (entity.Get<GravityComponent>() is { } gravityComponent)
             return gravityComponent.CurrentGravity == GravityType.Inverted;
         return DynamicData.For(entity).Data.TryGetValue(GravityComponent.INVERTED_KEY, out var value) && (bool)value;
@@ -289,6 +302,7 @@ internal static class EntityExtensions
 
     public static bool ShouldInvertChecked(this Entity entity)
     {
+        if (entity is null) return false;
         if (entity is Player) return GravityHelperModule.ShouldInvertPlayerChecked;
         return entity.Get<GravityComponent>()?.ShouldInvertChecked ?? false;
     }
@@ -301,7 +315,7 @@ internal static class EntityExtensions
 
     public static bool EnsureFallingSpeed(this Actor actor)
     {
-        if (actor.Scene is not Level level)
+        if (actor?.Scene is not Level level)
             return false;
 
         if (actor is Player player)

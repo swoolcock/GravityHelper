@@ -12,8 +12,11 @@ namespace Celeste.Mod.GravityHelper.Extensions;
 internal static class TrackerExtensions
 {
     public static TController GetActiveController<TController>(this Scene scene, bool allowEphemeral = false)
-        where TController : BaseGravityController =>
-        GetActiveController(scene, typeof(TController), allowEphemeral) as TController;
+        where TController : BaseGravityController
+    {
+        if (scene is null) return null;
+        return GetActiveController(scene, typeof(TController), allowEphemeral) as TController;
+    }
 
     public static BaseGravityController GetActiveController(this Scene scene, Type controllerType, bool allowEphemeral = false)
     {
@@ -35,11 +38,15 @@ internal static class TrackerExtensions
     }
 
     public static TController GetPersistentController<TController>(this Scene scene, bool createIfRequired = false)
-        where TController : BaseGravityController =>
-        GetPersistentController(scene, typeof(TController), createIfRequired) as TController;
+        where TController : BaseGravityController
+    {
+        if (scene is null) return null;
+        return GetPersistentController(scene, typeof(TController), createIfRequired) as TController;
+    }
 
     public static BaseGravityController GetPersistentController(this Scene scene, Type controllerType, bool createIfRequired = false)
     {
+        if (scene is null) return null;
         if (!scene.Tracker.Entities.TryGetValue(controllerType, out var list) && !createIfRequired)
             return null;
 
@@ -61,6 +68,7 @@ internal static class TrackerExtensions
     public static T GetEntityOrDefault<T>(this Tracker tracker, Func<T, bool> predicate = null)
         where T : Entity
     {
+        if (tracker is null) return null;
         if (!tracker.Entities.TryGetValue(typeof(T), out var list))
             return default;
         return predicate == null
@@ -71,13 +79,15 @@ internal static class TrackerExtensions
     public static IEnumerable<Entity> GetEntitiesOrEmpty<T>(this Tracker tracker, Func<T, bool> predicate = null)
         where T : Entity
     {
+        if (tracker is null) return [];
         if (!tracker.Entities.TryGetValue(typeof(T), out var list))
-            return Enumerable.Empty<T>();
+            return [];
         return predicate == null ? list : list.Where(e => predicate(e as T));
     }
 
     public static IEnumerable<Entity> GetEntitiesOrEmpty(this Tracker tracker, Type entityType, Func<Entity, bool> predicate = null)
     {
+        if (tracker is null) return [];
         if (entityType == null || !tracker.Entities.TryGetValue(entityType, out var list))
             return [];
         return predicate == null ? list : list.Where(predicate);
@@ -87,6 +97,7 @@ internal static class TrackerExtensions
     public static T GetComponentOrDefault<T>(this Tracker tracker, Func<T, bool> predicate = null)
         where T : Component
     {
+        if (tracker is null) return null;
         if (!tracker.Components.TryGetValue(typeof(T), out var list))
             return default;
         return predicate == null
@@ -98,14 +109,16 @@ internal static class TrackerExtensions
     public static IEnumerable<Component> GetComponentsOrEmpty<T>(this Tracker tracker, Func<T, bool> predicate = null)
         where T : Component
     {
+        if (tracker is null) return [];
         if (!tracker.Components.TryGetValue(typeof(T), out var list))
-            return Enumerable.Empty<T>();
+            return [];
         return predicate == null ? list : list.Where(e => predicate(e as T));
     }
 
     // ReSharper disable once UnusedMember.Global
     public static IEnumerable<Component> GetComponentsOrEmpty(this Tracker tracker, Type entityType, Func<Component, bool> predicate = null)
     {
+        if (tracker is null) return [];
         if (entityType == null || !tracker.Components.TryGetValue(entityType, out var list))
             return [];
         return predicate == null ? list : list.Where(predicate);
