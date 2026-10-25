@@ -56,7 +56,7 @@ internal class CelesteNetGravityComponent : GameComponent
 
     private void clientInit(CelesteNetClient client)
     {
-        client.Data.RegisterHandlersIn(this);
+        client?.Data?.RegisterHandlersIn(this);
     }
 
     private void clientDisposed()
@@ -75,14 +75,17 @@ internal class CelesteNetGravityComponent : GameComponent
     // ReSharper disable once UnusedMember.Global
     public void Handle(CelesteNetConnection connection, DataPlayerGravity data) => _updateQueue.Enqueue(() =>
     {
-        var ghost = Engine.Scene?.Tracker
-            .GetEntities<Ghost>()
-            .FirstOrDefault(e => (e as Ghost).PlayerInfo.ID == data.Player.ID);
+        if (connection is null || data is null) return;
+        var ghost = Engine.Scene?.Tracker?
+            .GetEntitiesOrEmpty<Ghost>()?
+            .FirstOrDefault(e => (e as Ghost)?.PlayerInfo.ID == data.Player.ID);
         if (ghost == null) return;
 
         ghost.SetShouldInvert(data.GravityType == GravityType.Inverted);
 
         var hitbox = ghost.Collider;
+        if (hitbox is null) return;
+
         if (data.GravityType == GravityType.Inverted && hitbox.Top < 0 ||
             data.GravityType == GravityType.Normal && hitbox.Bottom > 0)
             hitbox.Bottom = -hitbox.Top;
