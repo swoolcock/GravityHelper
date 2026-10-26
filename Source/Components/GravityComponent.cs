@@ -136,6 +136,7 @@ public class GravityComponent : Component
         if (Locked) return;
         if (Scene == null) return;
         if (!UpdateEntity) return;
+        if (Entity == null) return;
 
         var holdable = Entity.Get<Holdable>();
 
@@ -154,8 +155,8 @@ public class GravityComponent : Component
         {
             if (Entity.Collider != null)
                 Entity.Collider.Top = -Entity.Collider.Bottom;
-            if (holdable != null)
-                holdable.PickupCollider.Top = -holdable.PickupCollider.Bottom;
+            if (holdable?.PickupCollider is { } pickupCollider)
+                pickupCollider.Top = -pickupCollider.Bottom;
         }
 
         if (UpdateSpeed != null)
