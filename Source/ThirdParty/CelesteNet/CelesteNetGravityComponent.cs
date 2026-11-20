@@ -21,6 +21,8 @@ internal class CelesteNetGravityComponent : GameComponent
     private Delegate _initHook;
     private Delegate _disposeHook;
 
+    private bool _failed;
+
     private ConcurrentQueue<Action> _updateQueue = new ConcurrentQueue<Action>();
 
     public CelesteNetGravityComponent(Game game) : base(game)
@@ -93,13 +95,24 @@ internal class CelesteNetGravityComponent : GameComponent
 
     public void SendPlayerGravity(GravityType gravityType)
     {
+        // if we've failed once, never try again
+        if (_failed) return;
+
         var client = _clientModule.Context?.Client;
         if (client == null) return;
 
-        client.SendAndHandle(new DataPlayerGravity
+        try
         {
-            GravityType = gravityType,
-            Player = client.PlayerInfo,
-        });
+            client.SendAndHandle(new DataPlayerGravity
+            {
+                GravityType = gravityType,
+                Player = client.PlayerInfo,
+            });
+        }
+        catch (Exception e)
+        {
+            Logger.Log(nameof(GravityHelperModule), $"Error sending gravity state to CelesteNet. {e}");
+            _failed = true;
+        }
     }
 }
